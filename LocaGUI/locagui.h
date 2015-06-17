@@ -23,12 +23,17 @@ public:
 	void loadTRCListWidget(std::vector<std::vector<std::string>> p_trcList);
 
 	/*Slots*/
-	public slots:
+public slots:
 	void browsePatient();
 	void FreqBandCheck(bool isChecked);
 	void addTRC2List();
 	void removeTRC2List();
+	void addProv2List(std::string p_locaName);
+	void removeProv2List(int p_index);
 	void testTextShell();
+
+private slots:
+	void provClicked(QListWidgetItem *provItem);
 	/*Signaux*/
 	//signals:
 

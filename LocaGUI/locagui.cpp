@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <fstream>
 #include <vector>
+#include <sstream>
+
 #include "locagui.h"
 
 LocaGUI::LocaGUI(QWidget *parent)
@@ -272,21 +274,76 @@ void LocaGUI::addTRC2List()
 
 	std::sort(indexTRCList.begin(), indexTRCList.end());
 	ui.chosenTRClistWidget->sortItems(Qt::SortOrder::AscendingOrder);
+
+	addProv2List(itemToAdd->text().toStdString());
 }
 
 void LocaGUI::removeTRC2List()
 {
-	int rowIndex = ui.chosenTRClistWidget->selectionModel()->currentIndex().row();
-
-	if (ui.TRCListWidget->item(indexTRCList[rowIndex])->isHidden() == true)
+	if (ui.chosenTRClistWidget->count() > 0)
 	{
-		ui.TRCListWidget->item(indexTRCList[rowIndex])->setHidden(false);
+		int rowIndex = ui.chosenTRClistWidget->selectionModel()->currentIndex().row();
+
+		if (ui.TRCListWidget->item(indexTRCList[rowIndex])->isHidden() == true)
+		{
+			ui.TRCListWidget->item(indexTRCList[rowIndex])->setHidden(false);
+		}
+
+		indexTRCList.erase(indexTRCList.begin() + ui.chosenTRClistWidget->currentIndex().row());
+		ui.chosenTRClistWidget->currentItem()->~QListWidgetItem();
+
+		std::sort(indexTRCList.begin(), indexTRCList.end());
+		ui.TRCListWidget->sortItems(Qt::SortOrder::AscendingOrder);
+		removeProv2List(rowIndex);
 	}
-
-	indexTRCList.erase(indexTRCList.begin() + ui.chosenTRClistWidget->currentIndex().row());
-	ui.chosenTRClistWidget->currentItem()->~QListWidgetItem();
-
-	std::sort(indexTRCList.begin(), indexTRCList.end());
-	ui.TRCListWidget->sortItems(Qt::SortOrder::AscendingOrder);
 }
 
+void LocaGUI::addProv2List(std::string p_locaName)
+{
+	std::string actualLoca = "";
+	std::stringstream provFileStream, provName;
+
+	std::vector<std::string> locaSplit = split<std::string>(p_locaName, "_.");
+	actualLoca = locaSplit[locaSplit.size() - 2];
+	provFileStream.str(std::string());
+	provFileStream.clear();
+	provName.str(std::string());
+	provName.clear();
+	provFileStream << "C:\\System98\\ExternalProgram\\Localizer\\Config\\Prov\\" + actualLoca + ".prov";
+	provName << actualLoca + ".prov";
+
+	QFile provFile(provFileStream.str().c_str());
+	QListWidgetItem *itemToAdd = new QListWidgetItem(provName.str().c_str());
+	if (provFile.exists())
+	{
+		itemToAdd->setBackgroundColor(Qt::green);
+	}
+	else
+	{
+		itemToAdd->setBackgroundColor(Qt::red);
+	}
+	ui.PROVListWidget->addItem(itemToAdd);
+	ui.PROVListWidget->sortItems(Qt::SortOrder::AscendingOrder);
+
+	QObject::connect(ui.PROVListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)), SLOT(provClicked(QListWidgetItem *)));
+}
+
+void LocaGUI::removeProv2List(int p_index)
+{
+	ui.PROVListWidget->item(p_index)->~QListWidgetItem();
+	ui.PROVListWidget->sortItems(Qt::SortOrder::AscendingOrder);
+}
+
+void LocaGUI::provClicked(QListWidgetItem *provItem)
+{
+	QFileDialog *fileDialProv = new QFileDialog(this);
+	fileDialProv->setFileMode(QFileDialog::FileMode::ExistingFile);
+	QString fileName = fileDialProv->getOpenFileName(this, tr("Chosse Wanted PROV File"), "C:\\", tr("PROV Files (*.prov *.PROV)"));
+
+	QFile provFile(fileName.toStdString().c_str());
+	if (provFile.exists())
+	{
+		provItem->setBackgroundColor(Qt::green);
+		provItem->setText(fileName);
+	}
+}
