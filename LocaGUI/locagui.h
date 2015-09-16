@@ -4,9 +4,12 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/qlistwidget.h>
 #include <QtWidgets/qcheckbox.h>
+
 #include <vector>
 
 #include "ui_locagui.h"
+#include "LOCA.h"
+#include "Worker.h"
 
 class LocaGUI : public QMainWindow
 {
@@ -21,35 +24,34 @@ public:
 	void connectAllBordel();
 	void loadTRCFromFolder(std::string p_pathFolder);
 	void loadTRCListWidget(std::vector<std::vector<std::string>> p_trcList);
+	void addProv2List(std::string p_locaName);
+	void removeProv2List(int p_index);
 
-	/*Slots*/
 public slots:
+	void launchAnalysis();
 	void browsePatient();
 	void FreqBandCheck(bool isChecked);
 	void addTRC2List();
 	void removeTRC2List();
-	void addProv2List(std::string p_locaName);
-	void removeProv2List(int p_index);
-	void testTextShell();
-
-private slots:
 	void provClicked(QListWidgetItem *provItem);
-	/*Signaux*/
-	//signals:
+	void displayLog(QString info);
+	void receiveElanPointer(InsermLibrary::ELAN *p_elan);
+
+signals:
+	void bipDone(bool);
 
 private:
 	std::vector<std::string> freqBandName;
 	std::vector<std::vector<int>> freqBandValue;
-	/*Widget Freq*/
 	QWidget **freqTAB;
 	QCheckBox ***freqCheckBox;
-
 	QListWidgetItem **listTRCWidget = nullptr;
 	std::vector<int> indexTRCList;
 	std::vector<std::string> directoryList;
 	std::vector<std::vector<std::string>> trcList;
-
 	Ui::LocaGUIClass ui;
+	QThread* thread;
+	Worker* worker;
 };
 
 #endif // LOCAGUI_H
