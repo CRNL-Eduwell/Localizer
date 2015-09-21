@@ -83,7 +83,7 @@ void LocaGUI::readFreqFile(std::string p_pathFreq)
 			count++;
 			break;
 		case 1:
-			std::vector<int> tempFreqVal;
+			std::vector<double> tempFreqVal;
 
 			std::vector<std::string> splitValue = split<std::string>(buffer, ":");
 			int fMin = atoi(splitValue[0].c_str());
@@ -292,8 +292,28 @@ void LocaGUI::launchAnalysis()
 		exp_tasks.push_back(split<std::string>(trcFiles[i], ".")[0]);
 	}
 
+	std::vector <std::vector<bool>> anaDetails;
+
+	for (int i = 0; i < freqBandName.size(); i++)
+	{
+		std::vector<bool> tempDetails;
+
+		for (int j = 0; j < 5; j++)
+		{
+			if (freqCheckBox[i][j]->isChecked())
+			{
+				tempDetails.push_back(true);
+			}
+			else
+			{
+				tempDetails.push_back(false);
+			}
+		}
+		anaDetails.push_back(tempDetails);
+	}
+
 	thread = new QThread;
-	worker = new Worker(trcFiles, provFiles, patientFolder, tasks, exp_tasks);
+	worker = new Worker(freqBandValue, anaDetails, trcFiles, provFiles, patientFolder, tasks, exp_tasks);
 
 	QObject::connect(thread, SIGNAL(started()), worker, SLOT(process()));
 	QObject::connect(worker, SIGNAL(finished()), thread, SLOT(quit()));

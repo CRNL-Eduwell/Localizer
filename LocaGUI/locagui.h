@@ -42,7 +42,7 @@ signals:
 
 private:
 	std::vector<std::string> freqBandName;
-	std::vector<std::vector<int>> freqBandValue;
+	std::vector<std::vector<double>> freqBandValue;
 	QWidget **freqTAB;
 	QCheckBox ***freqCheckBox;
 	QListWidgetItem **listTRCWidget = nullptr;
