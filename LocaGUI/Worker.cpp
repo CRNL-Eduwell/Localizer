@@ -1,174 +1,162 @@
 #include "Worker.h"
 #include "QCoreApplication"
 #include "Windows.h"
+
 // --- CONSTRUCTOR ---
 Worker::Worker(std::vector<std::vector<double>> p_freqBandValue, std::vector <std::vector<bool>> p_anaDetails, std::vector<std::string> p_trc, std::vector<std::string> p_prov, std::string folderPatient, std::vector<std::string> p_tasks, std::vector<std::string> p_exptasks)
 {
 	// you could copy data from constructor arguments to internal variables here.
-	freqBandValue = p_freqBandValue;
-	anaDetails = p_anaDetails;
-	trcFiles = p_trc;
-	provFiles = p_prov;
-	patientFolder = folderPatient;
-	tasks = p_tasks;
-	expTasks = p_exptasks;
+
+	numberFiles = p_trc.size();
+	locaAnaOpt = new InsermLibrary::LOCAANALYSISOPTION*[numberFiles];
+	for (int i = 0; i < numberFiles; i++)
+	{
+		locaAnaOpt[i] = new InsermLibrary::LOCAANALYSISOPTION(p_freqBandValue, p_anaDetails, p_trc[i], p_prov[i], folderPatient, p_tasks[i], p_exptasks[i]);
+	}
 
 	qRegisterMetaType<InsermLibrary::ELAN*>("InsermLibrary::ELAN*");
+	
+	//get every pointer to connect when creation worker 
+	loca = new InsermLibrary::LOCA();
 
 }
 
 // --- DECONSTRUCTOR ---
 Worker::~Worker() {
 	// free resources
+	for (int i = 0; i < numberFiles; i++)
+	{
+		delete locaAnaOpt[i];
+	}
+	delete locaAnaOpt;
 }
 
+InsermLibrary::LOCA * Worker::returnLoca()
+{
+	return loca;
+}
+
+//==========================================  Methods  =========================================== 
 //===========================================  Slots  =========================================== 
-// Start processing data.
+//Start processing data.
 void Worker::process() 
 {
 	// allocate resources using new here
 	//qDebug("Hello World!");
 
-	std::stringstream filePath, displayText;
-	for (int i = 0; i < trcFiles.size(); i++)
-	{
-		std::stringstream().swap(filePath);
-		filePath << patientFolder << "/" << expTasks[i] << "/" << trcFiles[i];
+	std::stringstream TRCfilePath, LOCAfilePath, displayText, TimeDisp;
+	SYSTEMTIME LocalTime;
 
-		displayText << "Processing : " << filePath.str();
+	for (int i = 0; i < numberFiles; i++)
+	{
+		//To get the local time
+		GetLocalTime(&LocalTime);
+		TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond;
+		emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
+
+		std::stringstream().swap(TRCfilePath);
+		TRCfilePath << locaAnaOpt[i]->patientFolder << "/" << locaAnaOpt[i]->expTask << "/" << locaAnaOpt[i]->trcPath;
+
+		displayText << "Processing : " << TRCfilePath.str();
 		emit sendLogInfo(QString::fromStdString(displayText.str()));
 
 		// 1) Faire l'analyse du TRC pour récupérer les data
 		MicromedLibrary::TRC *trc = new MicromedLibrary::TRC();
-		trc->HeaderInformations(filePath.str());
-		
+		trc->HeaderInformations(TRCfilePath.str());
+
 		/************************/
 		/* Extraction des Notes */
 		/************************/
-		trc->DescriptorNote(filePath.str(), 208);
-		trc->NoteOperator(filePath.str(), trc->noteStart, trc->noteLength);
-		
+		trc->DescriptorNote(TRCfilePath.str(), 208);
+		trc->NoteOperator(TRCfilePath.str(), trc->noteStart, trc->noteLength);
+
 		/***************************/
 		/* Extraction des Triggers */
 		/***************************/
-		trc->DescriptorTrigger(filePath.str(), 400);
-		trc->DigitalTriggers(filePath.str(), trc->triggerStart, trc->triggerLength);
-		
+		trc->DescriptorTrigger(TRCfilePath.str(), 400);
+		trc->DigitalTriggers(TRCfilePath.str(), trc->triggerStart, trc->triggerLength);
+
 		//Extract chanel names and reorder them according their position in TRC file																									  
-		trc->DescriptorElectrode(filePath.str(), 192);
-		trc->ElectrodePresence(filePath.str(), trc->electrodeStart, trc->electrodeLength);
+		trc->DescriptorElectrode(TRCfilePath.str(), 192);
+		trc->ElectrodePresence(TRCfilePath.str(), trc->electrodeStart, trc->electrodeLength);
 		trc->SortElectrodeFromFile();
-		trc->ExtractAllChanels(filePath.str());
+		trc->ExtractAllChanels(TRCfilePath.str());
 
 		emit sendLogInfo(QString::fromStdString("Data extracted ! "));
 
-		InsermLibrary::ELAN *elan = new InsermLibrary::ELAN(trc, anaDetails.size());
-
-		emit sendElanPointer(elan); //send Elan pointer to pop up window to choose Elec to analyse
-		while (bip == false) //While bipole not created 
+		if (i == 0)
 		{
-			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
+			elan = new InsermLibrary::ELAN(trc, locaAnaOpt[i]->frequencys.size());
+
+			emit sendElanPointer(elan); //send Elan pointer to pop up window to choose Elec to analyse
+			while (bip == false) //While bipole not created 
+			{
+				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
+			}
+
+			emit sendLogInfo(QString::fromStdString("Bipole created !"));
 		}
-		
-		emit sendLogInfo(QString::fromStdString("Bipole created !"));
+		else
+		{
+			delete elan->trc;
+			elan->trc = nullptr;
+			elan->trc = trc;
+		}
+
+		std::stringstream().swap(displayText);
+		displayText << "Number of Bip : " << elan->m_bipole.size();
+		emit sendLogInfo(QString::fromStdString(displayText.str()));
+
 		emit sendLogInfo(QString::fromStdString("Beginning Analysis ..."));
 
-		InsermLibrary::LOCA *loca = new InsermLibrary::LOCA();
-		InsermLibrary::PROV *p_provVISU = new InsermLibrary::PROV(provFiles[i]);
-		std::stringstream locaPath;
-		locaPath << patientFolder << "/" << expTasks[i];
+		InsermLibrary::PROV *p_provVISU = new InsermLibrary::PROV(locaAnaOpt[i]->provPath);
+		LOCAfilePath << locaAnaOpt[i]->patientFolder << "/" << locaAnaOpt[i]->expTask;
 
-		//loca->LocaVISU(elan, p_provVISU, locaPath.str(), expTasks[i], tasks[i]);
-		
-		double frequencyGamma[11]{ 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150 };
-		int *code = new int[11]{10, 20, 30, 40, 50, 60, 70, 90, 110, 100, 80};
-		std::string *strCode = new std::string[11]{"Maison", "Visage", "Animal", "Scene", "Objet", "Pseudo", "Conson", "Scrambled", "Bfix", "Pause", "Fruits"};
-		int *window_ms = new int[2]{-500, 1000};
-		std::string pathFreq;
-
-		std::stringstream sss;
-		SYSTEMTIME LocalTime;
-		GetLocalTime(&LocalTime);
-		sss << LocalTime.wHour << "h" << LocalTime.wMinute << "m" << LocalTime.wSecond << "s";
-		emit sendLogInfo(QString::fromStdString(sss.str()));
-		//======================== Generalisation Loca ==============================//
-
-		std::stringstream posFilePath, confFilePath, posXFilePath, pictureLabel, folderTrialsSM;
-
-		/*****************************************************************************************************************/
-		/*											Create .pos and dsX.pos File										 */
-		/*****************************************************************************************************************/
-		posFilePath << locaPath.str() << "/" << expTasks[i] << ".pos";													 //
-		posXFilePath << locaPath.str() << "/" << expTasks[i] << "_ds" << (elan->trc->samplingFrequency / 64) << ".pos";  //
-		loca->loc_create_pos(posFilePath.str(), posXFilePath.str(), elan->trc, 99, p_provVISU);							 //
-		/*****************************************************************************************************************/
-
-		emit sendLogInfo(QString::fromStdString("Pos Created"));
-
-		/*****************************************************************************************************/
-		/*											Create .conf File										 */
-		/*****************************************************************************************************/
-		confFilePath << locaPath.str() << "/" << expTasks[i] << ".conf";									 //
-		loca->loc2_write_conf(confFilePath.str(), elan->trc, elan);											 //
-		/*****************************************************************************************************/
-
-		emit sendLogInfo(QString::fromStdString("Conf Created"));
-
-		/******************************************************************************************************************************/
-		/*														Loc eeg2erp														      */
-		/******************************************************************************************************************************/
-		loca->loc_eeg2erp(elan, locaPath.str(), expTasks[i], code, 11, strCode, 11, window_ms, 20);									  //
-		/******************************************************************************************************************************/
-
-		emit sendLogInfo(QString::fromStdString("ERP Pictures Done"));
-
-		for (int j = 0; j < anaDetails.size(); j++)
+		if (locaAnaOpt[i]->task == "VISU")
 		{
-			/*****************************************************************************************************************************/			
-			/*									EEG2ENV	50Hz -> 150Hz																	 */					
-			/*****************************************************************************************************************************/			
-			elan->TrcToEnvElan(trcFiles[i].c_str(), elan->elanFreqBand[j], &freqBandValue[i][0], freqBandValue[i].size(), ELAN_HISTO);	 //					
-			/*****************************************************************************************************************************/
-			emit sendLogInfo(QString::fromStdString("Hilbert Envellope Done"));
-
-			pictureLabel << expTasks[i] << "_f" << freqBandValue[i][0] << "f" << freqBandValue[i][freqBandValue[i].size() - 1] << "_ds" << (elan->trc->samplingFrequency / 64) << "_sm0_trials_";
-			folderTrialsSM << locaPath.str() << "/" << expTasks[i] << "_f" << freqBandValue[i][0] << "f" << freqBandValue[i][freqBandValue[i].size() - 1];
-																																	
-			if (!QDir(&folderTrialsSM.str()[0]).exists())																			
-			{																														
-				//std::cout << "Creating Output Folder for 50-150 Hz data " << std::endl;													
-				QDir().mkdir(&folderTrialsSM.str()[0]);																				
-			}
-
-			/*****************************************************************************************************/					
-			/*											loc_env2plot											 */					
-			/*****************************************************************************************************/					
-			pathFreq = "";																						 //				
-			pathFreq.append(expTasks[i]);																		 //	
-			if (j == 0)
-			{
-				pathFreq.append("_f50f150_ds8_sm0");																 //					
-			}
-			else
-			{
-				pathFreq.append("_f8f24_ds8_sm0");																 //					
-			}
-			loca->loc_env2plot(elan, j, locaPath.str(), pathFreq, code, 11, strCode, 11, window_ms, 20);		 //					
-			/*****************************************************************************************************/				
-			//
-			/*****************************************************************************************************/				
-			/*											loca trialmat											 */				
-			/*****************************************************************************************************/					
-			//ef_read_elan_file((char*)"D:\\Users\\Florian\\Documents\\Arbeit\\2) Loca Patient\\2014\\LYONNEURO_2014_RENT\\LYONNEURO_2014_RENT_VISU\\LYONNEURO_2014_RENT_VISU_f50f150_ds8_sm0.eeg", p_elan->elanFreqBand[0]);
-			loca->loca_trialmat(elan, j, p_provVISU, pictureLabel.str(), folderTrialsSM.str());							 //					    
+			loca->LocaVISU(elan, p_provVISU, locaAnaOpt[i]);
+		}
+		else if (locaAnaOpt[i]->task == "LEC1")
+		{
+			loca->LocaLEC1(elan, p_provVISU, locaAnaOpt[i]);
+		}
+		else if (locaAnaOpt[i]->task == "MCSE")
+		{
+			loca->LocaMCSE(elan, p_provVISU, locaAnaOpt[i]);
+		}
+		else if (locaAnaOpt[i]->task == "MVIS")
+		{
+			loca->LocaMVIS(elan, p_provVISU, locaAnaOpt[i]);
+		}
+		else if (locaAnaOpt[i]->task == "MVEB")
+		{
+			loca->LocaMVEB(elan, p_provVISU, locaAnaOpt[i]);
+		}
+		else if (locaAnaOpt[i]->task == "MASS")
+		{
+			loca->LocaMASS(elan, p_provVISU, locaAnaOpt[i]);
+		}
+		else if (locaAnaOpt[i]->task == "LEC2")
+		{
+			loca->LocaLEC2(elan, p_provVISU, locaAnaOpt[i]);
+		}
+		else if (locaAnaOpt[i]->task == "MOTO")
+		{
+			loca->LocaMOTO(elan, p_provVISU, locaAnaOpt[i]);
+		}
+		else if (locaAnaOpt[i]->task == "AUDI")
+		{
+			loca->LocaAUDI(elan, p_provVISU, locaAnaOpt[i]);
+		}
+		else if (locaAnaOpt[i]->task == "ARFA")
+		{
+			loca->LocaARFA(elan, p_provVISU, locaAnaOpt[i]);
 		}
 
-		std::stringstream().swap(sss);
+		std::stringstream().swap(TimeDisp);
 		GetLocalTime(&LocalTime);
-		sss << LocalTime.wHour << "h" << LocalTime.wMinute << "m" << LocalTime.wSecond << "s";
-		emit sendLogInfo(QString::fromStdString(sss.str()));
-		
-		emit sendLogInfo(QString::fromStdString("End of Loca \n"));
+		TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond;
+		emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
 	}
 	emit sendLogInfo(QString::fromStdString("ByeBye"));
 	emit finished();

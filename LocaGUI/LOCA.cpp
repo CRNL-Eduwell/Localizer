@@ -93,6 +93,26 @@ InsermLibrary::TRIGGINFO::~TRIGGINFO()
 /*****************************************************************************************************************************************************************************************************************************************************/
 
 /*****************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************************************            LOCAANALYSISOPTION Methods             *************************************************************************************************/
+/*****************************************************************************************************************************************************************************************************************************************************/
+InsermLibrary::LOCAANALYSISOPTION::LOCAANALYSISOPTION(std::vector<std::vector<double>> p_frequencys, std::vector<std::vector<bool>> p_analysisDetails, std::string p_trcPath, std::string p_provPath, std::string p_patientFolder, std::string p_task, std::string p_expTask)
+{
+	frequencys = p_frequencys;
+	analysisDetails = p_analysisDetails;
+	trcPath = p_trcPath;
+	provPath = p_provPath;
+	patientFolder = p_patientFolder;
+	task = p_task;
+	expTask = p_expTask;
+}
+
+InsermLibrary::LOCAANALYSISOPTION::~LOCAANALYSISOPTION()
+{
+
+}
+/*****************************************************************************************************************************************************************************************************************************************************/
+
+/*****************************************************************************************************************************************************************************************************************************************************/
 /*******************************************************************************************************               LOCA Methods               ****************************************************************************************************/
 /*****************************************************************************************************************************************************************************************************************************************************/
 
@@ -110,358 +130,1578 @@ InsermLibrary::LOCA::~LOCA()
 }
 /**********************************************************************************************************************************************************************************************************************************************/
 
-/**********************************************************************************************************************************************************************************************************************************************/
-/*																																																											  */
-/**********************************************************************************************************************************************************************************************************************************************/
-void InsermLibrary::LOCA::Localize(string p_path)
+void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
-	vector<string> splitPathResult;
-	string a_exp_task = "", a_task = "";
-	stringstream filePath;
-	clock_t t2;
-
-	splitPathResult = split<string>(p_path, "\\");
-	a_exp_task = splitPathResult[splitPathResult.size() - 1];
-
-	splitPathResult = split<string>(a_exp_task, "_");
-	a_task = splitPathResult[splitPathResult.size() - 1];
-
-	filePath << p_path << "\\" << a_exp_task << ".TRC";
-
-	// 1) Faire l'analyse du TRC pour récupérer les data
-	MicromedLibrary::TRC *trc = new MicromedLibrary::TRC();
-	trc->HeaderInformations(filePath.str());
-
-	/************************/
-	/* Extraction des Notes */
-	/************************/
-	trc->DescriptorNote(filePath.str(), 208);
-	trc->NoteOperator(filePath.str(), trc->noteStart, trc->noteLength);
-
-	/***************************/
-	/* Extraction des Triggers */
-	/***************************/
-	trc->DescriptorTrigger(filePath.str(), 400);
-	trc->DigitalTriggers(filePath.str(), trc->triggerStart, trc->triggerLength);
-
-	//Extract chanel names and reorder them according their position in TRC file																									  
-	trc->DescriptorElectrode(filePath.str(), 192);																																	  
-	trc->ElectrodePresence(filePath.str(), trc->electrodeStart, trc->electrodeLength);																								  
-	trc->SortElectrodeFromFile();																																					  
-	trc->ExtractAllChanels(filePath.str());																																	
-
-	//créer les bipoles
-	InsermLibrary::ELAN elan(trc, 2);
-	elan.DisplayChoiceKeepElectrode();
-	elan.eeg_loc_montage(elan.trc->nameElectrodePositiv, elan.trc->signalPosition);
-
-	if (a_task == "VISU")
-	{
-		InsermLibrary::PROV *p_provVISU = new InsermLibrary::PROV("D:\\Users\\Florian\\Documents\\Arbeit\\INSERM\\Temp Files\\Localizer\\VISU.prov");
-
-		t2 = clock();
-		LocaVISU(&elan, p_provVISU, p_path, a_exp_task, a_task);
-		t2 = clock() - t2;
-		printf("Localize VISU : It took me %d clicks (%f seconds).\n", t2, ((float)t2) / CLOCKS_PER_SEC);
-		std::cout << endl;
-	}
-	else if (a_task == "LEC1")
-	{
-		InsermLibrary::PROV *p_provLEC1 = new InsermLibrary::PROV("D:\\Users\\Florian\\Documents\\Arbeit\\INSERM\\Temp Files\\Localizer\\LEC1.prov");
-
-		t2 = clock();
-		LocaLEC1(&elan, p_provLEC1, p_path, a_exp_task, a_task);
-		t2 = clock() - t2;
-		printf("Localize LEC1 : It took me %d clicks (%f seconds).\n", t2, ((float)t2) / CLOCKS_PER_SEC);
-		std::cout << endl;
-	}
-	else if (a_task == "MCSE")
-	{
-		InsermLibrary::PROV *p_provMCSE = new InsermLibrary::PROV("D:\\Users\\Florian\\Documents\\Arbeit\\INSERM\\Temp Files\\Localizer\\MCSE.prov");
-
-		t2 = clock();
-		LocaMCSE(&elan, p_provMCSE, p_path, a_exp_task, a_task);
-		t2 = clock() - t2;
-		printf("Localize MCSE : It took me %d clicks (%f seconds).\n", t2, ((float)t2) / CLOCKS_PER_SEC);
-		std::cout << endl;
-	}
-	/*Delete Memory stuff*/
-	//delete elan;
-
-}
-/**********************************************************************************************************************************************************************************************************************************************/
-
-void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, string p_path, string p_exp_task, string p_task)
-{
-	stringstream posFilePath, confFilePath, posXFilePath, pictureLabel, folderTrialsSM, eeg2envFilePath;
-	string pathFreq;
+	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	double frequencyBetta[5]{8, 12, 16, 20, 24};
 	double frequencyGamma[11]{ 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150 };
-	int *code = new int[11]{10, 20, 30, 40, 50, 60, 70, 90, 110, 100, 80};																		   
-	string *strCode = new string[11]{"Maison", "Visage", "Animal", "Scene", "Objet", "Pseudo", "Conson", "Scrambled", "Bfix", "Pause", "Fruits"};  
-	int *window_ms = new int[2]{-500, 1000};																									   
+	int *code = new int[11]{10, 20, 30, 40, 50, 60, 70, 90, 110, 100, 80};
+	string *strCode = new string[11]{"Maison", "Visage", "Animal", "Scene", "Objet", "Pseudo", "Conson", "Scrambled", "Bfix", "Pause", "Fruits"};
+	int *window_ms = new int[2]{-500, 1000};
+	
+	/*************************************************************************************************************************************************************/
+	/*																	Create .pos and dsX.pos File															 */
+	/*************************************************************************************************************************************************************/
+	posFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".pos";													 //
+	posXFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_ds" << (p_elan->trc->samplingFrequency / 64) << ".pos"; //
+	loc_create_pos(posFilePath.str(), posXFilePath.str(), p_elan->trc, 99, p_prov);																				 //
+	/*************************************************************************************************************************************************************/
 
-	/*********************************************************************************************************/
-	/*										Create .pos and dsX.pos File									 */
-	/*********************************************************************************************************/
-	posFilePath << p_path << "/" << p_exp_task << ".pos";													 //
-	posXFilePath << p_path << "/" << p_exp_task << "_ds" << (p_elan->trc->samplingFrequency / 64) << ".pos"; //
-	loc_create_pos(posFilePath.str(), posXFilePath.str(), p_elan->trc, 99, p_prov);							 //
-	/*********************************************************************************************************/
+	/************************************************************************************************************/
+	/*												Create .conf File											*/
+	/************************************************************************************************************/
+	confFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".conf"; //
+	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
+	/************************************************************************************************************/
 
-	/*****************************************************************************************************/
-	/*											Create .conf File										 */
-	/*****************************************************************************************************/
-	confFilePath << p_path << "/" << p_exp_task << ".conf";											 //
-	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											 //
-	/*****************************************************************************************************/
+	std::stringstream().swap(outputMessage);
+	outputMessage << "Pos and Conf Files Have been created";
+	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
-	/******************************************************************************************************************************/
-	/*														Loc eeg2erp														      */
-	/******************************************************************************************************************************/
-	//loc_eeg2erp(p_elan, p_path, p_exp_task, code, 11, strCode, 11, window_ms, 20);	  										      //
-	/******************************************************************************************************************************/
+	if (p_anaopt->analysisDetails[0][0])
+	{
+		/******************************************************************************************************************************/
+		/*														Loc eeg2erp														      */
+		/******************************************************************************************************************************/
+		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 11, strCode, 11, window_ms, 20);	  			 	      //
+		/******************************************************************************************************************************/
+		std::stringstream().swap(outputMessage);
+		outputMessage << "ERP Pictures DONE !";
+		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+	}
 
-	eeg2envFilePath << p_path << "/" << p_exp_task << ".TRC";
-	/******************************************************************************************************************************/
-	/*									Gamma Analysis 50Hz -> 150 Hz							 								  */
-	/******************************************************************************************************************************/
-	/*****************************************************************************************************/						  //
-	/*									EEG2ENV	50Hz -> 150Hz											 */						  //
-	/*****************************************************************************************************/						  //
-	//p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[0],frequencyGamma, 11,ELAN_HISTO); //						  //
-	/*****************************************************************************************************/					      //
-																																  //
-	pictureLabel << p_exp_task << "_f50f150_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";						  //
-	folderTrialsSM << p_path << "/" << p_exp_task << "_f50f150_trials";														  //
-																																  //
-	if (!QDir(&folderTrialsSM.str()[0]).exists())																				  //
-	{																															  //
-		std::cout << "Creating Output Folder for 50-150 Hz data " << endl;														  //
-		QDir().mkdir(&folderTrialsSM.str()[0]);																					  //
-	}																															  //
-																																  //
-	/*****************************************************************************************************/						  //
-	/*											loc_env2plot											 */						  //
-	/*****************************************************************************************************/						  //
-	pathFreq = "";																						 //						  //
-	pathFreq.append(p_exp_task);																		 //						  //
-	pathFreq.append("_f50f150_ds8_sm0");																 //						  //
-	//loc_env2plot(p_elan, 0, p_path, pathFreq, code, 11, strCode, 11, window_ms, 20);					 //						  //
-	/*****************************************************************************************************/						  //
-																																  //
-	/*****************************************************************************************************/						  //
-	/*											loca trialmat											 */						  //
-	/*****************************************************************************************************/						  //
-	ef_read_elan_file((char*)"D:\\Users\\Florian\\Documents\\Arbeit\\2) Loca Patient\\2014\\LYONNEURO_2014_RENT\\LYONNEURO_2014_RENT_VISU\\LYONNEURO_2014_RENT_VISU_f50f150_ds8_sm0.eeg", p_elan->elanFreqBand[0]);
-	loca_trialmat(p_elan, 0, p_prov, pictureLabel.str(), folderTrialsSM.str());							 //					      //
-	/*****************************************************************************************************/						  //
-	/******************************************************************************************************************************/
+	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
+	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
+	{
+		if (p_anaopt->analysisDetails[i + 1][0])
+		{
+			std::stringstream().swap(outputMessage);
+			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
+			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
-	/******************************************************************************************************************************/
-	/*										Beta Analysis 8Hz -> 24 Hz							 								  */
-	/******************************************************************************************************************************/
-	/*****************************************************************************************************/						  //
-	/*										EEG2ENV	8Hz -> 24 Hz										 */						  //
-	/*****************************************************************************************************/						  //
-	p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[1], frequencyBetta, 5, ELAN_HISTO);//						  //
-	/*****************************************************************************************************/					      //
-	stringstream().swap(pictureLabel);																							  //
-	pictureLabel << p_exp_task << "_f8f24_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";						  //
-	stringstream().swap(folderTrialsSM);																						  //
-	folderTrialsSM << p_path << "\\" << p_exp_task << "_f8f24_trials";															  //
-																																  //
-	if (!QDir(&folderTrialsSM.str()[0]).exists())																				  //
-	{																															  //
-		std::cout << "Creating Output Folder for 8-24 Hz data " << endl;														  //
-		QDir().mkdir(&folderTrialsSM.str()[0]);																					  //
-	}																															  //
-																																  //
-	/*****************************************************************************************************/						  //
-	/*											loc_env2plot											 */						  //
-	/*****************************************************************************************************/						  //
-	pathFreq = "";																						 //						  //
-	pathFreq.append(p_exp_task);																		 //						  //
-	pathFreq.append("_f8f24_ds8_sm0");																	 //						  //
-	loc_env2plot(p_elan, 1, p_path, pathFreq, code, 11, strCode, 11, window_ms, 20);				     //						  //
-	/*****************************************************************************************************/						  //
-																																  //
-	/*****************************************************************************************************/						  //
-	/*											loca trialmat											 */						  //
-	/*****************************************************************************************************/						  //
-	loca_trialmat(p_elan, 1, p_prov, pictureLabel.str(), folderTrialsSM.str());							 //					      //
-	/*****************************************************************************************************/						  //
-	/******************************************************************************************************************************/
-}
+			if (p_anaopt->analysisDetails[i + 1][1])
+			{
+				/**********************************************************************************************************************************************/						  
+				/*														EEG2ENV	50Hz -> 150Hz													 			  */						  
+				/**********************************************************************************************************************************************/						  
+				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
+				/**********************************************************************************************************************************************/					      
+				std::stringstream().swap(outputMessage);
+				outputMessage << "Hilbert Envellope Calculated";
+				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
-void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, string p_path, string p_exp_task, string p_task)
+				//===============================================================================================================================================================================
+				std::stringstream().swap(pictureLabel);
+				std::stringstream().swap(folderTrialsSM);
+				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";				  
+				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";		
+				
+				if (!QDir(&folderTrialsSM.str()[0]).exists())																				  
+				{																															  
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					QDir().mkdir(&folderTrialsSM.str()[0]);																					  
+				}																															  
+				//===============================================================================================================================================================================
+
+				if (p_anaopt->analysisDetails[i + 1][2])
+				{
+					/********************************************************************************************************************************************************************************************************/
+					/*																							loc_env2plot																							    */
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(pathFreq);																																										//
+					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+					std::stringstream().swap(cheatMode);																																									//
+					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 11, strCode, 11, window_ms, 20);																											//				
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Hilbert Env Pictures DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+
+				if (p_anaopt->analysisDetails[i + 1][3])
+				{
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Frequency Maps DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			}
+			else
+			{
+				//===============================================================================================================================================================================
+				std::stringstream().swap(loadFileDefault);
+				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
+				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
+				//===============================================================================================================================================================================
+
+				if (loadFile == 0)
+				{
+					std::stringstream().swap(pictureLabel);
+					std::stringstream().swap(folderTrialsSM);
+					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";				  
+					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";									  
+																																					
+					if (!QDir(&folderTrialsSM.str()[0]).exists())																				  
+					{																															  
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						QDir().mkdir(&folderTrialsSM.str()[0]);																					  
+					}																															  
+
+					if (p_anaopt->analysisDetails[i + 1][2])
+					{
+						/********************************************************************************************************************************************************************************************************/					    
+						/*																							loc_env2plot																							    */						
+						/********************************************************************************************************************************************************************************************************/				  	    
+						std::stringstream().swap(pathFreq);																																										//
+						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+						std::stringstream().swap(cheatMode);																																									//
+						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 11, strCode, 11, window_ms, 20);																											//				
+						/********************************************************************************************************************************************************************************************************/		
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Hilbert Env Pictures DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][3])
+					{
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Frequency Maps DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+				}
+				else
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "No Envellope File found, end of analyse for this frequency";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			} //if/else eeg2env
+		} //if analyse this frequency
+	} // for each frequency
+} // loca 
+
+void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
-	stringstream posFilePath, confFilePath, posXFilePath, pictureLabel, folderTrialsSM, eeg2envFilePath;
-	string pathFreq;
-	double frequencyBetta[5]{8, 12, 16, 20, 24};
-	double frequencyGamma[11]{ 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150 };
-	int *code = new int[6]{10,20,30,1,2,100};
-	string *strCode = new string[6]{"Seman","Phono","Visual","RepY","RepN","Pause"};
+	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
+	int *code = new int[6]{10, 20, 30, 1, 2, 100};
+	string *strCode = new string[6]{"Seman", "Phono", "Visual", "RepY", "RepN", "Pause"};
 	int *window_ms = new int[2]{-1000, 3000};
 
-	/*********************************************************************************************************/
-	/*										Create .pos and dsX.pos File									 */
-	/*********************************************************************************************************/
-	posFilePath << p_path << "\\" << p_exp_task << ".pos";													 //
-	posXFilePath << p_path << "\\" << p_exp_task << "_ds" << (p_elan->trc->samplingFrequency / 64) << ".pos";//
-	loc_create_pos(posFilePath.str(), posXFilePath.str(), p_elan->trc, 99, p_prov);							 //
-	/*********************************************************************************************************/
+	/*************************************************************************************************************************************************************/
+	/*																	Create .pos and dsX.pos File															 */
+	/*************************************************************************************************************************************************************/
+	posFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".pos";													 //
+	posXFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_ds" << (p_elan->trc->samplingFrequency / 64) << ".pos"; //
+	loc_create_pos(posFilePath.str(), posXFilePath.str(), p_elan->trc, 99, p_prov);																				 //
+	/*************************************************************************************************************************************************************/
 
-	/*****************************************************************************************************/
-	/*											Create .conf File										 */
-	/*****************************************************************************************************/
-	confFilePath << p_path << "\\" << p_exp_task << ".conf";											 //
-	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											 //
-	/*****************************************************************************************************/
+	/************************************************************************************************************/
+	/*												Create .conf File											*/
+	/************************************************************************************************************/
+	confFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".conf"; //
+	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
+	/************************************************************************************************************/
 
-	/******************************************************************************************************************************/
-	/*														Loc eeg2erp														      */
-	/******************************************************************************************************************************/
-	loc_eeg2erp(p_elan, p_path, p_exp_task, code, 6, strCode, 6, window_ms, 20);											      //
-	/******************************************************************************************************************************/
+	std::stringstream().swap(outputMessage);
+	outputMessage << "Pos and Conf Files Have been created";
+	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
-	eeg2envFilePath << p_path << "\\" << p_exp_task << ".TRC";
-	/******************************************************************************************************************************/
-	/*									Gamma Analysis 50Hz -> 150 Hz							 								  */
-	/******************************************************************************************************************************/
-	/*****************************************************************************************************/						  //
-	/*									EEG2ENV	50Hz -> 150Hz											 */						  //
-	/*****************************************************************************************************/						  //
-	p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[0],frequencyGamma, 11,ELAN_HISTO); //						  //
-	/*****************************************************************************************************/					      //
-																																  //
-	pictureLabel << p_exp_task << "_f50f150_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";						  //
-	folderTrialsSM << p_path << "\\" << p_exp_task << "_f50f150_trials";														  //
-																																  //
-	if (!QDir(&folderTrialsSM.str()[0]).exists())																				  //
-	{																															  //
-		std::cout << "Creating Output Folder for 50-150 Hz data " << endl;														  //
-		QDir().mkdir(&folderTrialsSM.str()[0]);																					  //
-	}																															  //
-																																  //
-	/*****************************************************************************************************/						  //
-	/*											loc_env2plot											 */						  //
-	/*****************************************************************************************************/						  //
-	pathFreq = "";																						 //						  //
-	pathFreq.append(p_exp_task);																		 //						  //
-	pathFreq.append("_f50f150_ds8_sm0");																 //						  //
-	loc_env2plot(p_elan, 0, p_path, pathFreq, code, 6, strCode, 6, window_ms, 20);						 //						  //
-	/*****************************************************************************************************/						  //
-																																  //
-	/*****************************************************************************************************/						  //
-	/*											loca trialmat											 */						  //
-	/*****************************************************************************************************/						  //
-	loca_trialmat(p_elan, 0, p_prov, pictureLabel.str(), folderTrialsSM.str());							 //					      //
-	/*****************************************************************************************************/						  //
-	/******************************************************************************************************************************/
+	if (p_anaopt->analysisDetails[0][0])
+	{
+		/******************************************************************************************************************************/
+		/*														Loc eeg2erp														      */
+		/******************************************************************************************************************************/
+		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 6, strCode, 6, window_ms, 20);	  			 	      //
+		/******************************************************************************************************************************/
+		std::stringstream().swap(outputMessage);
+		outputMessage << "ERP Pictures DONE !";
+		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+	}
 
-	/******************************************************************************************************************************/
-	/*									Beta Analysis 8Hz -> 24 Hz								 								  */
-	/******************************************************************************************************************************/
-	/*****************************************************************************************************/						  //
-	/*									EEG2ENV	8Hz -> 24 Hz											 */						  //
-	/*****************************************************************************************************/						  //
-	p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[1], frequencyBetta, 5, ELAN_HISTO);//						  //
-	/*****************************************************************************************************/					      //
-																																  //
-	pictureLabel << p_exp_task << "_f8f24_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";						  //
-	folderTrialsSM << p_path << "\\" << p_exp_task << "_f8f24_trials";															  //
-																																  //
-	if (!QDir(&folderTrialsSM.str()[0]).exists())																				  //
-	{																															  //
-		std::cout << "Creating Output Folder for 8-24 Hz data " << endl;														  //
-		QDir().mkdir(&folderTrialsSM.str()[0]);																					  //
-	}																															  //
-																																  //
-	/*****************************************************************************************************/						  //
-	/*											loc_env2plot											 */						  //
-	/*****************************************************************************************************/						  //
-	pathFreq = "";																						 //						  //
-	pathFreq.append(p_exp_task);																		 //						  //
-	pathFreq.append("_f8f24_ds8_sm0");																	 //						  //
-	loc_env2plot(p_elan, 1, p_path, pathFreq, code, 6, strCode, 6, window_ms, 20);						 //						  //
-	/*****************************************************************************************************/						  //
-																																  //
-	/*****************************************************************************************************/						  //
-	/*											loca trialmat											 */						  //
-	/*****************************************************************************************************/						  //
-	loca_trialmat(p_elan, 1, p_prov, pictureLabel.str(), folderTrialsSM.str());							 //					      //
-	/*****************************************************************************************************/						  //
-	/******************************************************************************************************************************/
-}
+	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
+	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
+	{
+		if (p_anaopt->analysisDetails[i + 1][0])
+		{
+			std::stringstream().swap(outputMessage);
+			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
+			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
-void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, std::string p_path, std::string p_exp_task, std::string p_task)
+			if (p_anaopt->analysisDetails[i + 1][1])
+			{
+				/**********************************************************************************************************************************************/
+				/*														EEG2ENV	50Hz -> 150Hz													 			  */
+				/**********************************************************************************************************************************************/
+				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
+				/**********************************************************************************************************************************************/
+				std::stringstream().swap(outputMessage);
+				outputMessage << "Hilbert Envellope Calculated";
+				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+				//===============================================================================================================================================================================
+				std::stringstream().swap(pictureLabel);
+				std::stringstream().swap(folderTrialsSM);
+				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+				if (!QDir(&folderTrialsSM.str()[0]).exists())
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					QDir().mkdir(&folderTrialsSM.str()[0]);
+				}
+				//===============================================================================================================================================================================
+
+				if (p_anaopt->analysisDetails[i + 1][2])
+				{
+					/********************************************************************************************************************************************************************************************************/
+					/*																							loc_env2plot																							    */
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(pathFreq);																																										//
+					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+					std::stringstream().swap(cheatMode);																																									//
+					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 6, strCode, 6, window_ms, 20);																											//				
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Hilbert Env Pictures DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+
+				if (p_anaopt->analysisDetails[i + 1][3])
+				{
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Frequency Maps DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			}
+			else
+			{
+				//===============================================================================================================================================================================
+				std::stringstream().swap(loadFileDefault);
+				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
+				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
+				//===============================================================================================================================================================================
+
+				if (loadFile == 0)
+				{
+					std::stringstream().swap(pictureLabel);
+					std::stringstream().swap(folderTrialsSM);
+					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+					if (!QDir(&folderTrialsSM.str()[0]).exists())
+					{
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						QDir().mkdir(&folderTrialsSM.str()[0]);
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][2])
+					{
+						/********************************************************************************************************************************************************************************************************/
+						/*																							loc_env2plot																							    */
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(pathFreq);																																										//
+						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+						std::stringstream().swap(cheatMode);																																									//
+						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 6, strCode, 6, window_ms, 20);																											//				
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Hilbert Env Pictures DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][3])
+					{
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Frequency Maps DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+				}
+				else
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "No Envellope File found, end of analyse for this frequency";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			} //if/else eeg2env
+		} //if analyse this frequency
+	} // for each frequency
+} // loca 
+
+void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
-	stringstream posFilePath, confFilePath, posXFilePath, pictureLabel, folderTrialsSM, eeg2envFilePath;
-	string pathFreq;
-	double frequencyBetta[5]{8, 12, 16, 20, 24};
-	double frequencyGamma[11]{ 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150 };
-	int *code = new int[7]{10, 60, 110, 160, 101};
-	string *strCode = new string[7]{"FACILE", "DIFFICILE", "FAC REP", "DIF REP", "PAUSE YO"};
+	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
+	int *code = new int[7]{10, 60, 60, 110, 110, 160, 101};
+	string *strCode = new string[7]{"FACILE", "DIFFICILE", "DIFFICILE", "FAC REP", "FAC REP", "DIF REP", "PAUSE YO"};
 	int *window_ms = new int[2]{-500, 2500};
 
-	/*********************************************************************************************************/
-	/*										Create .pos and dsX.pos File									 */
-	/*********************************************************************************************************/
-	posFilePath << p_path << "\\" << p_exp_task << ".pos";													 //
-	posXFilePath << p_path << "\\" << p_exp_task << "_ds" << (p_elan->trc->samplingFrequency / 64) << ".pos";//
-	loc_create_pos(posFilePath.str(), posXFilePath.str(), p_elan->trc, 99, p_prov);							 //
-	/*********************************************************************************************************/
+	/*************************************************************************************************************************************************************/
+	/*																	Create .pos and dsX.pos File															 */
+	/*************************************************************************************************************************************************************/
+	posFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".pos";													 //
+	posXFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_ds" << (p_elan->trc->samplingFrequency / 64) << ".pos"; //
+	loc_create_pos(posFilePath.str(), posXFilePath.str(), p_elan->trc, 99, p_prov);																				 //
+	/*************************************************************************************************************************************************************/
 
-	/*****************************************************************************************************/
-	/*											Create .conf File										 */
-	/*****************************************************************************************************/
-	confFilePath << p_path << "\\" << p_exp_task << ".conf";											 //
-	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											 //
-	/*****************************************************************************************************/
+	/************************************************************************************************************/
+	/*												Create .conf File											*/
+	/************************************************************************************************************/
+	confFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".conf"; //
+	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
+	/************************************************************************************************************/
 
-	/******************************************************************************************************************************/
-	/*														Loc eeg2erp														      */
-	/******************************************************************************************************************************/
-	//loc_eeg2erp(p_elan, p_path, p_exp_task, code, 5, strCode, 5, window_ms, 20);											      //
-	/******************************************************************************************************************************/
+	std::stringstream().swap(outputMessage);
+	outputMessage << "Pos and Conf Files Have been created";
+	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
-	eeg2envFilePath << p_path << "\\" << p_exp_task << ".TRC";
-	/******************************************************************************************************************************/
-	/*									Gamma Analysis 50Hz -> 150 Hz							 								  */
-	/******************************************************************************************************************************/
-	/*****************************************************************************************************/						  //
-	/*									EEG2ENV	50Hz -> 150Hz											 */						  //
-	/*****************************************************************************************************/						  //
-	//p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[0], frequencyGamma,11, ELAN_HISTO);//						  //
-	/*****************************************************************************************************/					      //
-																																  //
-	pictureLabel << p_exp_task << "_f50f150_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";						  //
-	folderTrialsSM << p_path << "\\" << p_exp_task << "_f50f150_trials";														  //
-																																  //
-	if (!QDir(&folderTrialsSM.str()[0]).exists())																				  //
-	{																															  //
-		std::cout << "Creating Output Folder for 50-150 Hz data " << endl;														  //
-		QDir().mkdir(&folderTrialsSM.str()[0]);																					  //
-	}																															  //
-																																  //
-	/*****************************************************************************************************/						  //
-	/*											loc_env2plot											 */						  //
-	/*****************************************************************************************************/						  //
-	pathFreq = "";																						 //						  //
-	pathFreq.append(p_exp_task);																		 //						  //
-	pathFreq.append("_f50f150_ds8_sm0");																 //						  //
-	//loc_env2plot(p_elan, 0, p_path, pathFreq, code, 5, strCode, 5, window_ms, 20);						 //						  //
-	/*****************************************************************************************************/						  //
-																																  //
-	/*****************************************************************************************************/						  //
-	/*											loca trialmat											 */						  //
-	/*****************************************************************************************************/						  //
-	ef_read_elan_file((char*)"D:\\Users\\Florian\\Documents\\Arbeit\\2) Loca Patient\\2015\\LYONNEURO_2015_BOUc1\\LYONNEURO_2015_BOUc1_MCSE\\LYONNEURO_2015_BOUc1_MCSE_f50f150_ds32_sm0.eeg", p_elan->elanFreqBand[0]);
-	loca_trialmat(p_elan, 0, p_prov, pictureLabel.str(), folderTrialsSM.str());							 //					      //
-	/*****************************************************************************************************/						  //
-	/******************************************************************************************************************************/
-}
+	if (p_anaopt->analysisDetails[0][0])
+	{
+		/******************************************************************************************************************************/
+		/*														Loc eeg2erp														      */
+		/******************************************************************************************************************************/
+		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 7, strCode, 7, window_ms, 20);	  			 	      //
+		/******************************************************************************************************************************/
+		std::stringstream().swap(outputMessage);
+		outputMessage << "ERP Pictures DONE !";
+		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+	}
+
+	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
+	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
+	{
+		if (p_anaopt->analysisDetails[i + 1][0])
+		{
+			std::stringstream().swap(outputMessage);
+			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
+			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+			if (p_anaopt->analysisDetails[i + 1][1])
+			{
+				/**********************************************************************************************************************************************/
+				/*														EEG2ENV	50Hz -> 150Hz													 			  */
+				/**********************************************************************************************************************************************/
+				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
+				/**********************************************************************************************************************************************/
+				std::stringstream().swap(outputMessage);
+				outputMessage << "Hilbert Envellope Calculated";
+				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+				//===============================================================================================================================================================================
+				std::stringstream().swap(pictureLabel);
+				std::stringstream().swap(folderTrialsSM);
+				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+				if (!QDir(&folderTrialsSM.str()[0]).exists())
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					QDir().mkdir(&folderTrialsSM.str()[0]);
+				}
+				//===============================================================================================================================================================================
+
+				if (p_anaopt->analysisDetails[i + 1][2])
+				{
+					/********************************************************************************************************************************************************************************************************/
+					/*																							loc_env2plot																							    */
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(pathFreq);																																										//
+					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+					std::stringstream().swap(cheatMode);																																									//
+					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 7, strCode, 7, window_ms, 20);																											//				
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Hilbert Env Pictures DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+
+				if (p_anaopt->analysisDetails[i + 1][3])
+				{
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Frequency Maps DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			}
+			else
+			{
+				//===============================================================================================================================================================================
+				std::stringstream().swap(loadFileDefault);
+				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
+				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
+				//===============================================================================================================================================================================
+
+				if (loadFile == 0)
+				{
+					std::stringstream().swap(pictureLabel);
+					std::stringstream().swap(folderTrialsSM);
+					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+					if (!QDir(&folderTrialsSM.str()[0]).exists())
+					{
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						QDir().mkdir(&folderTrialsSM.str()[0]);
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][2])
+					{
+						/********************************************************************************************************************************************************************************************************/
+						/*																							loc_env2plot																							    */
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(pathFreq);																																										//
+						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+						std::stringstream().swap(cheatMode);																																									//
+						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 7, strCode, 7, window_ms, 20);																											//				
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Hilbert Env Pictures DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][3])
+					{
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Frequency Maps DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+				}
+				else
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "No Envellope File found, end of analyse for this frequency";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			} //if/else eeg2env
+		} //if analyse this frequency
+	} // for each frequency
+} // loca 
+
+void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+{
+	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
+	int *code = new int[5]{25, 45, 65, 90, 100};
+	string *strCode = new string[5]{"2 points", "4 points", "6 points", "controle", "pause"};
+	int *window_ms = new int[2]{-500, 500};
+
+	/*************************************************************************************************************************************************************/
+	/*																	Create .pos and dsX.pos File															 */
+	/*************************************************************************************************************************************************************/
+	posFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".pos";													 //
+	posXFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_ds" << (p_elan->trc->samplingFrequency / 64) << ".pos"; //
+	loc_create_pos(posFilePath.str(), posXFilePath.str(), p_elan->trc, 99, p_prov);																				 //
+	/*************************************************************************************************************************************************************/
+
+	/************************************************************************************************************/
+	/*												Create .conf File											*/
+	/************************************************************************************************************/
+	confFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".conf"; //
+	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
+	/************************************************************************************************************/
+
+	std::stringstream().swap(outputMessage);
+	outputMessage << "Pos and Conf Files Have been created";
+	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+	if (p_anaopt->analysisDetails[0][0])
+	{
+		/******************************************************************************************************************************/
+		/*														Loc eeg2erp														      */
+		/******************************************************************************************************************************/
+		//loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 5, strCode, 5, window_ms, 20);	  			 	      //
+		/******************************************************************************************************************************/
+		//std::stringstream().swap(outputMessage);
+		//outputMessage << "ERP Pictures DONE !";
+		//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+		std::stringstream().swap(outputMessage);
+		outputMessage << "MVEB doesn't do eeg2erp !";
+		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+	}
+
+	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
+	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
+	{
+		if (p_anaopt->analysisDetails[i + 1][0])
+		{
+			std::stringstream().swap(outputMessage);
+			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
+			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+			if (p_anaopt->analysisDetails[i + 1][1])
+			{
+				/**********************************************************************************************************************************************/
+				/*														EEG2ENV	50Hz -> 150Hz													 			  */
+				/**********************************************************************************************************************************************/
+				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
+				/**********************************************************************************************************************************************/
+				std::stringstream().swap(outputMessage);
+				outputMessage << "Hilbert Envellope Calculated";
+				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+				//===============================================================================================================================================================================
+				std::stringstream().swap(pictureLabel);
+				std::stringstream().swap(folderTrialsSM);
+				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+				if (!QDir(&folderTrialsSM.str()[0]).exists())
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					QDir().mkdir(&folderTrialsSM.str()[0]);
+				}
+				//===============================================================================================================================================================================
+
+				if (p_anaopt->analysisDetails[i + 1][2])
+				{
+					/********************************************************************************************************************************************************************************************************/
+					/*																							loc_env2plot																							    */
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(pathFreq);																																										//
+					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+					std::stringstream().swap(cheatMode);																																									//
+					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 5, strCode, 5, window_ms, 20);																											//				
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Hilbert Env Pictures DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+
+				if (p_anaopt->analysisDetails[i + 1][3])
+				{
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Frequency Maps DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			}
+			else
+			{
+				//===============================================================================================================================================================================
+				std::stringstream().swap(loadFileDefault);
+				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
+				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
+				//===============================================================================================================================================================================
+
+				if (loadFile == 0)
+				{
+					std::stringstream().swap(pictureLabel);
+					std::stringstream().swap(folderTrialsSM);
+					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+					if (!QDir(&folderTrialsSM.str()[0]).exists())
+					{
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						QDir().mkdir(&folderTrialsSM.str()[0]);
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][2])
+					{
+						/********************************************************************************************************************************************************************************************************/
+						/*																							loc_env2plot																							    */
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(pathFreq);																																										//
+						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+						std::stringstream().swap(cheatMode);																																									//
+						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 5, strCode, 5, window_ms, 20);																											//				
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Hilbert Env Pictures DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][3])
+					{
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Frequency Maps DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+				}
+				else
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "No Envellope File found, end of analyse for this frequency";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			} //if/else eeg2env
+		} //if analyse this frequency
+	} // for each frequency
+} // loca 
+
+void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+{
+	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
+	int *code = new int[5]{25, 45, 65, 90, 100};
+	string *strCode = new string[5]{"2 points", "4 points", "6 points", "controle", "pause"};
+	int *window_ms = new int[2]{-500, 500};
+
+	/*************************************************************************************************************************************************************/
+	/*																	Create .pos and dsX.pos File															 */
+	/*************************************************************************************************************************************************************/
+	posFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".pos";													 //
+	posXFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_ds" << (p_elan->trc->samplingFrequency / 64) << ".pos"; //
+	loc_create_pos(posFilePath.str(), posXFilePath.str(), p_elan->trc, 99, p_prov);																				 //
+	/*************************************************************************************************************************************************************/
+
+	/************************************************************************************************************/
+	/*												Create .conf File											*/
+	/************************************************************************************************************/
+	confFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".conf"; //
+	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
+	/************************************************************************************************************/
+
+	std::stringstream().swap(outputMessage);
+	outputMessage << "Pos and Conf Files Have been created";
+	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+	if (p_anaopt->analysisDetails[0][0])
+	{
+		/******************************************************************************************************************************/
+		/*														Loc eeg2erp														      */
+		/******************************************************************************************************************************/
+		//loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 5, strCode, 5, window_ms, 20);	  			 	      //
+		/******************************************************************************************************************************/
+		//std::stringstream().swap(outputMessage);
+		//outputMessage << "ERP Pictures DONE !";
+		//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+		std::stringstream().swap(outputMessage);
+		outputMessage << "MVEB doesn't do eeg2erp !";
+		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+	}
+
+	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
+	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
+	{
+		if (p_anaopt->analysisDetails[i + 1][0])
+		{
+			std::stringstream().swap(outputMessage);
+			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
+			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+			if (p_anaopt->analysisDetails[i + 1][1])
+			{
+				/**********************************************************************************************************************************************/
+				/*														EEG2ENV	50Hz -> 150Hz													 			  */
+				/**********************************************************************************************************************************************/
+				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
+				/**********************************************************************************************************************************************/
+				std::stringstream().swap(outputMessage);
+				outputMessage << "Hilbert Envellope Calculated";
+				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+				//===============================================================================================================================================================================
+				std::stringstream().swap(pictureLabel);
+				std::stringstream().swap(folderTrialsSM);
+				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+				if (!QDir(&folderTrialsSM.str()[0]).exists())
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					QDir().mkdir(&folderTrialsSM.str()[0]);
+				}
+				//===============================================================================================================================================================================
+
+				if (p_anaopt->analysisDetails[i + 1][2])
+				{
+					/********************************************************************************************************************************************************************************************************/
+					/*																							loc_env2plot																							    */
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(pathFreq);																																										//
+					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+					std::stringstream().swap(cheatMode);																																									//
+					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 5, strCode, 5, window_ms, 20);																											//				
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Hilbert Env Pictures DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+
+				if (p_anaopt->analysisDetails[i + 1][3])
+				{
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Frequency Maps DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			}
+			else
+			{
+				//===============================================================================================================================================================================
+				std::stringstream().swap(loadFileDefault);
+				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
+				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
+				//===============================================================================================================================================================================
+
+				if (loadFile == 0)
+				{
+					std::stringstream().swap(pictureLabel);
+					std::stringstream().swap(folderTrialsSM);
+					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+					if (!QDir(&folderTrialsSM.str()[0]).exists())
+					{
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						QDir().mkdir(&folderTrialsSM.str()[0]);
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][2])
+					{
+						/********************************************************************************************************************************************************************************************************/
+						/*																							loc_env2plot																							    */
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(pathFreq);																																										//
+						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+						std::stringstream().swap(cheatMode);																																									//
+						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 5, strCode, 5, window_ms, 20);																											//				
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Hilbert Env Pictures DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][3])
+					{
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Frequency Maps DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+				}
+				else
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "No Envellope File found, end of analyse for this frequency";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			} //if/else eeg2env
+		} //if analyse this frequency
+	} // for each frequency
+} // loca 
+
+void InsermLibrary::LOCA::LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+{
+	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
+	int *code = new int[3]{200, 300, 300};
+	string *strCode = new string[3]{"CORR", "ERR", "ERR"};
+	int *window_ms = new int[2]{-5000, 10000};
+
+	/*************************************************************************************************************************************************************/
+	/*																	Create .pos and dsX.pos File															 */
+	/*************************************************************************************************************************************************************/
+	posFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".pos";													 //
+	posXFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_ds" << (p_elan->trc->samplingFrequency / 64) << ".pos"; //
+	loc_create_pos(posFilePath.str(), posXFilePath.str(), p_elan->trc, 99, p_prov);																				 //
+	/*************************************************************************************************************************************************************/
+
+	/************************************************************************************************************/
+	/*												Create .conf File											*/
+	/************************************************************************************************************/
+	confFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".conf"; //
+	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
+	/************************************************************************************************************/
+
+	std::stringstream().swap(outputMessage);
+	outputMessage << "Pos and Conf Files Have been created";
+	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+	if (p_anaopt->analysisDetails[0][0])
+	{
+		/******************************************************************************************************************************/
+		/*														Loc eeg2erp														      */
+		/******************************************************************************************************************************/
+		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 3, strCode, 3, window_ms, 20);	  			 	      //
+		/******************************************************************************************************************************/
+		std::stringstream().swap(outputMessage);
+		outputMessage << "ERP Pictures DONE !";
+		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+	}
+
+	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
+	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
+	{
+		if (p_anaopt->analysisDetails[i + 1][0])
+		{
+			std::stringstream().swap(outputMessage);
+			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
+			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+			if (p_anaopt->analysisDetails[i + 1][1])
+			{
+				/**********************************************************************************************************************************************/
+				/*														EEG2ENV	50Hz -> 150Hz													 			  */
+				/**********************************************************************************************************************************************/
+				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
+				/**********************************************************************************************************************************************/
+				std::stringstream().swap(outputMessage);
+				outputMessage << "Hilbert Envellope Calculated";
+				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+				//===============================================================================================================================================================================
+				std::stringstream().swap(pictureLabel);
+				std::stringstream().swap(folderTrialsSM);
+				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+				if (!QDir(&folderTrialsSM.str()[0]).exists())
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					QDir().mkdir(&folderTrialsSM.str()[0]);
+				}
+				//===============================================================================================================================================================================
+
+				if (p_anaopt->analysisDetails[i + 1][2])
+				{
+					/********************************************************************************************************************************************************************************************************/
+					/*																							loc_env2plot																							    */
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(pathFreq);																																										//
+					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+					std::stringstream().swap(cheatMode);																																									//
+					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 3, strCode, 3, window_ms, 20);																											//				
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Hilbert Env Pictures DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+
+				if (p_anaopt->analysisDetails[i + 1][3])
+				{
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Frequency Maps DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			}
+			else
+			{
+				//===============================================================================================================================================================================
+				std::stringstream().swap(loadFileDefault);
+				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
+				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
+				//===============================================================================================================================================================================
+
+				if (loadFile == 0)
+				{
+					std::stringstream().swap(pictureLabel);
+					std::stringstream().swap(folderTrialsSM);
+					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+					if (!QDir(&folderTrialsSM.str()[0]).exists())
+					{
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						QDir().mkdir(&folderTrialsSM.str()[0]);
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][2])
+					{
+						/********************************************************************************************************************************************************************************************************/
+						/*																							loc_env2plot																							    */
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(pathFreq);																																										//
+						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+						std::stringstream().swap(cheatMode);																																									//
+						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 3, strCode, 3, window_ms, 20);																											//				
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Hilbert Env Pictures DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][3])
+					{
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Frequency Maps DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+				}
+				else
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "No Envellope File found, end of analyse for this frequency";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			} //if/else eeg2env
+		} //if analyse this frequency
+	} // for each frequency
+} // loca 
+
+void InsermLibrary::LOCA::LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+{
+	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
+	int *code = new int[2]{10, 20};
+	string *strCode = new string[2]{"Attention", "Ignore"};
+	int *window_ms = new int[2]{-1000, 3000};
+
+	/*************************************************************************************************************************************************************/
+	/*																	Create .pos and dsX.pos File															 */
+	/*************************************************************************************************************************************************************/
+	posFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".pos";													 //
+	posXFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_ds" << (p_elan->trc->samplingFrequency / 64) << ".pos"; //
+	loc_create_pos(posFilePath.str(), posXFilePath.str(), p_elan->trc, 99, p_prov);																				 //
+	/*************************************************************************************************************************************************************/
+
+	/************************************************************************************************************/
+	/*												Create .conf File											*/
+	/************************************************************************************************************/
+	confFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".conf"; //
+	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
+	/************************************************************************************************************/
+
+	std::stringstream().swap(outputMessage);
+	outputMessage << "Pos and Conf Files Have been created";
+	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+	if (p_anaopt->analysisDetails[0][0])
+	{
+		/******************************************************************************************************************************/
+		/*														Loc eeg2erp														      */
+		/******************************************************************************************************************************/
+		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 2, strCode, 2, window_ms, 20);	  			 	      //
+		/******************************************************************************************************************************/
+		std::stringstream().swap(outputMessage);
+		outputMessage << "ERP Pictures DONE !";
+		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+	}
+
+	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
+	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
+	{
+		if (p_anaopt->analysisDetails[i + 1][0])
+		{
+			std::stringstream().swap(outputMessage);
+			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
+			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+			if (p_anaopt->analysisDetails[i + 1][1])
+			{
+				/**********************************************************************************************************************************************/
+				/*														EEG2ENV	50Hz -> 150Hz													 			  */
+				/**********************************************************************************************************************************************/
+				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
+				/**********************************************************************************************************************************************/
+				std::stringstream().swap(outputMessage);
+				outputMessage << "Hilbert Envellope Calculated";
+				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+				//===============================================================================================================================================================================
+				std::stringstream().swap(pictureLabel);
+				std::stringstream().swap(folderTrialsSM);
+				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+				if (!QDir(&folderTrialsSM.str()[0]).exists())
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					QDir().mkdir(&folderTrialsSM.str()[0]);
+				}
+				//===============================================================================================================================================================================
+
+				if (p_anaopt->analysisDetails[i + 1][2])
+				{
+					/********************************************************************************************************************************************************************************************************/
+					/*																							loc_env2plot																							    */
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(pathFreq);																																										//
+					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+					std::stringstream().swap(cheatMode);																																									//
+					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 2, strCode, 2, window_ms, 20);																											//				
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Hilbert Env Pictures DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+
+				if (p_anaopt->analysisDetails[i + 1][3])
+				{
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Frequency Maps DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			}
+			else
+			{
+				//===============================================================================================================================================================================
+				std::stringstream().swap(loadFileDefault);
+				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
+				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
+				//===============================================================================================================================================================================
+
+				if (loadFile == 0)
+				{
+					std::stringstream().swap(pictureLabel);
+					std::stringstream().swap(folderTrialsSM);
+					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+					if (!QDir(&folderTrialsSM.str()[0]).exists())
+					{
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						QDir().mkdir(&folderTrialsSM.str()[0]);
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][2])
+					{
+						/********************************************************************************************************************************************************************************************************/
+						/*																							loc_env2plot																							    */
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(pathFreq);																																										//
+						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+						std::stringstream().swap(cheatMode);																																									//
+						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 2, strCode, 2, window_ms, 20);																											//				
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Hilbert Env Pictures DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][3])
+					{
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Frequency Maps DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+				}
+				else
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "No Envellope File found, end of analyse for this frequency";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			} //if/else eeg2env
+		} //if analyse this frequency
+	} // for each frequency
+} // loca 
+
+void InsermLibrary::LOCA::LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+{
+	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
+	int *code = new int[21]{11, 12, 12, 21, 22, 22, 31, 32, 32, 41, 42, 42, 51, 52, 52, 61, 62, 62, 71, 72, 72};
+	string *strCode = new string[21]{"BRAS G", "BRAS D", "BRAS D", "INDEX G", "INDEX D", "INDEX D", "SACCA G", "SACCA D", "SACCA D", "TETE G", "TETE D", "TETE D", "JAMB G", "JAMB D", "JAMB D", "PARLE", "PARLE", "PARLE", "REPOS", "REPOS", "REPOS"};
+	int *window_ms = new int[2]{-1000, 1000};
+
+	/*************************************************************************************************************************************************************/
+	/*																	Create .pos and dsX.pos File															 */
+	/*************************************************************************************************************************************************************/
+	posFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".pos";													 //
+	posXFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_ds" << (p_elan->trc->samplingFrequency / 64) << ".pos"; //
+	loc_create_pos(posFilePath.str(), posXFilePath.str(), p_elan->trc, 99, p_prov);																				 //
+	/*************************************************************************************************************************************************************/
+
+	/************************************************************************************************************/
+	/*												Create .conf File											*/
+	/************************************************************************************************************/
+	confFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".conf"; //
+	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
+	/************************************************************************************************************/
+
+	std::stringstream().swap(outputMessage);
+	outputMessage << "Pos and Conf Files Have been created";
+	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+	if (p_anaopt->analysisDetails[0][0])
+	{
+		/******************************************************************************************************************************/
+		/*														Loc eeg2erp														      */
+		/******************************************************************************************************************************/
+		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 21, strCode, 21, window_ms, 21);	  			 	      //
+		/******************************************************************************************************************************/
+		std::stringstream().swap(outputMessage);
+		outputMessage << "ERP Pictures DONE !";
+		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+	}
+
+	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
+	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
+	{
+		if (p_anaopt->analysisDetails[i + 1][0])
+		{
+			std::stringstream().swap(outputMessage);
+			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
+			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+			if (p_anaopt->analysisDetails[i + 1][1])
+			{
+				/**********************************************************************************************************************************************/
+				/*														EEG2ENV	50Hz -> 150Hz													 			  */
+				/**********************************************************************************************************************************************/
+				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
+				/**********************************************************************************************************************************************/
+				std::stringstream().swap(outputMessage);
+				outputMessage << "Hilbert Envellope Calculated";
+				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+				//===============================================================================================================================================================================
+				std::stringstream().swap(pictureLabel);
+				std::stringstream().swap(folderTrialsSM);
+				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+				if (!QDir(&folderTrialsSM.str()[0]).exists())
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					QDir().mkdir(&folderTrialsSM.str()[0]);
+				}
+				//===============================================================================================================================================================================
+
+				if (p_anaopt->analysisDetails[i + 1][2])
+				{
+					/********************************************************************************************************************************************************************************************************/
+					/*																							loc_env2plot																							    */
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(pathFreq);																																										//
+					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+					std::stringstream().swap(cheatMode);																																									//
+					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 21, strCode, 21, window_ms, 20);																											//				
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Hilbert Env Pictures DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+
+				if (p_anaopt->analysisDetails[i + 1][3])
+				{
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Frequency Maps DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			}
+			else
+			{
+				//===============================================================================================================================================================================
+				std::stringstream().swap(loadFileDefault);
+				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
+				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
+				//===============================================================================================================================================================================
+
+				if (loadFile == 0)
+				{
+					std::stringstream().swap(pictureLabel);
+					std::stringstream().swap(folderTrialsSM);
+					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+					if (!QDir(&folderTrialsSM.str()[0]).exists())
+					{
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						QDir().mkdir(&folderTrialsSM.str()[0]);
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][2])
+					{
+						/********************************************************************************************************************************************************************************************************/
+						/*																							loc_env2plot																							    */
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(pathFreq);																																										//
+						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+						std::stringstream().swap(cheatMode);																																									//
+						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 21, strCode, 21, window_ms, 20);																											//				
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Hilbert Env Pictures DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][3])
+					{
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Frequency Maps DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+				}
+				else
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "No Envellope File found, end of analyse for this frequency";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			} //if/else eeg2env
+		} //if analyse this frequency
+	} // for each frequency
+} // loca 
+
+void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+{
+	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
+	int *code = new int[13]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 20};
+	string *strCode = new string[13]{"Parol", "Rever", "Suom", "Alpha", "Human", "Pleur", "Rires", "Yawny", "Cough", "Music", "Envir", "Animo", "Silen"};
+	int *window_ms = new int[2]{-500, 500};
+
+	/*************************************************************************************************************************************************************/
+	/*																	Create .pos and dsX.pos File															 */
+	/*************************************************************************************************************************************************************/
+	posFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".pos";													 //
+	posXFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_ds" << (p_elan->trc->samplingFrequency / 64) << ".pos"; //
+	loc_create_pos(posFilePath.str(), posXFilePath.str(), p_elan->trc, 99, p_prov);																				 //
+	/*************************************************************************************************************************************************************/
+
+	/************************************************************************************************************/
+	/*												Create .conf File											*/
+	/************************************************************************************************************/
+	confFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".conf"; //
+	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
+	/************************************************************************************************************/
+
+	std::stringstream().swap(outputMessage);
+	outputMessage << "Pos and Conf Files Have been created";
+	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+	if (p_anaopt->analysisDetails[0][0])
+	{
+		/******************************************************************************************************************************/
+		/*														Loc eeg2erp														      */
+		/******************************************************************************************************************************/
+		//loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 3, strCode, 3, window_ms, 20);	  			 	      //
+		/******************************************************************************************************************************/
+		//std::stringstream().swap(outputMessage);
+		//outputMessage << "ERP Pictures DONE !";
+		//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+		std::stringstream().swap(outputMessage);
+		outputMessage << "AUDI doesn't do eeg2erp !";
+		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+	}
+
+	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
+	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
+	{
+		if (p_anaopt->analysisDetails[i + 1][0])
+		{
+			std::stringstream().swap(outputMessage);
+			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
+			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+			if (p_anaopt->analysisDetails[i + 1][1])
+			{
+				/**********************************************************************************************************************************************/
+				/*														EEG2ENV	50Hz -> 150Hz													 			  */
+				/**********************************************************************************************************************************************/
+				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
+				/**********************************************************************************************************************************************/
+				std::stringstream().swap(outputMessage);
+				outputMessage << "Hilbert Envellope Calculated";
+				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+				//===============================================================================================================================================================================
+				std::stringstream().swap(pictureLabel);
+				std::stringstream().swap(folderTrialsSM);
+				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+				if (!QDir(&folderTrialsSM.str()[0]).exists())
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					QDir().mkdir(&folderTrialsSM.str()[0]);
+				}
+				//===============================================================================================================================================================================
+
+				if (p_anaopt->analysisDetails[i + 1][2])
+				{
+					/********************************************************************************************************************************************************************************************************/
+					/*																							loc_env2plot																							    */
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(pathFreq);																																										//
+					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+					std::stringstream().swap(cheatMode);																																									//
+					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+					loc_bar2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 13, strCode, 13, window_ms, 20);																											//				
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Hilbert Env Pictures DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+
+				if (p_anaopt->analysisDetails[i + 1][3])
+				{
+					//loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					//std::stringstream().swap(outputMessage);
+					//outputMessage << "Frequency Maps DONE !";
+					//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					std::stringstream().swap(outputMessage);
+					outputMessage << "AUDI doesn't do trialmat !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			}
+			else
+			{
+				//===============================================================================================================================================================================
+				std::stringstream().swap(loadFileDefault);
+				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
+				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
+				//===============================================================================================================================================================================
+
+				if (loadFile == 0)
+				{
+					std::stringstream().swap(pictureLabel);
+					std::stringstream().swap(folderTrialsSM);
+					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+					if (!QDir(&folderTrialsSM.str()[0]).exists())
+					{
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						QDir().mkdir(&folderTrialsSM.str()[0]);
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][2])
+					{
+						/********************************************************************************************************************************************************************************************************/
+						/*																							loc_env2plot																							    */
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(pathFreq);																																										//
+						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+						std::stringstream().swap(cheatMode);																																									//
+						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+						loc_bar2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 13, strCode, 13, window_ms, 20);																											//				
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Hilbert Env Pictures DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][3])
+					{
+						//loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						//std::stringstream().swap(outputMessage);
+						//outputMessage << "Frequency Maps DONE !";
+						//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						std::stringstream().swap(outputMessage);
+						outputMessage << "AUDI doesn't do trialmat !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+				}
+				else
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "No Envellope File found, end of analyse for this frequency";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			} //if/else eeg2env
+		} //if analyse this frequency
+	} // for each frequency
+} // loca 
+
+void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+{
+	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
+	int *code = new int[8]{10, 20, 30, 40, 50, 60, 70, 80};
+	string *strCode = new string[8]{"CLIGNE", "SACCADE", "SALIVE", "DENTS", "FRONCE", "LANGUE", "SOURIRE", "CALME"};
+	int *window_ms = new int[2]{-1500, 1500};
+
+	/*************************************************************************************************************************************************************/
+	/*																	Create .pos and dsX.pos File															 */
+	/*************************************************************************************************************************************************************/
+	posFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".pos";													 //
+	posXFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_ds" << (p_elan->trc->samplingFrequency / 64) << ".pos"; //
+	loc_create_pos(posFilePath.str(), posXFilePath.str(), p_elan->trc, 99, p_prov);																				 //
+	/*************************************************************************************************************************************************************/
+
+	/************************************************************************************************************/
+	/*												Create .conf File											*/
+	/************************************************************************************************************/
+	confFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".conf"; //
+	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
+	/************************************************************************************************************/
+
+	std::stringstream().swap(outputMessage);
+	outputMessage << "Pos and Conf Files Have been created";
+	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+	if (p_anaopt->analysisDetails[0][0])
+	{
+		/******************************************************************************************************************************/
+		/*														Loc eeg2erp														      */
+		/******************************************************************************************************************************/
+		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 8, strCode, 8, window_ms, 20);	  			 	      //
+		/******************************************************************************************************************************/
+		std::stringstream().swap(outputMessage);
+		outputMessage << "ERP Pictures DONE !";
+		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+	}
+
+	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
+	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
+	{
+		if (p_anaopt->analysisDetails[i + 1][0])
+		{
+			std::stringstream().swap(outputMessage);
+			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
+			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+			if (p_anaopt->analysisDetails[i + 1][1])
+			{
+				/**********************************************************************************************************************************************/
+				/*														EEG2ENV	50Hz -> 150Hz													 			  */
+				/**********************************************************************************************************************************************/
+				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
+				/**********************************************************************************************************************************************/
+				std::stringstream().swap(outputMessage);
+				outputMessage << "Hilbert Envellope Calculated";
+				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+
+				//===============================================================================================================================================================================
+				std::stringstream().swap(pictureLabel);
+				std::stringstream().swap(folderTrialsSM);
+				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+				if (!QDir(&folderTrialsSM.str()[0]).exists())
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					QDir().mkdir(&folderTrialsSM.str()[0]);
+				}
+				//===============================================================================================================================================================================
+
+				if (p_anaopt->analysisDetails[i + 1][2])
+				{
+					/********************************************************************************************************************************************************************************************************/
+					/*																							loc_env2plot																							    */
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(pathFreq);																																										//
+					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+					std::stringstream().swap(cheatMode);																																									//
+					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 8, strCode, 8, window_ms, 20);																											//				
+					/********************************************************************************************************************************************************************************************************/
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Hilbert Env Pictures DONE !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+
+				if (p_anaopt->analysisDetails[i + 1][3])
+				{
+					//loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					//std::stringstream().swap(outputMessage);
+					//outputMessage << "Frequency Maps DONE !";
+					//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					std::stringstream().swap(outputMessage);
+					outputMessage << "ARFA doesn't do trialmat !";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			}
+			else
+			{
+				//===============================================================================================================================================================================
+				std::stringstream().swap(loadFileDefault);
+				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
+				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
+				//===============================================================================================================================================================================
+
+				if (loadFile == 0)
+				{
+					std::stringstream().swap(pictureLabel);
+					std::stringstream().swap(folderTrialsSM);
+					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
+					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+					if (!QDir(&folderTrialsSM.str()[0]).exists())
+					{
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						QDir().mkdir(&folderTrialsSM.str()[0]);
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][2])
+					{
+						/********************************************************************************************************************************************************************************************************/
+						/*																							loc_env2plot																							    */
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(pathFreq);																																										//
+						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
+						std::stringstream().swap(cheatMode);																																									//
+						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
+						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 8, strCode, 8, window_ms, 20);																											//				
+						/********************************************************************************************************************************************************************************************************/
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Hilbert Env Pictures DONE !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+
+					if (p_anaopt->analysisDetails[i + 1][3])
+					{
+						//loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						//std::stringstream().swap(outputMessage);
+						//outputMessage << "Frequency Maps DONE !";
+						//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						std::stringstream().swap(outputMessage);
+						outputMessage << "ARFA doesn't do trialmat !";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					}
+				}
+				else
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "No Envellope File found, end of analyse for this frequency";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				}
+			} //if/else eeg2env
+		} //if analyse this frequency
+	} // for each frequency
+} // loca 
 
 /**********************************************************************************************************************************************************************************************************************************************/
 /*															CREATE POS AND CONF : ELAN COMPATIBILITY																																		  */
@@ -540,7 +1780,7 @@ void InsermLibrary::LOCA::renameTrigger(TRIGGINFO *triggers, TRIGGINFO* downsamp
 				{
 					count = j + 1;
 					winMax = downsampledTriggers->trigg[j]->sampleTrigger + winSamMax;
-					winMin = downsampledTriggers->trigg[j]->sampleTrigger + winSamMin;
+					winMin = downsampledTriggers->trigg[j]->sampleTrigger - abs(winSamMin);//+ winSamMin;
 					while ((downsampledTriggers->trigg[count]->sampleTrigger < winMax) && (downsampledTriggers->trigg[count]->sampleTrigger > winMin))
 					{
 						if (downsampledTriggers->trigg[count]->valueTrigger == oldSecondaryCode[i])
@@ -555,9 +1795,12 @@ void InsermLibrary::LOCA::renameTrigger(TRIGGINFO *triggers, TRIGGINFO* downsamp
 							downsampledTriggers->trigg[j]->valueTrigger = newMainCode[i];
 							downsampledTriggers->trigg[count]->valueTrigger = newSecondaryCode[i];
 							//break;
-
+							count++;
+						}	
+						else
+						{
+							break;
 						}
-						count++;
 					}
 				}
 			}
@@ -626,7 +1869,7 @@ void InsermLibrary::LOCA::loc2_write_conf(string confFile_path, MicromedLibrary:
 /**********************************************************************************************************************************************************************************************************************************************/
 void InsermLibrary::LOCA::loc_eeg2erp(InsermLibrary::ELAN *p_elan, string p_path, string p_exp_task, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int* v_window_ms, int nb_site)										  //
 {																																																											  //
-	string contents;																																																						  //																																																						  //
+	string contents;																																																						  //																																																						  
 	int  nbEventUsed = 0, beginPos = 0;																																																		  //
 	int v_win_sam[2];																																																						  //
 	vector<int> indexEventUsed, eventUsed;																																																  	  //
@@ -756,14 +1999,14 @@ void InsermLibrary::LOCA::loc_env2plot(InsermLibrary::ELAN *p_elan, int p_number
 	int v_win_sam[2];																																																						  //
 	vector<int> indexEventUsed, eventUsed;																																																  	  //
 	double ***m_bigdata_frequency;																																																			  //
-	//
-	v_win_sam[0] = round(64 * v_window_ms[0] / 1000);																																															  //
-	v_win_sam[1] = round(64 * v_window_ms[1] / 1000);																																															  //
-	//
+																																																											  //
+	v_win_sam[0] = round(64 * v_window_ms[0] / 1000);																																														  //
+	v_win_sam[1] = round(64 * v_window_ms[1] / 1000);																																														  //
+																																																											  //
 	/*******************************************************************************************************************************************************************************************/											  //
 	/*												On garde uniquement les évennements du TRC qui correspondent à ceux passer par v_code et a_code					   						   */											  //
 	/*******************************************************************************************************************************************************************************************/											  //
-	for (int i = 0; i < triggTRC->numberTrigg /*p_elan->trc->sampleTrigg.size() - 1*/; i++)																															   //											  //
+	for (int i = 0; i < triggTRC->numberTrigg /*p_elan->trc->sampleTrigg.size() - 1*/; i++)																									   //											  //
 	{																																														   //											  //
 		for (int j = 0; j < v_codeLength; j++)																																				   //											  //
 		{																																													   //											  //
@@ -777,7 +2020,7 @@ void InsermLibrary::LOCA::loc_env2plot(InsermLibrary::ELAN *p_elan, int p_number
 																																															   //											  //
 	nbEventUsed = indexEventUsed.size();																																					   //											  //
 	/*******************************************************************************************************************************************************************************************/											  //
-	//
+																																																											  //
 	/****************************************** Allocate Memory *******************************************/																																  //
 	m_bigdata_frequency = new double**[nbEventUsed];												  /*||*/																																  //
 	for (int i = 0; i < nbEventUsed; i++)															  /*||*/																																  //
@@ -793,7 +2036,7 @@ void InsermLibrary::LOCA::loc_env2plot(InsermLibrary::ELAN *p_elan, int p_number
 		}																							  /*||*/																																  //
 	}																								  /*||*/																																  //
 	/******************************************************************************************************/																																  //
-	//
+																																																											  //
 	/*******************************************************************************************************************************************************************************************/											  //
 	/*														Extract EEG DATA within w_window_ms around event																				   */											  //
 	/*******************************************************************************************************************************************************************************************/											  //
@@ -803,12 +2046,13 @@ void InsermLibrary::LOCA::loc_env2plot(InsermLibrary::ELAN *p_elan, int p_number
 	std::cout << "Reading Hilberted Bipo ..." << endl;																	 //																	   //											  //
 	for (int i = 0; i < nbEventUsed; i++)																				 //																	   //											  //
 	{																													 //																	   //											  //
-		beginInd = triggTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0]; // p_elan->trc->sampleTrigg[indexEventUsed[i]] + v_win_sam[0];											 //																	   //											  //
+		beginInd = triggDownTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0];								 //																	   //											  //
+		//beginInd = triggTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0]; // p_elan->trc->sampleTrigg[indexEventUsed[i]] + v_win_sam[0];											 //																	   //		
 		for (int j = 0; j < (v_win_sam[1] - v_win_sam[0]) + 1; j++)														 //																	   //											  //
 		{																												 //																	   //											  //
 			for (int k = 0; k < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; k++)								 //																	   //											  //
 			{																											 //																	   //											  //
-				m_bigdata_frequency[i][k][j] = p_elan->elanFreqBand[p_numberFrequencyBand]->eeg.data_double[0][k][beginInd + j];																   //											  //
+				m_bigdata_frequency[i][k][j] = p_elan->elanFreqBand[p_numberFrequencyBand]->eeg.data_double[0][k][beginInd + j];															   //											  //
 			}																											 //																	   //											  //
 		}																												 //																	   //											  //
 	}																													 //																	   //											  //
@@ -818,6 +2062,93 @@ void InsermLibrary::LOCA::loc_env2plot(InsermLibrary::ELAN *p_elan, int p_number
 	//env2plot cards
 	//drawCardsenv2plot(p_elan, p_path, p_exp_task, m_bigdata_frequency, v_code, v_codeLength, a_code, a_codeLength, v_win_sam, nb_site, indexEventUsed, eventUsed);
 	drawCards(p_elan, p_path, p_exp_task, 2, m_bigdata_frequency, v_code, v_codeLength, a_code, a_codeLength, v_win_sam, nb_site, indexEventUsed, eventUsed);
+
+	/****************************************** Free Memory *******************************************/																																	  //			
+	for (int i = 0; i < nbEventUsed; i++)														  /*||*/																																	  //		
+	{																							  /*||*/																																	  //		
+		for (int j = 0; j < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; j++)			  /*||*/																																	  //		
+		{																						  /*||*/																																	  //		
+			delete[] m_bigdata_frequency[i][j];													  /*||*/																																	  //		
+		}																						  /*||*/																																	  //		
+		delete[] m_bigdata_frequency[i];														  /*||*/																																	  //		
+	}																							  /*||*/																																	  //		
+	delete[] m_bigdata_frequency;																  /*||*/																																	  //		
+	/**************************************************************************************************/																																	  //		
+}																																																											  //
+/**********************************************************************************************************************************************************************************************************************************************/
+
+/**********************************************************************************************************************************************************************************************************************************************/
+/*																										BAR2PLOT																										 					  */
+/**********************************************************************************************************************************************************************************************************************************************/
+void InsermLibrary::LOCA::loc_bar2plot(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand,std::string p_path, std::string p_exp_task, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int* v_window_ms, int nb_site)//
+{																																																											  //
+	string contents;																																																						  //																																																						  //
+	int  nbEventUsed = 0, beginInd = 0;																																																		  //
+	int v_win_sam[2];																																																						  //
+	vector<int> indexEventUsed, eventUsed;																																																  	  //
+	double ***m_bigdata_frequency;																																																			  //
+																																																											  //
+	v_win_sam[0] = round(64 * v_window_ms[0] / 1000);																																														  //
+	v_win_sam[1] = round(64 * v_window_ms[1] / 1000);																																														  //
+																																																											  //
+	/*******************************************************************************************************************************************************************************************/											  //
+	/*												On garde uniquement les évennements du TRC qui correspondent à ceux passer par v_code et a_code					   						   */											  //
+	/*******************************************************************************************************************************************************************************************/											  //
+	for (int i = 0; i < triggTRC->numberTrigg /*p_elan->trc->sampleTrigg.size() - 1*/; i++)																									   //											  //
+	{																																														   //											  //
+		for (int j = 0; j < v_codeLength; j++)																																				   //											  //
+		{																																													   //											  //
+			if (triggTRC->trigg[i]->valueTrigger/*p_elan->trc->valueTrigg[i]*/ == v_code[j])																								   //											  //
+			{																																												   //											  //
+				indexEventUsed.push_back(i);																																				   //											  //
+				eventUsed.push_back(triggTRC->trigg[i]->valueTrigger/*p_elan->trc->valueTrigg[i]*/);																						   //											  //
+			}																																												   //											  //
+		}																																													   //											  //
+	}																																														   //											  //
+																																															   //											  //
+	nbEventUsed = indexEventUsed.size();																																					   //											  //
+	/*******************************************************************************************************************************************************************************************/											  //
+																																																											  //
+	/****************************************** Allocate Memory *******************************************/																																  //
+	m_bigdata_frequency = new double**[nbEventUsed];												  /*||*/																																  //
+	for (int i = 0; i < nbEventUsed; i++)															  /*||*/																																  //
+	{																								  /*||*/																																  //
+		m_bigdata_frequency[i] = new double*[p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb];	  /*||*/																																  //
+		for (int j = 0; j < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; j++)				  /*||*/																																  //
+		{																							  /*||*/																																  //
+			m_bigdata_frequency[i][j] = new double[(v_win_sam[1] - v_win_sam[0]) + 1];			  	  /*||*/																																  //
+			for (int k = 0; k < (v_win_sam[1] - v_win_sam[0]) + 1; k++)							 	  /*||*/																																  //
+			{																						  /*||*/																																  //
+				m_bigdata_frequency[i][j][k] = 0;													  /*||*/																																  //
+			}																						  /*||*/																																  //
+		}																							  /*||*/																																  //
+	}																								  /*||*/																																  //
+	/******************************************************************************************************/																																  //
+																																																											  //
+	/*******************************************************************************************************************************************************************************************/											  //
+	/*														Extract EEG DATA within w_window_ms around event																				   */											  //
+	/*******************************************************************************************************************************************************************************************/											  //
+	/*********************************************************************************************************************/																	   //											  //
+	/*												Read Mono Data														 */																	   //											  //
+	/*********************************************************************************************************************/																	   //											  //
+	std::cout << "Reading Hilberted Bipo ..." << endl;																	 //																	   //											  //
+	for (int i = 0; i < nbEventUsed; i++)																				 //																	   //											  //
+	{																													 //																	   //											  //
+		beginInd = triggDownTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0];								 //																	   //											  //
+		//beginInd = triggTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0]; // p_elan->trc->sampleTrigg[indexEventUsed[i]] + v_win_sam[0];											 //																	   //		
+		for (int j = 0; j < (v_win_sam[1] - v_win_sam[0]) + 1; j++)														 //																	   //											  //
+		{																												 //																	   //											  //
+			for (int k = 0; k < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; k++)								 //																	   //											  //
+			{																											 //																	   //											  //
+				m_bigdata_frequency[i][k][j] = p_elan->elanFreqBand[p_numberFrequencyBand]->eeg.data_double[0][k][beginInd + j];															   //											  //
+			}																											 //																	   //											  //
+		}																												 //																	   //											  //
+	}																													 //																	   //											  //
+	/*********************************************************************************************************************/																	   //											  //
+	/*******************************************************************************************************************************************************************************************/											  //
+
+	//===================================FONCTION QUI TRACE LE BARGRAPHE 
+	drawBars(p_elan, p_path, p_exp_task, 2, m_bigdata_frequency, v_code, v_codeLength, a_code, a_codeLength, v_win_sam, nb_site, indexEventUsed, eventUsed);
 
 	/****************************************** Free Memory *******************************************/																																	  //			
 	for (int i = 0; i < nbEventUsed; i++)														  /*||*/																																	  //		
@@ -906,13 +2237,13 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 			switch (cards2Draw)
 			{
 			case 0 :
-				tifNameStream << p_path << "\\" << p_exp_task << "_erp_mono_f" << s_figure << ".jpg";
+				tifNameStream << p_path << "/" << p_exp_task << "/" << p_exp_task << "_erp_mono_f" << s_figure << ".jpg";
 				break;
 			case 1 :
-				tifNameStream << p_path << "\\" << p_exp_task << "_erp_bipo_f" << s_figure << ".jpg";
+				tifNameStream << p_path << "/" << p_exp_task << "/" << p_exp_task << "_erp_bipo_f" << s_figure << ".jpg";
 				break;
 			case 2 :
-				tifNameStream << p_path << "\\" << p_exp_task << "_plot_f" << s_figure << ".jpg";
+				tifNameStream << p_path << "/" << p_exp_task << "_plot_f" << s_figure << ".jpg";
 				break;
 			}
 
@@ -926,7 +2257,8 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 
 		nbcol = ceil((double)v_codeLength / 3);
 
-		s_x = screenWidth * 0.0586 + ((190 * (/*nbcol*/3 + 1)) * (i % 3));
+		//s_x = screenWidth * 0.0586 + ((190 * (nbcol/*3*//* + 1*/)) * (i % 3));
+		s_x = screenWidth * 0.0586 + (570 * (i % 3));
 		s_y = screenHeigth * 0.0325;
 		for (int j = 0; j < v_codeLength; j++)
 		{
@@ -952,7 +2284,7 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 
 			if ((j + 1) % 3 == 0)
 			{
-				s_x = s_x + (600 / nbcol);
+				s_x = s_x + (480 / nbcol); // 600 / nbcol
 				s_y = screenHeigth * 0.0325;
 			}
 		}
@@ -961,18 +2293,20 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 		painter->setPen(QColor(0, 0, 0, 255)); //black
 
 		//écris le nom de l'éléc
-		painter->drawText((screenWidth * 0.028) + 8 + ((190 * (/*nbcol*/3 + 1)) * (i % 3)), screenHeigth * 0.090, a_rt.c_str());
+		painter->drawText((screenWidth * 0.028) + 8 + (570 * (i % 3)), screenHeigth * 0.090, a_rt.c_str());
 		/*Dessine la structure de l'éléctrode*/
-		QRect recElec((screenWidth * 0.028) + ((190 * (/*nbcol*/3 + 1)) * (i % 3)), screenHeigth * 0.094, screenWidth * 0.0105, screenHeigth * 0.812);
+		QRect recElec((screenWidth * 0.028) + ((570) * (i % 3)), screenHeigth * 0.094, screenWidth * 0.0105, screenHeigth * 0.812);
 		painter->drawRect(recElec);
 		painter->fillRect(recElec, QColor(255, 255, 255, 128));
 
 		for (int j = 0; j < nb_site; j++)
 		{
-			painter->fillRect((screenWidth * 0.028) + ((190 * (/*nbcol*/3 + 1)) * (i % 3)), (screenHeigth * 0.094) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), screenWidth * 0.0105, screenHeigth * 0.0203, QColor(0, 0, 0, 255));//QColor(R G B Alpha)
+			//painter->fillRect((screenWidth * 0.028) + ((190 * (nbcol/*3*/ + 1)) * (i % 3)), (screenHeigth * 0.094) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), screenWidth * 0.0105, screenHeigth * 0.0203, QColor(0, 0, 0, 255));//QColor(R G B Alpha)
+			painter->fillRect((screenWidth * 0.028) + (570 * (i % 3)), (screenHeigth * 0.094) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), screenWidth * 0.0105, screenHeigth * 0.0203, QColor(0, 0, 0, 255));//QColor(R G B Alpha)
 
 			//numéro d'index du plot de l'éléctrode
-			painter->drawText((screenWidth * 0.015) + ((190 * (/*nbcol*/3 + 1)) * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(j + 1));
+			//painter->drawText((screenWidth * 0.015) + ((190 * (nbcol/*3*/ + 1)) * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(j + 1));
+			painter->drawText((screenWidth * 0.015) + (570 * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(j + 1));
 
 			v_f = findNum(&v_id[0], v_id.size(), j + 1);
 
@@ -1113,13 +2447,17 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 				maxCurveLegend = /*round(*/max(tempMax1, tempMax2)/*)*/;
 
 				painter->setPen(QColor(255, 0, 255, 255)); //pink petant
-				painter->drawText((screenWidth * 0.04) + ((190 * (/*nbcol*/3 + 1)) * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(round(maxCurveLegend)));
+				//painter->drawText((screenWidth * 0.04) + ((190 * (nbcol/*3*/ + 1)) * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(round(maxCurveLegend)));
+				painter->drawText((screenWidth * 0.04) + (570 * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(round(maxCurveLegend)));
 				painter->setPen(QColor(0, 0, 0, 255)); //noir
-				
+
 				for (int k = 0; k < v_codeLength; k++)
 				{
 					QPainterPath qpath, qpathP, qpathM;
 					double x, y, yP, yM;
+
+					double mAAx = *(max_element(m_erp[k], m_erp[k] + (v_win_sam[1] - v_win_sam[0]) + 1));
+					double mIIn = *(min_element(m_erp[k], m_erp[k] + (v_win_sam[1] - v_win_sam[0]) + 1));
 
 					for (int l = 0; l < (v_win_sam[1] - v_win_sam[0]) + 1; l++)
 					{
@@ -1127,11 +2465,18 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 						v_lim[l] = m_lim[k][l] / maxCurveLegend;
 
 						/*x = position de départ   +  prochaine éléctrode   +  data (prochaine) colonne*/
-						x = (screenWidth * 0.0586) + ((190 * (/*nbcol*/3 + 1)) * (i % 3)) + ((600 / nbcol) * (k / 3)) + ((l *(600 / nbcol) /*(screenWidth * 0.0586)*/) / ((v_win_sam[1] - v_win_sam[0]) + 1));
+						//x = (screenWidth * 0.0586) + ((190 * (nbcol/*3*/ + 1)) * (i % 3)) + ((600 / nbcol) * (k / 3)) + ((l *(600 / nbcol) /*(screenWidth * 0.0586)*/) / ((v_win_sam[1] - v_win_sam[0]) + 1));
+						x = (screenWidth * 0.0586) + (570 * (i % 3)) + ((480 / nbcol) * (k / 3)) + ((l *(480 / nbcol)) / ((v_win_sam[1] - v_win_sam[0]) + 1));
+
 						/*y = position de départ - data + plot éléctrode*/
-						y = (200 - (100 * (v_erp[l] / 2))) + (screenHeigth * 0.0406 * (j));
-						yP = (200 - (100 * ((v_erp[l] + v_lim[l]) / 2))) + (screenHeigth * 0.0406 * (j));
-						yM = (200 - (100 * ((v_erp[l] - v_lim[l]) / 2))) + (screenHeigth * 0.0406 * (j));
+
+						y = (130 - ((25 ) * v_erp[l])) + (screenHeigth * 0.0406 * (j));
+						yP = (130 - ((25)  * (v_erp[l] + v_lim[l])) + (screenHeigth * 0.0406 * (j)));
+						yM = (130 - ((25)  * (v_erp[l] - v_lim[l])) + (screenHeigth * 0.0406 * (j)));
+
+						//y = (200 - (50 * (v_erp[l] /*/ 2*/))) + (screenHeigth * 0.0406 * (j));
+						//yP = (200 - (50 * ((v_erp[l] + v_lim[l]) /*/ 2*/))) + (screenHeigth * 0.0406 * (j));
+						//yM = (200 - (50 * ((v_erp[l] - v_lim[l]) /*/ 2*/))) + (screenHeigth * 0.0406 * (j));
 
 						if (l == 0)
 						{
@@ -1199,6 +2544,327 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 		delete[] m_lim[k];																		  /*||*/																																	  //	
 		delete[] m_erpP[k];																		  /*||*/																																	  //	
 		delete[] m_erpM[k];																		  /*||*/																																	  //	
+	}																							  /*||*/																																	  //	
+	delete[] m_erp;																				  /*||*/																																	  //	
+	delete[] m_lim;																				  /*||*/																																	  //	
+	delete[] m_erpP;																			  /*||*/																																	  //	
+	delete[] m_erpM;																			  /*||*/																																	  //	
+																								  /*||*/																																	  //
+	delete[] m_erpPMax;																			  /*||*/																																	  //	
+	delete[] m_erpMMax;																			  /*||*/																																	  //	
+	/**************************************************************************************************/																																	  //
+}																																																											  //
+																																																											  //
+void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, std::string p_path, std::string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, std::vector<int> indexEventUsed, std::vector<int> EventUsed)
+{
+	string a_rt;
+	stringstream tifNameStream;
+	QString tifName;
+	int s_figure = 0, s_pos = 0, nb_elec_perfigure = 3, screenWidth = 0, screenHeigth = 0, nbcol = 0, s_x = 0, s_y = 0, compteur = 0;
+	vector<int> v_id, v_origid, v_f;
+	double *v_erp, *v_std, *v_sem, *v_lim, *m_erpPMax, *m_erpMMax;
+	double *m_erpP, *m_erpM, **m_erp, **m_lim, **m_data_se, **data;
+	double tempMean, tempErp, tempStd, tempErpM, tempMax1, tempMax2, maxCurveLegend;
+	bool goIn = false;
+
+	/****************************************** Allocate Memory *******************************************/																																	  //
+	data = new double*[indexEventUsed.size()];														  /*||*/																																	  //	
+	for (int i = 0; i < indexEventUsed.size(); i++)												 	  /*||*/																																	  //	
+	{																								  /*||*/																																	  //	
+		data[i] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();									  /*||*/																																	  //	
+	}																							 	  /*||*/																																	  //	
+	/*||*/																																	  //	
+	v_erp = new double[v_codeLength]();										  /*||*/																																	  //	
+	v_std = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();									 	  /*||*/																																	  //	
+	v_sem = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();										  /*||*/																																	  //	
+	v_lim = new double[v_codeLength]();										  /*||*/																																	  //	
+	/*||*/																																	  //	
+	m_erp = new double*[v_codeLength];																  /*||*/																																	  //	
+	m_lim = new double*[v_codeLength];																  /*||*/																																	  //	
+	m_erpP = new double[v_codeLength];																  /*||*/																																	  //	
+	m_erpM = new double[v_codeLength];																  /*||*/																																	  //	
+	for (int k = 0; k < v_codeLength; k++)															  /*||*/																																	  //	
+	{																								  /*||*/																																	  //	
+		m_erp[k] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();									  /*||*/																																	  //	
+		m_lim[k] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();									  /*||*/																																	  //	
+		//m_erpP[k] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();								  /*||*/																																	  //	
+		//m_erpM[k] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();								  /*||*/																																	  //	
+	}																								  /*||*/																																	  //	
+	/*||*/																																	  //	
+	m_erpPMax = new double[v_codeLength]();															  /*||*/																																	  //	
+	m_erpMMax = new double[v_codeLength]();															  /*||*/																																	  //	
+	/******************************************************************************************************/																																	  //
+	double s_mean, s_std, s_sem, s_lim;
+
+	/*******************************************************************************************************************************************************************************************/												  //
+	/*																	Create Card for each group of 3 elec																				   */												  //
+	/*******************************************************************************************************************************************************************************************/												  //
+	for (int i = 0; i < p_elan->ss_elec->a_rt.size(); i++)																																	   //												  //
+	{
+		a_rt = p_elan->ss_elec->a_rt[i];
+		v_id = p_elan->ss_elec->v_id[i];
+		v_origid = p_elan->ss_elec->v_origid[i];
+
+		s_pos = i % nb_elec_perfigure;
+		if (s_pos == 0)
+		{
+			if (s_figure > 0) //On a finis une série de 3, on enregistre l'image
+			{
+				pixMap->save(tifName, "JPG");
+			}
+			s_figure = s_figure + 1;
+
+			screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
+			screenHeigth = GetSystemMetrics(SM_CYFULLSCREEN);
+			pixMap = new QPixmap(screenWidth, screenHeigth);
+			pixMap->fill(QColor(Qt::white));
+			painter = new QPainter(pixMap);
+			painter->setBackgroundMode(Qt::BGMode::OpaqueMode);
+			painter->setFont(QFont("Arial", 12, 1, false));
+			stringstream().swap(tifNameStream);
+
+			tifNameStream << p_path << "/" << p_exp_task << "_bar_f" << s_figure << ".jpg";
+
+			tifName = &tifNameStream.str()[0];
+		}
+
+		// as input, I take up to three electrodes, and for each electrode and site
+		// along that electrode, I want to plot a certain number of plots.So I need
+		// the data for each condition, with a time - axis.
+		// draw electrode, with 20 sites, equally spaced.
+
+		nbcol = ceil((double)v_codeLength / 3);
+
+		//s_x = screenWidth * 0.0586 + ((190 * (nbcol/*3*//* + 1*/)) * (i % 3));
+		s_x = screenWidth * 0.0586 + (570 * (i % 3));
+		s_y = screenHeigth * 0.0325;
+		for (int j = 0; j < v_codeLength; j++)
+		{
+			switch (j % 3)
+			{
+			case 0:
+				painter->setPen(QColor(0, 0, 255, 255)); //blue
+				painter->drawText(s_x, s_y, a_code[j].c_str());
+				break;
+			case 1:
+				painter->setPen(QColor(255, 0, 0, 255)); //red
+				painter->drawText(s_x, s_y, a_code[j].c_str());
+				break;
+			case 2:
+				painter->setPen(QColor(0, 255, 0, 255)); //green
+				painter->drawText(s_x, s_y, a_code[j].c_str());
+				break;
+			default:
+				painter->setPen(QColor(0, 0, 0, 255)); //black
+				break;
+			}
+			s_y = s_y + 25;
+
+			if ((j + 1) % 3 == 0)
+			{
+				s_x = s_x + (480 / nbcol); // 600 / nbcol
+				s_y = screenHeigth * 0.0325;
+			}
+		}
+
+		//On repasse en noir
+		painter->setPen(QColor(0, 0, 0, 255)); //black
+
+		//écris le nom de l'éléc
+		painter->drawText((screenWidth * 0.028) + 8 + (570 * (i % 3)), screenHeigth * 0.090, a_rt.c_str());
+		/*Dessine la structure de l'éléctrode*/
+		QRect recElec((screenWidth * 0.028) + ((570) * (i % 3)), screenHeigth * 0.094, screenWidth * 0.0105, screenHeigth * 0.812);
+		painter->drawRect(recElec);
+		painter->fillRect(recElec, QColor(255, 255, 255, 128));
+
+		for (int j = 0; j < nb_site; j++)
+		{
+			//painter->fillRect((screenWidth * 0.028) + ((190 * (nbcol/*3*/ + 1)) * (i % 3)), (screenHeigth * 0.094) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), screenWidth * 0.0105, screenHeigth * 0.0203, QColor(0, 0, 0, 255));//QColor(R G B Alpha)
+			painter->fillRect((screenWidth * 0.028) + (570 * (i % 3)), (screenHeigth * 0.094) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), screenWidth * 0.0105, screenHeigth * 0.0203, QColor(0, 0, 0, 255));//QColor(R G B Alpha)
+
+			//numéro d'index du plot de l'éléctrode
+			//painter->drawText((screenWidth * 0.015) + ((190 * (nbcol/*3*/ + 1)) * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(j + 1));
+			painter->drawText((screenWidth * 0.015) + (570 * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(j + 1));
+
+			v_f = findNum(&v_id[0], v_id.size(), j + 1);
+
+			goIn = (v_f.empty() == false) && (v_f[0] + 1 < v_id.size());
+
+			if (goIn == true)
+			{
+				//then we can extract the data
+				for (int k = 0; k < indexEventUsed.size(); k++)
+				{
+					for (int l = 0; l < (v_win_sam[1] - v_win_sam[0]) + 1; l++)
+					{
+						data[k][l] = bigdata[k][compteur][l];
+					}
+				}
+				compteur++;
+
+				//then we loop across conditions
+				for (int k = 0; k < v_codeLength; k++)
+				{
+					v_f = findNum(&EventUsed[0], EventUsed.size(), v_code[k]);
+
+					//Init m_data_se
+					m_data_se = new double*[v_f.size()];
+					double *v_data_e = new double[v_f.size()];
+
+					for (int l = 0; l < v_f.size(); l++)
+					{
+						m_data_se[l] = new double[(v_win_sam[1] - v_win_sam[0]) + 1];
+					}
+
+					if (v_f.empty() == false)
+					{
+						tempErp = 0;
+						tempStd = 0;
+
+						for (int l = 0; l < v_f.size(); l++)
+						{
+							tempMean = 0;
+							for (int m = 0; m < (v_win_sam[1] - v_win_sam[0]) + 1; m++)
+							{
+								m_data_se[l][m] = data[v_f[l]][m];
+								tempMean += m_data_se[l][m];
+							}
+							v_data_e[l] = tempMean / ((v_win_sam[1] - v_win_sam[0]) + 1);
+							v_data_e[l] = (v_data_e[l] - 1000) / 10;
+						}
+
+						for (int l = 0; l < v_f.size(); l++)
+						{
+							tempErp += v_data_e[l];
+						}
+						s_mean = tempErp / v_f.size();
+						
+						for (int l = 0; l < v_f.size(); l++)
+						{
+							tempStd += (v_data_e[l] - s_mean) * (v_data_e[l] - s_mean);
+						}
+						s_std = sqrt(tempStd / v_f.size() - 1);
+
+						s_sem = s_std / sqrt(v_f.size());
+						s_lim = 1.96 * s_sem;
+						v_erp[k] = s_mean;
+						v_lim[k] = s_lim;
+					}
+					else
+					{
+						std::cout << "ATTENTION, PLEASE : NO EVENT WITH TYPE = " << v_code[k] << endl;
+					}
+
+					/*delete tab each turn*/
+					for (int l = 0; l < v_f.size(); l++)
+					{
+						delete[] m_data_se[l];
+					}
+					delete[] m_data_se;
+					delete[] v_data_e;
+				}
+
+				for (int k = 0; k < v_codeLength; k++)
+				{
+						m_erpP[k] = v_erp[k] + v_lim[k];
+						m_erpM[k] = v_erp[k] - v_lim[k];
+				}
+
+				for (int k = 0; k < v_codeLength; k++)
+				{
+					m_erpPMax[k] = *(max_element(m_erpP, m_erpP + v_codeLength));
+					m_erpMMax[k] = abs(*(min_element(m_erpM, m_erpM + v_codeLength)));
+
+				}
+
+				tempMax1 = *(max_element(m_erpPMax, m_erpPMax + v_codeLength));
+				tempMax2 = *(max_element(m_erpMMax, m_erpMMax + v_codeLength));
+
+				maxCurveLegend = /*round(*/max(tempMax1, tempMax2)/*)*/;
+
+				painter->setPen(QColor(255, 0, 255, 255)); //pink petant
+				//painter->drawText((screenWidth * 0.04) + ((190 * (nbcol/*3*/ + 1)) * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(round(maxCurveLegend)));
+				painter->drawText((screenWidth * 0.04) + (570 * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(round(maxCurveLegend)));
+				painter->setPen(QColor(0, 0, 0, 255)); //noir
+
+				int coeffEsp = ceil(450 / v_codeLength);
+				double x = (screenWidth * 0.0586) + (570 * (i % 3));
+				double y = (screenHeigth * 0.107) + (screenHeigth * 0.0173) + (screenHeigth * 0.0406 * (j));
+
+				std::vector<double> aa, bb, cc, dd, ee;
+
+				for (int k = 0; k < v_codeLength; k++)
+				{
+					aa.push_back(v_erp[k] / maxCurveLegend);
+					bb.push_back(v_lim[k] / maxCurveLegend);
+
+					cc.push_back(aa[k] + bb[k]);
+					dd.push_back(aa[k] - bb[k]);
+				}
+
+				for (int k = 0; k < v_codeLength; k++)
+				{
+					double yP, yM,a;
+
+					v_erp[k] = v_erp[k] / maxCurveLegend;
+					v_lim[k] = v_lim[k] / maxCurveLegend;
+
+					double ma = *(max_element(&cc[0], &cc[0] + v_codeLength));
+					double mi = abs(*(min_element(&dd[0], &dd[0] + v_codeLength)));
+
+					a = 20 / max(ma,mi);
+					
+					switch (k % 3)
+					{
+					case 0:
+						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * (v_erp[k] - v_lim[k]), Qt::GlobalColor::gray);
+						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * (v_erp[k] + v_lim[k]), Qt::GlobalColor::gray);
+						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * v_erp[k], Qt::GlobalColor::blue); //blue //carré de 20 par 20 max
+						break;
+					case 1:
+						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * (v_erp[k] - v_lim[k]), Qt::GlobalColor::gray);
+						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * (v_erp[k] + v_lim[k]), Qt::GlobalColor::gray);
+						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * v_erp[k], Qt::GlobalColor::red); //red //carré de 20 par 20 max
+						break;
+					case 2:
+						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * (v_erp[k] - v_lim[k]), Qt::GlobalColor::gray);
+						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * (v_erp[k] + v_lim[k]), Qt::GlobalColor::gray);
+						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * v_erp[k], Qt::GlobalColor::green); //green //carré de 20 par 20 max
+						break;
+					default:
+						break;
+					}				
+				}		
+				
+				painter->drawLine(x, y, x + 450, y);
+																																															   //											  //
+				//on remet en noir																																							   //											  //
+				painter->setPen(QColor(0, 0, 0, 255));																																		   //											  //
+			}//end if (v_f.empty() == false)																																				   //											  //
+		}//end for nb site 																																									   //											  //
+	}//end for nb_elec																																										   //											  //
+																																															   //											  //
+	pixMap->save(tifName, "JPG");																																							   //											  //
+	/*******************************************************************************************************************************************************************************************/											  //
+																																																											  //
+	/****************************************** Free Memory *******************************************/																																	  //
+	for (int i = 0; i < indexEventUsed.size(); i++)												  /*||*/																																	  //		
+	{																							  /*||*/																																	  //		
+		delete[] data[i];																		  /*||*/																																	  //		
+	}																							  /*||*/																																	  //		
+	delete[] data;																				  /*||*/																																	  //		
+																								  /*||*/																																	  //
+	delete[] v_erp;																				  /*||*/																																	  //		
+	delete[] v_std;																				  /*||*/																																	  //		
+	delete[] v_sem;																				  /*||*/																																	  //		
+	delete[] v_lim;																				  /*||*/																																	  //	
+																								  /*||*/																																	  //
+	for (int k = 0; k < v_codeLength; k++)														  /*||*/																																	  //	
+	{																							  /*||*/																																	  //	
+		delete[] m_erp[k];																		  /*||*/																																	  //	
+		delete[] m_lim[k];																		  /*||*/																																	  //	
+//		delete[] m_erpP[k];																		  /*||*/																																	  //	
+	//	delete[] m_erpM[k];																		  /*||*/																																	  //	
 	}																							  /*||*/																																	  //	
 	delete[] m_erp;																				  /*||*/																																	  //	
 	delete[] m_lim;																				  /*||*/																																	  //	
@@ -1311,160 +2977,160 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 	//[======================================================================================================================================================================================]
 
 	//[======================================================================================================================================================================================]
-	vector<vector<vector<double>>> p_value3D;
-	for (int i = 0; i < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; i++)
-	{
-		vector<vector<double>> p_valueBig;
+	//vector<vector<vector<double>>> p_value3D;
+	//for (int i = 0; i < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; i++)
+	//{
+	//	vector<vector<double>> p_valueBig;
 
-		for (int j = 0; j < numberCol; j++)
-		{
-			for (int k = 0; k < numberRow; k++)
-			{
-				for (int z = 0; z < p_prov->numberVisuBlocs; z++)
-				{
-					if (p_prov->visuBlocs[z]->dispBloc->col == j + 1)
-					{
-						if (p_prov->visuBlocs[z]->dispBloc->row == k + 1)
-						{
-							int a = triggCatEla->mainGroupSub[correspondingEvent[z]];
-							int b = triggCatEla->mainGroupSub[correspondingEvent[z] + 1];
-							int numberSubTrial = b - a;
+	//	for (int j = 0; j < numberCol; j++)
+	//	{
+	//		for (int k = 0; k < numberRow; k++)
+	//		{
+	//			for (int z = 0; z < p_prov->numberVisuBlocs; z++)
+	//			{
+	//				if (p_prov->visuBlocs[z]->dispBloc->col == j + 1)
+	//				{
+	//					if (p_prov->visuBlocs[z]->dispBloc->row == k + 1)
+	//					{
+	//						int a = triggCatEla->mainGroupSub[correspondingEvent[z]];
+	//						int b = triggCatEla->mainGroupSub[correspondingEvent[z] + 1];
+	//						int numberSubTrial = b - a;
 
-							vector<double> baseLineData, eegData;
-							vector<vector<double>> eegDataBig;
-							double temp = 0, temp2 = 0;
+	//						vector<double> baseLineData, eegData;
+	//						vector<vector<double>> eegDataBig;
+	//						double temp = 0, temp2 = 0;
 
-							for (int l = 0; l < numberSubTrial; l++)
-							{
-								int baselineDebut = round((64 * (p_prov->visuBlocs[z]->dispBloc->baseLineWindow[0] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0])) / 1000);
-								int baselineFin = round((64 * (p_prov->visuBlocs[z]->dispBloc->baseLineWindow[1] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0])) / 1000);
+	//						for (int l = 0; l < numberSubTrial; l++)
+	//						{
+	//							int baselineDebut = round((64 * (p_prov->visuBlocs[z]->dispBloc->baseLineWindow[0] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0])) / 1000);
+	//							int baselineFin = round((64 * (p_prov->visuBlocs[z]->dispBloc->baseLineWindow[1] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0])) / 1000);
 
-								for (int m = 0; m < (baselineFin - baselineDebut); m++)
-								{
-									temp += bigdata[i][triggCatEla->trigg[a + l]->origPos][baselineDebut + m];
-								}
-								baseLineData.push_back(temp / (baselineFin - baselineDebut));
-								//if (k == 8)
-								//{
-								//	baseLineData.push_back(temp / (baselineFin - baselineDebut));
-								//}
-								temp = 0;
-							}
+	//							for (int m = 0; m < (baselineFin - baselineDebut); m++)
+	//							{
+	//								temp += bigdata[i][triggCatEla->trigg[a + l]->origPos][baselineDebut + m];
+	//							}
+	//							baseLineData.push_back(temp / (baselineFin - baselineDebut));
+	//							//if (k == 8)
+	//							//{
+	//							//	baseLineData.push_back(temp / (baselineFin - baselineDebut));
+	//							//}
+	//							temp = 0;
+	//						}
 
-							int numberWin = p_prov->visuBlocs[z]->dispBloc->epochWindow[1] / (200 / 2);  // 200/2 car overlap 50% /!\
+	//						int numberWin = (p_prov->visuBlocs[z]->dispBloc->epochWindow[1] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0]) / (200 / 2);  // 200/2 car overlap 50% /!\
 
-							for (int n = 0; n < numberWin - 1; n++)
-							{
-								
-								for (int l = 0; l < numberSubTrial; l++)
-								{
-									//boucle moyenne des X fenetres que l'on veut (même taille que base line)
+	//						for (int n = 0; n < numberWin - 1; n++)
+	//						{
+	//							
+	//							for (int l = 0; l < numberSubTrial; l++)
+	//							{
+	//								//boucle moyenne des X fenetres que l'on veut (même taille que base line)
 
-									int winDebut = round((64 * (0 + (100 * n) - p_prov->visuBlocs[z]->dispBloc->epochWindow[0])) / 1000);
-									int winFin = round((64 * (200 + (100 * n) - p_prov->visuBlocs[z]->dispBloc->epochWindow[0])) / 1000);
+	//								int winDebut = round((64 * (0 + (100 * n) + (p_prov->visuBlocs[z]->dispBloc->epochWindow[0] - v_window_ms[0]))) / 1000);
+	//								int winFin = round((64 * (200 + (100 * n) + (p_prov->visuBlocs[z]->dispBloc->epochWindow[0] - v_window_ms[0]))) / 1000);
 
-									for (int m = 0; m < (winFin - winDebut); m++)
-									{
-										temp += bigdata[i][triggCatEla->trigg[a + l]->origPos][winDebut + m];
-									}
-									eegData.push_back(temp / (winFin - winDebut));
-									//if (k == 8)
-									//{
-									//	eegData.push_back(temp / (winFin - winDebut));
-									//}
-									temp = 0;
-									
-								}
-								eegDataBig.push_back(eegData);
-								eegData.clear();
-							}
+	//								for (int m = 0; m < (winFin - winDebut); m++)
+	//								{
+	//									temp += bigdata[i][triggCatEla->trigg[a + l]->origPos][winDebut + m];
+	//								}
+	//								eegData.push_back(temp / (winFin - winDebut));
+	//								//if (k == 8)
+	//								//{
+	//								//	eegData.push_back(temp / (winFin - winDebut));
+	//								//}
+	//								temp = 0;
+	//								
+	//							}
+	//							eegDataBig.push_back(eegData);
+	//							eegData.clear();
+	//						}
 
-							vector<double> p_value;
-							for (int l = 0; l < eegDataBig.size(); l++)
-							{
-								p_value.push_back(wilcoxon(baseLineData, eegDataBig[l]));
-							}
-							p_valueBig.push_back(p_value);
-						}
-					}
-				}
-			}
-		}
-		p_value3D.push_back(p_valueBig);
-	}
-	//[======================================================================================================================================================================================]
+	//						vector<double> p_value;
+	//						for (int l = 0; l < eegDataBig.size(); l++)
+	//						{
+	//							p_value.push_back(wilcoxon(baseLineData, eegDataBig[l]));
+	//						}
+	//						p_valueBig.push_back(p_value);
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
+	//	p_value3D.push_back(p_valueBig);
+	//}
+	////[======================================================================================================================================================================================]
 
 
-	int V = p_value3D.size() * p_value3D[0].size() * p_value3D[0][0].size();
-	int compteur = 0;
-	double CV = log(V) + 0.5772;
-	double slope = 0.05 / (V * CV);
+	//int V = p_value3D.size() * p_value3D[0].size() * p_value3D[0][0].size();
+	//int compteur = 0;
+	//double CV = log(V) + 0.5772;
+	//double slope = 0.05 / (V * CV);
 
-	PVALUECOORD **testeuh = new PVALUECOORD *[V];
-	for (int i = 0; i < p_value3D.size(); i++)
-	{
-		for (int j = 0; j < p_value3D[i].size(); j++)
-		{
-			for (int k = 0; k < p_value3D[i][j].size(); k++)
-			{
-				testeuh[compteur] = new PVALUECOORD();
-				testeuh[compteur]->elec = i;
-				testeuh[compteur]->condit = j;
-				testeuh[compteur]->window = k;
-				testeuh[compteur]->vectorpos = compteur;
-				testeuh[compteur]->pValue = p_value3D[i][j][k];
+	//PVALUECOORD **testeuh = new PVALUECOORD *[V];
+	//for (int i = 0; i < p_value3D.size(); i++)
+	//{
+	//	for (int j = 0; j < p_value3D[i].size(); j++)
+	//	{
+	//		for (int k = 0; k < p_value3D[i][j].size(); k++)
+	//		{
+	//			testeuh[compteur] = new PVALUECOORD();
+	//			testeuh[compteur]->elec = i;
+	//			testeuh[compteur]->condit = j;
+	//			testeuh[compteur]->window = k;
+	//			testeuh[compteur]->vectorpos = compteur;
+	//			testeuh[compteur]->pValue = p_value3D[i][j][k];
 
-				compteur++;
-			}
-		}
-	}
+	//			compteur++;
+	//		}
+	//	}
+	//}
 
-	for (int i = 0; i < V; i++)
-	{
-		if (testeuh[i]->elec == 102 && testeuh[i]->condit == 8)
-		{
-			std::cout << testeuh[i]->pValue << std::endl;
-		}
-	}
+	////for (int i = 0; i < V; i++)
+	////{
+	////	if (testeuh[i]->elec == 102 && testeuh[i]->condit == 8)
+	////	{
+	////		std::cout << testeuh[i]->pValue << std::endl;
+	////	}
+	////}
 
-	//heapsort if quicksort pas assez rapide              //compteur -1 peut être à cause de la sortie de boucle
-	std::sort(testeuh, testeuh + compteur,
-		[](PVALUECOORD *a, PVALUECOORD *b) {
-		return (a->pValue < b->pValue);
-	});
+	////heapsort if quicksort pas assez rapide              //compteur -1 peut être à cause de la sortie de boucle
+	//std::sort(testeuh, testeuh + compteur,
+	//	[](PVALUECOORD *a, PVALUECOORD *b) {
+	//	return (a->pValue < b->pValue);
+	//});
 
-	int copyIndex;
+	//int copyIndex;
 
-	for (int i = 1; i < V; i++)														//pas 0 car premier point pose problème
-	{
-		if (testeuh[i]->pValue > ((double)slope * i))
-		{
-			copyIndex = i;
-			break;
-		}
-	}
+	//for (int i = 1; i < V; i++)														//pas 0 car premier point pose problème
+	//{
+	//	if (testeuh[i]->pValue > ((double)slope * i))
+	//	{
+	//		copyIndex = i;
+	//		break;
+	//	}
+	//}
 
-	PVALUECOORD **significantValue = new PVALUECOORD *[copyIndex];
+	//PVALUECOORD **significantValue = new PVALUECOORD *[copyIndex];
 
-	for (int i = 0; i < copyIndex; i++)
-	{
-		significantValue[i] = new PVALUECOORD();
-		significantValue[i]->elec = testeuh[i]->elec;
-		significantValue[i]->condit = testeuh[i]->condit;
-		significantValue[i]->window = testeuh[i]->window;
-		significantValue[i]->vectorpos = testeuh[i]->vectorpos;
-		significantValue[i]->pValue = testeuh[i]->pValue;
-	}
+	//for (int i = 0; i < copyIndex; i++)
+	//{
+	//	significantValue[i] = new PVALUECOORD();
+	//	significantValue[i]->elec = testeuh[i]->elec;
+	//	significantValue[i]->condit = testeuh[i]->condit;
+	//	significantValue[i]->window = testeuh[i]->window;
+	//	significantValue[i]->vectorpos = testeuh[i]->vectorpos;
+	//	significantValue[i]->pValue = testeuh[i]->pValue;
+	//}
 
-	std::sort(significantValue, significantValue + copyIndex,
-		[](PVALUECOORD *a, PVALUECOORD *b) {
-		return ((a->vectorpos < b->vectorpos));
-	});
+	//std::sort(significantValue, significantValue + copyIndex,
+	//	[](PVALUECOORD *a, PVALUECOORD *b) {
+	//	return ((a->vectorpos < b->vectorpos));
+	//});
 
-	for (int i = 0; i < copyIndex; i++)
-	{
-		cout << significantValue[i]->elec << "-" << significantValue[i]->condit << "-" << significantValue[i]->window << " : " << significantValue[i]->pValue << " | " << p_elan->trc->nameElectrodePositiv[p_elan->m_bipole[significantValue[i]->elec]] << endl;
-	}
+	//for (int i = 0; i < copyIndex; i++)
+	//{
+	//	cout << significantValue[i]->elec << "-" << significantValue[i]->condit << "-" << significantValue[i]->window << " : " << significantValue[i]->pValue << " | " << p_elan->trc->nameElectrodePositiv[p_elan->m_bipole[significantValue[i]->elec]] << endl;
+	//}
 
 
 
@@ -1568,13 +3234,13 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 							}
 
 							/*Ajout des temps de réaction sur la carte*/
-							if (triggCatEla->trigg[a + 2]->rt_ms == 10000000) //si un des temps de réaction à sa valeur de défault, à priori ils y seront tous 
+							if (triggCatEla->trigg[a + 2]->rt_ms != 10000000) //si un des temps de réaction n'a pas sa valeur de défault, à priori ils y seront tous 
 							{
 								painterSubSubMatrix->setPen(QColor(0, 0, 0, 255)); //black
 								for (int l = 0; l < numberSubTrial; l++)
 								{
-									int timeValue = abs(v_window_ms[0]) + triggCatEla->trigg[a + l]->rt_ms;
-									int markPoint = ceil((double)(interpolFactorX * (winSamMax - winSamMin)) / (v_window_ms[1] - v_window_ms[0]) * timeValue);
+									int timeValue = abs(winMsMin /*v_window_ms[0]*/) + triggCatEla->trigg[a + l]->rt_ms;
+									int markPoint = ceil((double)(interpolFactorX * (winSamMax - winSamMin)) / (winMsMax - winMsMin) * timeValue);    //(v_window_ms[1] - v_window_ms[0]) * timeValue);
 									painterSubSubMatrix->setBrush(Qt::black);
 									painterSubSubMatrix->drawEllipse(QPoint(markPoint, subsubMatrixHeigth - (interpolFactorY * l)), 20, 2);
 								}
@@ -1614,37 +3280,37 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 		
 		//================================= Display STATS
 
-		for (int j = 0; j < numberCol; j++)
-		{
-			for (int k = 0; k < numberRow; k++)
-			{
-				int xTest = coordMat[((numberRow * numberCol)-1) - (k + (j*numberRow))].x + zeroBorder;
-				int yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2 + coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].heigth;
+		//for (int j = 0; j < numberCol; j++)
+		//{
+		//	for (int k = 0; k < numberRow; k++)
+		//	{
+		//		int xTest = coordMat[((numberRow * numberCol)-1) - (k + (j*numberRow))].x + zeroBorder;
+		//		int yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2 + coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].heigth;
 
-				if (k == numberRow - 1)
-				{
-					yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2;
-				}
+		//		if (k == numberRow - 1)
+		//		{
+		//			yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2;
+		//		}
 
-				for (int l = 0; l < p_value3D[i][k].size(); l++)
-				{
-					for (int m = 0; m < copyIndex; m++)
-					{
-						if (p_value3D[i][k][l] == significantValue[m]->pValue && significantValue[m]->elec == i && significantValue[m]->window == l)
-						{
-							int dataPlus2 = ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * abs((200))); //abs de 100 car overlap 50% de la fenêtre de 200 ms
-							int xBeg = xTest + ((dataPlus2 / 2) * (l));
-							//int xEnd = xTest + ((dataPlus2 /*/ 2*/) * (l + 1));
-							int xEnd = xBeg + dataPlus2;
+		//		for (int l = 0; l < p_value3D[i][k].size(); l++)
+		//		{
+		//			for (int m = 0; m < copyIndex; m++)
+		//			{
+		//				if (p_value3D[i][k][l] == significantValue[m]->pValue && significantValue[m]->elec == i && significantValue[m]->window == l)
+		//				{
+		//					int dataPlus2 = ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * abs((200))); //abs de 100 car overlap 50% de la fenêtre de 200 ms
+		//					int xBeg = xTest + ((dataPlus2 / 2) * (l));
+		//					//int xEnd = xTest + ((dataPlus2 /*/ 2*/) * (l + 1));
+		//					int xEnd = xBeg + dataPlus2;
 
-							painterChanel->setPen(QColor(Qt::GlobalColor::white));
-							painterChanel->drawLine(xBeg, yTest, xEnd, yTest);
-							painterChanel->drawLine(xBeg, yTest + 1, xEnd, yTest + 1);
-						}
-					}
-				}
-			}
-		}
+		//					painterChanel->setPen(QColor(Qt::GlobalColor::white));
+		//					painterChanel->drawLine(xBeg, yTest, xEnd, yTest);
+		//					painterChanel->drawLine(xBeg, yTest + 1, xEnd, yTest + 1);
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
 		//======================================================================================================
 
 		pixmapChanel->save(outputPicPath.c_str(), "JPG");

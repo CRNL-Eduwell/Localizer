@@ -40,21 +40,19 @@ void LocaGUI::setUpGUI(QMainWindow* QTGUIClass)
 		freqTAB[i]->setObjectName(QString(freqBandName[i].c_str()));
 		freqTAB[i]->setEnabled(true);
 
-		freqCheckBox[i] = new QCheckBox*[5];
-		for (int j = 0; j < 5; j++)
+		freqCheckBox[i] = new QCheckBox*[4];
+		for (int j = 0; j < 4; j++)
 		{
 			freqCheckBox[i][j] = new QCheckBox(freqTAB[i]);
 			switch (j)
 			{
 			case 0:	freqCheckBox[i][j]->setText("Analyse this Frequency ?");
 				break;
-			case 1: freqCheckBox[i][j]->setText("eeg2erp ");
+			case 1: freqCheckBox[i][j]->setText("eeg2env");
 				break;
-			case 2: freqCheckBox[i][j]->setText("eeg2env");
+			case 2: freqCheckBox[i][j]->setText("env2plot");
 				break;
-			case 3: freqCheckBox[i][j]->setText("env2plot");
-				break;
-			case 4: freqCheckBox[i][j]->setText("trialmat");
+			case 3: freqCheckBox[i][j]->setText("trialmat");
 				break;
 			}
 
@@ -293,12 +291,15 @@ void LocaGUI::launchAnalysis()
 	}
 
 	std::vector <std::vector<bool>> anaDetails;
+	std::vector<bool> tempDetails;
+
+	tempDetails.push_back(ui.ERPcheckBox->isChecked());
+	anaDetails.push_back(tempDetails);
 
 	for (int i = 0; i < freqBandName.size(); i++)
 	{
-		std::vector<bool> tempDetails;
-
-		for (int j = 0; j < 5; j++)
+		std::vector<bool>().swap(tempDetails);
+		for (int j = 0; j < 4; j++)
 		{
 			if (freqCheckBox[i][j]->isChecked())
 			{
@@ -315,14 +316,19 @@ void LocaGUI::launchAnalysis()
 	thread = new QThread;
 	worker = new Worker(freqBandValue, anaDetails, trcFiles, provFiles, patientFolder, tasks, exp_tasks);
 
+	//Function to return pointer to subclasses for message sending
+	InsermLibrary::LOCA *test = worker->returnLoca();
+	QObject::connect(test, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
+	//======================================================================================
+
+
 	QObject::connect(thread, SIGNAL(started()), worker, SLOT(process()));
 	QObject::connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
 	QObject::connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
 	QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+
 	QObject::connect(worker, SIGNAL(sendElanPointer(InsermLibrary::ELAN*)), this, SLOT(receiveElanPointer(InsermLibrary::ELAN*)));
-
 	QObject::connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
-
 	QObject::connect(this, SIGNAL(bipDone(bool)), worker, SLOT(BipDoneeee(bool)));
 
 	worker->moveToThread(thread);
@@ -347,14 +353,12 @@ void LocaGUI::FreqBandCheck(bool isChecked)
 		freqCheckBox[indexClicked][1]->setChecked(true);
 		freqCheckBox[indexClicked][2]->setChecked(true);
 		freqCheckBox[indexClicked][3]->setChecked(true);
-		freqCheckBox[indexClicked][4]->setChecked(true);
 	}
 	else
 	{
 		freqCheckBox[indexClicked][1]->setChecked(false);
 		freqCheckBox[indexClicked][2]->setChecked(false);
 		freqCheckBox[indexClicked][3]->setChecked(false);
-		freqCheckBox[indexClicked][4]->setChecked(false);
 	}
 }
 

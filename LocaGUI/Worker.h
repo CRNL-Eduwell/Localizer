@@ -12,6 +12,7 @@ class Worker : public QObject
 public:
 	Worker(std::vector<std::vector<double>> p_freqBandValue, std::vector <std::vector<bool>> p_anaDetails, std::vector<std::string> p_trc, std::vector<std::string> p_prov, std::string folderPatient, std::vector<std::string> p_tasks, std::vector<std::string> p_exptasks);
 	~Worker();
+	InsermLibrary::LOCA * returnLoca();
 
 public slots:
 	void process();
@@ -21,13 +22,13 @@ signals:
 	void error(QString err);
 	void sendLogInfo(QString);
 	void sendElanPointer(InsermLibrary::ELAN *p_elan);
-
+	
 private:
-	std::vector<std::string> trcFiles, provFiles, tasks, expTasks;
-	std::vector <std::vector<bool>> anaDetails;
-	std::vector<std::vector<double>> freqBandValue;
-	std::string patientFolder;
+	InsermLibrary::LOCA *loca = nullptr;
 	bool bip = false;
+	InsermLibrary::LOCAANALYSISOPTION **locaAnaOpt = nullptr;
+	InsermLibrary::ELAN *elan = nullptr;
+	int numberFiles = 0;
 };
 
 #endif // WORKER_H

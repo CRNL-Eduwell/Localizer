@@ -51,7 +51,7 @@ private:
 	std::vector<std::vector<std::string>> trcList;
 	Ui::LocaGUIClass ui;
 	QThread* thread;
-	Worker* worker;
+	Worker* worker = nullptr;
 };
 
 #endif // LOCAGUI_H

@@ -71,23 +71,47 @@ namespace InsermLibrary																																																			  	   
 		int downFactor;
 	};
 
-
-
-	class LOCA
+	class LOCAANALYSISOPTION
 	{
+	public :
+		LOCAANALYSISOPTION(std::vector<std::vector<double>> p_frequencys, std::vector<std::vector<bool>> p_analysisDetails, std::string p_trcPath, std::string p_provPath, std::string p_patientFolder, std::string p_task, std::string p_expTask);
+		~LOCAANALYSISOPTION();
+
+		std::vector<std::vector<double>> frequencys;
+		std::vector<std::vector<bool>> analysisDetails;
+		std::string trcPath = "";
+		std::string provPath = "";
+		std::string patientFolder = "";
+		std::string task = "";
+		std::string expTask = "";
+	};
+
+	class LOCA : public QObject
+	{
+		Q_OBJECT
+
 	public:
 		LOCA();
 		~LOCA();
-		void Localize(std::string p_path);
-		void LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, std::string p_path, std::string p_exp_task, std::string p_task);
-		void LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, std::string p_path, std::string p_exp_task, std::string p_task);
-		void LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, std::string p_path, std::string p_exp_task, std::string p_task);
+		void LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
+		void LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
+		void LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
+		void LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
+		void LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
+		void LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
+		void LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
+		void LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
+		void LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
+		void LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
+
 		void loc_create_pos(std::string posFile_path, std::string posXFile_path, MicromedLibrary::TRC *p_trc, int p_beginningCode, InsermLibrary::PROV *p_prov);
 		void renameTrigger(TRIGGINFO *triggers, TRIGGINFO* downsampledTriggers, InsermLibrary::PROV *p_prov);
 		void loc2_write_conf(std::string confFile_path, MicromedLibrary::TRC *p_trc, InsermLibrary::ELAN *p_elan);
 		void loc_eeg2erp(InsermLibrary::ELAN *p_elan, std::string p_path, std::string p_exp_task, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int* v_window_ms, int nb_site);
 		void loc_env2plot(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand, std::string p_path, std::string p_exp_task, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int* v_window_ms, int nb_site);
+		void loc_bar2plot(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand, std::string p_path, std::string p_exp_task, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int* v_window_ms, int nb_site);
 		void drawCards(InsermLibrary::ELAN *p_elan, std::string p_path, std::string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, std::vector<int> indexEventUsed, std::vector<int> EventUsed);
+		void drawBars(InsermLibrary::ELAN *p_elan, std::string p_path, std::string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, std::vector<int> indexEventUsed, std::vector<int> EventUsed);
 		void loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand, InsermLibrary::PROV *p_prov, std::string p_outputMapLabel, std::string p_outputFolder);
 		std::vector<std::vector<double>> interpolateData(double **p_eegData, int p_numberSubTrial, int p_windowSize, int p_beginTrigg, int p_interpolFactor);
 		std::vector<std::vector<double>> interpolateDataVert(std::vector<std::vector<double>> p_eegData, int p_interpolFactor);
@@ -108,6 +132,10 @@ namespace InsermLibrary																																																			  	   
 		void jetColorMap512(QColor *p_C);
 		std::vector<int> findNum(int *tab, int sizetab, int value2find);
 		template<typename T> std::vector<T> split(const T & str, const T & delimiters);
+
+	signals : 
+		void sendLogInfo(QString);
+
 	public :
 		TRIGGINFO *triggTRC, *triggDownTRC, *triggCatEla, *triggCatElaNoSort;
 	private :
