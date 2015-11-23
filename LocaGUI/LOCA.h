@@ -113,6 +113,8 @@ namespace InsermLibrary																																																			  	   
 		void drawCards(InsermLibrary::ELAN *p_elan, std::string p_path, std::string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, std::vector<int> indexEventUsed, std::vector<int> EventUsed);
 		void drawBars(InsermLibrary::ELAN *p_elan, std::string p_path, std::string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, std::vector<int> indexEventUsed, std::vector<int> EventUsed);
 		void loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand, InsermLibrary::PROV *p_prov, std::string p_outputMapLabel, std::string p_outputFolder);
+		std::vector<std::vector<std::vector<double>>> calculatePValue(elan_struct_t *p_elan_struct, int row, int col, InsermLibrary::PROV *p_prov, std::vector<int> correspEvent, double ***eegData, int windowMS[2]);
+		PVALUECOORD **calculateFDR(std::vector<std::vector<std::vector<double>>> pArray3D, int &p_copyIndex);
 		std::vector<std::vector<double>> interpolateData(double **p_eegData, int p_numberSubTrial, int p_windowSize, int p_beginTrigg, int p_interpolFactor);
 		std::vector<std::vector<double>> interpolateDataVert(std::vector<std::vector<double>> p_eegData, int p_interpolFactor);
 		void eegData2ColorMap(std::vector<std::vector<double>> p_eegDataInterpolated, std::vector<int> p_colorX[512], std::vector<int> p_colorY[512], int p_numberSubTrial, int p_windowSize, int p_interpolFactorX, int p_interpolFactorY, double p_minVal, double p_maxVal);

@@ -2977,163 +2977,10 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 	//[======================================================================================================================================================================================]
 
 	//[======================================================================================================================================================================================]
-	//vector<vector<vector<double>>> p_value3D;
-	//for (int i = 0; i < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; i++)
-	//{
-	//	vector<vector<double>> p_valueBig;
+	int copyIndex = 0;
 
-	//	for (int j = 0; j < numberCol; j++)
-	//	{
-	//		for (int k = 0; k < numberRow; k++)
-	//		{
-	//			for (int z = 0; z < p_prov->numberVisuBlocs; z++)
-	//			{
-	//				if (p_prov->visuBlocs[z]->dispBloc->col == j + 1)
-	//				{
-	//					if (p_prov->visuBlocs[z]->dispBloc->row == k + 1)
-	//					{
-	//						int a = triggCatEla->mainGroupSub[correspondingEvent[z]];
-	//						int b = triggCatEla->mainGroupSub[correspondingEvent[z] + 1];
-	//						int numberSubTrial = b - a;
-
-	//						vector<double> baseLineData, eegData;
-	//						vector<vector<double>> eegDataBig;
-	//						double temp = 0, temp2 = 0;
-
-	//						for (int l = 0; l < numberSubTrial; l++)
-	//						{
-	//							int baselineDebut = round((64 * (p_prov->visuBlocs[z]->dispBloc->baseLineWindow[0] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0])) / 1000);
-	//							int baselineFin = round((64 * (p_prov->visuBlocs[z]->dispBloc->baseLineWindow[1] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0])) / 1000);
-
-	//							for (int m = 0; m < (baselineFin - baselineDebut); m++)
-	//							{
-	//								temp += bigdata[i][triggCatEla->trigg[a + l]->origPos][baselineDebut + m];
-	//							}
-	//							baseLineData.push_back(temp / (baselineFin - baselineDebut));
-	//							//if (k == 8)
-	//							//{
-	//							//	baseLineData.push_back(temp / (baselineFin - baselineDebut));
-	//							//}
-	//							temp = 0;
-	//						}
-
-	//						int numberWin = (p_prov->visuBlocs[z]->dispBloc->epochWindow[1] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0]) / (200 / 2);  // 200/2 car overlap 50% /!\
-
-	//						for (int n = 0; n < numberWin - 1; n++)
-	//						{
-	//							
-	//							for (int l = 0; l < numberSubTrial; l++)
-	//							{
-	//								//boucle moyenne des X fenetres que l'on veut (même taille que base line)
-
-	//								int winDebut = round((64 * (0 + (100 * n) + (p_prov->visuBlocs[z]->dispBloc->epochWindow[0] - v_window_ms[0]))) / 1000);
-	//								int winFin = round((64 * (200 + (100 * n) + (p_prov->visuBlocs[z]->dispBloc->epochWindow[0] - v_window_ms[0]))) / 1000);
-
-	//								for (int m = 0; m < (winFin - winDebut); m++)
-	//								{
-	//									temp += bigdata[i][triggCatEla->trigg[a + l]->origPos][winDebut + m];
-	//								}
-	//								eegData.push_back(temp / (winFin - winDebut));
-	//								//if (k == 8)
-	//								//{
-	//								//	eegData.push_back(temp / (winFin - winDebut));
-	//								//}
-	//								temp = 0;
-	//								
-	//							}
-	//							eegDataBig.push_back(eegData);
-	//							eegData.clear();
-	//						}
-
-	//						vector<double> p_value;
-	//						for (int l = 0; l < eegDataBig.size(); l++)
-	//						{
-	//							p_value.push_back(wilcoxon(baseLineData, eegDataBig[l]));
-	//						}
-	//						p_valueBig.push_back(p_value);
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-	//	p_value3D.push_back(p_valueBig);
-	//}
-	////[======================================================================================================================================================================================]
-
-
-	//int V = p_value3D.size() * p_value3D[0].size() * p_value3D[0][0].size();
-	//int compteur = 0;
-	//double CV = log(V) + 0.5772;
-	//double slope = 0.05 / (V * CV);
-
-	//PVALUECOORD **testeuh = new PVALUECOORD *[V];
-	//for (int i = 0; i < p_value3D.size(); i++)
-	//{
-	//	for (int j = 0; j < p_value3D[i].size(); j++)
-	//	{
-	//		for (int k = 0; k < p_value3D[i][j].size(); k++)
-	//		{
-	//			testeuh[compteur] = new PVALUECOORD();
-	//			testeuh[compteur]->elec = i;
-	//			testeuh[compteur]->condit = j;
-	//			testeuh[compteur]->window = k;
-	//			testeuh[compteur]->vectorpos = compteur;
-	//			testeuh[compteur]->pValue = p_value3D[i][j][k];
-
-	//			compteur++;
-	//		}
-	//	}
-	//}
-
-	////for (int i = 0; i < V; i++)
-	////{
-	////	if (testeuh[i]->elec == 102 && testeuh[i]->condit == 8)
-	////	{
-	////		std::cout << testeuh[i]->pValue << std::endl;
-	////	}
-	////}
-
-	////heapsort if quicksort pas assez rapide              //compteur -1 peut être à cause de la sortie de boucle
-	//std::sort(testeuh, testeuh + compteur,
-	//	[](PVALUECOORD *a, PVALUECOORD *b) {
-	//	return (a->pValue < b->pValue);
-	//});
-
-	//int copyIndex;
-
-	//for (int i = 1; i < V; i++)														//pas 0 car premier point pose problème
-	//{
-	//	if (testeuh[i]->pValue > ((double)slope * i))
-	//	{
-	//		copyIndex = i;
-	//		break;
-	//	}
-	//}
-
-	//PVALUECOORD **significantValue = new PVALUECOORD *[copyIndex];
-
-	//for (int i = 0; i < copyIndex; i++)
-	//{
-	//	significantValue[i] = new PVALUECOORD();
-	//	significantValue[i]->elec = testeuh[i]->elec;
-	//	significantValue[i]->condit = testeuh[i]->condit;
-	//	significantValue[i]->window = testeuh[i]->window;
-	//	significantValue[i]->vectorpos = testeuh[i]->vectorpos;
-	//	significantValue[i]->pValue = testeuh[i]->pValue;
-	//}
-
-	//std::sort(significantValue, significantValue + copyIndex,
-	//	[](PVALUECOORD *a, PVALUECOORD *b) {
-	//	return ((a->vectorpos < b->vectorpos));
-	//});
-
-	//for (int i = 0; i < copyIndex; i++)
-	//{
-	//	cout << significantValue[i]->elec << "-" << significantValue[i]->condit << "-" << significantValue[i]->window << " : " << significantValue[i]->pValue << " | " << p_elan->trc->nameElectrodePositiv[p_elan->m_bipole[significantValue[i]->elec]] << endl;
-	//}
-
-
-
+	vector<vector<vector<double>>> p_value3D = calculatePValue(p_elan->elanFreqBand[p_numberFrequencyBand], numberRow, numberCol, p_prov, correspondingEvent, bigdata, v_window_ms);
+	PVALUECOORD **significantValue = calculateFDR(p_value3D, copyIndex);
 	//[======================================================================================================================================================================================]
 
 	for (int i = 0; i <p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; i++)
@@ -3263,6 +3110,42 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 		painterChanel->drawLine(76 + zeroBorder, 385, 76 + zeroBorder, 33);
 		/************************************************/
 
+		
+		//================================= Display STATS
+
+		for (int j = 0; j < numberCol; j++)
+		{
+			for (int k = 0; k < numberRow; k++)
+			{
+				int xTest = coordMat[((numberRow * numberCol)-1) - (k + (j*numberRow))].x + zeroBorder;
+				int yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2 + coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].heigth;
+
+				if (k == numberRow - 1)
+				{
+					yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2;
+				}
+
+				for (int l = 0; l < p_value3D[i][k].size(); l++)
+				{
+					for (int m = 0; m < copyIndex; m++)
+					{
+						if (p_value3D[i][k][l] == significantValue[m]->pValue && significantValue[m]->elec == i && significantValue[m]->window == l)
+						{
+							int dataPlus2 = ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * abs((200))); //abs de 100 car overlap 50% de la fenêtre de 200 ms
+							int xBeg = xTest + ((dataPlus2 / 2) * (l));
+							//int xEnd = xTest + ((dataPlus2 /*/ 2*/) * (l + 1));
+							int xEnd = xBeg + dataPlus2;
+
+							painterChanel->setPen(QColor(Qt::GlobalColor::white));
+							painterChanel->drawLine(xBeg, yTest, xEnd, yTest);
+							painterChanel->drawLine(xBeg, yTest + 1, xEnd, yTest + 1);
+						}
+					}
+				}
+			}
+		}
+		//======================================================================================================
+
 		/**********************************************************************************************************/
 		/*								Picture Label and output path											  */
 		/**********************************************************************************************************/
@@ -3275,46 +3158,165 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 		QFont labelPic;																							  //
 		labelPic.setPixelSize(11);																				  //
 		painterChanel->setFont(labelPic);																		  //
+		painterChanel->setPen(QColor(Qt::GlobalColor::black));													  //
 		painterChanel->drawText(QPoint(120, 23), QString(labelPicPath.c_str()));								  //
 		/**********************************************************************************************************/
-		
-		//================================= Display STATS
-
-		//for (int j = 0; j < numberCol; j++)
-		//{
-		//	for (int k = 0; k < numberRow; k++)
-		//	{
-		//		int xTest = coordMat[((numberRow * numberCol)-1) - (k + (j*numberRow))].x + zeroBorder;
-		//		int yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2 + coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].heigth;
-
-		//		if (k == numberRow - 1)
-		//		{
-		//			yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2;
-		//		}
-
-		//		for (int l = 0; l < p_value3D[i][k].size(); l++)
-		//		{
-		//			for (int m = 0; m < copyIndex; m++)
-		//			{
-		//				if (p_value3D[i][k][l] == significantValue[m]->pValue && significantValue[m]->elec == i && significantValue[m]->window == l)
-		//				{
-		//					int dataPlus2 = ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * abs((200))); //abs de 100 car overlap 50% de la fenêtre de 200 ms
-		//					int xBeg = xTest + ((dataPlus2 / 2) * (l));
-		//					//int xEnd = xTest + ((dataPlus2 /*/ 2*/) * (l + 1));
-		//					int xEnd = xBeg + dataPlus2;
-
-		//					painterChanel->setPen(QColor(Qt::GlobalColor::white));
-		//					painterChanel->drawLine(xBeg, yTest, xEnd, yTest);
-		//					painterChanel->drawLine(xBeg, yTest + 1, xEnd, yTest + 1);
-		//				}
-		//			}
-		//		}
-		//	}
-		//}
-		//======================================================================================================
 
 		pixmapChanel->save(outputPicPath.c_str(), "JPG");
 	}
+}
+
+vector<vector<vector<double>>> InsermLibrary::LOCA::calculatePValue(elan_struct_t *p_elan_struct, int row, int col, InsermLibrary::PROV *p_prov, std::vector<int> correspEvent, double ***bigdata, int windowMS[2])
+{
+	vector<vector<vector<double>>> p_value3D;
+	for (int i = 0; i < p_elan_struct->chan_nb; i++)
+	{
+		vector<vector<double>> p_valueBig;
+
+		for (int j = 0; j < col; j++)
+		{
+			for (int k = 0; k < row; k++)
+			{
+				for (int z = 0; z < p_prov->numberVisuBlocs; z++)
+				{
+					if (p_prov->visuBlocs[z]->dispBloc->col == j + 1)
+					{
+						if (p_prov->visuBlocs[z]->dispBloc->row == k + 1)
+						{
+							int a = triggCatEla->mainGroupSub[correspEvent[z]];
+							int b = triggCatEla->mainGroupSub[correspEvent[z] + 1];
+							int numberSubTrial = b - a;
+
+							vector<double> baseLineData, eegData;
+							vector<vector<double>> eegDataBig;
+							double temp = 0, temp2 = 0;
+
+							for (int l = 0; l < numberSubTrial; l++)
+							{
+								int baselineDebut = round((64 * (p_prov->visuBlocs[z]->dispBloc->baseLineWindow[0] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0])) / 1000);
+								int baselineFin = round((64 * (p_prov->visuBlocs[z]->dispBloc->baseLineWindow[1] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0])) / 1000);
+
+								for (int m = 0; m < (baselineFin - baselineDebut); m++)
+								{
+									temp += bigdata[i][triggCatEla->trigg[a + l]->origPos][baselineDebut + m];
+								}
+								baseLineData.push_back(temp / (baselineFin - baselineDebut));
+								temp = 0;
+							}
+
+							int numberWin = (p_prov->visuBlocs[z]->dispBloc->epochWindow[1] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0]) / (200 / 2);  // 200/2 car overlap 50% /!\
+
+							for (int n = 0; n < numberWin - 1; n++)
+							{
+
+								for (int l = 0; l < numberSubTrial; l++)
+								{
+									//boucle moyenne des X fenetres que l'on veut (même taille que base line)
+
+									int winDebut = round((64 * (0 + (100 * n) + (p_prov->visuBlocs[z]->dispBloc->epochWindow[0] - windowMS[0]))) / 1000);
+									int winFin = round((64 * (200 + (100 * n) + (p_prov->visuBlocs[z]->dispBloc->epochWindow[0] - windowMS[0]))) / 1000);
+
+									for (int m = 0; m < (winFin - winDebut); m++)
+									{
+										temp += bigdata[i][triggCatEla->trigg[a + l]->origPos][winDebut + m];
+									}
+									eegData.push_back(temp / (winFin - winDebut));
+									temp = 0;
+								}
+								eegDataBig.push_back(eegData);
+								eegData.clear();
+							}
+
+							vector<double> p_value;
+							for (int l = 0; l < eegDataBig.size(); l++)
+							{
+								p_value.push_back(wilcoxon(baseLineData, eegDataBig[l]));
+							}
+							p_valueBig.push_back(p_value);
+						}
+					}
+				}
+			}
+		}
+		p_value3D.push_back(p_valueBig);
+	}
+
+	return p_value3D;
+}
+
+InsermLibrary::PVALUECOORD** InsermLibrary::LOCA::calculateFDR(std::vector<std::vector<std::vector<double>>> pArray3D, int &p_copyIndex)
+{
+	int V = pArray3D.size() * pArray3D[0].size() * pArray3D[0][0].size();
+	int compteur = 0;
+	double CV = log(V) + 0.5772;
+	double slope = 0.05 / (V * CV);
+
+	PVALUECOORD **testeuh = new PVALUECOORD *[V];
+	for (int i = 0; i < pArray3D.size(); i++)
+	{
+		for (int j = 0; j < pArray3D[i].size(); j++)
+		{
+			for (int k = 0; k < pArray3D[i][j].size(); k++)
+			{
+				testeuh[compteur] = new PVALUECOORD();
+				testeuh[compteur]->elec = i;
+				testeuh[compteur]->condit = j;
+				testeuh[compteur]->window = k;
+				testeuh[compteur]->vectorpos = compteur;
+				testeuh[compteur]->pValue = pArray3D[i][j][k];
+
+				compteur++;
+			}
+		}
+	}
+
+	//for (int i = 0; i < V; i++)
+	//{
+	//	if (testeuh[i]->elec == 102 && testeuh[i]->condit == 8)
+	//	{
+	//		std::cout << testeuh[i]->pValue << std::endl;
+	//	}
+	//}
+
+	//heapsort if quicksort pas assez rapide              //compteur -1 peut être à cause de la sortie de boucle
+	std::sort(testeuh, testeuh + compteur,
+		[](PVALUECOORD *a, PVALUECOORD *b) {
+		return (a->pValue < b->pValue);
+	});
+
+	int copyIndex;
+
+	for (int i = 1; i < V; i++)														//pas 0 car premier point pose problème
+	{
+		if (testeuh[i]->pValue >((double)slope * i))
+		{
+			p_copyIndex = i;
+			break;
+		}
+	}
+
+	PVALUECOORD **significantValue = new PVALUECOORD *[p_copyIndex];
+
+	for (int i = 0; i < p_copyIndex; i++)
+	{
+		significantValue[i] = new PVALUECOORD();
+		significantValue[i]->elec = testeuh[i]->elec;
+		significantValue[i]->condit = testeuh[i]->condit;
+		significantValue[i]->window = testeuh[i]->window;
+		significantValue[i]->vectorpos = testeuh[i]->vectorpos;
+		significantValue[i]->pValue = testeuh[i]->pValue;
+	}
+
+	std::sort(significantValue, significantValue + p_copyIndex,
+		[](PVALUECOORD *a, PVALUECOORD *b) {
+		return ((a->vectorpos < b->vectorpos));
+	});
+
+	//for (int i = 0; i < copyIndex; i++)
+	//{
+	//	cout << significantValue[i]->elec << "-" << significantValue[i]->condit << "-" << significantValue[i]->window << " : " << significantValue[i]->pValue << " | " << p_elan->trc->nameElectrodePositiv[p_elan->m_bipole[significantValue[i]->elec]] << endl;
+	//}
+	return significantValue;
 }
 
 void InsermLibrary::LOCA::cat2ellaRTTrigg(mainEventBLOC **p_mainEvents, int p_numberMainEvents, secondaryEventBLOC ***p_responseEvents, int* p_sizeRespEvents)

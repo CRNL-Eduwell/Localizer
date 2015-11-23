@@ -37,6 +37,10 @@ public slots:
 	void displayLog(QString info);
 	void receiveElanPointer(InsermLibrary::ELAN *p_elan);
 
+private slots :
+	void openOptions();
+	void openAbout();
+
 signals:
 	void bipDone(bool);
 

@@ -13,7 +13,7 @@
 
 #include "locagui.h"
 #include "locaguiBIP.h"
-
+#include "locaguiOpt.h"
 
 LocaGUI::LocaGUI(QWidget *parent) : QMainWindow(parent)
 {
@@ -64,6 +64,12 @@ void LocaGUI::setUpGUI(QMainWindow* QTGUIClass)
 		ui.frequencyTabWidget->addTab(freqTAB[i], QString(freqBandName[i].c_str()));
 	}
 	/*************************************************/
+
+	QAction* Options = ui.menuConfiguration->actions().at(0);
+	QAction* About = ui.menuAide->actions().at(0);
+
+	QObject::connect(Options, SIGNAL(triggered()), this, SLOT(openOptions()));
+	QObject::connect(About, SIGNAL(triggered()), this, SLOT(openAbout()));
 }
 
 void LocaGUI::readFreqFile(std::string p_pathFreq)
@@ -422,4 +428,15 @@ void LocaGUI::receiveElanPointer(InsermLibrary::ELAN *p_elan)
 	test->exec();
 	p_elan->eeg_loc_montage(p_elan->trc->nameElectrodePositiv, p_elan->trc->signalPosition);
 	emit bipDone(true);
+}
+
+void LocaGUI::openOptions()
+{
+	locaguiOpt *test2 = new locaguiOpt(this);
+	test2->exec();
+}
+
+void LocaGUI::openAbout()
+{
+	QMessageBox::about(this, "This Software", "has been developed at Dycog - INSERM Lyon");
 }
