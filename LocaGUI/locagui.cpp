@@ -15,6 +15,8 @@
 #include "locaguiBIP.h"
 #include "locaguiOpt.h"
 
+#include "vld.h"
+
 LocaGUI::LocaGUI(QWidget *parent) : QMainWindow(parent)
 {
 	ui.setupUi(this);
@@ -24,7 +26,24 @@ LocaGUI::LocaGUI(QWidget *parent) : QMainWindow(parent)
 
 LocaGUI::~LocaGUI()
 {
+	for (int i = 0; i < freqBandName.size(); i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			delete freqCheckBox[i][j];
+		}
+		delete freqCheckBox[i];
+		delete freqTAB[i];
+	}
+	delete freqCheckBox;
+	delete freqTAB;
+	freqCheckBox = nullptr;
+	freqTAB = nullptr;
 
+	delete listTRCWidget;
+	listTRCWidget = nullptr;
+
+	//delete optionLOCAGUI;
 }
 
 //===========================================  Methods  =========================================== 
@@ -318,9 +337,9 @@ void LocaGUI::launchAnalysis()
 		}
 		anaDetails.push_back(tempDetails);
 	}
-
+	
 	thread = new QThread;
-	worker = new Worker(freqBandValue, anaDetails, trcFiles, provFiles, patientFolder, tasks, exp_tasks);
+	worker = new Worker(optionLOCAGUI, freqBandValue, anaDetails, trcFiles, provFiles, patientFolder, tasks, exp_tasks);
 
 	//Function to return pointer to subclasses for message sending
 	InsermLibrary::LOCA *test = worker->returnLoca();
@@ -428,15 +447,26 @@ void LocaGUI::receiveElanPointer(InsermLibrary::ELAN *p_elan)
 	test->exec();
 	p_elan->eeg_loc_montage(p_elan->trc->nameElectrodePositiv, p_elan->trc->signalPosition);
 	emit bipDone(true);
+	delete test;
 }
 
 void LocaGUI::openOptions()
 {
 	locaguiOpt *test2 = new locaguiOpt(this);
+	QObject::connect(test2, SIGNAL(sendOptMenu(InsermLibrary::OptionLOCA *)), this, SLOT(receiveOptionPointer(InsermLibrary::OptionLOCA *)));
 	test2->exec();
 }
 
 void LocaGUI::openAbout()
 {
 	QMessageBox::about(this, "This Software", "has been developed at Dycog - INSERM Lyon");
+}
+
+void LocaGUI::receiveOptionPointer(InsermLibrary::OptionLOCA *optionLOCA)
+{
+	if (optionLOCAGUI != nullptr)
+	{
+		delete optionLOCAGUI;
+	}
+	optionLOCAGUI = optionLOCA;
 }

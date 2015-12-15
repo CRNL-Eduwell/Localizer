@@ -3,9 +3,14 @@
 #include "Windows.h"
 
 // --- CONSTRUCTOR ---
-Worker::Worker(std::vector<std::vector<double>> p_freqBandValue, std::vector <std::vector<bool>> p_anaDetails, std::vector<std::string> p_trc, std::vector<std::string> p_prov, std::string folderPatient, std::vector<std::string> p_tasks, std::vector<std::string> p_exptasks)
+Worker::Worker(InsermLibrary::OptionLOCA *p_LOCAOpt, std::vector<std::vector<double>> p_freqBandValue, std::vector <std::vector<bool>> p_anaDetails, std::vector<std::string> p_trc, std::vector<std::string> p_prov, std::string folderPatient, std::vector<std::string> p_tasks, std::vector<std::string> p_exptasks)
 {
 	// you could copy data from constructor arguments to internal variables here.
+	LOCAOpt = p_LOCAOpt;
+	if (LOCAOpt == nullptr)
+	{
+		LOCAOpt = new InsermLibrary::OptionLOCA();
+	}
 
 	numberFiles = p_trc.size();
 	locaAnaOpt = new InsermLibrary::LOCAANALYSISOPTION*[numberFiles];
@@ -17,7 +22,7 @@ Worker::Worker(std::vector<std::vector<double>> p_freqBandValue, std::vector <st
 	qRegisterMetaType<InsermLibrary::ELAN*>("InsermLibrary::ELAN*");
 	
 	//get every pointer to connect when creation worker 
-	loca = new InsermLibrary::LOCA();
+	loca = new InsermLibrary::LOCA(LOCAOpt);
 
 }
 
@@ -43,7 +48,6 @@ void Worker::process()
 {
 	// allocate resources using new here
 	//qDebug("Hello World!");
-
 	std::stringstream TRCfilePath, LOCAfilePath, displayText, TimeDisp;
 	SYSTEMTIME LocalTime;
 
@@ -101,6 +105,15 @@ void Worker::process()
 			delete elan->trc;
 			elan->trc = nullptr;
 			elan->trc = trc;
+
+			for (int i = 0; i < elan->numberFrequencyBand; i++)
+			{
+				if (elan->elanFreqBand[i]->chan_nb > 0)
+				{
+					ef_free_data_array(elan->elanFreqBand[i]);
+					ef_free_struct(elan->elanFreqBand[i]);
+				}
+			}
 		}
 
 		std::stringstream().swap(displayText);
@@ -157,8 +170,20 @@ void Worker::process()
 		GetLocalTime(&LocalTime);
 		TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond;
 		emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
+
+		delete p_provVISU;
+		p_provVISU = nullptr;
+		
+		//delete elan->trc;
+		//elan->trc = nullptr;
 	}
 	emit sendLogInfo(QString::fromStdString("ByeBye"));
+
+	delete elan;   
+	elan = nullptr;
+	delete loca;
+	loca = nullptr;
+
 	emit finished();
 }
 

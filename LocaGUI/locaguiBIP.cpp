@@ -24,12 +24,15 @@ void LocaGUIBIP::fillGUIBipoles()
 		item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
 		item->setCheckState(Qt::Checked); // AND initialize check state
 		ui.listWidget->addItem(item);
+
 	}
 }
 
 void LocaGUIBIP::connectAllBordel()
 {
 	QObject::connect(ui.pushButton, SIGNAL(clicked()), this, SLOT(createBipoles()));
+	//QObject::connect(ui.listWidget, SIGNAL(itemSelectionChanged()), this, SLOT(checkMulti()));
+	QObject::connect(ui.listWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkMulti(QListWidgetItem *)));
 }
 
 void LocaGUIBIP::createBipoles()
@@ -44,16 +47,16 @@ void LocaGUIBIP::createBipoles()
 		}
 	}
 
-	index_supp.push_back(63);
-	index_supp.push_back(64);
-	index_supp.push_back(127);
-	index_supp.push_back(128);
-	index_supp.push_back(129);
+	//index_supp.push_back(63);
+	//index_supp.push_back(64);
+	//index_supp.push_back(127);
+	//index_supp.push_back(128);
+	//index_supp.push_back(129);
 
-	for (int i = 179; i < elan->trc->nameElectrodePositiv.size(); i++)
-	{
-		index_supp.push_back(i);
-	}
+	//for (int i = 179; i < elan->trc->nameElectrodePositiv.size(); i++)
+	//{
+	//	index_supp.push_back(i);
+	//}
 
 	//On enlève les éléc qu'on veut pas																																																  //
 	int pos = std::find(index_supp.begin(), index_supp.end(), 0) - index_supp.begin();																																				  //
@@ -75,4 +78,14 @@ void LocaGUIBIP::createBipoles()
 	//elan->eeg_loc_montage(elan->trc->nameElectrodePositiv, elan->trc->signalPosition);
 	//accept();
 	close();
+}
+
+void LocaGUIBIP::checkMulti(QListWidgetItem * item)
+{
+	QList<QListWidgetItem *> a = ui.listWidget->selectedItems();
+
+	for (int i = 0; i < a.size(); i++)
+	{
+		a.at(i)->setCheckState(item->checkState());
+	}
 }

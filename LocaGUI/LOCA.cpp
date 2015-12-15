@@ -89,6 +89,7 @@ InsermLibrary::TRIGGINFO::~TRIGGINFO()
 	{
 		delete trigg[i];
 	}
+	delete trigg;
 }
 /*****************************************************************************************************************************************************************************************************************************************************/
 
@@ -119,26 +120,46 @@ InsermLibrary::LOCAANALYSISOPTION::~LOCAANALYSISOPTION()
 /**********************************************************************************************************************************************************************************************************************************************/
 /*																																																											  */
 /**********************************************************************************************************************************************************************************************************************************************/
-InsermLibrary::LOCA::LOCA()
+InsermLibrary::LOCA::LOCA(OptionLOCA *p_options)
 {
-
+	opt = p_options;
 }
 
 InsermLibrary::LOCA::~LOCA()
 {
+	if(triggTRC != nullptr)
+		delete triggTRC;
 
+	if (triggDownTRC != nullptr)
+		delete triggDownTRC;
+
+	if (triggCatEla != nullptr)
+		delete triggCatEla;
+
+	if (triggCatElaNoSort != nullptr)
+		delete triggCatElaNoSort;
+
+	if (painter != nullptr)
+		delete painter;
+
+	if (pixMap != nullptr)
+		delete pixMap;
+
+	if (opt != nullptr)
+		delete opt;
 }
 /**********************************************************************************************************************************************************************************************************************************************/
 
+/**********************************************************************************************************************************************************************************************************************************************/
+/*																																																											  */
+/**********************************************************************************************************************************************************************************************************************************************/
 void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
 	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
-	double frequencyBetta[5]{8, 12, 16, 20, 24};
-	double frequencyGamma[11]{ 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150 };
 	int *code = new int[11]{10, 20, 30, 40, 50, 60, 70, 90, 110, 100, 80};
 	string *strCode = new string[11]{"Maison", "Visage", "Animal", "Scene", "Objet", "Pseudo", "Conson", "Scrambled", "Bfix", "Pause", "Fruits"};
 	int *window_ms = new int[2]{-500, 1000};
-	
+
 	/*************************************************************************************************************************************************************/
 	/*																	Create .pos and dsX.pos File															 */
 	/*************************************************************************************************************************************************************/
@@ -170,6 +191,10 @@ void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
+
+	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
+	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+	
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
@@ -223,7 +248,7 @@ void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 					std::stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -270,7 +295,7 @@ void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 						std::stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -285,6 +310,15 @@ void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
+	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+	{
+		delete stimEvents[i];
+	}
+	delete stimEvents;
+
+	delete[] window_ms;
+	delete[] strCode;
+	delete[] code;
 } // loca 
 
 void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
@@ -293,7 +327,7 @@ void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 	int *code = new int[6]{10, 20, 30, 1, 2, 100};
 	string *strCode = new string[6]{"Seman", "Phono", "Visual", "RepY", "RepN", "Pause"};
 	int *window_ms = new int[2]{-1000, 3000};
-
+	
 	/*************************************************************************************************************************************************************/
 	/*																	Create .pos and dsX.pos File															 */
 	/*************************************************************************************************************************************************************/
@@ -324,6 +358,9 @@ void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
+
+	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
+	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
@@ -378,7 +415,7 @@ void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 					std::stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -425,7 +462,7 @@ void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 						std::stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -440,6 +477,15 @@ void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
+	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+	{
+		delete stimEvents[i];
+	}
+	delete stimEvents;
+
+	delete[] window_ms;
+	delete[] strCode;
+	delete[] code;
 } // loca 
 
 void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
@@ -479,6 +525,9 @@ void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
+
+	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
+	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
@@ -533,7 +582,7 @@ void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 					std::stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -580,7 +629,7 @@ void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 						std::stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -595,6 +644,15 @@ void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
+	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+	{
+		delete stimEvents[i];
+	}
+	delete stimEvents;
+
+	delete[] window_ms;
+	delete[] strCode;
+	delete[] code;
 } // loca 
 
 void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
@@ -638,6 +696,9 @@ void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
+	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
+	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
@@ -691,7 +752,7 @@ void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 					std::stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -738,7 +799,7 @@ void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 						std::stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -753,6 +814,15 @@ void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
+	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+	{
+		delete stimEvents[i];
+	}
+	delete stimEvents;
+
+	delete[] window_ms;
+	delete[] strCode;
+	delete[] code;
 } // loca 
 
 void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
@@ -796,6 +866,9 @@ void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
+	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
+	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
@@ -849,7 +922,7 @@ void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 					std::stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -896,7 +969,7 @@ void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 						std::stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -911,6 +984,15 @@ void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
+	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+	{
+		delete stimEvents[i];
+	}
+	delete stimEvents;
+
+	delete[] window_ms;
+	delete[] strCode;
+	delete[] code;
 } // loca 
 
 void InsermLibrary::LOCA::LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
@@ -950,6 +1032,9 @@ void InsermLibrary::LOCA::LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
+
+	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
+	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
@@ -1004,7 +1089,7 @@ void InsermLibrary::LOCA::LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 					std::stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -1051,7 +1136,7 @@ void InsermLibrary::LOCA::LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 						std::stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -1066,6 +1151,15 @@ void InsermLibrary::LOCA::LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
+	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+	{
+		delete stimEvents[i];
+	}
+	delete stimEvents;
+
+	delete[] window_ms;
+	delete[] strCode;
+	delete[] code;
 } // loca 
 
 void InsermLibrary::LOCA::LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
@@ -1105,6 +1199,9 @@ void InsermLibrary::LOCA::LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
+
+	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
+	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
@@ -1159,7 +1256,7 @@ void InsermLibrary::LOCA::LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 					std::stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -1206,7 +1303,7 @@ void InsermLibrary::LOCA::LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 						std::stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -1221,6 +1318,15 @@ void InsermLibrary::LOCA::LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
+	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+	{
+		delete stimEvents[i];
+	}
+	delete stimEvents;
+
+	delete[] window_ms;
+	delete[] strCode;
+	delete[] code;
 } // loca 
 
 void InsermLibrary::LOCA::LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
@@ -1260,6 +1366,9 @@ void InsermLibrary::LOCA::LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
+
+	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
+	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
@@ -1314,7 +1423,7 @@ void InsermLibrary::LOCA::LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 					std::stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -1361,7 +1470,7 @@ void InsermLibrary::LOCA::LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 						std::stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -1376,6 +1485,15 @@ void InsermLibrary::LOCA::LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
+	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+	{
+		delete stimEvents[i];
+	}
+	delete stimEvents;
+
+	delete[] window_ms;
+	delete[] strCode;
+	delete[] code;
 } // loca 
 
 void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
@@ -1419,6 +1537,9 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
+	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
+	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
@@ -1445,13 +1566,13 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
-				if (!QDir(&folderTrialsSM.str()[0]).exists())
-				{
-					std::stringstream().swap(outputMessage);
-					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
-					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
-					QDir().mkdir(&folderTrialsSM.str()[0]);
-				}
+				//if (!QDir(&folderTrialsSM.str()[0]).exists())
+				//{
+				//	std::stringstream().swap(outputMessage);
+				//	outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+				//	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+				//	QDir().mkdir(&folderTrialsSM.str()[0]);
+				//}
 				//===============================================================================================================================================================================
 
 				if (p_anaopt->analysisDetails[i + 1][2])
@@ -1463,7 +1584,7 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
 					std::stringstream().swap(cheatMode);																																									//
 					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
-					loc_bar2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 13, strCode, 13, window_ms, 20);																											//				
+					loc_bar2plot(p_elan,p_prov, i, cheatMode.str(), pathFreq.str(), code, 13, strCode, 13, window_ms, 20, stimEvents, correspondingEvents);																										//				
 					/********************************************************************************************************************************************************************************************************/
 					std::stringstream().swap(outputMessage);
 					outputMessage << "Hilbert Env Pictures DONE !";
@@ -1496,13 +1617,13 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
-					if (!QDir(&folderTrialsSM.str()[0]).exists())
-					{
-						std::stringstream().swap(outputMessage);
-						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
-						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
-						QDir().mkdir(&folderTrialsSM.str()[0]);
-					}
+					//if (!QDir(&folderTrialsSM.str()[0]).exists())
+					//{
+					//	std::stringstream().swap(outputMessage);
+					//	outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+					//	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					//	QDir().mkdir(&folderTrialsSM.str()[0]);
+					//}
 
 					if (p_anaopt->analysisDetails[i + 1][2])
 					{
@@ -1513,7 +1634,7 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
 						std::stringstream().swap(cheatMode);																																									//
 						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
-						loc_bar2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 13, strCode, 13, window_ms, 20);																											//				
+						loc_bar2plot(p_elan,p_prov, i, cheatMode.str(), pathFreq.str(), code, 13, strCode, 13, window_ms, 20, stimEvents, correspondingEvents);																										//				
 						/********************************************************************************************************************************************************************************************************/
 						std::stringstream().swap(outputMessage);
 						outputMessage << "Hilbert Env Pictures DONE !";
@@ -1540,6 +1661,15 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
+	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+	{
+		delete stimEvents[i];
+	}
+	delete stimEvents;
+
+	delete[] window_ms;
+	delete[] strCode;
+	delete[] code;
 } // loca 
 
 void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
@@ -1579,6 +1709,9 @@ void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
+
+	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
+	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
@@ -1701,7 +1834,17 @@ void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
+	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+	{
+		delete stimEvents[i];
+	}
+	delete stimEvents;
+
+	delete[] window_ms;
+	delete[] strCode;
+	delete[] code;
 } // loca 
+/**********************************************************************************************************************************************************************************************************************************************/
 
 /**********************************************************************************************************************************************************************************************************************************************/
 /*															CREATE POS AND CONF : ELAN COMPATIBILITY																																		  */
@@ -1718,7 +1861,16 @@ void InsermLibrary::LOCA::loc_create_pos(string posFile_path, string posXFile_pa
 	beginValue = indexBegin[indexBegin.size() - 1] + 1;
 
 	//create two pointer and class containing trigger info for further use
+	if (triggTRC != nullptr)
+	{
+		delete triggTRC;
+	}
 	triggTRC = new TRIGGINFO(&p_trc->valueTrigg[beginValue], &p_trc->sampleTrigg[beginValue], (int)(p_trc->sampleTrigg.size() - beginValue), 1);
+
+	if (triggDownTRC != nullptr)
+	{
+		delete triggDownTRC;
+	}
 	triggDownTRC = new TRIGGINFO(&p_trc->valueTrigg[beginValue], &p_trc->sampleTrigg[beginValue], (int)(p_trc->sampleTrigg.size() - beginValue), (int)(p_trc->samplingFrequency / 64));
 
 	if (p_prov->changeCodeFilePath != "")
@@ -2006,14 +2158,14 @@ void InsermLibrary::LOCA::loc_env2plot(InsermLibrary::ELAN *p_elan, int p_number
 	/*******************************************************************************************************************************************************************************************/											  //
 	/*												On garde uniquement les évennements du TRC qui correspondent à ceux passer par v_code et a_code					   						   */											  //
 	/*******************************************************************************************************************************************************************************************/											  //
-	for (int i = 0; i < triggTRC->numberTrigg /*p_elan->trc->sampleTrigg.size() - 1*/; i++)																									   //											  //
+	for (int i = 0; i < triggTRC->numberTrigg; i++)																																			   //											  //
 	{																																														   //											  //
 		for (int j = 0; j < v_codeLength; j++)																																				   //											  //
 		{																																													   //											  //
-			if (triggTRC->trigg[i]->valueTrigger/*p_elan->trc->valueTrigg[i]*/ == v_code[j])																								   //											  //
+			if (triggTRC->trigg[i]->valueTrigger == v_code[j])																																   //											  //
 			{																																												   //											  //
 				indexEventUsed.push_back(i);																																				   //											  //
-				eventUsed.push_back(triggTRC->trigg[i]->valueTrigger/*p_elan->trc->valueTrigg[i]*/);																						   //											  //
+				eventUsed.push_back(triggTRC->trigg[i]->valueTrigger);																														   //											  //
 			}																																												   //											  //
 		}																																													   //											  //
 	}																																														   //											  //
@@ -2040,29 +2192,27 @@ void InsermLibrary::LOCA::loc_env2plot(InsermLibrary::ELAN *p_elan, int p_number
 	/*******************************************************************************************************************************************************************************************/											  //
 	/*														Extract EEG DATA within w_window_ms around event																				   */											  //
 	/*******************************************************************************************************************************************************************************************/											  //
-	/*********************************************************************************************************************/																	   //											  //
-	/*												Read Mono Data														 */																	   //											  //
-	/*********************************************************************************************************************/																	   //											  //
-	std::cout << "Reading Hilberted Bipo ..." << endl;																	 //																	   //											  //
-	for (int i = 0; i < nbEventUsed; i++)																				 //																	   //											  //
-	{																													 //																	   //											  //
-		beginInd = triggDownTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0];								 //																	   //											  //
-		//beginInd = triggTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0]; // p_elan->trc->sampleTrigg[indexEventUsed[i]] + v_win_sam[0];											 //																	   //		
-		for (int j = 0; j < (v_win_sam[1] - v_win_sam[0]) + 1; j++)														 //																	   //											  //
-		{																												 //																	   //											  //
-			for (int k = 0; k < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; k++)								 //																	   //											  //
-			{																											 //																	   //											  //
-				m_bigdata_frequency[i][k][j] = p_elan->elanFreqBand[p_numberFrequencyBand]->eeg.data_double[0][k][beginInd + j];															   //											  //
-			}																											 //																	   //											  //
-		}																												 //																	   //											  //
-	}																													 //																	   //											  //
-	/*********************************************************************************************************************/																	   //											  //
+	/*****************************************************************************************************************************/															   //											  //
+	/*													Read Mono Data															 */															   //											  //
+	/*****************************************************************************************************************************/															   //											  //
+	std::cout << "Reading Hilberted Bipo ..." << endl;																			 //															   //											  //
+	for (int i = 0; i < nbEventUsed; i++)																						 //															   //											  //
+	{																															 //															   //											  //
+		beginInd = triggDownTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0];										 //															   //											  //
+		for (int j = 0; j < (v_win_sam[1] - v_win_sam[0]) + 1; j++)																 //															   //											  //
+		{																														 //															   //											  //
+			for (int k = 0; k < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; k++)										 //															   //											  //
+			{																													 //															   //											  //
+				m_bigdata_frequency[i][k][j] = p_elan->elanFreqBand[p_numberFrequencyBand]->eeg.data_double[0][k][beginInd + j]; //															   //											  //
+			}																													 //															   //											  //
+		}																														 //															   //											  //
+	}																															 //															   //											  //
+	/*****************************************************************************************************************************/															   //											  //
 	/*******************************************************************************************************************************************************************************************/											  //
-
-	//env2plot cards
-	//drawCardsenv2plot(p_elan, p_path, p_exp_task, m_bigdata_frequency, v_code, v_codeLength, a_code, a_codeLength, v_win_sam, nb_site, indexEventUsed, eventUsed);
-	drawCards(p_elan, p_path, p_exp_task, 2, m_bigdata_frequency, v_code, v_codeLength, a_code, a_codeLength, v_win_sam, nb_site, indexEventUsed, eventUsed);
-
+																																																											  //
+	//env2plot cards																																																						  //
+	drawCards(p_elan, p_path, p_exp_task, 2, m_bigdata_frequency, v_code, v_codeLength, a_code, a_codeLength, v_win_sam, nb_site, indexEventUsed, eventUsed);																				  //
+																																																											  //
 	/****************************************** Free Memory *******************************************/																																	  //			
 	for (int i = 0; i < nbEventUsed; i++)														  /*||*/																																	  //		
 	{																							  /*||*/																																	  //		
@@ -2080,28 +2230,31 @@ void InsermLibrary::LOCA::loc_env2plot(InsermLibrary::ELAN *p_elan, int p_number
 /**********************************************************************************************************************************************************************************************************************************************/
 /*																										BAR2PLOT																										 					  */
 /**********************************************************************************************************************************************************************************************************************************************/
-void InsermLibrary::LOCA::loc_bar2plot(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand,std::string p_path, std::string p_exp_task, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int* v_window_ms, int nb_site)//
+void InsermLibrary::LOCA::loc_bar2plot(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, int p_numberFrequencyBand, std::string p_path, std::string p_exp_task, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int* v_window_ms, int nb_site, mainEventBLOC **p_mainEvents, std::vector<int> p_correspondingEvents)//
 {																																																											  //
 	string contents;																																																						  //																																																						  //
 	int  nbEventUsed = 0, beginInd = 0;																																																		  //
 	int v_win_sam[2];																																																						  //
 	vector<int> indexEventUsed, eventUsed;																																																  	  //
 	double ***m_bigdata_frequency;																																																			  //
-																																																											  //
+	vector<vector<vector<double>>> p_value3D;
+	int copyIndex;																																																							  //
+	PVALUECOORD **significantValue = nullptr;
+	
 	v_win_sam[0] = round(64 * v_window_ms[0] / 1000);																																														  //
 	v_win_sam[1] = round(64 * v_window_ms[1] / 1000);																																														  //
 																																																											  //
 	/*******************************************************************************************************************************************************************************************/											  //
 	/*												On garde uniquement les évennements du TRC qui correspondent à ceux passer par v_code et a_code					   						   */											  //
 	/*******************************************************************************************************************************************************************************************/											  //
-	for (int i = 0; i < triggTRC->numberTrigg /*p_elan->trc->sampleTrigg.size() - 1*/; i++)																									   //											  //
+	for (int i = 0; i < triggTRC->numberTrigg; i++)																																			   //											  //
 	{																																														   //											  //
 		for (int j = 0; j < v_codeLength; j++)																																				   //											  //
 		{																																													   //											  //
-			if (triggTRC->trigg[i]->valueTrigger/*p_elan->trc->valueTrigg[i]*/ == v_code[j])																								   //											  //
+			if (triggTRC->trigg[i]->valueTrigger == v_code[j])																																   //											  //
 			{																																												   //											  //
 				indexEventUsed.push_back(i);																																				   //											  //
-				eventUsed.push_back(triggTRC->trigg[i]->valueTrigger/*p_elan->trc->valueTrigg[i]*/);																						   //											  //
+				eventUsed.push_back(triggTRC->trigg[i]->valueTrigger);																														   //											  //
 			}																																												   //											  //
 		}																																													   //											  //
 	}																																														   //											  //
@@ -2116,11 +2269,7 @@ void InsermLibrary::LOCA::loc_bar2plot(InsermLibrary::ELAN *p_elan, int p_number
 		m_bigdata_frequency[i] = new double*[p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb];	  /*||*/																																  //
 		for (int j = 0; j < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; j++)				  /*||*/																																  //
 		{																							  /*||*/																																  //
-			m_bigdata_frequency[i][j] = new double[(v_win_sam[1] - v_win_sam[0]) + 1];			  	  /*||*/																																  //
-			for (int k = 0; k < (v_win_sam[1] - v_win_sam[0]) + 1; k++)							 	  /*||*/																																  //
-			{																						  /*||*/																																  //
-				m_bigdata_frequency[i][j][k] = 0;													  /*||*/																																  //
-			}																						  /*||*/																																  //
+			m_bigdata_frequency[i][j] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();		  	  /*||*/																																  //
 		}																							  /*||*/																																  //
 	}																								  /*||*/																																  //
 	/******************************************************************************************************/																																  //
@@ -2135,7 +2284,6 @@ void InsermLibrary::LOCA::loc_bar2plot(InsermLibrary::ELAN *p_elan, int p_number
 	for (int i = 0; i < nbEventUsed; i++)																				 //																	   //											  //
 	{																													 //																	   //											  //
 		beginInd = triggDownTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0];								 //																	   //											  //
-		//beginInd = triggTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0]; // p_elan->trc->sampleTrigg[indexEventUsed[i]] + v_win_sam[0];											 //																	   //		
 		for (int j = 0; j < (v_win_sam[1] - v_win_sam[0]) + 1; j++)														 //																	   //											  //
 		{																												 //																	   //											  //
 			for (int k = 0; k < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; k++)								 //																	   //											  //
@@ -2146,11 +2294,47 @@ void InsermLibrary::LOCA::loc_bar2plot(InsermLibrary::ELAN *p_elan, int p_number
 	}																													 //																	   //											  //
 	/*********************************************************************************************************************/																	   //											  //
 	/*******************************************************************************************************************************************************************************************/											  //
+																																																											  //
+	if (opt->statsOption.useKruskall)
+	{
+		copyIndex = 0;
+		p_value3D = calculatePValueKRUS(p_elan->elanFreqBand[p_numberFrequencyBand], p_prov, p_correspondingEvents, m_bigdata_frequency, v_window_ms);
+		if (opt->statsOption.useFDRKrus)
+		{
+			significantValue = calculateFDR(p_value3D, copyIndex);
+		}
+		else
+		{
+			significantValue = new PVALUECOORD *[p_value3D.size() * p_value3D[0].size() * p_value3D[0][0].size()];
+			for (int i = 0; i < p_value3D.size(); i++)
+			{
+				for (int j = 0; j < p_value3D[i].size(); j++)
+				{
+					for (int k = 0; k < p_value3D[i][j].size(); k++)
+					{
+						significantValue[copyIndex] = new PVALUECOORD();
+						significantValue[copyIndex]->elec = i;
+						significantValue[copyIndex]->condit = j;
+						significantValue[copyIndex]->window = k;
+						significantValue[copyIndex]->vectorpos = copyIndex;
+						significantValue[copyIndex]->pValue = p_value3D[i][j][k];
 
-	//===================================FONCTION QUI TRACE LE BARGRAPHE 
-	drawBars(p_elan, p_path, p_exp_task, 2, m_bigdata_frequency, v_code, v_codeLength, a_code, a_codeLength, v_win_sam, nb_site, indexEventUsed, eventUsed);
+						copyIndex++;
+					}
+				}
+			}
+		}
+	}
 
+	drawBars(p_elan, significantValue, copyIndex, p_path, p_exp_task, 2, m_bigdata_frequency, v_code, v_codeLength, a_code, a_codeLength, v_win_sam, nb_site, indexEventUsed, eventUsed);													  //
+																																																											  //
 	/****************************************** Free Memory *******************************************/																																	  //			
+	for (int i = 0; i < copyIndex; i++)															  /*||*/																																	  //	
+	{																							  /*||*/																																	  //	
+		delete significantValue[i];																  /*||*/																																	  //	
+	}																							  /*||*/																																	  //	
+	delete significantValue;																	  /*||*/																																	  //	
+																							      /*||*/																																	  //	
 	for (int i = 0; i < nbEventUsed; i++)														  /*||*/																																	  //		
 	{																							  /*||*/																																	  //		
 		for (int j = 0; j < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; j++)			  /*||*/																																	  //		
@@ -2227,13 +2411,26 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 
 			screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
 			screenHeigth = GetSystemMetrics(SM_CYFULLSCREEN);
+
+			if (painter != nullptr)
+			{
+				delete painter;
+				painter = nullptr;
+			}
+			if (pixMap != nullptr)
+			{
+				delete pixMap;
+				pixMap = nullptr;
+			}
+
 			pixMap = new QPixmap(screenWidth, screenHeigth);
 			pixMap->fill(QColor(Qt::white));
+			//===================================================
 			painter = new QPainter(pixMap);
 			painter->setBackgroundMode(Qt::BGMode::OpaqueMode);
 			painter->setFont(QFont("Arial", 12, 1, false));
+			
 			stringstream().swap(tifNameStream);
-
 			switch (cards2Draw)
 			{
 			case 0 :
@@ -2246,7 +2443,6 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 				tifNameStream << p_path << "/" << p_exp_task << "_plot_f" << s_figure << ".jpg";
 				break;
 			}
-
 			tifName = &tifNameStream.str()[0];
 		}
 
@@ -2257,7 +2453,6 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 
 		nbcol = ceil((double)v_codeLength / 3);
 
-		//s_x = screenWidth * 0.0586 + ((190 * (nbcol/*3*//* + 1*/)) * (i % 3));
 		s_x = screenWidth * 0.0586 + (570 * (i % 3));
 		s_y = screenHeigth * 0.0325;
 		for (int j = 0; j < v_codeLength; j++)
@@ -2301,11 +2496,9 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 
 		for (int j = 0; j < nb_site; j++)
 		{
-			//painter->fillRect((screenWidth * 0.028) + ((190 * (nbcol/*3*/ + 1)) * (i % 3)), (screenHeigth * 0.094) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), screenWidth * 0.0105, screenHeigth * 0.0203, QColor(0, 0, 0, 255));//QColor(R G B Alpha)
 			painter->fillRect((screenWidth * 0.028) + (570 * (i % 3)), (screenHeigth * 0.094) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), screenWidth * 0.0105, screenHeigth * 0.0203, QColor(0, 0, 0, 255));//QColor(R G B Alpha)
 
 			//numéro d'index du plot de l'éléctrode
-			//painter->drawText((screenWidth * 0.015) + ((190 * (nbcol/*3*/ + 1)) * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(j + 1));
 			painter->drawText((screenWidth * 0.015) + (570 * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(j + 1));
 
 			v_f = findNum(&v_id[0], v_id.size(), j + 1);
@@ -2555,17 +2748,18 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 	/**************************************************************************************************/																																	  //
 }																																																											  //
 																																																											  //
-void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, std::string p_path, std::string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, std::vector<int> indexEventUsed, std::vector<int> EventUsed)
+void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, PVALUECOORD **p_significantValue, int p_sizeSignificant, std::string p_path, std::string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, std::vector<int> indexEventUsed, std::vector<int> EventUsed)
 {
 	string a_rt;
 	stringstream tifNameStream;
 	QString tifName;
-	int s_figure = 0, s_pos = 0, nb_elec_perfigure = 3, screenWidth = 0, screenHeigth = 0, nbcol = 0, s_x = 0, s_y = 0, compteur = 0;
 	vector<int> v_id, v_origid, v_f;
-	double *v_erp, *v_std, *v_sem, *v_lim, *m_erpPMax, *m_erpMMax;
-	double *m_erpP, *m_erpM, **m_erp, **m_lim, **m_data_se, **data;
-	double tempMean, tempErp, tempStd, tempErpM, tempMax1, tempMax2, maxCurveLegend;
+	double *v_erp, *v_lim, *m_erpPMax, *m_erpMMax, *v_data_e, *m_erpP, *m_erpM, **data;
+	double s_mean = 0, s_std = 0, s_sem = 0, s_lim = 0, tempMean = 0, tempErp = 0, tempStd = 0, tempErpM = 0, tempMax1 = 0, tempMax2 = 0, maxCurveLegend = 0;
+	int s_figure = 0, s_pos = 0, nb_elec_perfigure = 3, screenWidth = 0, screenHeigth = 0, nbcol = 0, s_x = 0, s_y = 0, compteur = 0;
 	bool goIn = false;
+	int compteurElec = 0;
+	bool *sizeSigcheck = new bool[p_sizeSignificant]();
 
 	/****************************************** Allocate Memory *******************************************/																																	  //
 	data = new double*[indexEventUsed.size()];														  /*||*/																																	  //	
@@ -2573,29 +2767,14 @@ void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, std::string p_pa
 	{																								  /*||*/																																	  //	
 		data[i] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();									  /*||*/																																	  //	
 	}																							 	  /*||*/																																	  //	
-	/*||*/																																	  //	
-	v_erp = new double[v_codeLength]();										  /*||*/																																	  //	
-	v_std = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();									 	  /*||*/																																	  //	
-	v_sem = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();										  /*||*/																																	  //	
-	v_lim = new double[v_codeLength]();										  /*||*/																																	  //	
-	/*||*/																																	  //	
-	m_erp = new double*[v_codeLength];																  /*||*/																																	  //	
-	m_lim = new double*[v_codeLength];																  /*||*/																																	  //	
+	v_erp = new double[v_codeLength]();																  /*||*/																																	  //	
+	v_lim = new double[v_codeLength]();																  /*||*/																																	  //		
 	m_erpP = new double[v_codeLength];																  /*||*/																																	  //	
 	m_erpM = new double[v_codeLength];																  /*||*/																																	  //	
-	for (int k = 0; k < v_codeLength; k++)															  /*||*/																																	  //	
-	{																								  /*||*/																																	  //	
-		m_erp[k] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();									  /*||*/																																	  //	
-		m_lim[k] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();									  /*||*/																																	  //	
-		//m_erpP[k] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();								  /*||*/																																	  //	
-		//m_erpM[k] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();								  /*||*/																																	  //	
-	}																								  /*||*/																																	  //	
-	/*||*/																																	  //	
 	m_erpPMax = new double[v_codeLength]();															  /*||*/																																	  //	
 	m_erpMMax = new double[v_codeLength]();															  /*||*/																																	  //	
 	/******************************************************************************************************/																																	  //
-	double s_mean, s_std, s_sem, s_lim;
-
+																																																												  //
 	/*******************************************************************************************************************************************************************************************/												  //
 	/*																	Create Card for each group of 3 elec																				   */												  //
 	/*******************************************************************************************************************************************************************************************/												  //
@@ -2605,6 +2784,11 @@ void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, std::string p_pa
 		v_id = p_elan->ss_elec->v_id[i];
 		v_origid = p_elan->ss_elec->v_origid[i];
 
+		if (i > 0)
+		{
+			compteurElec += p_elan->ss_elec->v_id[i - 1].size()- 1;
+		}
+
 		s_pos = i % nb_elec_perfigure;
 		if (s_pos == 0)
 		{
@@ -2613,18 +2797,29 @@ void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, std::string p_pa
 				pixMap->save(tifName, "JPG");
 			}
 			s_figure = s_figure + 1;
-
 			screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
 			screenHeigth = GetSystemMetrics(SM_CYFULLSCREEN);
+
+			if (painter != nullptr)
+			{
+				delete painter;
+				painter = nullptr;
+			}
+			if (pixMap != nullptr)
+			{
+				delete pixMap;
+				pixMap = nullptr;
+			}
+
 			pixMap = new QPixmap(screenWidth, screenHeigth);
 			pixMap->fill(QColor(Qt::white));
+			//======================================================
 			painter = new QPainter(pixMap);
 			painter->setBackgroundMode(Qt::BGMode::OpaqueMode);
 			painter->setFont(QFont("Arial", 12, 1, false));
+
 			stringstream().swap(tifNameStream);
-
 			tifNameStream << p_path << "/" << p_exp_task << "_bar_f" << s_figure << ".jpg";
-
 			tifName = &tifNameStream.str()[0];
 		}
 
@@ -2635,7 +2830,6 @@ void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, std::string p_pa
 
 		nbcol = ceil((double)v_codeLength / 3);
 
-		//s_x = screenWidth * 0.0586 + ((190 * (nbcol/*3*//* + 1*/)) * (i % 3));
 		s_x = screenWidth * 0.0586 + (570 * (i % 3));
 		s_y = screenHeigth * 0.0325;
 		for (int j = 0; j < v_codeLength; j++)
@@ -2677,13 +2871,13 @@ void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, std::string p_pa
 		painter->drawRect(recElec);
 		painter->fillRect(recElec, QColor(255, 255, 255, 128));
 
+
+
 		for (int j = 0; j < nb_site; j++)
 		{
-			//painter->fillRect((screenWidth * 0.028) + ((190 * (nbcol/*3*/ + 1)) * (i % 3)), (screenHeigth * 0.094) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), screenWidth * 0.0105, screenHeigth * 0.0203, QColor(0, 0, 0, 255));//QColor(R G B Alpha)
 			painter->fillRect((screenWidth * 0.028) + (570 * (i % 3)), (screenHeigth * 0.094) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), screenWidth * 0.0105, screenHeigth * 0.0203, QColor(0, 0, 0, 255));//QColor(R G B Alpha)
 
 			//numéro d'index du plot de l'éléctrode
-			//painter->drawText((screenWidth * 0.015) + ((190 * (nbcol/*3*/ + 1)) * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(j + 1));
 			painter->drawText((screenWidth * 0.015) + (570 * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(j + 1));
 
 			v_f = findNum(&v_id[0], v_id.size(), j + 1);
@@ -2707,14 +2901,9 @@ void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, std::string p_pa
 				{
 					v_f = findNum(&EventUsed[0], EventUsed.size(), v_code[k]);
 
-					//Init m_data_se
-					m_data_se = new double*[v_f.size()];
-					double *v_data_e = new double[v_f.size()];
-
-					for (int l = 0; l < v_f.size(); l++)
-					{
-						m_data_se[l] = new double[(v_win_sam[1] - v_win_sam[0]) + 1];
-					}
+					/************ Allocate Memory ************/																																	  
+					v_data_e = new double[v_f.size()];   /*||*/
+					/*****************************************/
 
 					if (v_f.empty() == false)
 					{
@@ -2726,8 +2915,7 @@ void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, std::string p_pa
 							tempMean = 0;
 							for (int m = 0; m < (v_win_sam[1] - v_win_sam[0]) + 1; m++)
 							{
-								m_data_se[l][m] = data[v_f[l]][m];
-								tempMean += m_data_se[l][m];
+								tempMean += data[v_f[l]][m];
 							}
 							v_data_e[l] = tempMean / ((v_win_sam[1] - v_win_sam[0]) + 1);
 							v_data_e[l] = (v_data_e[l] - 1000) / 10;
@@ -2755,13 +2943,9 @@ void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, std::string p_pa
 						std::cout << "ATTENTION, PLEASE : NO EVENT WITH TYPE = " << v_code[k] << endl;
 					}
 
-					/*delete tab each turn*/
-					for (int l = 0; l < v_f.size(); l++)
-					{
-						delete[] m_data_se[l];
-					}
-					delete[] m_data_se;
-					delete[] v_data_e;
+					/*************** Free Memory ***************/
+					delete[] v_data_e;					   /*||*/
+					/*******************************************/
 				}
 
 				for (int k = 0; k < v_codeLength; k++)
@@ -2780,62 +2964,78 @@ void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, std::string p_pa
 				tempMax1 = *(max_element(m_erpPMax, m_erpPMax + v_codeLength));
 				tempMax2 = *(max_element(m_erpMMax, m_erpMMax + v_codeLength));
 
-				maxCurveLegend = /*round(*/max(tempMax1, tempMax2)/*)*/;
+				maxCurveLegend = max(tempMax1, tempMax2);
 
 				painter->setPen(QColor(255, 0, 255, 255)); //pink petant
-				//painter->drawText((screenWidth * 0.04) + ((190 * (nbcol/*3*/ + 1)) * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(round(maxCurveLegend)));
 				painter->drawText((screenWidth * 0.04) + (570 * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(round(maxCurveLegend)));
 				painter->setPen(QColor(0, 0, 0, 255)); //noir
 
 				int coeffEsp = ceil(450 / v_codeLength);
 				double x = (screenWidth * 0.0586) + (570 * (i % 3));
 				double y = (screenHeigth * 0.107) + (screenHeigth * 0.0173) + (screenHeigth * 0.0406 * (j));
+				double x_Krus = 0;
+				double y_Krus = 0;
 
-				std::vector<double> aa, bb, cc, dd, ee;
+				double ma = *(max_element(&m_erpPMax[0], &m_erpPMax[0] + v_codeLength));
+				double mi = abs(*(min_element(&m_erpMMax[0], &m_erpMMax[0] + v_codeLength)));
 
+				ma = ma / maxCurveLegend;
+				mi = mi / maxCurveLegend;
+
+				double scaleFactor = 20 / max(ma, mi);
+
+				bool firstE = false;
 				for (int k = 0; k < v_codeLength; k++)
 				{
-					aa.push_back(v_erp[k] / maxCurveLegend);
-					bb.push_back(v_lim[k] / maxCurveLegend);
-
-					cc.push_back(aa[k] + bb[k]);
-					dd.push_back(aa[k] - bb[k]);
-				}
-
-				for (int k = 0; k < v_codeLength; k++)
-				{
-					double yP, yM,a;
-
 					v_erp[k] = v_erp[k] / maxCurveLegend;
 					v_lim[k] = v_lim[k] / maxCurveLegend;
-
-					double ma = *(max_element(&cc[0], &cc[0] + v_codeLength));
-					double mi = abs(*(min_element(&dd[0], &dd[0] + v_codeLength)));
-
-					a = 20 / max(ma,mi);
 					
 					switch (k % 3)
 					{
 					case 0:
-						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * (v_erp[k] - v_lim[k]), Qt::GlobalColor::gray);
-						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * (v_erp[k] + v_lim[k]), Qt::GlobalColor::gray);
-						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * v_erp[k], Qt::GlobalColor::blue); //blue //carré de 20 par 20 max
+						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * (v_erp[k] - v_lim[k]), Qt::GlobalColor::gray);
+						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * (v_erp[k] + v_lim[k]), Qt::GlobalColor::gray);
+						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * v_erp[k], Qt::GlobalColor::blue); //blue //carré de 20 par 20 max
 						break;
 					case 1:
-						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * (v_erp[k] - v_lim[k]), Qt::GlobalColor::gray);
-						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * (v_erp[k] + v_lim[k]), Qt::GlobalColor::gray);
-						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * v_erp[k], Qt::GlobalColor::red); //red //carré de 20 par 20 max
+						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * (v_erp[k] - v_lim[k]), Qt::GlobalColor::gray);
+						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * (v_erp[k] + v_lim[k]), Qt::GlobalColor::gray);
+						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * v_erp[k], Qt::GlobalColor::red); //red //carré de 20 par 20 max
 						break;
 					case 2:
-						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * (v_erp[k] - v_lim[k]), Qt::GlobalColor::gray);
-						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * (v_erp[k] + v_lim[k]), Qt::GlobalColor::gray);
-						painter->fillRect(x + (coeffEsp * k), y, 20 , -a * v_erp[k], Qt::GlobalColor::green); //green //carré de 20 par 20 max
+						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * (v_erp[k] - v_lim[k]), Qt::GlobalColor::gray);
+						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * (v_erp[k] + v_lim[k]), Qt::GlobalColor::gray);
+						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * v_erp[k], Qt::GlobalColor::green); //green //carré de 20 par 20 max
 						break;
 					default:
 						break;
-					}				
-				}		
-				
+					}	
+
+					for (int z = 0; z < p_sizeSignificant; z++)
+					{
+						if (((p_significantValue[z]->elec == compteurElec + j) && (p_significantValue[z]->window == k)))
+						{
+							if ((sizeSigcheck[z] == false))
+							{
+								if (firstE == false)
+								{
+									painter->setBrush(Qt::white);
+									painter->drawEllipse(x - 55, y - 7, 13, 13);
+
+									firstE = true;
+								}
+
+								x_Krus = 112 + (570 * (i % 3)) + (coeffEsp * k);
+								y_Krus = y + (-scaleFactor * (v_erp[k] + v_lim[k])) - 4; //100 + (41 * (j));
+								painter->setPen(QColor(255, 0, 255, 255)); //pink petant
+								painter->drawLine(x_Krus, y_Krus, x_Krus + 19, y_Krus);
+								painter->setPen(QColor(0, 0, 0, 255)); //noir
+
+								sizeSigcheck[z] = true;
+							}
+						}
+					}
+				}					
 				painter->drawLine(x, y, x + 450, y);
 																																															   //											  //
 				//on remet en noir																																							   //											  //
@@ -2853,27 +3053,14 @@ void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, std::string p_pa
 		delete[] data[i];																		  /*||*/																																	  //		
 	}																							  /*||*/																																	  //		
 	delete[] data;																				  /*||*/																																	  //		
-																								  /*||*/																																	  //
-	delete[] v_erp;																				  /*||*/																																	  //		
-	delete[] v_std;																				  /*||*/																																	  //		
-	delete[] v_sem;																				  /*||*/																																	  //		
+	delete[] v_erp;																				  /*||*/																																	  //			
 	delete[] v_lim;																				  /*||*/																																	  //	
-																								  /*||*/																																	  //
-	for (int k = 0; k < v_codeLength; k++)														  /*||*/																																	  //	
-	{																							  /*||*/																																	  //	
-		delete[] m_erp[k];																		  /*||*/																																	  //	
-		delete[] m_lim[k];																		  /*||*/																																	  //	
-//		delete[] m_erpP[k];																		  /*||*/																																	  //	
-	//	delete[] m_erpM[k];																		  /*||*/																																	  //	
-	}																							  /*||*/																																	  //	
-	delete[] m_erp;																				  /*||*/																																	  //	
-	delete[] m_lim;																				  /*||*/																																	  //	
 	delete[] m_erpP;																			  /*||*/																																	  //	
 	delete[] m_erpM;																			  /*||*/																																	  //	
-																								  /*||*/																																	  //
 	delete[] m_erpPMax;																			  /*||*/																																	  //	
 	delete[] m_erpMMax;																			  /*||*/																																	  //	
 	/**************************************************************************************************/																																	  //
+	delete sizeSigcheck;
 }																																																											  //
 																																																											  //
 vector<int> InsermLibrary::LOCA::findNum(int *tab, int sizetab, int value2find)																																								  //
@@ -2891,46 +3078,13 @@ vector<int> InsermLibrary::LOCA::findNum(int *tab, int sizetab, int value2find)	
 }																																																											  //
 /**********************************************************************************************************************************************************************************************************************************************/
 
+
 /*****************************************************************************************************************************************************************************************************************************************************/
 /*																										TRIALMAT																										 						     */
 /*****************************************************************************************************************************************************************************************************************************************************/
-void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand, InsermLibrary::PROV *p_prov, std::string p_outputMapLabel, std::string p_outputFolder)
+void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand, InsermLibrary::PROV *p_prov, std::string p_outputMapLabel, std::string p_outputFolder, mainEventBLOC **p_mainEvents, std::vector<int> p_correspondingEvents)
 {
 	stringstream outputPicLabel;
-	QPixmap *pixmapSubMatrix;
-	QPainter *painterSubMatrix;
-	//[======================================================================================================================================================================================]
-	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
-	secondaryEventBLOC ***responseEvents = new secondaryEventBLOC**[p_prov->numberVisuBlocs];
-	int * sizeResp = new int[p_prov->numberVisuBlocs];
-
-	int numberCol = p_prov->getNumberCol();
-	int numberRow = p_prov->getNumberRow();
-
-	for (int z = 0; z < numberCol; z++)
-	{
-		for (int y = 0; y < numberRow; y++)
-		{
-			for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-			{
-				if ((p_prov->visuBlocs[i]->dispBloc->col == z + 1) && (p_prov->visuBlocs[i]->dispBloc->row == y + 1))
-				{
-					stimEvents[i] = new mainEventBLOC(p_prov->visuBlocs[i]->mainEvent->mainEventCode, p_prov->visuBlocs[i]->mainEvent->mainEventLabel);
-
-					responseEvents[i] = new secondaryEventBLOC*[p_prov->visuBlocs[i]->numberSecondaryEvents];
-					sizeResp[i] = p_prov->visuBlocs[i]->numberSecondaryEvents;
-
-					for (int j = 0; j < p_prov->visuBlocs[i]->numberSecondaryEvents; j++)
-					{
-						responseEvents[i][j] = new secondaryEventBLOC(p_prov->visuBlocs[i]->secondaryEvents[j]->secondaryEventCode, p_prov->visuBlocs[i]->secondaryEvents[j]->sizeSecondaryEvent, p_prov->visuBlocs[i]->secondaryEvents[j]->secondaryEventLabel);
-					}
-				}
-			}
-		}
-	}
-
-	cat2ellaRTTrigg(stimEvents, p_prov->numberVisuBlocs, responseEvents, sizeResp);					//	Extract triggers 
-	std::vector<int> correspondingEvent = sortTrials(p_prov, stimEvents, numberCol, numberRow);		//	Get the index corresponding to trials sorted according to input	
 
 	//[======================================================================================================================================================================================]
 	//We calculate the biggest window there will be so that we extract the block before analysis
@@ -2965,28 +3119,75 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 	QColor *ColorMapJet = new QColor[512];
 	jetColorMap512(ColorMapJet);
 	//[======================================================================================================================================================================================]
+	int numberCol = p_prov->getNumberCol();
+	int numberRow = p_prov->getNumberRow();
 	MATRIXCOORD *coordMat = new MATRIXCOORD[numberRow * numberCol];
 	QPixmap *pixmapTemplate = new QPixmap(576, 432);
 	QPainter *painterTemplate = new QPainter(pixmapTemplate);
 	pixmapTemplate->fill(QColor(Qt::white));
-	createMapTemplate(painterTemplate, coordMat, p_prov, v_window_ms, ColorMapJet, stimEvents, triggCatEla->mainGroupSub, numberRow, numberCol);
+	createMapTemplate(painterTemplate, coordMat, p_prov, v_window_ms, ColorMapJet, p_mainEvents, triggCatEla->mainGroupSub, numberRow, numberCol);
 	//[======================================================================================================================================================================================]
 	v_window_sam[0] = round((64 * p_prov->visuBlocs[0]->dispBloc->epochWindow[0]) / 1000);
 	v_window_sam[1] = round((64 * p_prov->visuBlocs[0]->dispBloc->epochWindow[1]) / 1000);
-	outputPicLabel << p_outputFolder << "\\" << p_outputMapLabel;
+	outputPicLabel << p_outputFolder << "/" << p_outputMapLabel;
 	//[======================================================================================================================================================================================]
 
 	//[======================================================================================================================================================================================]
 	int copyIndex = 0;
+	vector<vector<vector<double>>> p_value3D;
+	PVALUECOORD **significantValue;
 
-	vector<vector<vector<double>>> p_value3D = calculatePValue(p_elan->elanFreqBand[p_numberFrequencyBand], numberRow, numberCol, p_prov, correspondingEvent, bigdata, v_window_ms);
-	PVALUECOORD **significantValue = calculateFDR(p_value3D, copyIndex);
+	if (opt->statsOption.useWilcoxon)
+	{
+		p_value3D = calculatePValue(p_elan->elanFreqBand[p_numberFrequencyBand], numberRow, numberCol, p_prov, p_correspondingEvents, bigdata, v_window_ms);
+
+		if (opt->statsOption.useFDRWil)
+		{
+			significantValue = calculateFDR(p_value3D, copyIndex);
+		}
+		else
+		{
+			significantValue = new PVALUECOORD *[p_value3D.size() * p_value3D[0].size() * p_value3D[0][0].size()];
+			for (int i = 0; i < p_value3D.size(); i++)
+			{
+				for (int j = 0; j < p_value3D[i].size(); j++)
+				{
+					for (int k = 0; k < p_value3D[i][j].size(); k++)
+					{
+						significantValue[copyIndex] = new PVALUECOORD();
+						significantValue[copyIndex]->elec = i;
+						significantValue[copyIndex]->condit = j;
+						significantValue[copyIndex]->window = k;
+						significantValue[copyIndex]->vectorpos = copyIndex;
+						significantValue[copyIndex]->pValue = p_value3D[i][j][k];
+
+						copyIndex++;
+					}
+				}
+			}
+		}
+	}
+
 	//[======================================================================================================================================================================================]
 
-	for (int i = 0; i <p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; i++)
+	QPixmap *pixmapChanel = nullptr, *pixmapSubSubMatrix = nullptr;
+	QPainter *painterChanel = nullptr, *painterSubSubMatrix = nullptr;
+
+	for (int i = 0; i < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; i++)
 	{
-		QPixmap *pixmapChanel = new QPixmap(*pixmapTemplate);
-		QPainter *painterChanel = new QPainter(pixmapChanel);
+		if (painterChanel != nullptr)
+		{
+			delete painterChanel;
+			painterChanel = nullptr;
+		}
+		if (pixmapChanel != nullptr)
+		{
+			delete pixmapChanel;
+			pixmapChanel = nullptr;
+		}
+
+		pixmapChanel = new QPixmap(*pixmapTemplate);
+		painterChanel = new QPainter(pixmapChanel);
 
 		/********************************************************************/
 		/*			Calculate Min Max for each chanel						*/
@@ -3003,8 +3204,8 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 		int SUBMatrixWidth = fullMatrixWidth / numberCol;
 		int indexPos = 0;
 		int numberSubTrial = 0;
-		int interpolFactorX = 10;	//1 if no interpolation and lowest quality for matrix
-		int interpolFactorY = 3;	//1 if no interpolation and lowest quality for matrix
+		int interpolFactorX = opt->picOption.interpolationFactorX;	//1 if no interpolation and lowest quality for matrix
+		int interpolFactorY = opt->picOption.interpolationFactorY;	//1 if no interpolation and lowest quality for matrix
 
 		for (int j = 0; j < numberCol; j++)
 		{ 
@@ -3022,11 +3223,11 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 							int winMsMax = p_prov->visuBlocs[z]->dispBloc->epochWindow[1];
 							int winSamMin = round((64 * winMsMin) / 1000);
 							int winSamMax = round((64 * winMsMax) / 1000);
-							int a = triggCatEla->mainGroupSub[correspondingEvent[z]];
-							int b = triggCatEla->mainGroupSub[correspondingEvent[z] + 1];
+							int a = triggCatEla->mainGroupSub[p_correspondingEvents[z]];
+							int b = triggCatEla->mainGroupSub[p_correspondingEvents[z] + 1];
 							int numberSubTrial = b - a;
 							int subsubMatrixHeigth = 0;
-
+							
 							std::vector<int> colorX[512], colorY[512];
 							if (interpolFactorX > 1)
 							{
@@ -3037,7 +3238,7 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 							}
 							else
 							{
-								interpolFactorX = 1; //Sécurité !
+								//interpolFactorX = 1; //Sécurité !
 
 								for (int l = 0; l < numberSubTrial; l++)													   
 								{																							   
@@ -3064,81 +3265,104 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 								subsubMatrixHeigth = numberSubTrial;
 							}
 
-							/*************************************************************/
-							/*		ceate subBlock and paste it on the big Matrix		 */
-							/*************************************************************/
-							QPixmap *pixmapSubSubMatrix = new QPixmap(interpolFactorX * (winSamMax - winSamMin), subsubMatrixHeigth);
-							QPainter *painterSubSubMatrix = new QPainter(pixmapSubSubMatrix);					 //
-							painterSubSubMatrix->setBackgroundMode(Qt::BGMode::TransparentMode);	 //
+							/***************************************************************************************************************/
+							/*							ceate subBlock and paste it on the big Matrix									   */
+							/***************************************************************************************************************/
+							if (painterSubSubMatrix != nullptr)																		  	   //
+							{																											   //
+								delete painterSubSubMatrix;																				   //
+								painterSubSubMatrix = nullptr;																			   //
+							}																											   //
+							if (pixmapSubSubMatrix != nullptr)																		 	   //
+							{																											   //
+								delete pixmapSubSubMatrix;																				   //
+								pixmapSubSubMatrix = nullptr;																			   //
+							}																											   //
+							pixmapSubSubMatrix = new QPixmap(interpolFactorX * (winSamMax - winSamMin), subsubMatrixHeigth);			   //
+							painterSubSubMatrix = new QPainter(pixmapSubSubMatrix);													  	   //
+							painterSubSubMatrix->setBackgroundMode(Qt::BGMode::TransparentMode);										   //
+																																		   //
+							for (int l = 0; l < 512; l++)																				   //
+							{																											   //
+								painterSubSubMatrix->setPen(QColor(ColorMapJet[l].red(), ColorMapJet[l].green(), ColorMapJet[l].blue()));  //
+								for (int m = 0; m < colorX[l].size(); m++)																   //
+								{																										   //
+									painterSubSubMatrix->drawPoint(QPoint(colorX[l][m], subsubMatrixHeigth - colorY[l][m]));			   //
+								}																										   //
+							}																											   //
+																																		   //
+							indexPos = (((j + 1) * numberRow) - 1) - p_correspondingEvents[z];											   //
+							painterChanel->drawPixmap(coordMat[indexPos].x, coordMat[indexPos].y, 										   //
+								pixmapSubSubMatrix->scaled(QSize(coordMat[indexPos].width, coordMat[indexPos].heigth), 					   //
+								Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));					   //
+							/***************************************************************************************************************/
 
-							for (int l = 0; l < 512; l++)
-							{
-								painterSubSubMatrix->setPen(QColor(ColorMapJet[l].red(), ColorMapJet[l].green(), ColorMapJet[l].blue()));	 //
-								for (int m = 0; m < colorX[l].size(); m++)
-								{
-									painterSubSubMatrix->drawPoint(QPoint(colorX[l][m], subsubMatrixHeigth - colorY[l][m]));
-								}
-							}
-
-							/*Ajout des temps de réaction sur la carte*/
-							if (triggCatEla->trigg[a + 2]->rt_ms != 10000000) //si un des temps de réaction n'a pas sa valeur de défault, à priori ils y seront tous 
-							{
-								painterSubSubMatrix->setPen(QColor(0, 0, 0, 255)); //black
-								for (int l = 0; l < numberSubTrial; l++)
-								{
-									int timeValue = abs(winMsMin /*v_window_ms[0]*/) + triggCatEla->trigg[a + l]->rt_ms;
-									int markPoint = ceil((double)(interpolFactorX * (winSamMax - winSamMin)) / (winMsMax - winMsMin) * timeValue);    //(v_window_ms[1] - v_window_ms[0]) * timeValue);
-									painterSubSubMatrix->setBrush(Qt::black);
-									painterSubSubMatrix->drawEllipse(QPoint(markPoint, subsubMatrixHeigth - (interpolFactorY * l)), 20, 2);
-								}
-							}
-							/*********************************************/
-
-							indexPos = (((j + 1) * numberRow) - 1) - correspondingEvent[z];
-							painterChanel->drawPixmap(coordMat[indexPos].x, coordMat[indexPos].y, pixmapSubSubMatrix->scaled(QSize(coordMat[indexPos].width, coordMat[indexPos].heigth), Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));
+							/*********************************************************************************************************/
+							/*	 							    Ajout des temps de réaction sur la carte							 */
+							/*		=> Si un des temps de reaction n'a pas sa valeur de défault, à priori ils y seront tous			 */
+							/*********************************************************************************************************/
+							if (triggCatEla->trigg[a + 2]->rt_ms != 10000000) 													 	 //
+							{																										 //
+								painterChanel->setPen(QColor(Qt::black));															 //
+								for (int l = 0; l < numberSubTrial; l++)															 //
+								{																									 //
+									int xReactionTimeMs = abs(winMsMin) + triggCatEla->trigg[a + l]->rt_ms;							 //
+									double xScale = (double)(winMsMax - winMsMin) / fullMatrixWidth;								 //
+									double xRt = 75 + (xReactionTimeMs / xScale);													 //
+																																	 //
+									int yTrialPosition = coordMat[indexPos].y + coordMat[indexPos].heigth;							 //
+									double yRt = yTrialPosition - (((double)coordMat[indexPos].heigth / numberSubTrial) * l);		 //
+																																	 //
+									painterChanel->setBrush(Qt::black);																 //
+									painterChanel->drawEllipse(QPoint(xRt, yRt), 2, 2);												 //
+								}																									 //
+							}																										 //
+							/*********************************************************************************************************/
 						}
 					}
 				}
 			}
 		}
 
-		/* Ligne Blanche marquant l'évennement principal */
-		int zeroBorder = ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * abs(v_window_ms[0]));
-		painterChanel->setPen(QColor(255, 255, 255, 255)); //white
-		painterChanel->drawLine(74 + zeroBorder, 385, 74 + zeroBorder, 33);
-		painterChanel->drawLine(75 + zeroBorder, 385, 75 + zeroBorder, 33);
-		painterChanel->drawLine(76 + zeroBorder, 385, 76 + zeroBorder, 33);
-		/************************************************/
-
+		/*************************************************************************************************/
+		/*	 						Ligne blanche marquant l'évennement principal	 					 */
+		/*************************************************************************************************/
+		int zeroBorder = ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * abs(v_window_ms[0]));	 //
+		painterChanel->setPen(QColor(255, 255, 255, 255)); //white										 //
+		painterChanel->drawLine(74 + zeroBorder, 385, 74 + zeroBorder, 33);								 //
+		painterChanel->drawLine(75 + zeroBorder, 385, 75 + zeroBorder, 33);								 //
+		painterChanel->drawLine(76 + zeroBorder, 385, 76 + zeroBorder, 33);								 //
+		/*************************************************************************************************/
 		
 		//================================= Display STATS
-
-		for (int j = 0; j < numberCol; j++)
+		if (opt->statsOption.useWilcoxon)
 		{
-			for (int k = 0; k < numberRow; k++)
+			for (int j = 0; j < numberCol; j++)
 			{
-				int xTest = coordMat[((numberRow * numberCol)-1) - (k + (j*numberRow))].x + zeroBorder;
-				int yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2 + coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].heigth;
-
-				if (k == numberRow - 1)
+				for (int k = 0; k < numberRow; k++)
 				{
-					yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2;
-				}
+					int xTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].x + zeroBorder;
+					int yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2 + coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].heigth;
 
-				for (int l = 0; l < p_value3D[i][k].size(); l++)
-				{
-					for (int m = 0; m < copyIndex; m++)
+					if (k == numberRow - 1)
 					{
-						if (p_value3D[i][k][l] == significantValue[m]->pValue && significantValue[m]->elec == i && significantValue[m]->window == l)
-						{
-							int dataPlus2 = ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * abs((200))); //abs de 100 car overlap 50% de la fenêtre de 200 ms
-							int xBeg = xTest + ((dataPlus2 / 2) * (l));
-							//int xEnd = xTest + ((dataPlus2 /*/ 2*/) * (l + 1));
-							int xEnd = xBeg + dataPlus2;
+						yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2;
+					}
 
-							painterChanel->setPen(QColor(Qt::GlobalColor::white));
-							painterChanel->drawLine(xBeg, yTest, xEnd, yTest);
-							painterChanel->drawLine(xBeg, yTest + 1, xEnd, yTest + 1);
+					for (int l = 0; l < p_value3D[i][k].size(); l++)
+					{
+						for (int m = 0; m < copyIndex; m++)
+						{
+							if (p_value3D[i][k][l] == significantValue[m]->pValue && significantValue[m]->elec == i && significantValue[m]->window == l)
+							{
+								int dataPlus2 = ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * abs((100))); //abs de 100 car overlap 50% de la fenêtre de 200 ms
+								int xBeg = xTest + ((dataPlus2 / 2) * (l));
+								int xEnd = xBeg + dataPlus2;
+
+								painterChanel->setPen(QColor(Qt::GlobalColor::white));
+								painterChanel->drawLine(xBeg, yTest, xEnd, yTest);
+								painterChanel->drawLine(xBeg, yTest + 1, xEnd, yTest + 1);
+							}
 						}
 					}
 				}
@@ -3164,6 +3388,40 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 
 		pixmapChanel->save(outputPicPath.c_str(), "JPG");
 	}
+
+	for (int i = 0; i < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; i++)
+	{
+		for (int j = 0; j < triggCatEla->numberTrigg; j++)
+		{
+			delete[] bigdata[i][j];
+		}
+		delete[] bigdata[i];
+	}
+	delete[] bigdata;
+
+	delete painterTemplate;
+	painterTemplate = nullptr;
+	delete pixmapTemplate;
+	pixmapTemplate = nullptr;
+
+	delete painterChanel;
+	painterChanel = nullptr;
+	delete pixmapChanel;
+	pixmapChanel = nullptr;
+
+	delete painterSubSubMatrix;
+	painterSubSubMatrix = nullptr;
+	delete pixmapSubSubMatrix;
+	pixmapSubSubMatrix = nullptr;
+
+	for (int i = 0; i < copyIndex; i++)
+	{
+		delete significantValue[i];
+	}
+	delete significantValue;
+
+	delete ColorMapJet;
+	delete coordMat;
 }
 
 vector<vector<vector<double>>> InsermLibrary::LOCA::calculatePValue(elan_struct_t *p_elan_struct, int row, int col, InsermLibrary::PROV *p_prov, std::vector<int> correspEvent, double ***bigdata, int windowMS[2])
@@ -3226,7 +3484,7 @@ vector<vector<vector<double>>> InsermLibrary::LOCA::calculatePValue(elan_struct_
 								eegDataBig.push_back(eegData);
 								eegData.clear();
 							}
-
+							
 							vector<double> p_value;
 							for (int l = 0; l < eegDataBig.size(); l++)
 							{
@@ -3244,6 +3502,85 @@ vector<vector<vector<double>>> InsermLibrary::LOCA::calculatePValue(elan_struct_
 	return p_value3D;
 }
 
+vector<vector<vector<double>>> InsermLibrary::LOCA::calculatePValueKRUS(elan_struct_t *p_elan_struct, InsermLibrary::PROV *p_prov, std::vector<int> correspEvent, double ***eegData, int windowMS[2])
+{
+	vector<vector<vector<double>>> p_value3D;
+	for (int i = 0; i < p_elan_struct->chan_nb; i++)
+	{
+		vector<double> baseLineData, EEGData;
+		vector<vector<double>> eegDataBig;
+		double temp = 0, temp2 = 0;
+		vector<vector<double>> p_valueBig;
+
+		//On calcule la valeur pour la base line (cas silence)
+		int a = triggCatEla->mainGroupSub[correspEvent[correspEvent.size() - 1]];
+		int b = triggCatEla->mainGroupSub[correspEvent[correspEvent.size() - 1] + 1];
+		int numberSubTrial = b - a;
+		
+		for (int l = 0; l < numberSubTrial; l++)
+		{
+			int baselineDebut = 16;
+			int baselineFin = 48;
+
+			for (int m = 0; m < (baselineFin - baselineDebut); m++)
+			{
+			temp += eegData[triggCatEla->trigg[a + l]->origPos][i][baselineDebut + m];
+			}
+			baseLineData.push_back(temp / (baselineFin - baselineDebut));
+			temp = 0;
+		}
+		
+		//On calcule la valeur pour le premier cas 
+		for (int n = 0; n < triggCatEla->mainGroupSub.size() - 2; n++)
+		{
+			a = triggCatEla->mainGroupSub[correspEvent[n]];
+			b = triggCatEla->mainGroupSub[correspEvent[n+1]];
+			numberSubTrial = b - a;
+
+			for (int l = 0; l < numberSubTrial; l++)
+			{
+				//boucle moyenne des X fenetres que l'on veut (même taille que base line)
+
+				int winDebut = 16;
+				int winFin = 48;
+
+				for (int m = 0; m < (winFin - winDebut); m++)
+				{
+					temp2 += eegData[triggCatEla->trigg[a + l]->origPos][i][winDebut + m];
+				}
+				EEGData.push_back(temp2 / (winFin - winDebut));
+				temp2 = 0;
+			}
+			eegDataBig.push_back(EEGData);
+			EEGData.clear();
+		}
+
+
+		//On calcule les p
+		double *dataArray[2];
+		int nbSamplePerGroup[2];
+		for (int n = 0; n < 1; n++)   //(une seule fenêtre qui prend tout en compte )
+		{
+			double p = 0, H = 0;
+			vector<double> P_VALUE;
+			dataArray[0] = &baseLineData[0];
+			for (int l = 0; l < eegDataBig.size(); l++)
+			{
+				dataArray[1] = &eegDataBig[l][0];
+				nbSamplePerGroup[0] = eegDataBig[l].size();
+				nbSamplePerGroup[1] = eegDataBig[l].size();
+
+				kruskal_wallis(dataArray, 2, nbSamplePerGroup, &H, &p, 1);
+				P_VALUE.push_back(p);
+			}
+			p_valueBig.push_back(P_VALUE);
+		}
+		p_value3D.push_back(p_valueBig);
+	}
+
+	return p_value3D;
+}
+
 InsermLibrary::PVALUECOORD** InsermLibrary::LOCA::calculateFDR(std::vector<std::vector<std::vector<double>>> pArray3D, int &p_copyIndex)
 {
 	int V = pArray3D.size() * pArray3D[0].size() * pArray3D[0][0].size();
@@ -3251,44 +3588,34 @@ InsermLibrary::PVALUECOORD** InsermLibrary::LOCA::calculateFDR(std::vector<std::
 	double CV = log(V) + 0.5772;
 	double slope = 0.05 / (V * CV);
 
-	PVALUECOORD **testeuh = new PVALUECOORD *[V];
+	PVALUECOORD **preFDRValues = new PVALUECOORD *[V];
 	for (int i = 0; i < pArray3D.size(); i++)
 	{
 		for (int j = 0; j < pArray3D[i].size(); j++)
 		{
 			for (int k = 0; k < pArray3D[i][j].size(); k++)
 			{
-				testeuh[compteur] = new PVALUECOORD();
-				testeuh[compteur]->elec = i;
-				testeuh[compteur]->condit = j;
-				testeuh[compteur]->window = k;
-				testeuh[compteur]->vectorpos = compteur;
-				testeuh[compteur]->pValue = pArray3D[i][j][k];
+				preFDRValues[compteur] = new PVALUECOORD();
+				preFDRValues[compteur]->elec = i;
+				preFDRValues[compteur]->condit = j;
+				preFDRValues[compteur]->window = k;
+				preFDRValues[compteur]->vectorpos = compteur;
+				preFDRValues[compteur]->pValue = pArray3D[i][j][k];
 
 				compteur++;
 			}
 		}
 	}
 
-	//for (int i = 0; i < V; i++)
-	//{
-	//	if (testeuh[i]->elec == 102 && testeuh[i]->condit == 8)
-	//	{
-	//		std::cout << testeuh[i]->pValue << std::endl;
-	//	}
-	//}
-
 	//heapsort if quicksort pas assez rapide              //compteur -1 peut être à cause de la sortie de boucle
-	std::sort(testeuh, testeuh + compteur,
+	std::sort(preFDRValues, preFDRValues + compteur,
 		[](PVALUECOORD *a, PVALUECOORD *b) {
 		return (a->pValue < b->pValue);
 	});
 
-	int copyIndex;
-
 	for (int i = 1; i < V; i++)														//pas 0 car premier point pose problème
 	{
-		if (testeuh[i]->pValue >((double)slope * i))
+		if (preFDRValues[i]->pValue >((double)slope * i))
 		{
 			p_copyIndex = i;
 			break;
@@ -3296,15 +3623,14 @@ InsermLibrary::PVALUECOORD** InsermLibrary::LOCA::calculateFDR(std::vector<std::
 	}
 
 	PVALUECOORD **significantValue = new PVALUECOORD *[p_copyIndex];
-
 	for (int i = 0; i < p_copyIndex; i++)
 	{
 		significantValue[i] = new PVALUECOORD();
-		significantValue[i]->elec = testeuh[i]->elec;
-		significantValue[i]->condit = testeuh[i]->condit;
-		significantValue[i]->window = testeuh[i]->window;
-		significantValue[i]->vectorpos = testeuh[i]->vectorpos;
-		significantValue[i]->pValue = testeuh[i]->pValue;
+		significantValue[i]->elec = preFDRValues[i]->elec;
+		significantValue[i]->condit = preFDRValues[i]->condit;
+		significantValue[i]->window = preFDRValues[i]->window;
+		significantValue[i]->vectorpos = preFDRValues[i]->vectorpos;
+		significantValue[i]->pValue = preFDRValues[i]->pValue;
 	}
 
 	std::sort(significantValue, significantValue + p_copyIndex,
@@ -3312,11 +3638,61 @@ InsermLibrary::PVALUECOORD** InsermLibrary::LOCA::calculateFDR(std::vector<std::
 		return ((a->vectorpos < b->vectorpos));
 	});
 
-	//for (int i = 0; i < copyIndex; i++)
-	//{
-	//	cout << significantValue[i]->elec << "-" << significantValue[i]->condit << "-" << significantValue[i]->window << " : " << significantValue[i]->pValue << " | " << p_elan->trc->nameElectrodePositiv[p_elan->m_bipole[significantValue[i]->elec]] << endl;
-	//}
+	for (int i = 0; i < V; i++)
+	{
+		delete preFDRValues[i];
+	}
+	delete preFDRValues;
+
 	return significantValue;
+}
+
+std::vector<int> InsermLibrary::LOCA::processEvents(InsermLibrary::PROV *p_prov, mainEventBLOC **p_mainEvents)
+{
+	//mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
+	secondaryEventBLOC ***responseEvents = new secondaryEventBLOC**[p_prov->numberVisuBlocs];
+	int * sizeResp = new int[p_prov->numberVisuBlocs];
+
+	int numberCol = p_prov->getNumberCol();
+	int numberRow = p_prov->getNumberRow();
+
+	for (int z = 0; z < numberCol; z++)
+	{
+		for (int y = 0; y < numberRow; y++)
+		{
+			for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+			{
+				if ((p_prov->visuBlocs[i]->dispBloc->col == z + 1) && (p_prov->visuBlocs[i]->dispBloc->row == y + 1))
+				{
+					p_mainEvents[i] = new mainEventBLOC(p_prov->visuBlocs[i]->mainEvent->mainEventCode, p_prov->visuBlocs[i]->mainEvent->mainEventLabel);
+
+					responseEvents[i] = new secondaryEventBLOC*[p_prov->visuBlocs[i]->numberSecondaryEvents];
+					sizeResp[i] = p_prov->visuBlocs[i]->numberSecondaryEvents;
+
+					for (int j = 0; j < p_prov->visuBlocs[i]->numberSecondaryEvents; j++)
+					{
+						responseEvents[i][j] = new secondaryEventBLOC(p_prov->visuBlocs[i]->secondaryEvents[j]->secondaryEventCode, p_prov->visuBlocs[i]->secondaryEvents[j]->sizeSecondaryEvent, p_prov->visuBlocs[i]->secondaryEvents[j]->secondaryEventLabel);
+					}
+				}
+			}
+		}
+	}
+
+	cat2ellaRTTrigg(p_mainEvents, p_prov->numberVisuBlocs, responseEvents, sizeResp);					//	Extract triggers 
+	std::vector<int> correspondingEvent = sortTrials(p_prov, p_mainEvents, numberCol, numberRow);		//	Get the index corresponding to trials sorted according to input	
+
+	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+	{
+		for (int j = 0; j < p_prov->visuBlocs[i]->numberSecondaryEvents; j++)
+		{
+			delete responseEvents[i][j];
+		}
+		delete responseEvents[i];
+	}
+	delete responseEvents;
+	delete sizeResp;
+
+	return correspondingEvent;
 }
 
 void InsermLibrary::LOCA::cat2ellaRTTrigg(mainEventBLOC **p_mainEvents, int p_numberMainEvents, secondaryEventBLOC ***p_responseEvents, int* p_sizeRespEvents)
@@ -3360,7 +3736,18 @@ void InsermLibrary::LOCA::cat2ellaRTTrigg(mainEventBLOC **p_mainEvents, int p_nu
 		downSampTimeTrigg.erase(downSampTimeTrigg.begin() + index2delete[i]);
 	}
 
+	if (triggCatEla != nullptr)
+	{
+		delete triggCatEla;
+		triggCatEla = nullptr;
+	}
 	triggCatEla = new TRIGGINFO(&downSampValueTrigg[0], &downSampTimeTrigg[0], (int)downSampTimeTrigg.size(), 1);
+
+	if (triggCatElaNoSort != nullptr)
+	{
+		delete triggCatElaNoSort;
+		triggCatElaNoSort = nullptr;
+	}
 	triggCatElaNoSort = new TRIGGINFO(&downSampValueTrigg[0], &downSampTimeTrigg[0], (int)downSampTimeTrigg.size(), 1);
 	totnumberevent = downSampTimeTrigg.size();
 
@@ -3386,7 +3773,6 @@ void InsermLibrary::LOCA::cat2ellaRTTrigg(mainEventBLOC **p_mainEvents, int p_nu
 		{
 			s_nextlat = triggDownTRC->trigg[triggDownTRC->numberTrigg - 1]->sampleTrigger;
 		}
-
 
 		std::vector<int> m_tpos, m_sam;
 		for (int k = index2keep[i] + 1; k < triggDownTRC->numberTrigg - 1; k++)
@@ -3477,7 +3863,7 @@ std::vector<int> InsermLibrary::LOCA::sortByMainCode(InsermLibrary::PROV *p_prov
 				if ((p_prov->visuBlocs[k]->dispBloc->col == z + 1) && (p_prov->visuBlocs[k]->dispBloc->row == y + 1))
 				{
 					correspondingEvent.push_back(y); 	//Get the right order of bloc in case prov file is in disorder
-
+					
 					for (int j = 0; j < triggCatEla->numberTrigg; j++)
 					{
 						if (triggCatEla->trigg[j]->valueTrigger == p_mainEvents[k]->mainEventCode)
@@ -3501,14 +3887,16 @@ std::vector<int> InsermLibrary::LOCA::sortByMainCode(InsermLibrary::PROV *p_prov
 		origPos.push_back(test[i]);
 	}
 
-	triggCatEla->~TRIGGINFO();
+	delete triggCatEla;
+	triggCatEla = nullptr;
 	triggCatEla = new TRIGGINFO(&valueT[0], &sampleT[0], &rtMs[0], &rtCode[0], &origPos[0], valueT.size(), 1);
 
 	//get index limitation for each trial group according to main code
 	triggCatEla->mainGroupSub.push_back(0);
 	for (int m = 0; m < sampleT.size() - 1; m++)
 	{
-		if (sampleT[m] > sampleT[m + 1])
+		//if (sampleT[m] > sampleT[m + 1])
+		if (valueT[m] != valueT[m + 1])
 		{
 			triggCatEla->mainGroupSub.push_back(m + 1);
 		}

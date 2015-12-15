@@ -10,7 +10,7 @@ class Worker : public QObject
 	Q_OBJECT
 
 public:
-	Worker(std::vector<std::vector<double>> p_freqBandValue, std::vector <std::vector<bool>> p_anaDetails, std::vector<std::string> p_trc, std::vector<std::string> p_prov, std::string folderPatient, std::vector<std::string> p_tasks, std::vector<std::string> p_exptasks);
+	Worker(InsermLibrary::OptionLOCA *p_LOCAOpt, std::vector<std::vector<double>> p_freqBandValue, std::vector <std::vector<bool>> p_anaDetails, std::vector<std::string> p_trc, std::vector<std::string> p_prov, std::string folderPatient, std::vector<std::string> p_tasks, std::vector<std::string> p_exptasks);
 	~Worker();
 	InsermLibrary::LOCA * returnLoca();
 
@@ -25,6 +25,7 @@ signals:
 	
 private:
 	InsermLibrary::LOCA *loca = nullptr;
+	InsermLibrary::OptionLOCA *LOCAOpt = nullptr;
 	bool bip = false;
 	InsermLibrary::LOCAANALYSISOPTION **locaAnaOpt = nullptr;
 	InsermLibrary::ELAN *elan = nullptr;

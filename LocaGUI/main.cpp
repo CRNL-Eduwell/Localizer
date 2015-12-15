@@ -3,6 +3,7 @@
 //#include "LOCA.h"
 
 #include <QtWidgets/QApplication>
+#include "vld.h"
 
 int main(int argc, char *argv[])
 {

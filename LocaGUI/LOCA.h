@@ -9,16 +9,17 @@
 #include <iomanip>																					/*|					std::setw								|*******************************************************************************************/
 #include <vector>																					/*|															|*******************************************************************************************/
 #include "windows.h"																				/*|															|*******************************************************************************************/
-#include <algorithm>																				/*|						Min max element						|*******************************************************************************************/
+#include <algorithm>																				/*|					Min max element							|*******************************************************************************************/
 #include <QtWidgets/QMainWindow>																	/*|															|*******************************************************************************************/
 #include <QPainter>																					/*|															|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\MATH\MATLABFUNC.h"				/*|					 MATLAB Library (Debug)					|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\TRC\TRC.h"						/*|					   TRC Library (Debug)					|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\FFTW 3.3.4 x86\fftw3.h"					/*|						  FFTW Library						|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\ELAN\ELAN.h"						/*|					ELAN Library (Debug)					|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\PROV\PROV.h"						/*|					ELAN Library (Debug)					|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\STATS\wilcox.h"						/*|					ELAN Library (Debug)					|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\STATS\wilcox.hpp"						/*|					ELAN Library (Debug)					|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\MATH\MATLABFUNC.h"				/*|			   	    MATLAB Library							|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\TRC\TRC.h"						/*|				    TRC Library 							|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\FFTW 3.3.4 x86\fftw3.h"					/*|					FFTW Library							|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\ELAN\ELAN.h"						/*|					ELAN Library 							|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\PROV\PROV.h"						/*|					PROV Library							|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\STATS\wilcox.h"					/*|					Wilcox Library							|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\STATS\wilcox.hpp"				/*|					Wilcox Library 							|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\STATS\kruskall.h"				/*|					Kruskall Library 						|*******************************************************************************************/
 /***********************************************************************************************************************************************************************************************************************************************************/
 #include <QColormap>
 /**********************************************************************************************************************************************************************************************************************************************/
@@ -86,12 +87,34 @@ namespace InsermLibrary																																																			  	   
 		std::string expTask = "";
 	};
 
+	struct picOptionLOCA
+	{
+		int width = 0;
+		int height = 0;
+		int interpolationFactorX = 1;
+		int interpolationFactorY = 1;
+	};
+
+	struct statsOptionLOCA
+	{
+		bool useWilcoxon = false;
+		bool useFDRWil = false;
+		bool useKruskall = false;
+		bool useFDRKrus = false;
+	};
+
+	struct OptionLOCA
+	{
+		picOptionLOCA picOption;
+		statsOptionLOCA statsOption;
+	};
+
 	class LOCA : public QObject
 	{
 		Q_OBJECT
 
 	public:
-		LOCA();
+		LOCA(OptionLOCA *p_options);
 		~LOCA();
 		void LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
 		void LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
@@ -103,17 +126,18 @@ namespace InsermLibrary																																																			  	   
 		void LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
 		void LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
 		void LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
-
 		void loc_create_pos(std::string posFile_path, std::string posXFile_path, MicromedLibrary::TRC *p_trc, int p_beginningCode, InsermLibrary::PROV *p_prov);
 		void renameTrigger(TRIGGINFO *triggers, TRIGGINFO* downsampledTriggers, InsermLibrary::PROV *p_prov);
 		void loc2_write_conf(std::string confFile_path, MicromedLibrary::TRC *p_trc, InsermLibrary::ELAN *p_elan);
 		void loc_eeg2erp(InsermLibrary::ELAN *p_elan, std::string p_path, std::string p_exp_task, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int* v_window_ms, int nb_site);
 		void loc_env2plot(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand, std::string p_path, std::string p_exp_task, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int* v_window_ms, int nb_site);
-		void loc_bar2plot(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand, std::string p_path, std::string p_exp_task, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int* v_window_ms, int nb_site);
+		void loc_bar2plot(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, int p_numberFrequencyBand, std::string p_path, std::string p_exp_task, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int* v_window_ms, int nb_site, mainEventBLOC **p_mainEvents, std::vector<int> p_correspondingEvents);
 		void drawCards(InsermLibrary::ELAN *p_elan, std::string p_path, std::string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, std::vector<int> indexEventUsed, std::vector<int> EventUsed);
-		void drawBars(InsermLibrary::ELAN *p_elan, std::string p_path, std::string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, std::vector<int> indexEventUsed, std::vector<int> EventUsed);
-		void loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand, InsermLibrary::PROV *p_prov, std::string p_outputMapLabel, std::string p_outputFolder);
+		void drawBars(InsermLibrary::ELAN *p_elan, PVALUECOORD **p_significantValue, int p_sizeSignificant, std::string p_path, std::string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, std::vector<int> indexEventUsed, std::vector<int> EventUsed);
+		std::vector<int> processEvents(InsermLibrary::PROV *p_prov, mainEventBLOC **p_mainEvents);
+		void loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand, InsermLibrary::PROV *p_prov, std::string p_outputMapLabel, std::string p_outputFolder, mainEventBLOC **p_mainEvents, std::vector<int> p_correspondingEvents);
 		std::vector<std::vector<std::vector<double>>> calculatePValue(elan_struct_t *p_elan_struct, int row, int col, InsermLibrary::PROV *p_prov, std::vector<int> correspEvent, double ***eegData, int windowMS[2]);
+		std::vector<std::vector<std::vector<double>>> calculatePValueKRUS(elan_struct_t *p_elan_struct, InsermLibrary::PROV *p_prov, std::vector<int> correspEvent, double ***eegData, int windowMS[2]);
 		PVALUECOORD **calculateFDR(std::vector<std::vector<std::vector<double>>> pArray3D, int &p_copyIndex);
 		std::vector<std::vector<double>> interpolateData(double **p_eegData, int p_numberSubTrial, int p_windowSize, int p_beginTrigg, int p_interpolFactor);
 		std::vector<std::vector<double>> interpolateDataVert(std::vector<std::vector<double>> p_eegData, int p_interpolFactor);
@@ -139,10 +163,11 @@ namespace InsermLibrary																																																			  	   
 		void sendLogInfo(QString);
 
 	public :
-		TRIGGINFO *triggTRC, *triggDownTRC, *triggCatEla, *triggCatElaNoSort;
+		TRIGGINFO *triggTRC = nullptr, *triggDownTRC = nullptr, *triggCatEla = nullptr, *triggCatElaNoSort = nullptr;
 	private :
-		QPixmap *pixMap;
-		QPainter *painter;
+		QPixmap *pixMap = nullptr;
+		QPainter *painter = nullptr;
+		OptionLOCA *opt = nullptr;
 	};
 }
 #endif

@@ -36,6 +36,7 @@ public slots:
 	void provClicked(QListWidgetItem *provItem);
 	void displayLog(QString info);
 	void receiveElanPointer(InsermLibrary::ELAN *p_elan);
+	void receiveOptionPointer(InsermLibrary::OptionLOCA *optionLOCA);
 
 private slots :
 	void openOptions();
@@ -47,15 +48,16 @@ signals:
 private:
 	std::vector<std::string> freqBandName;
 	std::vector<std::vector<double>> freqBandValue;
-	QWidget **freqTAB;
-	QCheckBox ***freqCheckBox;
+	QWidget **freqTAB = nullptr;
+	QCheckBox ***freqCheckBox = nullptr;
 	QListWidgetItem **listTRCWidget = nullptr;
 	std::vector<int> indexTRCList;
 	std::vector<std::string> directoryList;
 	std::vector<std::vector<std::string>> trcList;
 	Ui::LocaGUIClass ui;
-	QThread* thread;
+	QThread* thread = nullptr;
 	Worker* worker = nullptr;
+	InsermLibrary::OptionLOCA *optionLOCAGUI = nullptr;
 };
 
 #endif // LOCAGUI_H
