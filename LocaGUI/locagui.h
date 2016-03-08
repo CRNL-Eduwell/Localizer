@@ -38,6 +38,7 @@ public slots:
 	void receiveElanPointer(InsermLibrary::ELAN *p_elan);
 	void receiveOptionPointer(InsermLibrary::OptionLOCA *optionLOCA);
 
+	void upDateProgressBar(int value);
 private slots :
 	void openOptions();
 	void openAbout();

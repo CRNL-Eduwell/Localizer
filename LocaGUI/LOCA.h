@@ -91,16 +91,16 @@ namespace InsermLibrary																																																			  	   
 	{
 		int width = 0;
 		int height = 0;
-		int interpolationFactorX = 1;
-		int interpolationFactorY = 1;
+		int interpolationFactorX = 3;
+		int interpolationFactorY = 3;
 	};
 
 	struct statsOptionLOCA
 	{
-		bool useWilcoxon = false;
-		bool useFDRWil = false;
-		bool useKruskall = false;
-		bool useFDRKrus = false;
+		bool useWilcoxon = true;
+		bool useFDRWil = true;
+		bool useKruskall = true;
+		bool useFDRKrus = true;
 	};
 
 	struct OptionLOCA

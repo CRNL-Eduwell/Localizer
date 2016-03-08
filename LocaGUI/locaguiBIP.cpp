@@ -37,13 +37,13 @@ void LocaGUIBIP::connectAllBordel()
 
 void LocaGUIBIP::createBipoles()
 {
-	std::vector<int> index_supp;
+	//std::vector<int> index_supp;
 
 	for (int i = 0; i < elan->trc->nameElectrodePositiv.size(); i++)
 	{
 		if (ui.listWidget->item(i)->checkState() == false)
 		{
-			index_supp.push_back(i);
+			elan->index_supp.push_back(i);
 		}
 	}
 
@@ -59,19 +59,19 @@ void LocaGUIBIP::createBipoles()
 	//}
 
 	//On enlève les éléc qu'on veut pas																																																  //
-	int pos = std::find(index_supp.begin(), index_supp.end(), 0) - index_supp.begin();																																				  //
+	int pos = std::find(elan->index_supp.begin(), elan->index_supp.end(), 0) - elan->index_supp.begin();																																				  //
 	pos = pos - 1;																																																					  //
 
-	if (pos < index_supp.size())																																																	  //
+	if (pos < elan->index_supp.size())																																																	  //
 	{																																																								  //
 		//array sort puis on vide																																																	  //
-		sort(index_supp.begin(), index_supp.end());																																													  //
-		for (int i = index_supp.size() - 1; i >= 0; i--)																																											  //
+		sort(elan->index_supp.begin(), elan->index_supp.end());																																													  //
+		for (int i = elan->index_supp.size() - 1; i >= 0; i--)																																											  //
 		{																																																							  //
-			elan->trc->nameElectrodePositiv.erase(elan->trc->nameElectrodePositiv.begin() + index_supp[i]);																																		  //
-			elan->trc->signalPosition.erase(elan->trc->signalPosition.begin() + index_supp[i]);																																					  //
-			elan->trc->nameElectrodeNegativ.erase(elan->trc->nameElectrodeNegativ.begin() + index_supp[i]);																																		  //
-			elan->trc->eegData.erase(elan->trc->eegData.begin() + index_supp[i]);
+			elan->trc->nameElectrodePositiv.erase(elan->trc->nameElectrodePositiv.begin() + elan->index_supp[i]);																																		  //
+			elan->trc->signalPosition.erase(elan->trc->signalPosition.begin() + elan->index_supp[i]);																																					  //
+			elan->trc->nameElectrodeNegativ.erase(elan->trc->nameElectrodeNegativ.begin() + elan->index_supp[i]);																																		  //
+			elan->trc->eegData.erase(elan->trc->eegData.begin() + elan->index_supp[i]);
 		}																																																							  //
 	}																																																								  //
 

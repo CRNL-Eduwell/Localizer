@@ -23,6 +23,7 @@ signals:
 	void sendLogInfo(QString);
 	void sendElanPointer(InsermLibrary::ELAN *p_elan);
 	
+	void upScroll(int value);
 private:
 	InsermLibrary::LOCA *loca = nullptr;
 	InsermLibrary::OptionLOCA *LOCAOpt = nullptr;

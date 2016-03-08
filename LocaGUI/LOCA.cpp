@@ -1527,13 +1527,10 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		/******************************************************************************************************************************/
 		/*														Loc eeg2erp														      */
 		/******************************************************************************************************************************/
-		//loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 3, strCode, 3, window_ms, 20);	  			 	      //
+		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 3, strCode, 3, window_ms, 20);	  			 	      //
 		/******************************************************************************************************************************/
-		//std::stringstream().swap(outputMessage);
-		//outputMessage << "ERP Pictures DONE !";
-		//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 		std::stringstream().swap(outputMessage);
-		outputMessage << "AUDI doesn't do eeg2erp !";
+		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
@@ -1566,13 +1563,13 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
-				//if (!QDir(&folderTrialsSM.str()[0]).exists())
-				//{
-				//	std::stringstream().swap(outputMessage);
-				//	outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
-				//	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
-				//	QDir().mkdir(&folderTrialsSM.str()[0]);
-				//}
+				if (!QDir(&folderTrialsSM.str()[0]).exists())
+				{
+					std::stringstream().swap(outputMessage);
+					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					QDir().mkdir(&folderTrialsSM.str()[0]);
+				}
 				//===============================================================================================================================================================================
 
 				if (p_anaopt->analysisDetails[i + 1][2])
@@ -1593,12 +1590,9 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					//loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
-					//std::stringstream().swap(outputMessage);
-					//outputMessage << "Frequency Maps DONE !";
-					//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 					std::stringstream().swap(outputMessage);
-					outputMessage << "AUDI doesn't do trialmat !";
+					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 			}
@@ -1617,13 +1611,13 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
-					//if (!QDir(&folderTrialsSM.str()[0]).exists())
-					//{
-					//	std::stringstream().swap(outputMessage);
-					//	outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
-					//	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
-					//	QDir().mkdir(&folderTrialsSM.str()[0]);
-					//}
+					if (!QDir(&folderTrialsSM.str()[0]).exists())
+					{
+						std::stringstream().swap(outputMessage);
+						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						QDir().mkdir(&folderTrialsSM.str()[0]);
+					}
 
 					if (p_anaopt->analysisDetails[i + 1][2])
 					{
@@ -1643,12 +1637,9 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						//loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
-						//std::stringstream().swap(outputMessage);
-						//outputMessage << "Frequency Maps DONE !";
-						//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
 						std::stringstream().swap(outputMessage);
-						outputMessage << "AUDI doesn't do trialmat !";
+						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 				}

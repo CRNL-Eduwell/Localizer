@@ -24,7 +24,7 @@ public:
 public slots :
 	void createBipoles();
 	void checkMulti(QListWidgetItem * item);
-
+	
 private:
 	InsermLibrary::ELAN *elan;
 	Ui::Form::Ui_Form ui;

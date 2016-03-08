@@ -50,7 +50,8 @@ LocaGUI::~LocaGUI()
 void LocaGUI::setUpGUI(QMainWindow* QTGUIClass)
 {
 	/*               Frequency Widget               */
-	readFreqFile("D:\\Users\\Florian\\Documents\\Arbeit\\INSERM\\Temp Files\\Localizer\\frequencyBand.txt");
+	//readFreqFile("D:\\Users\\Florian\\Documents\\Arbeit\\INSERM\\Temp Files\\Localizer\\frequencyBand.txt");
+	readFreqFile("C:\\System98\\ExternalProgram\\Localizer\\Config\\frequencyBand.txt");
 	freqTAB = new QWidget*[freqBandName.size()];
 	freqCheckBox = new QCheckBox**[freqBandName.size()];
 	for (int i = 0; i < freqBandName.size(); i++)
@@ -345,6 +346,7 @@ void LocaGUI::launchAnalysis()
 	InsermLibrary::LOCA *test = worker->returnLoca();
 	QObject::connect(test, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
 	//======================================================================================
+	QObject::connect(worker, SIGNAL(upScroll(int)), this, SLOT(upDateProgressBar(int)));       //connecte l'update dans le worker à la barre d'avancement GUI
 
 
 	QObject::connect(thread, SIGNAL(started()), worker, SLOT(process()));
@@ -469,4 +471,17 @@ void LocaGUI::receiveOptionPointer(InsermLibrary::OptionLOCA *optionLOCA)
 		delete optionLOCAGUI;
 	}
 	optionLOCAGUI = optionLOCA;
+}
+
+
+void LocaGUI::upDateProgressBar(int value)
+{
+	if ((value >= 0) && (value <= 100))
+	{
+		ui.progressBar->setValue(value);
+	}
+	if (value > 100)
+	{
+		ui.progressBar->setValue(100);
+	}
 }

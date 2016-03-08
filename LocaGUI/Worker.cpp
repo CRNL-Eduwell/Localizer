@@ -50,7 +50,12 @@ void Worker::process()
 	//qDebug("Hello World!");
 	std::stringstream TRCfilePath, LOCAfilePath, displayText, TimeDisp;
 	SYSTEMTIME LocalTime;
+	std::vector<std::string>ElecPosSave, ElecNegSave;
+	std::vector<unsigned int>SignalPosSave,toDelete;
 
+	int progressPerCent = 100 / numberFiles;
+	int actualPerCent = 0;
+	emit upScroll(actualPerCent);
 	for (int i = 0; i < numberFiles; i++)
 	{
 		//To get the local time
@@ -102,9 +107,19 @@ void Worker::process()
 		}
 		else
 		{
+			/*On remplace le TRC que l'on va analysé*/
 			delete elan->trc;
 			elan->trc = nullptr;
 			elan->trc = trc;
+
+			/*On a changé de trc mais ce sont les mêmes index qui sont supprimés*/
+			for (int i = elan->index_supp.size() - 1; i >= 0; i--)																																												  //
+			{																																																							  //
+				trc->nameElectrodePositiv.erase(trc->nameElectrodePositiv.begin() + elan->index_supp[i]);																																		  //
+				trc->signalPosition.erase(trc->signalPosition.begin() + elan->index_supp[i]);																																					  //
+				trc->nameElectrodeNegativ.erase(trc->nameElectrodeNegativ.begin() + elan->index_supp[i]);																																		  //
+				trc->eegData.erase(trc->eegData.begin() + elan->index_supp[i]);
+			}
 
 			for (int i = 0; i < elan->numberFrequencyBand; i++)
 			{
@@ -176,6 +191,9 @@ void Worker::process()
 		
 		//delete elan->trc;
 		//elan->trc = nullptr;
+
+		actualPerCent += progressPerCent;
+		emit upScroll(actualPerCent);
 	}
 	emit sendLogInfo(QString::fromStdString("ByeBye"));
 
