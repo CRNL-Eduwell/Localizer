@@ -39,6 +39,7 @@ public slots:
 	void receiveOptionPointer(InsermLibrary::OptionLOCA *optionLOCA);
 
 	void upDateProgressBar(int value);
+	void finishedRuning();
 private slots :
 	void openOptions();
 	void openAbout();
@@ -59,6 +60,8 @@ private:
 	QThread* thread = nullptr;
 	Worker* worker = nullptr;
 	InsermLibrary::OptionLOCA *optionLOCAGUI = nullptr;
+
+	bool alreadyRunning = false;
 };
 
 #endif // LOCAGUI_H

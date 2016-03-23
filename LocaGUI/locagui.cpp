@@ -14,6 +14,7 @@
 #include "locagui.h"
 #include "locaguiBIP.h"
 #include "locaguiOpt.h"
+#include "locaOops.h"
 
 #include "vld.h"
 
@@ -302,64 +303,79 @@ void LocaGUI::launchAnalysis()
 	std::stringstream filePath, displayText;
 	std::vector<std::string> trcFiles, provFiles, tasks, exp_tasks;
 
-	std::string patientFolder = ui.patientPathlineEdit->text().toStdString();
-	for (int i = 0; i < indexTRCList.size(); i++)
+	if (alreadyRunning == false)
 	{
-		std::stringstream().swap(filePath);
-
-		trcFiles.push_back(ui.chosenTRClistWidget->item(i)->text().toStdString());
-		provFiles.push_back(ui.PROVListWidget->item(i)->text().toStdString());
-
-		std::vector<std::string> locaSplit = split<std::string>(trcFiles[i], "_.");
-		
-		tasks.push_back(locaSplit[locaSplit.size() - 2]);
-		exp_tasks.push_back(split<std::string>(trcFiles[i], ".")[0]);
-	}
-
-	std::vector <std::vector<bool>> anaDetails;
-	std::vector<bool> tempDetails;
-
-	tempDetails.push_back(ui.ERPcheckBox->isChecked());
-	anaDetails.push_back(tempDetails);
-
-	for (int i = 0; i < freqBandName.size(); i++)
-	{
-		std::vector<bool>().swap(tempDetails);
-		for (int j = 0; j < 4; j++)
+		std::string patientFolder = ui.patientPathlineEdit->text().toStdString();
+		for (int i = 0; i < indexTRCList.size(); i++)
 		{
-			if (freqCheckBox[i][j]->isChecked())
-			{
-				tempDetails.push_back(true);
-			}
-			else
-			{
-				tempDetails.push_back(false);
-			}
+			std::stringstream().swap(filePath);
+
+			trcFiles.push_back(ui.chosenTRClistWidget->item(i)->text().toStdString());
+			provFiles.push_back(ui.PROVListWidget->item(i)->text().toStdString());
+
+			std::vector<std::string> locaSplit = split<std::string>(trcFiles[i], "_.");
+
+			tasks.push_back(locaSplit[locaSplit.size() - 2]);
+			exp_tasks.push_back(split<std::string>(trcFiles[i], ".")[0]);
 		}
+
+		std::vector <std::vector<bool>> anaDetails;
+		std::vector<bool> tempDetails;
+
+		tempDetails.push_back(ui.ERPcheckBox->isChecked());
 		anaDetails.push_back(tempDetails);
+
+		for (int i = 0; i < freqBandName.size(); i++)
+		{
+			std::vector<bool>().swap(tempDetails);
+			for (int j = 0; j < 4; j++)
+			{
+				if (freqCheckBox[i][j]->isChecked())
+				{
+					tempDetails.push_back(true);
+				}
+				else
+				{
+					tempDetails.push_back(false);
+				}
+			}
+			anaDetails.push_back(tempDetails);
+		}
+
+		thread = new QThread;
+		worker = new Worker(optionLOCAGUI, freqBandValue, anaDetails, trcFiles, provFiles, patientFolder, tasks, exp_tasks);
+
+		//Function to return pointer to subclasses for message sending
+		InsermLibrary::LOCA *test = worker->returnLoca();
+		QObject::connect(test, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
+		//======================================================================================
+		QObject::connect(worker, SIGNAL(upScroll(int)), this, SLOT(upDateProgressBar(int)));       //connecte l'update dans le worker à la barre d'avancement GUI
+
+
+		QObject::connect(thread, SIGNAL(started()), worker, SLOT(process()));
+		QObject::connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+		QObject::connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
+		QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+
+		QObject::connect(worker, SIGNAL(sendElanPointer(InsermLibrary::ELAN*)), this, SLOT(receiveElanPointer(InsermLibrary::ELAN*)));
+		QObject::connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
+		QObject::connect(this, SIGNAL(bipDone(bool)), worker, SLOT(BipDoneeee(bool)));
+
+		QObject::connect(worker, SIGNAL(finished()), this, SLOT(finishedRuning()));
+
+
+		worker->moveToThread(thread);
+		thread->start();
+		alreadyRunning = true;
 	}
-	
-	thread = new QThread;
-	worker = new Worker(optionLOCAGUI, freqBandValue, anaDetails, trcFiles, provFiles, patientFolder, tasks, exp_tasks);
+	else
+	{
+		//QMessageBox::information(this, "Woops !", "Une analyse est déjà en cours !");
 
-	//Function to return pointer to subclasses for message sending
-	InsermLibrary::LOCA *test = worker->returnLoca();
-	QObject::connect(test, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
-	//======================================================================================
-	QObject::connect(worker, SIGNAL(upScroll(int)), this, SLOT(upDateProgressBar(int)));       //connecte l'update dans le worker à la barre d'avancement GUI
-
-
-	QObject::connect(thread, SIGNAL(started()), worker, SLOT(process()));
-	QObject::connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
-	QObject::connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-	QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-
-	QObject::connect(worker, SIGNAL(sendElanPointer(InsermLibrary::ELAN*)), this, SLOT(receiveElanPointer(InsermLibrary::ELAN*)));
-	QObject::connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
-	QObject::connect(this, SIGNAL(bipDone(bool)), worker, SLOT(BipDoneeee(bool)));
-
-	worker->moveToThread(thread);
-	thread->start();
+		locaOops *oops = new locaOops(0);
+		oops->exec();
+		delete oops;
+	}
 }
 
 void LocaGUI::browsePatient()
@@ -484,4 +500,9 @@ void LocaGUI::upDateProgressBar(int value)
 	{
 		ui.progressBar->setValue(100);
 	}
+}
+
+void LocaGUI::finishedRuning()
+{
+	alreadyRunning = false;
 }
