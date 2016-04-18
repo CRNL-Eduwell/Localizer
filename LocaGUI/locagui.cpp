@@ -238,14 +238,9 @@ void LocaGUI::loadTRCListWidget(std::vector<std::vector<std::string>> p_trcList)
 	else
 	{
 		/****************************** Free Memory if reloading TRC again ********************************/
-		for (int i = 0; i < ui.TRCListWidget->count(); i++)											  /*||*/
-		{																							  /*||*/
-			listTRCWidget[i]->~QListWidgetItem();													  /*||*/
-		}																							  /*||*/
-		delete[] listTRCWidget;																		  /*||*/
-																									  /*||*/
 		ui.TRCListWidget->clear();																	  /*||*/
 		ui.chosenTRClistWidget->clear();															  /*||*/
+		ui.PROVListWidget->clear();																	  /*||*/
 		/**************************************************************************************************/
 
 		listTRCWidget = new QListWidgetItem*[fullSize];
@@ -488,7 +483,6 @@ void LocaGUI::receiveOptionPointer(InsermLibrary::OptionLOCA *optionLOCA)
 	}
 	optionLOCAGUI = optionLOCA;
 }
-
 
 void LocaGUI::upDateProgressBar(int value)
 {
