@@ -323,7 +323,7 @@ void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
-	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
+	stringstream posFilePath, confFilePath, crFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[6]{10, 20, 30, 1, 2, 100};
 	string *strCode = new string[6]{"Seman", "Phono", "Visual", "RepY", "RepN", "Pause"};
 	int *window_ms = new int[2]{-1000, 3000};
@@ -361,6 +361,9 @@ void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
 	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+
+	crFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".CR"; //
+	LEC1CR(crFilePath.str());
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
@@ -490,7 +493,7 @@ void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
-	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
+	stringstream posFilePath, confFilePath, crFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[7]{10, 60, 60, 110, 110, 160, 101};
 	string *strCode = new string[7]{"FACILE", "DIFFICILE", "DIFFICILE", "FAC REP", "FAC REP", "DIF REP", "PAUSE YO"};
 	int *window_ms = new int[2]{-500, 2500};
@@ -528,6 +531,9 @@ void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
 	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+
+	crFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".CR"; //
+	MCSECR(crFilePath.str());
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
@@ -657,7 +663,7 @@ void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
-	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
+	stringstream posFilePath, confFilePath, posXFilePath, crFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[5]{25, 45, 65, 90, 100};
 	string *strCode = new string[5]{"2 points", "4 points", "6 points", "controle", "pause"};
 	int *window_ms = new int[2]{-500, 500};
@@ -698,6 +704,9 @@ void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
 	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+
+	crFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".CR"; //
+	MVISMVEBCR(crFilePath.str());
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
@@ -827,7 +836,7 @@ void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
-	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
+	stringstream posFilePath, confFilePath, crFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[5]{25, 45, 65, 90, 100};
 	string *strCode = new string[5]{"2 points", "4 points", "6 points", "controle", "pause"};
 	int *window_ms = new int[2]{-500, 500};
@@ -868,6 +877,9 @@ void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
 	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+
+	crFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".CR"; //
+	MVISMVEBCR(crFilePath.str());
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
@@ -938,6 +950,8 @@ void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 
 				if (loadFile == 0)
 				{
+					p_elan->elanFreqBand[i]->chan_nb = p_elan->m_bipole.size();
+
 					std::stringstream().swap(pictureLabel);
 					std::stringstream().swap(folderTrialsSM);
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
@@ -1836,6 +1850,168 @@ void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 	delete[] code;
 } // loca 
 /**********************************************************************************************************************************************************************************************************************************************/
+
+/**********************************************************************************************************************************************************************************************************************************************/
+/*																Generate comportemental performance File and Summary array																													  */
+/**********************************************************************************************************************************************************************************************************************************************/
+void InsermLibrary::LOCA::LEC1CR(std::string crFilePath)
+{
+	double visualOK = 0, phonoOK = 0, semanOK = 0;
+	double visualNOK = 0, phonoNOK = 0, semanNOK = 0;
+	double percentVISU = 0, percentPHONO = 0, percentSEMAN = 0;
+
+	for (int i = 0; i < triggCatEla->numberTrigg; i++)
+	{
+		switch (triggCatEla->trigg[i]->valueTrigger)
+		{
+		case 10:
+			if (triggCatEla->trigg[i]->rt_code == 1)
+				semanOK++;
+			else if (triggCatEla->trigg[i]->rt_code == 2)
+				semanNOK++;
+			break;
+		case 20:
+			if (triggCatEla->trigg[i]->rt_code == 1)
+				phonoOK++;
+			else if (triggCatEla->trigg[i]->rt_code == 2)
+				phonoNOK++;
+			break;
+		case 30:
+			if (triggCatEla->trigg[i]->rt_code == 1)
+				visualOK++;
+			else if (triggCatEla->trigg[i]->rt_code == 2)
+				visualNOK++;
+			break;
+		}
+	}
+
+	percentSEMAN = (semanOK / triggCatEla->numberTrigg) * 100;
+	percentPHONO = (phonoOK / triggCatEla->numberTrigg) * 100;
+	percentVISU = (visualOK / triggCatEla->numberTrigg) * 100;
+
+	ofstream fichierCR(crFilePath, ios::out);  // ouverture en écriture avec effacement du fichier ouvert	
+
+	fichierCR << "Nombre de triggers : " << triggCatEla->numberTrigg << std::endl;
+	fichierCR << "Seman OK : " << percentSEMAN << std::endl;
+	fichierCR << "PhonoOK : " << percentPHONO << std::endl;
+	fichierCR << "VisualOK : " << percentVISU << std::endl;
+	fichierCR << "Pourcentage total de bonne réponse : " << percentPHONO + percentSEMAN + percentVISU << std::endl;
+
+	fichierCR.close();
+}
+
+void InsermLibrary::LOCA::MCSECR(std::string crFilePath)
+{
+	double popOK = 0, searchOK = 0;
+	double popNOK = 0, searchNOK = 0;
+	double percentPOP = 0, percentSEARCH = 0;
+
+	for (int i = 0; i < triggCatEla->numberTrigg; i++)
+	{
+		switch (triggCatEla->trigg[i]->valueTrigger)
+		{
+		case 10:
+			if (triggCatEla->trigg[i]->rt_code == 100)
+				popOK++;
+			else if (triggCatEla->trigg[i]->rt_code == 200)
+				popNOK++;
+			break;
+		case 60:
+			if (triggCatEla->trigg[i]->rt_code == 100)
+				searchOK++;
+			else if (triggCatEla->trigg[i]->rt_code == 200)
+				searchNOK++;
+			break;
+		}
+	}
+
+	percentPOP = (popOK / triggCatEla->numberTrigg) * 100;
+	percentSEARCH = (searchOK / triggCatEla->numberTrigg) * 100;
+
+	ofstream fichierCR(crFilePath, ios::out);  // ouverture en écriture avec effacement du fichier ouvert	
+
+	fichierCR << "Nombre de triggers : " << triggCatEla->numberTrigg << std::endl;
+	fichierCR << "Seman OK : " << percentPOP << std::endl;
+	fichierCR << "PhonoOK : " << percentSEARCH << std::endl;
+	fichierCR << "Pourcentage total de bonne réponse : " << percentPOP + percentSEARCH << std::endl;
+
+	fichierCR.close();
+}
+
+void InsermLibrary::LOCA::MVISMVEBCR(std::string crFilePath)
+{
+	double load2OK = 0, load4OK = 0, load6OK = 0, cntrl1OK = 0, cntrl2OK = 0, cntrl3OK = 0;
+	double load2NOK = 0, load4NOK = 0, load6NOK = 0, cntrl1NOK = 0, cntrl2NOK = 0, cntrl3NOK = 0;
+	double percentLOAD2 = 0, percentLOAD4 = 0, percentLOAD6 = 0, percentCTRL1 = 0, percentCTRL2 = 0, percentCTRL3 = 0;
+
+	for (int i = 0; i < triggCatEla->numberTrigg; i++)
+	{
+		switch (triggCatEla->trigg[i]->valueTrigger)
+		{
+		case 20:
+			if (triggCatEla->trigg[i]->rt_code == 1)
+				load2OK++;
+			else if (triggCatEla->trigg[i]->rt_code == 2)
+				load2NOK++;
+			break;
+		case 40:
+			if (triggCatEla->trigg[i]->rt_code == 1)
+				load4OK++;
+			else if (triggCatEla->trigg[i]->rt_code == 2)
+				load4NOK++;
+			break;
+		case 60:
+			if (triggCatEla->trigg[i]->rt_code == 1)
+				load6OK++;
+			else if (triggCatEla->trigg[i]->rt_code == 2)
+				load6NOK++;
+			break;
+		case 21:
+			if (triggCatEla->trigg[i]->rt_code == 1)
+				cntrl1OK++;
+			else if (triggCatEla->trigg[i]->rt_code == 2)
+				cntrl1NOK++;
+			break;
+		case 41:
+			if (triggCatEla->trigg[i]->rt_code == 1)
+				cntrl2OK++;
+			else if (triggCatEla->trigg[i]->rt_code == 2)
+				cntrl2NOK++;
+			break;
+		case 61:
+			if (triggCatEla->trigg[i]->rt_code == 1)
+				cntrl3OK++;
+			else if (triggCatEla->trigg[i]->rt_code == 2)
+				cntrl3NOK++;
+			break;
+		}
+	}
+
+	percentLOAD2 = (load2OK / triggCatEla->numberTrigg) * 100;
+	percentLOAD4 = (load4OK / triggCatEla->numberTrigg) * 100;
+	percentLOAD6 = (load6OK / triggCatEla->numberTrigg) * 100;
+	percentCTRL1 = (cntrl1OK / triggCatEla->numberTrigg) * 100;
+	percentCTRL2 = (cntrl2OK / triggCatEla->numberTrigg) * 100;
+	percentCTRL3 = (cntrl3OK / triggCatEla->numberTrigg) * 100;
+
+	ofstream fichierCR(crFilePath, ios::out);  // ouverture en écriture avec effacement du fichier ouvert	
+
+	fichierCR << "Nombre de triggers : " << triggCatEla->numberTrigg << std::endl;
+	fichierCR << "Load2 OK : " << percentLOAD2 << std::endl;
+	fichierCR << "Load4 OK : " << percentLOAD4 << std::endl;
+	fichierCR << "Load6 OK : " << percentLOAD6 << std::endl;
+	fichierCR << "Ctrl1 OK : " << percentCTRL1 << std::endl;
+	fichierCR << "Ctrl2 OK : " << percentCTRL2 << std::endl;
+	fichierCR << "Ctrl3 OK : " << percentCTRL3 << std::endl;
+	fichierCR << "Pourcentage total de bonne réponse : " << percentLOAD2 + percentLOAD4 + percentLOAD6 + percentCTRL1 + percentCTRL2 + percentCTRL3 << std::endl;
+
+	fichierCR.close();
+}
+
+void InsermLibrary::LOCA::generateSummaryArray()
+{
+
+}
 
 /**********************************************************************************************************************************************************************************************************************************************/
 /*															CREATE POS AND CONF : ELAN COMPATIBILITY																																		  */
@@ -3340,11 +3516,21 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 						yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2;
 					}
 
+					bool checkStat = false;
 					for (int l = 0; l < p_value3D[i][k].size(); l++)
 					{
 						for (int m = 0; m < copyIndex; m++)
 						{
-							if (p_value3D[i][k][l] == significantValue[m]->pValue && significantValue[m]->elec == i && significantValue[m]->window == l)
+							if (opt->statsOption.useFDRWil == true)
+							{
+								checkStat = (p_value3D[i][k][l] == significantValue[m]->pValue);
+							}
+							else
+							{
+								checkStat = (significantValue[m]->pValue < 0.01);
+							}
+
+							if (checkStat && significantValue[m]->elec == i && significantValue[m]->window == l)
 							{
 								int dataPlus2 = ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * abs((100))); //abs de 100 car overlap 50% de la fenêtre de 200 ms
 								int xBeg = xTest + ((dataPlus2 / 2) * (l));
@@ -3928,23 +4114,47 @@ void InsermLibrary::LOCA::sortByLatency(std::vector<int> totreat)
 void InsermLibrary::LOCA::cat2ellaExtractData(elan_struct_t *p_elan_struct, double ***p_eegData, int v_win_sam[2])
 {
 	cout << "Exctracting data" << endl;
-
-	for (int i = 0; i < p_elan_struct->chan_nb; i++)
+	std::string toSearch = p_elan_struct->comment;
+	if (toSearch.find("by eeg2env C++") != std::string::npos)
 	{
-		for (int j = 0; j < triggCatEla->numberTrigg; j++)
+		std::cout << "new" << std::endl;
+		for (int i = 0; i < p_elan_struct->chan_nb; i++)
 		{
-			//int trigTime = triggCatEla->trigg[j]->sampleTrigger;
-			int trigTime = triggCatElaNoSort->trigg[j]->sampleTrigger;
-			int beginTime = trigTime + v_win_sam[0];
-			int endTime = trigTime + v_win_sam[1];
-
-			for (int k = 0; k < (v_win_sam[1] - v_win_sam[0]); k++)
+			for (int j = 0; j < triggCatEla->numberTrigg; j++)
 			{
-				//p_eegData[i][j][k] = ((p_elan_struct->eeg.data_double[0][i][beginTime + k] * 10) - 1000) / 10; //old jp .eeg
-				p_eegData[i][j][k] = (p_elan_struct->eeg.data_double[0][i][beginTime + k] - 1000) / 10; //flo .eeg
+				//int trigTime = triggCatEla->trigg[j]->sampleTrigger;
+				int trigTime = triggCatElaNoSort->trigg[j]->sampleTrigger;
+				int beginTime = trigTime + v_win_sam[0];
+				int endTime = trigTime + v_win_sam[1];
+
+				for (int k = 0; k < (v_win_sam[1] - v_win_sam[0]); k++)
+				{
+					p_eegData[i][j][k] = (p_elan_struct->eeg.data_double[0][i][beginTime + k] - 1000) / 10; //flo .eeg
+				}
 			}
 		}
 	}
+	else
+	{
+		std::cout << "old" << std::endl;
+		for (int i = 0; i < p_elan_struct->chan_nb; i++)
+		{
+			for (int j = 0; j < triggCatEla->numberTrigg; j++)
+			{
+				//int trigTime = triggCatEla->trigg[j]->sampleTrigger;
+				int trigTime = triggCatElaNoSort->trigg[j]->sampleTrigger;
+				int beginTime = trigTime + v_win_sam[0];
+				int endTime = trigTime + v_win_sam[1];
+
+				for (int k = 0; k < (v_win_sam[1] - v_win_sam[0]); k++)
+				{
+					p_eegData[i][j][k] = ((p_elan_struct->eeg.data_double[0][i][beginTime + k] * 10) - 1000) / 10; //old jp .eeg
+				}
+			}
+		}
+	}
+
+
 
 	cout << "End of Data Extraction " << endl;
 }

@@ -195,6 +195,50 @@ void Worker::process()
 		actualPerCent += progressPerCent;
 		emit upScroll(actualPerCent);
 	}
+
+	//emit sendLogInfo(QString::fromStdString("Generating Comportemental Performance Result"));
+	////generate array comportemental performance
+	////Get every folder corresponding to one LOCALIZER exam
+	//std::vector<std::string> directoryList;
+	//std::stringstream().swap(TRCfilePath);
+	//TRCfilePath << locaAnaOpt[0]->patientFolder << "/";
+
+	//QDir currentDir(QString::fromStdString(TRCfilePath.str()));
+	//currentDir.setFilter(QDir::Dirs);
+
+	//QStringList entries = currentDir.entryList();
+	//for (QStringList::ConstIterator entry = entries.begin(); entry != entries.end(); ++entry)
+	//{
+	//	QString dirname = *entry;
+	//	if (dirname != tr(".") && dirname != tr(".."))
+	//	{
+	//		directoryList.push_back(dirname.toStdString());
+	//	}
+	//}
+
+	//for (int i = 0; i < directoryList.size(); i++)
+	//{
+	//	std::stringstream().swap(TRCfilePath);
+	//	TRCfilePath << locaAnaOpt[0]->patientFolder << "/" << directoryList[i] << "/" << directoryList[i] << ".CR";
+	//	QFile f(QString::fromStdString(TRCfilePath.str()));
+	//	if (f.exists())
+	//	{
+	//		std::stringstream().swap(displayText);
+	//		displayText << "Existing : " << TRCfilePath.str();
+	//		emit sendLogInfo(QString::fromStdString(displayText.str()));
+
+	//		std::ifstream crfile(TRCfilePath.str(), std::ios::beg);
+	//		std::string line;
+	//		while (std::getline(crfile, line))
+	//		{
+	//			std::vector<std::string> sortSplit = loca->split<std::string>(line, " : ");
+	//			int a = 2;
+	//		}
+	//	}
+	//}
+
+	//emit sendLogInfo(QString::fromStdString("Done !"));
+
 	emit sendLogInfo(QString::fromStdString("ByeBye"));
 
 	delete elan;   

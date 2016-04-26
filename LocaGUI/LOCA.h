@@ -159,6 +159,11 @@ namespace InsermLibrary																																																			  	   
 		std::vector<int> findNum(int *tab, int sizetab, int value2find);
 		template<typename T> std::vector<T> split(const T & str, const T & delimiters);
 
+		void LEC1CR(std::string crFilePath);
+		void MCSECR(std::string crFilePath);
+		void MVISMVEBCR(std::string crFilePath);
+		void generateSummaryArray();
+
 	signals : 
 		void sendLogInfo(QString);
 
