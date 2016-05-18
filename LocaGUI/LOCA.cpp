@@ -4134,6 +4134,25 @@ void InsermLibrary::LOCA::cat2ellaExtractData(elan_struct_t *p_elan_struct, doub
 			}
 		}
 	}
+	else if (toSearch.find("") != std::string::npos)
+	{
+		std::cout << "running analysis" << std::endl;
+		for (int i = 0; i < p_elan_struct->chan_nb; i++)
+		{
+			for (int j = 0; j < triggCatEla->numberTrigg; j++)
+			{
+				//int trigTime = triggCatEla->trigg[j]->sampleTrigger;
+				int trigTime = triggCatElaNoSort->trigg[j]->sampleTrigger;
+				int beginTime = trigTime + v_win_sam[0];
+				int endTime = trigTime + v_win_sam[1];
+
+				for (int k = 0; k < (v_win_sam[1] - v_win_sam[0]); k++)
+				{
+					p_eegData[i][j][k] = (p_elan_struct->eeg.data_double[0][i][beginTime + k] - 1000) / 10; //flo .eeg
+				}
+			}
+		}
+	}
 	else
 	{
 		std::cout << "old" << std::endl;

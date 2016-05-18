@@ -403,15 +403,22 @@ void LocaGUI::FreqBandCheck(bool isChecked)
 void LocaGUI::addTRC2List()
 {
 	QListWidgetItem *itemToAdd;
-	itemToAdd = new QListWidgetItem(*ui.TRCListWidget->currentItem());
-	ui.chosenTRClistWidget->addItem(itemToAdd);
-	indexTRCList.push_back(ui.TRCListWidget->currentIndex().row());
-	ui.TRCListWidget->currentItem()->setHidden(true);
+	if (ui.TRCListWidget->currentItem() != nullptr)
+	{
+		itemToAdd = new QListWidgetItem(*ui.TRCListWidget->currentItem());
+		ui.chosenTRClistWidget->addItem(itemToAdd);
+		indexTRCList.push_back(ui.TRCListWidget->currentIndex().row());
+		ui.TRCListWidget->currentItem()->setHidden(true);
 
-	std::sort(indexTRCList.begin(), indexTRCList.end());
-	ui.chosenTRClistWidget->sortItems(Qt::SortOrder::AscendingOrder);
+		std::sort(indexTRCList.begin(), indexTRCList.end());
+		ui.chosenTRClistWidget->sortItems(Qt::SortOrder::AscendingOrder);
 
-	addProv2List(itemToAdd->text().toStdString());
+		addProv2List(itemToAdd->text().toStdString());
+	}
+	else
+	{
+		QMessageBox::warning(this, "Attention", "No TRC File selected");
+	}
 }
 
 void LocaGUI::removeTRC2List()
