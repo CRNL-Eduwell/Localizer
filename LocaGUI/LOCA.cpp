@@ -2485,7 +2485,6 @@ void InsermLibrary::LOCA::loc_bar2plot(InsermLibrary::ELAN *p_elan, InsermLibrar
 						significantValue[copyIndex]->window = k;
 						significantValue[copyIndex]->vectorpos = copyIndex;
 						significantValue[copyIndex]->pValue = p_value3D[i][j][k];
-
 						copyIndex++;
 					}
 				}
@@ -3509,11 +3508,11 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 				for (int k = 0; k < numberRow; k++)
 				{
 					int xTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].x + zeroBorder;
-					int yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2 + coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].heigth;
+					int yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 0 + coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].heigth;
 
 					if (k == numberRow - 1)
 					{
-						yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 2;
+						yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 0;
 					}
 
 					bool checkStat = false;
@@ -3536,7 +3535,8 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 								int xBeg = xTest + ((dataPlus2 / 2) * (l));
 								int xEnd = xBeg + dataPlus2;
 
-								painterChanel->setPen(QColor(Qt::GlobalColor::white));
+								//painterChanel->setPen(QColor(Qt::GlobalColor::white));
+								painterChanel->setPen(QColor(Qt::GlobalColor::black));
 								painterChanel->drawLine(xBeg, yTest, xEnd, yTest);
 								painterChanel->drawLine(xBeg, yTest + 1, xEnd, yTest + 1);
 							}
@@ -3763,7 +3763,7 @@ InsermLibrary::PVALUECOORD** InsermLibrary::LOCA::calculateFDR(std::vector<std::
 	int V = pArray3D.size() * pArray3D[0].size() * pArray3D[0][0].size();
 	int compteur = 0;
 	double CV = log(V) + 0.5772;
-	double slope = 0.05 / (V * CV);
+	double slope = 0.01 / (V * CV);
 
 	PVALUECOORD **preFDRValues = new PVALUECOORD *[V];
 	for (int i = 0; i < pArray3D.size(); i++)
@@ -4381,7 +4381,8 @@ void InsermLibrary::LOCA::matrixLines(QPainter *p_painterTemplate, MATRIXCOORD *
 		xEnd = p_coordMat[i].x + fullMatrixWidth - 1;
 		yEnd = yBegin;
 
-		p_painterTemplate->setPen(QColor(Qt::black));
+		//p_painterTemplate->setPen(QColor(Qt::black));
+		p_painterTemplate->setPen(QColor(Qt::white));
 		p_painterTemplate->drawLine(xBegin, yBegin, xEnd, yEnd);
 
 		xBegin = p_coordMat[i + 1].x;
@@ -4389,7 +4390,8 @@ void InsermLibrary::LOCA::matrixLines(QPainter *p_painterTemplate, MATRIXCOORD *
 		xEnd = p_coordMat[i].x + fullMatrixWidth - 1;
 		yEnd = yBegin;
 
-		p_painterTemplate->setPen(QColor(Qt::black));
+		//p_painterTemplate->setPen(QColor(Qt::black));
+		p_painterTemplate->setPen(QColor(Qt::white));
 		p_painterTemplate->drawLine(xBegin, yBegin, xEnd, yEnd);
 	}
 
