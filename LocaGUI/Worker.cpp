@@ -180,6 +180,10 @@ void Worker::process()
 		{
 			loca->LocaARFA(elan, p_provVISU, locaAnaOpt[i]);
 		}
+		else if (locaAnaOpt[i]->task == "MARM")
+		{
+			loca->LocaVISU(elan, p_provVISU, locaAnaOpt[i]);
+		}
 
 		std::stringstream().swap(TimeDisp);
 		GetLocalTime(&LocalTime);
@@ -196,55 +200,53 @@ void Worker::process()
 		emit upScroll(actualPerCent);
 	}
 
-	//emit sendLogInfo(QString::fromStdString("Generating Comportemental Performance Result"));
-	////generate array comportemental performance
-	////Get every folder corresponding to one LOCALIZER exam
-	//std::vector<std::string> directoryList;
-	//std::stringstream().swap(TRCfilePath);
-	//TRCfilePath << locaAnaOpt[0]->patientFolder << "/";
+	emit sendLogInfo(QString::fromStdString("Generating Comportemental Performance Result"));
+	//generate array comportemental performance
+	//Get every folder corresponding to one LOCALIZER exam
+	std::stringstream().swap(TRCfilePath);
+	TRCfilePath << locaAnaOpt[0]->patientFolder << "/";
+	std::vector<std::string> directoryList = InsermLibrary::CRperf::getAllFolderNames(TRCfilePath.str());
 
-	//QDir currentDir(QString::fromStdString(TRCfilePath.str()));
-	//currentDir.setFilter(QDir::Dirs);
+	InsermLibrary::CRData** files = new InsermLibrary::CRData*[4];
+	files[0] = files[1] = files[2] = files[3] = nullptr;
+	for (int i = 0; i < directoryList.size(); i++)
+	{
+		std::stringstream().swap(TRCfilePath);
+		TRCfilePath << locaAnaOpt[0]->patientFolder << "/" << directoryList[i] << "/" << directoryList[i] << ".CR";
+		QFile f(QString::fromStdString(TRCfilePath.str()));
+		if (f.exists())
+		{
+			std::stringstream().swap(displayText);
+			displayText << "Existing CR File : " << TRCfilePath.str();
+			emit sendLogInfo(QString::fromStdString(displayText.str()));
 
-	//QStringList entries = currentDir.entryList();
-	//for (QStringList::ConstIterator entry = entries.begin(); entry != entries.end(); ++entry)
-	//{
-	//	QString dirname = *entry;
-	//	if (dirname != tr(".") && dirname != tr(".."))
-	//	{
-	//		directoryList.push_back(dirname.toStdString());
-	//	}
-	//}
+			std::vector<std::string> dirSplit = loca->split<std::string>(directoryList[i], "_");
+			int numberOfConditions = InsermLibrary::CRperf::whichOneAmI(directoryList[i]);
+			if (numberOfConditions != -1)
+			{
+				int numberOf = InsermLibrary::CRperf::whereAmI(directoryList[i]);
+				files[numberOf] = InsermLibrary::CRperf::getCRInfo(TRCfilePath.str(), directoryList[i], numberOfConditions);
+			}
+		}
+	}
 
-	//for (int i = 0; i < directoryList.size(); i++)
-	//{
-	//	std::stringstream().swap(TRCfilePath);
-	//	TRCfilePath << locaAnaOpt[0]->patientFolder << "/" << directoryList[i] << "/" << directoryList[i] << ".CR";
-	//	QFile f(QString::fromStdString(TRCfilePath.str()));
-	//	if (f.exists())
-	//	{
-	//		std::stringstream().swap(displayText);
-	//		displayText << "Existing : " << TRCfilePath.str();
-	//		emit sendLogInfo(QString::fromStdString(displayText.str()));
+	//Pass struct to create csv array
+	std::stringstream().swap(TRCfilePath);
+	TRCfilePath << locaAnaOpt[0]->patientFolder << "/RapportPerfComportementale.csv";
+	InsermLibrary::CRperf::createCSVPerformanceReport(TRCfilePath.str(), files);
 
-	//		std::ifstream crfile(TRCfilePath.str(), std::ios::beg);
-	//		std::string line;
-	//		while (std::getline(crfile, line))
-	//		{
-	//			std::vector<std::string> sortSplit = loca->split<std::string>(line, " : ");
-	//			int a = 2;
-	//		}
-	//	}
-	//}
-
-	//emit sendLogInfo(QString::fromStdString("Done !"));
-
+	emit sendLogInfo(QString::fromStdString("Done !"));
 	emit sendLogInfo(QString::fromStdString("ByeBye"));
 
 	delete elan;   
 	elan = nullptr;
 	delete loca;
 	loca = nullptr;
+	for (int i = 0; i < 4; i++)
+	{
+		delete files[i];
+	}
+	delete files;
 
 	emit finished();
 }

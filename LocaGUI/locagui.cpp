@@ -16,7 +16,7 @@
 #include "locaguiOpt.h"
 #include "locaOops.h"
 
-#include "vld.h"
+//#include "vld.h"
 
 LocaGUI::LocaGUI(QWidget *parent) : QMainWindow(parent)
 {

@@ -12,14 +12,14 @@
 #include <algorithm>																				/*|					Min max element							|*******************************************************************************************/
 #include <QtWidgets/QMainWindow>																	/*|															|*******************************************************************************************/
 #include <QPainter>																					/*|															|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\MATH\MATLABFUNC.h"				/*|			   	    MATLAB Library							|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\TRC\TRC.h"						/*|				    TRC Library 							|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\MATH\MATLABFUNC.h"		/*|			   	    MATLAB Library							|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\TRC\TRC.h"				/*|				    TRC Library 							|*******************************************************************************************/
 #include "D:\Users\Florian\Documents\Arbeit\Software\DLL\FFTW 3.3.4 x86\fftw3.h"					/*|					FFTW Library							|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\ELAN\ELAN.h"						/*|					ELAN Library 							|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\PROV\PROV.h"						/*|					PROV Library							|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\STATS\wilcox.h"					/*|					Wilcox Library							|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\STATS\wilcox.hpp"				/*|					Wilcox Library 							|*******************************************************************************************/
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\STATS\kruskall.h"				/*|					Kruskall Library 						|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\ELAN\ELAN.h"			/*|					ELAN Library 							|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\PROV\PROV.h"			/*|					PROV Library							|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\STATS\wilcox.h"		/*|					Wilcox Library							|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\STATS\wilcox.hpp"		/*|					Wilcox Library 							|*******************************************************************************************/
+#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\STATS\kruskall.h"		/*|					Kruskall Library 						|*******************************************************************************************/
 /***********************************************************************************************************************************************************************************************************************************************************/
 #include <QColormap>
 /**********************************************************************************************************************************************************************************************************************************************/
@@ -162,7 +162,6 @@ namespace InsermLibrary																																																			  	   
 		void LEC1CR(std::string crFilePath);
 		void MCSECR(std::string crFilePath);
 		void MVISMVEBCR(std::string crFilePath);
-		void generateSummaryArray();
 
 	signals : 
 		void sendLogInfo(QString);

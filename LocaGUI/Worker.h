@@ -4,6 +4,8 @@
 #include <QtWidgets/QMainWindow>
 #include <QDir>
 #include "LOCA.h"
+#include <iostream>
+#include "CRperf.h"
 
 class Worker : public QObject 
 {
@@ -22,8 +24,8 @@ signals:
 	void error(QString err);
 	void sendLogInfo(QString);
 	void sendElanPointer(InsermLibrary::ELAN *p_elan);
-	
 	void upScroll(int value);
+
 private:
 	InsermLibrary::LOCA *loca = nullptr;
 	InsermLibrary::OptionLOCA *LOCAOpt = nullptr;

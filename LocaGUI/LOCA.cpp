@@ -1931,8 +1931,8 @@ void InsermLibrary::LOCA::MCSECR(std::string crFilePath)
 	ofstream fichierCR(crFilePath, ios::out);  // ouverture en écriture avec effacement du fichier ouvert	
 
 	fichierCR << "Nombre de triggers : " << triggCatEla->numberTrigg << std::endl;
-	fichierCR << "Seman OK : " << percentPOP << std::endl;
-	fichierCR << "PhonoOK : " << percentSEARCH << std::endl;
+	fichierCR << "Pop OK : " << percentPOP << std::endl;
+	fichierCR << "Search OK : " << percentSEARCH << std::endl;
 	fichierCR << "Pourcentage total de bonne réponse : " << percentPOP + percentSEARCH << std::endl;
 
 	fichierCR.close();
@@ -2006,11 +2006,6 @@ void InsermLibrary::LOCA::MVISMVEBCR(std::string crFilePath)
 	fichierCR << "Pourcentage total de bonne réponse : " << percentLOAD2 + percentLOAD4 + percentLOAD6 + percentCTRL1 + percentCTRL2 + percentCTRL3 << std::endl;
 
 	fichierCR.close();
-}
-
-void InsermLibrary::LOCA::generateSummaryArray()
-{
-
 }
 
 /**********************************************************************************************************************************************************************************************************************************************/
@@ -3048,7 +3043,7 @@ void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, PVALUECOORD **p_
 
 			v_f = findNum(&v_id[0], v_id.size(), j + 1);
 
-			goIn = (v_f.empty() == false) && (v_f[0] + 1 < v_id.size());
+			goIn = (v_f.empty() == false) && (v_f[0] + 1 < v_id.size()-1); //-1 ou pas (-1 mis le 08/11/16, pourquoi avant ca marchait?)
 
 			if (goIn == true)
 			{
