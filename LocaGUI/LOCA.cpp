@@ -1,125 +1,10 @@
-/***********************************************************************************************************************************************************************************************************************************************************/
-/********************************************************************************************************               Library                    *********************************************************************************************************/
-/***********************************************************************************************************************************************************************************************************************************************************/
 #include "LOCA.h"
-/***********************************************************************************************************************************************************************************************************************************************************/
 #include <time.h>  
 #include <QDir>
 
-/*****************************************************************************************************************************************************************************************************************************************************/
-/*******************************************************************************************************               Constants                  ****************************************************************************************************/
-/*****************************************************************************************************************************************************************************************************************************************************/
-																																																												 /*||*/
-/*****************************************************************************************************************************************************************************************************************************************************/
-
-using namespace std;
-
-/*****************************************************************************************************************************************************************************************************************************************************/
-/*******************************************************************************************************            TRIGG     Methods             ****************************************************************************************************/
-/*****************************************************************************************************************************************************************************************************************************************************/
-InsermLibrary::TRIGG::TRIGG(int p_valueTrigger, int p_sampleTrigger, int p_rtMs, int p_rtCode, int p_origPos)
-{
-	valueTrigger = p_valueTrigger;
-	sampleTrigger = p_sampleTrigger;
-	rt_ms = p_rtMs;
-	rt_code = p_rtCode;
-	origPos = p_origPos;
-}
-
-InsermLibrary::TRIGG::~TRIGG()
-{
-
-}
-/*****************************************************************************************************************************************************************************************************************************************************/
-
-/*****************************************************************************************************************************************************************************************************************************************************/
-/*******************************************************************************************************            TRIGGINFO Methods             ****************************************************************************************************/
-/*****************************************************************************************************************************************************************************************************************************************************/
-InsermLibrary::TRIGGINFO::TRIGGINFO(unsigned long *p_valueTrigg, unsigned long *p_sampleTrigg, int p_numberTrigg, int p_downFactor)
-{
-	numberTrigg = p_numberTrigg;
-	downFactor = p_downFactor;
-
-	trigg = new TRIGG*[numberTrigg];
-	for (int i = 0; i < numberTrigg; i++)
-	{
-		trigg[i] = new TRIGG(p_valueTrigg[i], p_sampleTrigg[i] / downFactor, 1000000, -1, - 1); //10000000 et -1 default value
-	}
-}
-
-InsermLibrary::TRIGGINFO::TRIGGINFO(int *p_valueTrigg, int *p_sampleTrigg, int *p_rtMs, int p_numberTrigg, int p_downFactor)
-{
-	numberTrigg = p_numberTrigg;
-	downFactor = p_downFactor;
-
-	trigg = new TRIGG*[numberTrigg];
-	for (int i = 0; i < numberTrigg; i++)
-	{
-		trigg[i] = new TRIGG(p_valueTrigg[i], p_sampleTrigg[i], p_rtMs[i], -1, -1); // -1 default value
-	}
-}
-
-InsermLibrary::TRIGGINFO::TRIGGINFO(int *p_valueTrigg, int *p_sampleTrigg, int *p_rtMs, int *p_rtCode, int *p_origPos, int p_numberTrigg, int p_downFactor)
-{
-	numberTrigg = p_numberTrigg;
-	downFactor = p_downFactor;
-
-	trigg = new TRIGG*[numberTrigg];
-	for (int i = 0; i < numberTrigg; i++)
-	{
-		trigg[i] = new TRIGG(p_valueTrigg[i], p_sampleTrigg[i], p_rtMs[i], p_rtCode[i], p_origPos[i]); // -1 default value
-	}
-}
-
-InsermLibrary::TRIGGINFO::TRIGGINFO(int *p_valueTrigg, int *p_sampleTrigg, int p_numberTrigg, int p_downFactor)
-{
-	numberTrigg = p_numberTrigg;
-	downFactor = p_downFactor;
-
-	trigg = new TRIGG*[numberTrigg];
-	for (int i = 0; i < numberTrigg; i++)
-	{
-		trigg[i] = new TRIGG(p_valueTrigg[i], p_sampleTrigg[i] / downFactor, 10000000, -1, -1); //10000000 et -1 default value
-	}
-}
-
-InsermLibrary::TRIGGINFO::~TRIGGINFO()
-{
-	for (int i = 0; i < numberTrigg; i++)
-	{
-		delete trigg[i];
-	}
-	delete trigg;
-}
-/*****************************************************************************************************************************************************************************************************************************************************/
-
-/*****************************************************************************************************************************************************************************************************************************************************/
-/*************************************************************************************************            LOCAANALYSISOPTION Methods             *************************************************************************************************/
-/*****************************************************************************************************************************************************************************************************************************************************/
-InsermLibrary::LOCAANALYSISOPTION::LOCAANALYSISOPTION(std::vector<std::vector<double>> p_frequencys, std::vector<std::vector<bool>> p_analysisDetails, std::string p_trcPath, std::string p_provPath, std::string p_patientFolder, std::string p_task, std::string p_expTask)
-{
-	frequencys = p_frequencys;
-	analysisDetails = p_analysisDetails;
-	trcPath = p_trcPath;
-	provPath = p_provPath;
-	patientFolder = p_patientFolder;
-	task = p_task;
-	expTask = p_expTask;
-}
-
-InsermLibrary::LOCAANALYSISOPTION::~LOCAANALYSISOPTION()
-{
-
-}
-/*****************************************************************************************************************************************************************************************************************************************************/
-
-/*****************************************************************************************************************************************************************************************************************************************************/
-/*******************************************************************************************************               LOCA Methods               ****************************************************************************************************/
-/*****************************************************************************************************************************************************************************************************************************************************/
-
-/**********************************************************************************************************************************************************************************************************************************************/
-/*																																																											  */
-/**********************************************************************************************************************************************************************************************************************************************/
+/****************************************************************************************************************************/
+/******************************************               LOCA Methods              *****************************************/
+/****************************************************************************************************************************/
 InsermLibrary::LOCA::LOCA(OptionLOCA *p_options)
 {
 	opt = p_options;
@@ -127,33 +12,19 @@ InsermLibrary::LOCA::LOCA(OptionLOCA *p_options)
 
 InsermLibrary::LOCA::~LOCA()
 {
-	if(triggTRC != nullptr)
-		delete triggTRC;
-
-	if (triggDownTRC != nullptr)
-		delete triggDownTRC;
-
-	if (triggCatEla != nullptr)
-		delete triggCatEla;
-
-	if (triggCatElaNoSort != nullptr)
-		delete triggCatElaNoSort;
-
-	if (painter != nullptr)
-		delete painter;
-
-	if (pixMap != nullptr)
-		delete pixMap;
-
-	if (opt != nullptr)
-		delete opt;
+	deleteAndNullify(triggTRC);
+	deleteAndNullify(triggDownTRC);
+	deleteAndNullify(triggCatEla);
+	deleteAndNullify(triggCatElaNoSort);
+	deleteAndNullify(painter);
+	deleteAndNullify(pixMap);
+	deleteAndNullify(opt);
 }
-/**********************************************************************************************************************************************************************************************************************************************/
 
-/**********************************************************************************************************************************************************************************************************************************************/
-/*																																																											  */
-/**********************************************************************************************************************************************************************************************************************************************/
-void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+/********************************************************************************************************************/
+/*																												    */
+/********************************************************************************************************************/
+void InsermLibrary::LOCA::LocaVISU(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
 	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[11]{10, 20, 30, 40, 50, 60, 70, 90, 110, 100, 80};
@@ -175,7 +46,7 @@ void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
 	/************************************************************************************************************/
 
-	std::stringstream().swap(outputMessage);
+	stringstream().swap(outputMessage);
 	outputMessage << "Pos and Conf Files Have been created";
 	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -186,21 +57,19 @@ void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		/******************************************************************************************************************************/
 		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 11, strCode, 11, window_ms, 20);	  			 	      //
 		/******************************************************************************************************************************/
-		std::stringstream().swap(outputMessage);
+		stringstream().swap(outputMessage);
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
-
-	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
-	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+	vector<int> correspondingEvents = processEvents(p_prov);
 	
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
 		if (p_anaopt->analysisDetails[i + 1][0])
 		{
-			std::stringstream().swap(outputMessage);
+			stringstream().swap(outputMessage);
 			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
 			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -211,19 +80,19 @@ void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				/**********************************************************************************************************************************************/						  
 				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
 				/**********************************************************************************************************************************************/					      
-				std::stringstream().swap(outputMessage);
+				stringstream().swap(outputMessage);
 				outputMessage << "Hilbert Envellope Calculated";
 				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
 				//===============================================================================================================================================================================
-				std::stringstream().swap(pictureLabel);
-				std::stringstream().swap(folderTrialsSM);
+				stringstream().swap(pictureLabel);
+				stringstream().swap(folderTrialsSM);
 				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";				  
 				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";		
 				
 				if (!QDir(&folderTrialsSM.str()[0]).exists())																				  
 				{																															  
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					QDir().mkdir(&folderTrialsSM.str()[0]);																					  
@@ -235,21 +104,21 @@ void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					/********************************************************************************************************************************************************************************************************/
 					/*																							loc_env2plot																							    */
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(pathFreq);																																										//
+					stringstream().swap(pathFreq);																																										//
 					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-					std::stringstream().swap(cheatMode);																																									//
+					stringstream().swap(cheatMode);																																									//
 					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 11, strCode, 11, window_ms, 20);																											//				
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Hilbert Env Pictures DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-					std::stringstream().swap(outputMessage);
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+					stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
@@ -257,21 +126,21 @@ void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			else
 			{
 				//===============================================================================================================================================================================
-				std::stringstream().swap(loadFileDefault);
+				stringstream().swap(loadFileDefault);
 				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
 				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
 				//===============================================================================================================================================================================
 
 				if (loadFile == 0)
 				{
-					std::stringstream().swap(pictureLabel);
-					std::stringstream().swap(folderTrialsSM);
+					stringstream().swap(pictureLabel);
+					stringstream().swap(folderTrialsSM);
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";				  
 					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";									  
 																																					
 					if (!QDir(&folderTrialsSM.str()[0]).exists())																				  
 					{																															  
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 						QDir().mkdir(&folderTrialsSM.str()[0]);																					  
@@ -282,46 +151,41 @@ void InsermLibrary::LOCA::LocaVISU(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 						/********************************************************************************************************************************************************************************************************/					    
 						/*																							loc_env2plot																							    */						
 						/********************************************************************************************************************************************************************************************************/				  	    
-						std::stringstream().swap(pathFreq);																																										//
+						stringstream().swap(pathFreq);																																										//
 						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-						std::stringstream().swap(cheatMode);																																									//
+						stringstream().swap(cheatMode);																																									//
 						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 11, strCode, 11, window_ms, 20);																											//				
 						/********************************************************************************************************************************************************************************************************/		
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Hilbert Env Pictures DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-						std::stringstream().swap(outputMessage);
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+						stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 				}
 				else
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "No Envellope File found, end of analyse for this frequency";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
-	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-	{
-		delete stimEvents[i];
-	}
-	delete stimEvents;
 
 	delete[] window_ms;
 	delete[] strCode;
 	delete[] code;
 } // loca 
 
-void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+void InsermLibrary::LOCA::LocaLEC1(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
 	stringstream posFilePath, confFilePath, crFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[6]{10, 20, 30, 1, 2, 100};
@@ -343,7 +207,7 @@ void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
 	/************************************************************************************************************/
 
-	std::stringstream().swap(outputMessage);
+	stringstream().swap(outputMessage);
 	outputMessage << "Pos and Conf Files Have been created";
 	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -354,23 +218,43 @@ void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		/******************************************************************************************************************************/
 		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 6, strCode, 6, window_ms, 20);	  			 	      //
 		/******************************************************************************************************************************/
-		std::stringstream().swap(outputMessage);
+		stringstream().swap(outputMessage);
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
-	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
-	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+	vector<int> correspondingEvents = processEvents(p_prov);
 
-	crFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".CR"; //
-	LEC1CR(crFilePath.str());
+	InsermLibrary::CRperf::LEC1CR(p_anaopt, triggCatEla);
+
+	//Inv
+	if (p_prov->invertmapsinfo != "")
+	{
+		for (int i = 0; i < triggCatEla->numberTrigg; i++)
+		{
+			int temp = round(triggCatElaNoSort->trigg[i].rt_ms * 64) / 1000;
+			triggCatElaNoSort->trigg[i].sampleTrigger = triggCatElaNoSort->trigg[i].sampleTrigger + temp;
+
+			triggCatEla->trigg[i].rt_ms = -triggCatEla->trigg[i].rt_ms;
+		}
+
+		for (int i = 0; i < p_prov->visuBlocs.size(); i++)
+		{
+			p_prov->visuBlocs[i].dispBloc.epochWindow[0] = p_prov->invertmaps.epochWindow[0];
+			p_prov->visuBlocs[i].dispBloc.epochWindow[1] = p_prov->invertmaps.epochWindow[1];
+
+			p_prov->visuBlocs[i].dispBloc.baseLineWindow[0] = p_prov->invertmaps.baseLineWindow[0];
+			p_prov->visuBlocs[i].dispBloc.baseLineWindow[1] = p_prov->invertmaps.baseLineWindow[1];
+		}
+	}
+	//endinv
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
 		if (p_anaopt->analysisDetails[i + 1][0])
 		{
-			std::stringstream().swap(outputMessage);
+			stringstream().swap(outputMessage);
 			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
 			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -381,19 +265,19 @@ void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				/**********************************************************************************************************************************************/
 				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
 				/**********************************************************************************************************************************************/
-				std::stringstream().swap(outputMessage);
+				stringstream().swap(outputMessage);
 				outputMessage << "Hilbert Envellope Calculated";
 				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
 				//===============================================================================================================================================================================
-				std::stringstream().swap(pictureLabel);
-				std::stringstream().swap(folderTrialsSM);
+				stringstream().swap(pictureLabel);
+				stringstream().swap(folderTrialsSM);
 				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 				if (!QDir(&folderTrialsSM.str()[0]).exists())
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -405,21 +289,21 @@ void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					/********************************************************************************************************************************************************************************************************/
 					/*																							loc_env2plot																							    */
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(pathFreq);																																										//
+					stringstream().swap(pathFreq);																																										//
 					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-					std::stringstream().swap(cheatMode);																																									//
+					stringstream().swap(cheatMode);																																									//
 					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 6, strCode, 6, window_ms, 20);																											//				
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Hilbert Env Pictures DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-					std::stringstream().swap(outputMessage);
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+					stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
@@ -427,21 +311,21 @@ void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			else
 			{
 				//===============================================================================================================================================================================
-				std::stringstream().swap(loadFileDefault);
+				stringstream().swap(loadFileDefault);
 				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
 				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
 				//===============================================================================================================================================================================
 
 				if (loadFile == 0)
 				{
-					std::stringstream().swap(pictureLabel);
-					std::stringstream().swap(folderTrialsSM);
+					stringstream().swap(pictureLabel);
+					stringstream().swap(folderTrialsSM);
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 					if (!QDir(&folderTrialsSM.str()[0]).exists())
 					{
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 						QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -452,46 +336,41 @@ void InsermLibrary::LOCA::LocaLEC1(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 						/********************************************************************************************************************************************************************************************************/
 						/*																							loc_env2plot																							    */
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(pathFreq);																																										//
+						stringstream().swap(pathFreq);																																										//
 						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-						std::stringstream().swap(cheatMode);																																									//
+						stringstream().swap(cheatMode);																																									//
 						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 6, strCode, 6, window_ms, 20);																											//				
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Hilbert Env Pictures DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-						std::stringstream().swap(outputMessage);
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+						stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 				}
 				else
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "No Envellope File found, end of analyse for this frequency";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
-	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-	{
-		delete stimEvents[i];
-	}
-	delete stimEvents;
 
 	delete[] window_ms;
 	delete[] strCode;
 	delete[] code;
 } // loca 
 
-void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+void InsermLibrary::LOCA::LocaMCSE(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
 	stringstream posFilePath, confFilePath, crFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[7]{10, 60, 60, 110, 110, 160, 101};
@@ -513,7 +392,7 @@ void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
 	/************************************************************************************************************/
 
-	std::stringstream().swap(outputMessage);
+	stringstream().swap(outputMessage);
 	outputMessage << "Pos and Conf Files Have been created";
 	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -524,23 +403,21 @@ void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		/******************************************************************************************************************************/
 		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 7, strCode, 7, window_ms, 20);	  			 	      //
 		/******************************************************************************************************************************/
-		std::stringstream().swap(outputMessage);
+		stringstream().swap(outputMessage);
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
-	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
-	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+	vector<int> correspondingEvents = processEvents(p_prov);
 
-	crFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".CR"; //
-	MCSECR(crFilePath.str());
+	InsermLibrary::CRperf::MCSECR(p_anaopt, triggCatEla);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
 		if (p_anaopt->analysisDetails[i + 1][0])
 		{
-			std::stringstream().swap(outputMessage);
+			stringstream().swap(outputMessage);
 			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
 			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -551,19 +428,19 @@ void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				/**********************************************************************************************************************************************/
 				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
 				/**********************************************************************************************************************************************/
-				std::stringstream().swap(outputMessage);
+				stringstream().swap(outputMessage);
 				outputMessage << "Hilbert Envellope Calculated";
 				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
 				//===============================================================================================================================================================================
-				std::stringstream().swap(pictureLabel);
-				std::stringstream().swap(folderTrialsSM);
+				stringstream().swap(pictureLabel);
+				stringstream().swap(folderTrialsSM);
 				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 				if (!QDir(&folderTrialsSM.str()[0]).exists())
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -575,21 +452,21 @@ void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					/********************************************************************************************************************************************************************************************************/
 					/*																							loc_env2plot																							    */
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(pathFreq);																																										//
+					stringstream().swap(pathFreq);																																										//
 					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-					std::stringstream().swap(cheatMode);																																									//
+					stringstream().swap(cheatMode);																																									//
 					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 7, strCode, 7, window_ms, 20);																											//				
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Hilbert Env Pictures DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-					std::stringstream().swap(outputMessage);
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+					stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
@@ -597,21 +474,21 @@ void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			else
 			{
 				//===============================================================================================================================================================================
-				std::stringstream().swap(loadFileDefault);
+				stringstream().swap(loadFileDefault);
 				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
 				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
 				//===============================================================================================================================================================================
 
 				if (loadFile == 0)
 				{
-					std::stringstream().swap(pictureLabel);
-					std::stringstream().swap(folderTrialsSM);
+					stringstream().swap(pictureLabel);
+					stringstream().swap(folderTrialsSM);
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 					if (!QDir(&folderTrialsSM.str()[0]).exists())
 					{
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 						QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -622,46 +499,41 @@ void InsermLibrary::LOCA::LocaMCSE(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 						/********************************************************************************************************************************************************************************************************/
 						/*																							loc_env2plot																							    */
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(pathFreq);																																										//
+						stringstream().swap(pathFreq);																																										//
 						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-						std::stringstream().swap(cheatMode);																																									//
+						stringstream().swap(cheatMode);																																									//
 						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 7, strCode, 7, window_ms, 20);																											//				
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Hilbert Env Pictures DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-						std::stringstream().swap(outputMessage);
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+						stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 				}
 				else
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "No Envellope File found, end of analyse for this frequency";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
-	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-	{
-		delete stimEvents[i];
-	}
-	delete stimEvents;
 
 	delete[] window_ms;
 	delete[] strCode;
 	delete[] code;
 } // loca 
 
-void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+void InsermLibrary::LOCA::LocaMVIS(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
 	stringstream posFilePath, confFilePath, posXFilePath, crFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[5]{25, 45, 65, 90, 100};
@@ -683,7 +555,7 @@ void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
 	/************************************************************************************************************/
 
-	std::stringstream().swap(outputMessage);
+	stringstream().swap(outputMessage);
 	outputMessage << "Pos and Conf Files Have been created";
 	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -694,26 +566,24 @@ void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		/******************************************************************************************************************************/
 		//loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 5, strCode, 5, window_ms, 20);	  			 	      //
 		/******************************************************************************************************************************/
-		//std::stringstream().swap(outputMessage);
+		//stringstream().swap(outputMessage);
 		//outputMessage << "ERP Pictures DONE !";
 		//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
-		std::stringstream().swap(outputMessage);
+		stringstream().swap(outputMessage);
 		outputMessage << "MVEB doesn't do eeg2erp !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
-	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
-	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+	vector<int> correspondingEvents = processEvents(p_prov);
 
-	crFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".CR"; //
-	MVISMVEBCR(crFilePath.str());
+	InsermLibrary::CRperf::MVISMVEBCR(p_anaopt, triggCatEla);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
 		if (p_anaopt->analysisDetails[i + 1][0])
 		{
-			std::stringstream().swap(outputMessage);
+			stringstream().swap(outputMessage);
 			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
 			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -724,19 +594,19 @@ void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				/**********************************************************************************************************************************************/
 				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
 				/**********************************************************************************************************************************************/
-				std::stringstream().swap(outputMessage);
+				stringstream().swap(outputMessage);
 				outputMessage << "Hilbert Envellope Calculated";
 				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
 				//===============================================================================================================================================================================
-				std::stringstream().swap(pictureLabel);
-				std::stringstream().swap(folderTrialsSM);
+				stringstream().swap(pictureLabel);
+				stringstream().swap(folderTrialsSM);
 				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 				if (!QDir(&folderTrialsSM.str()[0]).exists())
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -748,21 +618,21 @@ void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					/********************************************************************************************************************************************************************************************************/
 					/*																							loc_env2plot																							    */
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(pathFreq);																																										//
+					stringstream().swap(pathFreq);																																										//
 					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-					std::stringstream().swap(cheatMode);																																									//
+					stringstream().swap(cheatMode);																																									//
 					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 5, strCode, 5, window_ms, 20);																											//				
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Hilbert Env Pictures DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-					std::stringstream().swap(outputMessage);
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+					stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
@@ -770,21 +640,21 @@ void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			else
 			{
 				//===============================================================================================================================================================================
-				std::stringstream().swap(loadFileDefault);
+				stringstream().swap(loadFileDefault);
 				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
 				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
 				//===============================================================================================================================================================================
 
 				if (loadFile == 0)
 				{
-					std::stringstream().swap(pictureLabel);
-					std::stringstream().swap(folderTrialsSM);
+					stringstream().swap(pictureLabel);
+					stringstream().swap(folderTrialsSM);
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 					if (!QDir(&folderTrialsSM.str()[0]).exists())
 					{
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 						QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -795,46 +665,41 @@ void InsermLibrary::LOCA::LocaMVIS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 						/********************************************************************************************************************************************************************************************************/
 						/*																							loc_env2plot																							    */
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(pathFreq);																																										//
+						stringstream().swap(pathFreq);																																										//
 						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-						std::stringstream().swap(cheatMode);																																									//
+						stringstream().swap(cheatMode);																																									//
 						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 5, strCode, 5, window_ms, 20);																											//				
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Hilbert Env Pictures DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-						std::stringstream().swap(outputMessage);
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+						stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 				}
 				else
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "No Envellope File found, end of analyse for this frequency";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
-	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-	{
-		delete stimEvents[i];
-	}
-	delete stimEvents;
 
 	delete[] window_ms;
 	delete[] strCode;
 	delete[] code;
 } // loca 
 
-void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+void InsermLibrary::LOCA::LocaMVEB(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
 	stringstream posFilePath, confFilePath, crFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[5]{25, 45, 65, 90, 100};
@@ -856,7 +721,7 @@ void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
 	/************************************************************************************************************/
 
-	std::stringstream().swap(outputMessage);
+	stringstream().swap(outputMessage);
 	outputMessage << "Pos and Conf Files Have been created";
 	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -867,26 +732,24 @@ void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		/******************************************************************************************************************************/
 		//loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 5, strCode, 5, window_ms, 20);	  			 	      //
 		/******************************************************************************************************************************/
-		//std::stringstream().swap(outputMessage);
+		//stringstream().swap(outputMessage);
 		//outputMessage << "ERP Pictures DONE !";
 		//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
-		std::stringstream().swap(outputMessage);
+		stringstream().swap(outputMessage);
 		outputMessage << "MVEB doesn't do eeg2erp !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
-	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
-	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+	vector<int> correspondingEvents = processEvents(p_prov);
 
-	crFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".CR"; //
-	MVISMVEBCR(crFilePath.str());
+	InsermLibrary::CRperf::MVISMVEBCR(p_anaopt, triggCatEla);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
 		if (p_anaopt->analysisDetails[i + 1][0])
 		{
-			std::stringstream().swap(outputMessage);
+			stringstream().swap(outputMessage);
 			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
 			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -897,19 +760,19 @@ void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				/**********************************************************************************************************************************************/
 				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
 				/**********************************************************************************************************************************************/
-				std::stringstream().swap(outputMessage);
+				stringstream().swap(outputMessage);
 				outputMessage << "Hilbert Envellope Calculated";
 				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
 				//===============================================================================================================================================================================
-				std::stringstream().swap(pictureLabel);
-				std::stringstream().swap(folderTrialsSM);
+				stringstream().swap(pictureLabel);
+				stringstream().swap(folderTrialsSM);
 				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 				if (!QDir(&folderTrialsSM.str()[0]).exists())
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -921,21 +784,21 @@ void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					/********************************************************************************************************************************************************************************************************/
 					/*																							loc_env2plot																							    */
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(pathFreq);																																										//
+					stringstream().swap(pathFreq);																																										//
 					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-					std::stringstream().swap(cheatMode);																																									//
+					stringstream().swap(cheatMode);																																									//
 					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 5, strCode, 5, window_ms, 20);																											//				
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Hilbert Env Pictures DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-					std::stringstream().swap(outputMessage);
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+					stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
@@ -943,7 +806,7 @@ void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			else
 			{
 				//===============================================================================================================================================================================
-				std::stringstream().swap(loadFileDefault);
+				stringstream().swap(loadFileDefault);
 				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
 				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
 				//===============================================================================================================================================================================
@@ -952,14 +815,14 @@ void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				{
 					p_elan->elanFreqBand[i]->chan_nb = p_elan->m_bipole.size();
 
-					std::stringstream().swap(pictureLabel);
-					std::stringstream().swap(folderTrialsSM);
+					stringstream().swap(pictureLabel);
+					stringstream().swap(folderTrialsSM);
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 					if (!QDir(&folderTrialsSM.str()[0]).exists())
 					{
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 						QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -970,46 +833,41 @@ void InsermLibrary::LOCA::LocaMVEB(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 						/********************************************************************************************************************************************************************************************************/
 						/*																							loc_env2plot																							    */
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(pathFreq);																																										//
+						stringstream().swap(pathFreq);																																										//
 						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-						std::stringstream().swap(cheatMode);																																									//
+						stringstream().swap(cheatMode);																																									//
 						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 5, strCode, 5, window_ms, 20);																											//				
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Hilbert Env Pictures DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-						std::stringstream().swap(outputMessage);
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+						stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 				}
 				else
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "No Envellope File found, end of analyse for this frequency";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
-	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-	{
-		delete stimEvents[i];
-	}
-	delete stimEvents;
 
 	delete[] window_ms;
 	delete[] strCode;
 	delete[] code;
 } // loca 
 
-void InsermLibrary::LOCA::LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+void InsermLibrary::LOCA::LocaMASS(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
 	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[3]{200, 300, 300};
@@ -1031,7 +889,7 @@ void InsermLibrary::LOCA::LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
 	/************************************************************************************************************/
 
-	std::stringstream().swap(outputMessage);
+	stringstream().swap(outputMessage);
 	outputMessage << "Pos and Conf Files Have been created";
 	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -1042,20 +900,19 @@ void InsermLibrary::LOCA::LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		/******************************************************************************************************************************/
 		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 3, strCode, 3, window_ms, 20);	  			 	      //
 		/******************************************************************************************************************************/
-		std::stringstream().swap(outputMessage);
+		stringstream().swap(outputMessage);
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
-	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
-	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+	vector<int> correspondingEvents = processEvents(p_prov);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
 		if (p_anaopt->analysisDetails[i + 1][0])
 		{
-			std::stringstream().swap(outputMessage);
+			stringstream().swap(outputMessage);
 			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
 			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -1066,19 +923,19 @@ void InsermLibrary::LOCA::LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				/**********************************************************************************************************************************************/
 				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
 				/**********************************************************************************************************************************************/
-				std::stringstream().swap(outputMessage);
+				stringstream().swap(outputMessage);
 				outputMessage << "Hilbert Envellope Calculated";
 				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
 				//===============================================================================================================================================================================
-				std::stringstream().swap(pictureLabel);
-				std::stringstream().swap(folderTrialsSM);
+				stringstream().swap(pictureLabel);
+				stringstream().swap(folderTrialsSM);
 				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 				if (!QDir(&folderTrialsSM.str()[0]).exists())
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -1090,21 +947,21 @@ void InsermLibrary::LOCA::LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					/********************************************************************************************************************************************************************************************************/
 					/*																							loc_env2plot																							    */
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(pathFreq);																																										//
+					stringstream().swap(pathFreq);																																										//
 					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-					std::stringstream().swap(cheatMode);																																									//
+					stringstream().swap(cheatMode);																																									//
 					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 3, strCode, 3, window_ms, 20);																											//				
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Hilbert Env Pictures DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-					std::stringstream().swap(outputMessage);
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+					stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
@@ -1112,21 +969,21 @@ void InsermLibrary::LOCA::LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			else
 			{
 				//===============================================================================================================================================================================
-				std::stringstream().swap(loadFileDefault);
+				stringstream().swap(loadFileDefault);
 				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
 				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
 				//===============================================================================================================================================================================
 
 				if (loadFile == 0)
 				{
-					std::stringstream().swap(pictureLabel);
-					std::stringstream().swap(folderTrialsSM);
+					stringstream().swap(pictureLabel);
+					stringstream().swap(folderTrialsSM);
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 					if (!QDir(&folderTrialsSM.str()[0]).exists())
 					{
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 						QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -1137,46 +994,41 @@ void InsermLibrary::LOCA::LocaMASS(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 						/********************************************************************************************************************************************************************************************************/
 						/*																							loc_env2plot																							    */
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(pathFreq);																																										//
+						stringstream().swap(pathFreq);																																										//
 						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-						std::stringstream().swap(cheatMode);																																									//
+						stringstream().swap(cheatMode);																																									//
 						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 3, strCode, 3, window_ms, 20);																											//				
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Hilbert Env Pictures DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-						std::stringstream().swap(outputMessage);
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+						stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 				}
 				else
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "No Envellope File found, end of analyse for this frequency";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
-	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-	{
-		delete stimEvents[i];
-	}
-	delete stimEvents;
 
 	delete[] window_ms;
 	delete[] strCode;
 	delete[] code;
 } // loca 
 
-void InsermLibrary::LOCA::LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+void InsermLibrary::LOCA::LocaLEC2(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
 	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[2]{10, 20};
@@ -1198,7 +1050,7 @@ void InsermLibrary::LOCA::LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
 	/************************************************************************************************************/
 
-	std::stringstream().swap(outputMessage);
+	stringstream().swap(outputMessage);
 	outputMessage << "Pos and Conf Files Have been created";
 	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -1209,20 +1061,19 @@ void InsermLibrary::LOCA::LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		/******************************************************************************************************************************/
 		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 2, strCode, 2, window_ms, 20);	  			 	      //
 		/******************************************************************************************************************************/
-		std::stringstream().swap(outputMessage);
+		stringstream().swap(outputMessage);
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
-	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
-	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+	vector<int> correspondingEvents = processEvents(p_prov);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
 		if (p_anaopt->analysisDetails[i + 1][0])
 		{
-			std::stringstream().swap(outputMessage);
+			stringstream().swap(outputMessage);
 			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
 			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -1233,19 +1084,19 @@ void InsermLibrary::LOCA::LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				/**********************************************************************************************************************************************/
 				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
 				/**********************************************************************************************************************************************/
-				std::stringstream().swap(outputMessage);
+				stringstream().swap(outputMessage);
 				outputMessage << "Hilbert Envellope Calculated";
 				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
 				//===============================================================================================================================================================================
-				std::stringstream().swap(pictureLabel);
-				std::stringstream().swap(folderTrialsSM);
+				stringstream().swap(pictureLabel);
+				stringstream().swap(folderTrialsSM);
 				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 				if (!QDir(&folderTrialsSM.str()[0]).exists())
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -1257,21 +1108,21 @@ void InsermLibrary::LOCA::LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					/********************************************************************************************************************************************************************************************************/
 					/*																							loc_env2plot																							    */
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(pathFreq);																																										//
+					stringstream().swap(pathFreq);																																										//
 					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-					std::stringstream().swap(cheatMode);																																									//
+					stringstream().swap(cheatMode);																																									//
 					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 2, strCode, 2, window_ms, 20);																											//				
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Hilbert Env Pictures DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-					std::stringstream().swap(outputMessage);
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+					stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
@@ -1279,21 +1130,21 @@ void InsermLibrary::LOCA::LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			else
 			{
 				//===============================================================================================================================================================================
-				std::stringstream().swap(loadFileDefault);
+				stringstream().swap(loadFileDefault);
 				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
 				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
 				//===============================================================================================================================================================================
 
 				if (loadFile == 0)
 				{
-					std::stringstream().swap(pictureLabel);
-					std::stringstream().swap(folderTrialsSM);
+					stringstream().swap(pictureLabel);
+					stringstream().swap(folderTrialsSM);
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 					if (!QDir(&folderTrialsSM.str()[0]).exists())
 					{
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 						QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -1304,46 +1155,41 @@ void InsermLibrary::LOCA::LocaLEC2(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 						/********************************************************************************************************************************************************************************************************/
 						/*																							loc_env2plot																							    */
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(pathFreq);																																										//
+						stringstream().swap(pathFreq);																																										//
 						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-						std::stringstream().swap(cheatMode);																																									//
+						stringstream().swap(cheatMode);																																									//
 						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 2, strCode, 2, window_ms, 20);																											//				
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Hilbert Env Pictures DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-						std::stringstream().swap(outputMessage);
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+						stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 				}
 				else
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "No Envellope File found, end of analyse for this frequency";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
-	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-	{
-		delete stimEvents[i];
-	}
-	delete stimEvents;
 
 	delete[] window_ms;
 	delete[] strCode;
 	delete[] code;
 } // loca 
 
-void InsermLibrary::LOCA::LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+void InsermLibrary::LOCA::LocaMOTO(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
 	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[21]{11, 12, 12, 21, 22, 22, 31, 32, 32, 41, 42, 42, 51, 52, 52, 61, 62, 62, 71, 72, 72};
@@ -1365,7 +1211,7 @@ void InsermLibrary::LOCA::LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
 	/************************************************************************************************************/
 
-	std::stringstream().swap(outputMessage);
+	stringstream().swap(outputMessage);
 	outputMessage << "Pos and Conf Files Have been created";
 	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -1376,20 +1222,19 @@ void InsermLibrary::LOCA::LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		/******************************************************************************************************************************/
 		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 21, strCode, 21, window_ms, 21);	  			 	      //
 		/******************************************************************************************************************************/
-		std::stringstream().swap(outputMessage);
+		stringstream().swap(outputMessage);
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
-	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
-	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+	vector<int> correspondingEvents = processEvents(p_prov);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
 		if (p_anaopt->analysisDetails[i + 1][0])
 		{
-			std::stringstream().swap(outputMessage);
+			stringstream().swap(outputMessage);
 			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
 			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -1400,19 +1245,19 @@ void InsermLibrary::LOCA::LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				/**********************************************************************************************************************************************/
 				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
 				/**********************************************************************************************************************************************/
-				std::stringstream().swap(outputMessage);
+				stringstream().swap(outputMessage);
 				outputMessage << "Hilbert Envellope Calculated";
 				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
 				//===============================================================================================================================================================================
-				std::stringstream().swap(pictureLabel);
-				std::stringstream().swap(folderTrialsSM);
+				stringstream().swap(pictureLabel);
+				stringstream().swap(folderTrialsSM);
 				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 				if (!QDir(&folderTrialsSM.str()[0]).exists())
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -1424,21 +1269,21 @@ void InsermLibrary::LOCA::LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					/********************************************************************************************************************************************************************************************************/
 					/*																							loc_env2plot																							    */
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(pathFreq);																																										//
+					stringstream().swap(pathFreq);																																										//
 					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-					std::stringstream().swap(cheatMode);																																									//
+					stringstream().swap(cheatMode);																																									//
 					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 21, strCode, 21, window_ms, 20);																											//				
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Hilbert Env Pictures DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-					std::stringstream().swap(outputMessage);
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+					stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
@@ -1446,21 +1291,21 @@ void InsermLibrary::LOCA::LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			else
 			{
 				//===============================================================================================================================================================================
-				std::stringstream().swap(loadFileDefault);
+				stringstream().swap(loadFileDefault);
 				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
 				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
 				//===============================================================================================================================================================================
 
 				if (loadFile == 0)
 				{
-					std::stringstream().swap(pictureLabel);
-					std::stringstream().swap(folderTrialsSM);
+					stringstream().swap(pictureLabel);
+					stringstream().swap(folderTrialsSM);
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 					if (!QDir(&folderTrialsSM.str()[0]).exists())
 					{
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 						QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -1471,46 +1316,41 @@ void InsermLibrary::LOCA::LocaMOTO(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 						/********************************************************************************************************************************************************************************************************/
 						/*																							loc_env2plot																							    */
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(pathFreq);																																										//
+						stringstream().swap(pathFreq);																																										//
 						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-						std::stringstream().swap(cheatMode);																																									//
+						stringstream().swap(cheatMode);																																									//
 						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 21, strCode, 21, window_ms, 20);																											//				
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Hilbert Env Pictures DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-						std::stringstream().swap(outputMessage);
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+						stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 				}
 				else
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "No Envellope File found, end of analyse for this frequency";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
-	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-	{
-		delete stimEvents[i];
-	}
-	delete stimEvents;
 
 	delete[] window_ms;
 	delete[] strCode;
 	delete[] code;
 } // loca 
 
-void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+void InsermLibrary::LOCA::LocaAUDI(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
 	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[13]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 20};
@@ -1532,7 +1372,7 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
 	/************************************************************************************************************/
 
-	std::stringstream().swap(outputMessage);
+	stringstream().swap(outputMessage);
 	outputMessage << "Pos and Conf Files Have been created";
 	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -1543,20 +1383,19 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		/******************************************************************************************************************************/
 		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 3, strCode, 3, window_ms, 20);	  			 	      //
 		/******************************************************************************************************************************/
-		std::stringstream().swap(outputMessage);
+		stringstream().swap(outputMessage);
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
-	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
-	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+	vector<int> correspondingEvents = processEvents(p_prov);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
 		if (p_anaopt->analysisDetails[i + 1][0])
 		{
-			std::stringstream().swap(outputMessage);
+			stringstream().swap(outputMessage);
 			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
 			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -1567,19 +1406,19 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				/**********************************************************************************************************************************************/
 				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
 				/**********************************************************************************************************************************************/
-				std::stringstream().swap(outputMessage);
+				stringstream().swap(outputMessage);
 				outputMessage << "Hilbert Envellope Calculated";
 				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
 				//===============================================================================================================================================================================
-				std::stringstream().swap(pictureLabel);
-				std::stringstream().swap(folderTrialsSM);
+				stringstream().swap(pictureLabel);
+				stringstream().swap(folderTrialsSM);
 				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 				if (!QDir(&folderTrialsSM.str()[0]).exists())
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -1591,21 +1430,21 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					/********************************************************************************************************************************************************************************************************/
 					/*																							loc_env2plot																							    */
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(pathFreq);																																										//
+					stringstream().swap(pathFreq);																																										//
 					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-					std::stringstream().swap(cheatMode);																																									//
+					stringstream().swap(cheatMode);																																									//
 					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
-					loc_bar2plot(p_elan,p_prov, i, cheatMode.str(), pathFreq.str(), code, 13, strCode, 13, window_ms, 20, stimEvents, correspondingEvents);																										//				
+					//loc_bar2plot(p_elan,p_prov, i, cheatMode.str(), pathFreq.str(), code, 13, strCode, 13, window_ms, 20, stimEvents, correspondingEvents);																										//				
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Hilbert Env Pictures DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
-					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-					std::stringstream().swap(outputMessage);
+					loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+					stringstream().swap(outputMessage);
 					outputMessage << "Frequency Maps DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
@@ -1613,21 +1452,21 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			else
 			{
 				//===============================================================================================================================================================================
-				std::stringstream().swap(loadFileDefault);
+				stringstream().swap(loadFileDefault);
 				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
 				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
 				//===============================================================================================================================================================================
 
 				if (loadFile == 0)
 				{
-					std::stringstream().swap(pictureLabel);
-					std::stringstream().swap(folderTrialsSM);
+					stringstream().swap(pictureLabel);
+					stringstream().swap(folderTrialsSM);
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 					if (!QDir(&folderTrialsSM.str()[0]).exists())
 					{
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 						QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -1638,46 +1477,41 @@ void InsermLibrary::LOCA::LocaAUDI(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 						/********************************************************************************************************************************************************************************************************/
 						/*																							loc_env2plot																							    */
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(pathFreq);																																										//
+						stringstream().swap(pathFreq);																																										//
 						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-						std::stringstream().swap(cheatMode);																																									//
+						stringstream().swap(cheatMode);																																									//
 						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
-						loc_bar2plot(p_elan,p_prov, i, cheatMode.str(), pathFreq.str(), code, 13, strCode, 13, window_ms, 20, stimEvents, correspondingEvents);																										//				
+						//loc_bar2plot(p_elan,p_prov, i, cheatMode.str(), pathFreq.str(), code, 13, strCode, 13, window_ms, 20, stimEvents, correspondingEvents);																										//				
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Hilbert Env Pictures DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
-						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), stimEvents, correspondingEvents);
-						std::stringstream().swap(outputMessage);
+						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
+						stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 				}
 				else
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "No Envellope File found, end of analyse for this frequency";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
-	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-	{
-		delete stimEvents[i];
-	}
-	delete stimEvents;
 
 	delete[] window_ms;
 	delete[] strCode;
 	delete[] code;
 } // loca 
 
-void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+void InsermLibrary::LOCA::LocaARFA(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
 {
 	stringstream posFilePath, confFilePath, posXFilePath, eeg2envFilePath, pictureLabel, folderTrialsSM, outputMessage, pathFreq, cheatMode, loadFileDefault;
 	int *code = new int[8]{10, 20, 30, 40, 50, 60, 70, 80};
@@ -1699,7 +1533,7 @@ void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 	loc2_write_conf(confFilePath.str(), p_elan->trc, p_elan);											  	    //
 	/************************************************************************************************************/
 
-	std::stringstream().swap(outputMessage);
+	stringstream().swap(outputMessage);
 	outputMessage << "Pos and Conf Files Have been created";
 	emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -1710,20 +1544,19 @@ void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 		/******************************************************************************************************************************/
 		loc_eeg2erp(p_elan, p_anaopt->patientFolder, p_anaopt->expTask, code, 8, strCode, 8, window_ms, 20);	  			 	      //
 		/******************************************************************************************************************************/
-		std::stringstream().swap(outputMessage);
+		stringstream().swap(outputMessage);
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 	}
 
-	mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
-	std::vector<int> correspondingEvents = processEvents(p_prov, stimEvents);
+	vector<int> correspondingEvents = processEvents(p_prov);
 
 	eeg2envFilePath << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << ".TRC";
 	for (int i = 0; i < p_anaopt->frequencys.size(); i++)
 	{
 		if (p_anaopt->analysisDetails[i + 1][0])
 		{
-			std::stringstream().swap(outputMessage);
+			stringstream().swap(outputMessage);
 			outputMessage << "Starting Frequency Analysis for " << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "Hz";
 			emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
@@ -1734,19 +1567,19 @@ void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				/**********************************************************************************************************************************************/
 				p_elan->TrcToEnvElan(eeg2envFilePath.str(), p_elan->elanFreqBand[i], &p_anaopt->frequencys[i][0], p_anaopt->frequencys[i].size(), ELAN_HISTO);//						  
 				/**********************************************************************************************************************************************/
-				std::stringstream().swap(outputMessage);
+				stringstream().swap(outputMessage);
 				outputMessage << "Hilbert Envellope Calculated";
 				emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 
 				//===============================================================================================================================================================================
-				std::stringstream().swap(pictureLabel);
-				std::stringstream().swap(folderTrialsSM);
+				stringstream().swap(pictureLabel);
+				stringstream().swap(folderTrialsSM);
 				pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 				folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 				if (!QDir(&folderTrialsSM.str()[0]).exists())
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -1758,13 +1591,13 @@ void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					/********************************************************************************************************************************************************************************************************/
 					/*																							loc_env2plot																							    */
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(pathFreq);																																										//
+					stringstream().swap(pathFreq);																																										//
 					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-					std::stringstream().swap(cheatMode);																																									//
+					stringstream().swap(cheatMode);																																									//
 					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 					loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 8, strCode, 8, window_ms, 20);																											//				
 					/********************************************************************************************************************************************************************************************************/
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "Hilbert Env Pictures DONE !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
@@ -1772,10 +1605,10 @@ void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 				if (p_anaopt->analysisDetails[i + 1][3])
 				{
 					//loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
-					//std::stringstream().swap(outputMessage);
+					//stringstream().swap(outputMessage);
 					//outputMessage << "Frequency Maps DONE !";
 					//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "ARFA doesn't do trialmat !";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
@@ -1783,21 +1616,21 @@ void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 			else
 			{
 				//===============================================================================================================================================================================
-				std::stringstream().swap(loadFileDefault);
+				stringstream().swap(loadFileDefault);
 				loadFileDefault << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0.eeg";
 				int loadFile = ef_read_elan_file((char*)loadFileDefault.str().c_str(), p_elan->elanFreqBand[i]);
 				//===============================================================================================================================================================================
 
 				if (loadFile == 0)
 				{
-					std::stringstream().swap(pictureLabel);
-					std::stringstream().swap(folderTrialsSM);
+					stringstream().swap(pictureLabel);
+					stringstream().swap(folderTrialsSM);
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
 
 					if (!QDir(&folderTrialsSM.str()[0]).exists())
 					{
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 						QDir().mkdir(&folderTrialsSM.str()[0]);
@@ -1808,13 +1641,13 @@ void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 						/********************************************************************************************************************************************************************************************************/
 						/*																							loc_env2plot																							    */
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(pathFreq);																																										//
+						stringstream().swap(pathFreq);																																										//
 						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-						std::stringstream().swap(cheatMode);																																									//
+						stringstream().swap(cheatMode);																																									//
 						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
 						loc_env2plot(p_elan, i, cheatMode.str(), pathFreq.str(), code, 8, strCode, 8, window_ms, 20);																											//				
 						/********************************************************************************************************************************************************************************************************/
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "Hilbert Env Pictures DONE !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
@@ -1822,196 +1655,34 @@ void InsermLibrary::LOCA::LocaARFA(InsermLibrary::ELAN *p_elan, InsermLibrary::P
 					if (p_anaopt->analysisDetails[i + 1][3])
 					{
 						//loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str());
-						//std::stringstream().swap(outputMessage);
+						//stringstream().swap(outputMessage);
 						//outputMessage << "Frequency Maps DONE !";
 						//emit sendLogInfo(QString::fromStdString(outputMessage.str()));
-						std::stringstream().swap(outputMessage);
+						stringstream().swap(outputMessage);
 						outputMessage << "ARFA doesn't do trialmat !";
 						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 					}
 				}
 				else
 				{
-					std::stringstream().swap(outputMessage);
+					stringstream().swap(outputMessage);
 					outputMessage << "No Envellope File found, end of analyse for this frequency";
 					emit sendLogInfo(QString::fromStdString(outputMessage.str()));
 				}
 			} //if/else eeg2env
 		} //if analyse this frequency
 	} // for each frequency
-	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-	{
-		delete stimEvents[i];
-	}
-	delete stimEvents;
 
 	delete[] window_ms;
 	delete[] strCode;
 	delete[] code;
 } // loca 
-/**********************************************************************************************************************************************************************************************************************************************/
+/********************************************************************************************************************/
 
-/**********************************************************************************************************************************************************************************************************************************************/
-/*																Generate comportemental performance File and Summary array																													  */
-/**********************************************************************************************************************************************************************************************************************************************/
-void InsermLibrary::LOCA::LEC1CR(std::string crFilePath)
-{
-	double visualOK = 0, phonoOK = 0, semanOK = 0;
-	double visualNOK = 0, phonoNOK = 0, semanNOK = 0;
-	double percentVISU = 0, percentPHONO = 0, percentSEMAN = 0;
-
-	for (int i = 0; i < triggCatEla->numberTrigg; i++)
-	{
-		switch (triggCatEla->trigg[i]->valueTrigger)
-		{
-		case 10:
-			if (triggCatEla->trigg[i]->rt_code == 1)
-				semanOK++;
-			else if (triggCatEla->trigg[i]->rt_code == 2)
-				semanNOK++;
-			break;
-		case 20:
-			if (triggCatEla->trigg[i]->rt_code == 1)
-				phonoOK++;
-			else if (triggCatEla->trigg[i]->rt_code == 2)
-				phonoNOK++;
-			break;
-		case 30:
-			if (triggCatEla->trigg[i]->rt_code == 1)
-				visualOK++;
-			else if (triggCatEla->trigg[i]->rt_code == 2)
-				visualNOK++;
-			break;
-		}
-	}
-
-	percentSEMAN = (semanOK / triggCatEla->numberTrigg) * 100;
-	percentPHONO = (phonoOK / triggCatEla->numberTrigg) * 100;
-	percentVISU = (visualOK / triggCatEla->numberTrigg) * 100;
-
-	ofstream fichierCR(crFilePath, ios::out);  // ouverture en écriture avec effacement du fichier ouvert	
-
-	fichierCR << "Nombre de triggers : " << triggCatEla->numberTrigg << std::endl;
-	fichierCR << "Seman OK : " << percentSEMAN << std::endl;
-	fichierCR << "PhonoOK : " << percentPHONO << std::endl;
-	fichierCR << "VisualOK : " << percentVISU << std::endl;
-	fichierCR << "Pourcentage total de bonne réponse : " << percentPHONO + percentSEMAN + percentVISU << std::endl;
-
-	fichierCR.close();
-}
-
-void InsermLibrary::LOCA::MCSECR(std::string crFilePath)
-{
-	double popOK = 0, searchOK = 0;
-	double popNOK = 0, searchNOK = 0;
-	double percentPOP = 0, percentSEARCH = 0;
-
-	for (int i = 0; i < triggCatEla->numberTrigg; i++)
-	{
-		switch (triggCatEla->trigg[i]->valueTrigger)
-		{
-		case 10:
-			if (triggCatEla->trigg[i]->rt_code == 100)
-				popOK++;
-			else if (triggCatEla->trigg[i]->rt_code == 200)
-				popNOK++;
-			break;
-		case 60:
-			if (triggCatEla->trigg[i]->rt_code == 100)
-				searchOK++;
-			else if (triggCatEla->trigg[i]->rt_code == 200)
-				searchNOK++;
-			break;
-		}
-	}
-
-	percentPOP = (popOK / triggCatEla->numberTrigg) * 100;
-	percentSEARCH = (searchOK / triggCatEla->numberTrigg) * 100;
-
-	ofstream fichierCR(crFilePath, ios::out);  // ouverture en écriture avec effacement du fichier ouvert	
-
-	fichierCR << "Nombre de triggers : " << triggCatEla->numberTrigg << std::endl;
-	fichierCR << "Pop OK : " << percentPOP << std::endl;
-	fichierCR << "Search OK : " << percentSEARCH << std::endl;
-	fichierCR << "Pourcentage total de bonne réponse : " << percentPOP + percentSEARCH << std::endl;
-
-	fichierCR.close();
-}
-
-void InsermLibrary::LOCA::MVISMVEBCR(std::string crFilePath)
-{
-	double load2OK = 0, load4OK = 0, load6OK = 0, cntrl1OK = 0, cntrl2OK = 0, cntrl3OK = 0;
-	double load2NOK = 0, load4NOK = 0, load6NOK = 0, cntrl1NOK = 0, cntrl2NOK = 0, cntrl3NOK = 0;
-	double percentLOAD2 = 0, percentLOAD4 = 0, percentLOAD6 = 0, percentCTRL1 = 0, percentCTRL2 = 0, percentCTRL3 = 0;
-
-	for (int i = 0; i < triggCatEla->numberTrigg; i++)
-	{
-		switch (triggCatEla->trigg[i]->valueTrigger)
-		{
-		case 20:
-			if (triggCatEla->trigg[i]->rt_code == 1)
-				load2OK++;
-			else if (triggCatEla->trigg[i]->rt_code == 2)
-				load2NOK++;
-			break;
-		case 40:
-			if (triggCatEla->trigg[i]->rt_code == 1)
-				load4OK++;
-			else if (triggCatEla->trigg[i]->rt_code == 2)
-				load4NOK++;
-			break;
-		case 60:
-			if (triggCatEla->trigg[i]->rt_code == 1)
-				load6OK++;
-			else if (triggCatEla->trigg[i]->rt_code == 2)
-				load6NOK++;
-			break;
-		case 21:
-			if (triggCatEla->trigg[i]->rt_code == 1)
-				cntrl1OK++;
-			else if (triggCatEla->trigg[i]->rt_code == 2)
-				cntrl1NOK++;
-			break;
-		case 41:
-			if (triggCatEla->trigg[i]->rt_code == 1)
-				cntrl2OK++;
-			else if (triggCatEla->trigg[i]->rt_code == 2)
-				cntrl2NOK++;
-			break;
-		case 61:
-			if (triggCatEla->trigg[i]->rt_code == 1)
-				cntrl3OK++;
-			else if (triggCatEla->trigg[i]->rt_code == 2)
-				cntrl3NOK++;
-			break;
-		}
-	}
-
-	percentLOAD2 = (load2OK / triggCatEla->numberTrigg) * 100;
-	percentLOAD4 = (load4OK / triggCatEla->numberTrigg) * 100;
-	percentLOAD6 = (load6OK / triggCatEla->numberTrigg) * 100;
-	percentCTRL1 = (cntrl1OK / triggCatEla->numberTrigg) * 100;
-	percentCTRL2 = (cntrl2OK / triggCatEla->numberTrigg) * 100;
-	percentCTRL3 = (cntrl3OK / triggCatEla->numberTrigg) * 100;
-
-	ofstream fichierCR(crFilePath, ios::out);  // ouverture en écriture avec effacement du fichier ouvert	
-
-	fichierCR << "Nombre de triggers : " << triggCatEla->numberTrigg << std::endl;
-	fichierCR << "Load2 OK : " << percentLOAD2 << std::endl;
-	fichierCR << "Load4 OK : " << percentLOAD4 << std::endl;
-	fichierCR << "Load6 OK : " << percentLOAD6 << std::endl;
-	fichierCR << "Ctrl1 OK : " << percentCTRL1 << std::endl;
-	fichierCR << "Ctrl2 OK : " << percentCTRL2 << std::endl;
-	fichierCR << "Ctrl3 OK : " << percentCTRL3 << std::endl;
-	fichierCR << "Pourcentage total de bonne réponse : " << percentLOAD2 + percentLOAD4 + percentLOAD6 + percentCTRL1 + percentCTRL2 + percentCTRL3 << std::endl;
-
-	fichierCR.close();
-}
-
-/**********************************************************************************************************************************************************************************************************************************************/
-/*															CREATE POS AND CONF : ELAN COMPATIBILITY																																		  */
-/**********************************************************************************************************************************************************************************************************************************************/
-void InsermLibrary::LOCA::loc_create_pos(string posFile_path, string posXFile_path, MicromedLibrary::TRC *p_trc, int p_beginningCode, InsermLibrary::PROV *p_prov)
+/******************************************************************************************************************************************/
+/*									CREATE POS AND CONF : ELAN COMPATIBILITY															  */
+/******************************************************************************************************************************************/
+void InsermLibrary::LOCA::loc_create_pos(string posFile_path, string posXFile_path, TRC *p_trc, int p_beginningCode, PROV *p_prov)
 {
 	int beginValue = 0;
 
@@ -2043,20 +1714,20 @@ void InsermLibrary::LOCA::loc_create_pos(string posFile_path, string posXFile_pa
 	//write output file
 	for (int i = 0; i < (p_trc->sampleTrigg.size() - beginValue); i++)
 	{
-		fichierPos << triggTRC->trigg[i]->sampleTrigger << setw(10) << triggTRC->trigg[i]->valueTrigger << setw(10) << "0" << endl;
-		fichierPosX << triggDownTRC->trigg[i]->sampleTrigger << setw(10) << triggDownTRC->trigg[i]->valueTrigger << setw(10) << "0" << endl;
+		fichierPos << triggTRC->trigg[i].sampleTrigger << setw(10) << triggTRC->trigg[i].valueTrigger << setw(10) << "0" << endl;
+		fichierPosX << triggDownTRC->trigg[i].sampleTrigger << setw(10) << triggDownTRC->trigg[i].valueTrigger << setw(10) << "0" << endl;
 	}
 
 	fichierPos.close();
 	fichierPosX.close();
 }
 
-void InsermLibrary::LOCA::renameTrigger(TRIGGINFO *triggers, TRIGGINFO* downsampledTriggers, InsermLibrary::PROV *p_prov)
+void InsermLibrary::LOCA::renameTrigger(TRIGGINFO *triggers, TRIGGINFO* downsampledTriggers, PROV *p_prov)
 {
 	int indexVisuBloc = 0, winMax = 0, winMin = 0;
 	vector<int> oldMainCode, oldSecondaryCode, newMainCode, newSecondaryCode;
-	std::stringstream buffer;
-	std::ifstream provFile(p_prov->changeCodeFilePath, std::ios::binary);																						   								                                              //
+	stringstream buffer;
+	ifstream provFile(p_prov->changeCodeFilePath, ios::binary);																						   								                                              //
 	if (provFile)																																																						      //
 	{																																																									      //
 		// Copy all file in buffer																																																		      //
@@ -2064,10 +1735,10 @@ void InsermLibrary::LOCA::renameTrigger(TRIGGINFO *triggers, TRIGGINFO* downsamp
 		// Don't need the file anymore ! 																																																      //
 		provFile.close();																																																				      //
 
-		std::vector<std::string> lineSplit = split<std::string>(buffer.str(), "\r\n");
+		vector<string> lineSplit = InsermLibrary::split<string>(buffer.str(), "\r\n");
 		for (int i = 0; i < lineSplit.size(); i++)
 		{
-			std::vector<std::string> elementSplit = split<std::string>(lineSplit[i], "+=");
+			vector<string> elementSplit = InsermLibrary::split<string>(lineSplit[i], "+=");
 			oldMainCode.push_back(atoi(&(elementSplit[0])[0]));
 			oldSecondaryCode.push_back(atoi(&(elementSplit[1])[0]));
 			newMainCode.push_back(atoi(&(elementSplit[2])[0]));
@@ -2076,38 +1747,41 @@ void InsermLibrary::LOCA::renameTrigger(TRIGGINFO *triggers, TRIGGINFO* downsamp
 
 		for (int i = 0; i < oldMainCode.size(); i++)
 		{
-			for (int j = 0; j < p_prov->numberVisuBlocs; j++)
+			for (int j = 0; j < p_prov->visuBlocs.size(); j++)
 			{
-				if (p_prov->visuBlocs[j]->mainEvent->mainEventCode == oldMainCode[i])
+				for (int k = 0; k < p_prov->visuBlocs[j].mainEventBloc.eventCode.size(); k++)
 				{
-					indexVisuBloc = j;
+					if (p_prov->visuBlocs[j].mainEventBloc.eventCode[k] == oldMainCode[i])
+					{
+						indexVisuBloc = j;
+					}
 				}
 			}
 
-			int winSamMin = round((64 * p_prov->visuBlocs[indexVisuBloc]->dispBloc->epochWindow[0]) / 1000);
-			int winSamMax = round((64 * p_prov->visuBlocs[indexVisuBloc]->dispBloc->epochWindow[1]) / 1000);
+			int winSamMin = round((64 * p_prov->visuBlocs[indexVisuBloc].dispBloc.epochWindow[0]) / 1000);
+			int winSamMax = round((64 * p_prov->visuBlocs[indexVisuBloc].dispBloc.epochWindow[1]) / 1000);
 
 			int count = 0;
 			for (int j = 0; j < downsampledTriggers->numberTrigg; j++)
 			{
-				if (downsampledTriggers->trigg[j]->valueTrigger == oldMainCode[i])
+				if (downsampledTriggers->trigg[j].valueTrigger == oldMainCode[i])
 				{
 					count = j + 1;
-					winMax = downsampledTriggers->trigg[j]->sampleTrigger + winSamMax;
-					winMin = downsampledTriggers->trigg[j]->sampleTrigger - abs(winSamMin);//+ winSamMin;
-					while ((downsampledTriggers->trigg[count]->sampleTrigger < winMax) && (downsampledTriggers->trigg[count]->sampleTrigger > winMin))
+					winMax = downsampledTriggers->trigg[j].sampleTrigger + winSamMax;
+					winMin = downsampledTriggers->trigg[j].sampleTrigger - abs(winSamMin);//+ winSamMin;
+					while ((downsampledTriggers->trigg[count].sampleTrigger < winMax) && (downsampledTriggers->trigg[count].sampleTrigger > winMin))
 					{
-						if (downsampledTriggers->trigg[count]->valueTrigger == oldSecondaryCode[i])
+						if (downsampledTriggers->trigg[count].valueTrigger == oldSecondaryCode[i])
 						{
 							//cout << triggers->trigg[j]->valueTrigger << "to " << newMainCode[i] << endl;
 							//cout << triggers->trigg[count]->valueTrigger << "to " << newSecondaryCode[i] << endl;
 							//cout << endl;
 
-							triggers->trigg[j]->valueTrigger = newMainCode[i];
-							triggers->trigg[count]->valueTrigger = newSecondaryCode[i];
+							triggers->trigg[j].valueTrigger = newMainCode[i];
+							triggers->trigg[count].valueTrigger = newSecondaryCode[i];
 							//==========================================================================
-							downsampledTriggers->trigg[j]->valueTrigger = newMainCode[i];
-							downsampledTriggers->trigg[count]->valueTrigger = newSecondaryCode[i];
+							downsampledTriggers->trigg[j].valueTrigger = newMainCode[i];
+							downsampledTriggers->trigg[count].valueTrigger = newSecondaryCode[i];
 							//break;
 							count++;
 						}	
@@ -2122,11 +1796,11 @@ void InsermLibrary::LOCA::renameTrigger(TRIGGINFO *triggers, TRIGGINFO* downsamp
 	}																																																									      //
 	else																																																								      //
 	{ 																																																									      //
-		std::cout << " Error opening Change Code File @ " << p_prov->changeCodeFilePath.c_str() << std::endl;																															      //
+		cout << " Error opening Change Code File @ " << p_prov->changeCodeFilePath.c_str() << endl;																															      //
 	}																																																									      //
 }
 
-void InsermLibrary::LOCA::loc2_write_conf(string confFile_path, MicromedLibrary::TRC *p_trc, InsermLibrary::ELAN *p_elan)
+void InsermLibrary::LOCA::loc2_write_conf(string confFile_path, TRC *p_trc, ELAN *p_elan)
 {
 	//[=================================================================================================================================]										  
 	ofstream fichierConf(confFile_path, ios::out);  // ouverture en écriture avec effacement du fichier ouvert	
@@ -2176,12 +1850,12 @@ void InsermLibrary::LOCA::loc2_write_conf(string confFile_path, MicromedLibrary:
 	//[=================================================================================================================================]										  
 
 }
-/**********************************************************************************************************************************************************************************************************************************************/
+/******************************************************************************************************************************************/
 
 /**********************************************************************************************************************************************************************************************************************************************/
 /*																										EEG2ERP																											 				      */
 /**********************************************************************************************************************************************************************************************************************************************/
-void InsermLibrary::LOCA::loc_eeg2erp(InsermLibrary::ELAN *p_elan, string p_path, string p_exp_task, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int* v_window_ms, int nb_site)										  //
+void InsermLibrary::LOCA::loc_eeg2erp(ELAN *p_elan, string p_path, string p_exp_task, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int* v_window_ms, int nb_site)										  //
 {																																																											  //
 	string contents;																																																						  //																																																						  
 	int  nbEventUsed = 0, beginPos = 0;																																																		  //
@@ -2199,10 +1873,10 @@ void InsermLibrary::LOCA::loc_eeg2erp(InsermLibrary::ELAN *p_elan, string p_path
 	{																																														   //											  //
 		for (int j = 0; j < v_codeLength; j++)																																				   //											  //
 		{																																													   //											  //
-			if (triggTRC->trigg[i]->valueTrigger/*p_elan->trc->valueTrigg[i]*/ == v_code[j])																								   //											  //
+			if (triggTRC->trigg[i].valueTrigger/*p_elan->trc->valueTrigg[i]*/ == v_code[j])																								   //											  //
 			{																																												   //											  //
 				indexEventUsed.push_back(i);																																				   //											  //
-				eventUsed.push_back(triggTRC->trigg[i]->valueTrigger/*p_elan->trc->valueTrigg[i]*/);																						   //											  //
+				eventUsed.push_back(triggTRC->trigg[i].valueTrigger/*p_elan->trc->valueTrigg[i]*/);																						   //											  //
 			}																																												   //											  //
 		}																																													   //											  //
 	}																																														   //											  //
@@ -2242,14 +1916,14 @@ void InsermLibrary::LOCA::loc_eeg2erp(InsermLibrary::ELAN *p_elan, string p_path
 	/*********************************************************************************************************************/																	   //											  //
 	/*												Read Mono Data														 */																	   //											  //
 	/*********************************************************************************************************************/																	   //											  //
-	std::cout << "Reading Data Mono ..." << endl;																		 //																	   //											  //
+	cout << "Reading Data Mono ..." << endl;																		 //																	   //											  //
 	for (int i = 0; i < nbEventUsed; i++)																				 //																	   //											  //
 	{																													 //																	   //											  //
 		for (int j = 0; j < (v_win_sam[1] - v_win_sam[0]) + 1; j++)														 //																	   //											  //
 		{																												 //																	   //											  //
 			for (int k = 0; k < p_elan->trc->nameElectrodePositiv.size(); k++)											 //																	   //											  //
 			{																											 //																	   //											  //
-				beginPos = triggTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0]; //p_elan->trc->sampleTrigg[indexEventUsed[i]] + v_win_sam[0];									 //																	   //											  //
+				beginPos = triggTRC->trigg[indexEventUsed[i]].sampleTrigger + v_win_sam[0]; //p_elan->trc->sampleTrigg[indexEventUsed[i]] + v_win_sam[0];									 //																	   //											  //
 				m_bigdata_mono[i][k][j] = p_elan->trc->eegData[k][beginPos + j];										 //																	   //											  //
 			}																											 //																	   //											  //
 		}																												 //																	   //											  //
@@ -2259,7 +1933,7 @@ void InsermLibrary::LOCA::loc_eeg2erp(InsermLibrary::ELAN *p_elan, string p_path
 	/*********************************************************************************************************************/																	   //											  //
 	/*												Read Bipo Data														 */																	   //											  //
 	/*********************************************************************************************************************/																	   //											  //
-	std::cout << "Reading Data Bipo ..." << endl;																		 //																	   //											  //
+	cout << "Reading Data Bipo ..." << endl;																		 //																	   //											  //
 	for (int i = 0; i < nbEventUsed; i++)																				 //																	   //											  //
 	{																													 //																	   //											  //
 		for (int k = 0; k < p_elan->m_bipole.size(); k++)																 //																	   //											  //
@@ -2306,7 +1980,7 @@ void InsermLibrary::LOCA::loc_eeg2erp(InsermLibrary::ELAN *p_elan, string p_path
 /**********************************************************************************************************************************************************************************************************************************************/
 /*																										ENV2PLOT																										 					  */
 /**********************************************************************************************************************************************************************************************************************************************/
-void InsermLibrary::LOCA::loc_env2plot(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand, std::string p_path, std::string p_exp_task, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int* v_window_ms, int nb_site)//
+void InsermLibrary::LOCA::loc_env2plot(ELAN *p_elan, int p_numberFrequencyBand, string p_path, string p_exp_task, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int* v_window_ms, int nb_site)//
 {																																																											  //
 	string contents;																																																						  //																																																						  //
 	int  nbEventUsed = 0, beginInd = 0;																																																		  //
@@ -2324,10 +1998,10 @@ void InsermLibrary::LOCA::loc_env2plot(InsermLibrary::ELAN *p_elan, int p_number
 	{																																														   //											  //
 		for (int j = 0; j < v_codeLength; j++)																																				   //											  //
 		{																																													   //											  //
-			if (triggTRC->trigg[i]->valueTrigger == v_code[j])																																   //											  //
+			if (triggTRC->trigg[i].valueTrigger == v_code[j])																																   //											  //
 			{																																												   //											  //
 				indexEventUsed.push_back(i);																																				   //											  //
-				eventUsed.push_back(triggTRC->trigg[i]->valueTrigger);																														   //											  //
+				eventUsed.push_back(triggTRC->trigg[i].valueTrigger);																														   //											  //
 			}																																												   //											  //
 		}																																													   //											  //
 	}																																														   //											  //
@@ -2357,10 +2031,10 @@ void InsermLibrary::LOCA::loc_env2plot(InsermLibrary::ELAN *p_elan, int p_number
 	/*****************************************************************************************************************************/															   //											  //
 	/*													Read Mono Data															 */															   //											  //
 	/*****************************************************************************************************************************/															   //											  //
-	std::cout << "Reading Hilberted Bipo ..." << endl;																			 //															   //											  //
+	cout << "Reading Hilberted Bipo ..." << endl;																			 //															   //											  //
 	for (int i = 0; i < nbEventUsed; i++)																						 //															   //											  //
 	{																															 //															   //											  //
-		beginInd = triggDownTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0];										 //															   //											  //
+		beginInd = triggDownTRC->trigg[indexEventUsed[i]].sampleTrigger + v_win_sam[0];										 //															   //											  //
 		for (int j = 0; j < (v_win_sam[1] - v_win_sam[0]) + 1; j++)																 //															   //											  //
 		{																														 //															   //											  //
 			for (int k = 0; k < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; k++)										 //															   //											  //
@@ -2389,130 +2063,130 @@ void InsermLibrary::LOCA::loc_env2plot(InsermLibrary::ELAN *p_elan, int p_number
 }																																																											  //
 /**********************************************************************************************************************************************************************************************************************************************/
 
-/**********************************************************************************************************************************************************************************************************************************************/
-/*																										BAR2PLOT																										 					  */
-/**********************************************************************************************************************************************************************************************************************************************/
-void InsermLibrary::LOCA::loc_bar2plot(InsermLibrary::ELAN *p_elan, InsermLibrary::PROV *p_prov, int p_numberFrequencyBand, std::string p_path, std::string p_exp_task, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int* v_window_ms, int nb_site, mainEventBLOC **p_mainEvents, std::vector<int> p_correspondingEvents)//
-{																																																											  //
-	string contents;																																																						  //																																																						  //
-	int  nbEventUsed = 0, beginInd = 0;																																																		  //
-	int v_win_sam[2];																																																						  //
-	vector<int> indexEventUsed, eventUsed;																																																  	  //
-	double ***m_bigdata_frequency;																																																			  //
-	vector<vector<vector<double>>> p_value3D;
-	int copyIndex;																																																							  //
-	PVALUECOORD **significantValue = nullptr;
-	
-	v_win_sam[0] = round(64 * v_window_ms[0] / 1000);																																														  //
-	v_win_sam[1] = round(64 * v_window_ms[1] / 1000);																																														  //
-																																																											  //
-	/*******************************************************************************************************************************************************************************************/											  //
-	/*												On garde uniquement les évennements du TRC qui correspondent à ceux passer par v_code et a_code					   						   */											  //
-	/*******************************************************************************************************************************************************************************************/											  //
-	for (int i = 0; i < triggTRC->numberTrigg; i++)																																			   //											  //
-	{																																														   //											  //
-		for (int j = 0; j < v_codeLength; j++)																																				   //											  //
-		{																																													   //											  //
-			if (triggTRC->trigg[i]->valueTrigger == v_code[j])																																   //											  //
-			{																																												   //											  //
-				indexEventUsed.push_back(i);																																				   //											  //
-				eventUsed.push_back(triggTRC->trigg[i]->valueTrigger);																														   //											  //
-			}																																												   //											  //
-		}																																													   //											  //
-	}																																														   //											  //
-																																															   //											  //
-	nbEventUsed = indexEventUsed.size();																																					   //											  //
-	/*******************************************************************************************************************************************************************************************/											  //
-																																																											  //
-	/****************************************** Allocate Memory *******************************************/																																  //
-	m_bigdata_frequency = new double**[nbEventUsed];												  /*||*/																																  //
-	for (int i = 0; i < nbEventUsed; i++)															  /*||*/																																  //
-	{																								  /*||*/																																  //
-		m_bigdata_frequency[i] = new double*[p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb];	  /*||*/																																  //
-		for (int j = 0; j < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; j++)				  /*||*/																																  //
-		{																							  /*||*/																																  //
-			m_bigdata_frequency[i][j] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();		  	  /*||*/																																  //
-		}																							  /*||*/																																  //
-	}																								  /*||*/																																  //
-	/******************************************************************************************************/																																  //
-																																																											  //
-	/*******************************************************************************************************************************************************************************************/											  //
-	/*														Extract EEG DATA within w_window_ms around event																				   */											  //
-	/*******************************************************************************************************************************************************************************************/											  //
-	/*********************************************************************************************************************/																	   //											  //
-	/*												Read Mono Data														 */																	   //											  //
-	/*********************************************************************************************************************/																	   //											  //
-	std::cout << "Reading Hilberted Bipo ..." << endl;																	 //																	   //											  //
-	for (int i = 0; i < nbEventUsed; i++)																				 //																	   //											  //
-	{																													 //																	   //											  //
-		beginInd = triggDownTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0];								 //																	   //											  //
-		for (int j = 0; j < (v_win_sam[1] - v_win_sam[0]) + 1; j++)														 //																	   //											  //
-		{																												 //																	   //											  //
-			for (int k = 0; k < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; k++)								 //																	   //											  //
-			{																											 //																	   //											  //
-				m_bigdata_frequency[i][k][j] = p_elan->elanFreqBand[p_numberFrequencyBand]->eeg.data_double[0][k][beginInd + j];															   //											  //
-			}																											 //																	   //											  //
-		}																												 //																	   //											  //
-	}																													 //																	   //											  //
-	/*********************************************************************************************************************/																	   //											  //
-	/*******************************************************************************************************************************************************************************************/											  //
-																																																											  //
-	if (opt->statsOption.useKruskall)
-	{
-		copyIndex = 0;
-		p_value3D = calculatePValueKRUS(p_elan->elanFreqBand[p_numberFrequencyBand], p_prov, p_correspondingEvents, m_bigdata_frequency, v_window_ms);
-		if (opt->statsOption.useFDRKrus)
-		{
-			significantValue = calculateFDR(p_value3D, copyIndex);
-		}
-		else
-		{
-			significantValue = new PVALUECOORD *[p_value3D.size() * p_value3D[0].size() * p_value3D[0][0].size()];
-			for (int i = 0; i < p_value3D.size(); i++)
-			{
-				for (int j = 0; j < p_value3D[i].size(); j++)
-				{
-					for (int k = 0; k < p_value3D[i][j].size(); k++)
-					{
-						significantValue[copyIndex] = new PVALUECOORD();
-						significantValue[copyIndex]->elec = i;
-						significantValue[copyIndex]->condit = j;
-						significantValue[copyIndex]->window = k;
-						significantValue[copyIndex]->vectorpos = copyIndex;
-						significantValue[copyIndex]->pValue = p_value3D[i][j][k];
-						copyIndex++;
-					}
-				}
-			}
-		}
-	}
-
-	drawBars(p_elan, significantValue, copyIndex, p_path, p_exp_task, 2, m_bigdata_frequency, v_code, v_codeLength, a_code, a_codeLength, v_win_sam, nb_site, indexEventUsed, eventUsed);													  //
-																																																											  //
-	/****************************************** Free Memory *******************************************/																																	  //			
-	for (int i = 0; i < copyIndex; i++)															  /*||*/																																	  //	
-	{																							  /*||*/																																	  //	
-		delete significantValue[i];																  /*||*/																																	  //	
-	}																							  /*||*/																																	  //	
-	delete significantValue;																	  /*||*/																																	  //	
-																							      /*||*/																																	  //	
-	for (int i = 0; i < nbEventUsed; i++)														  /*||*/																																	  //		
-	{																							  /*||*/																																	  //		
-		for (int j = 0; j < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; j++)			  /*||*/																																	  //		
-		{																						  /*||*/																																	  //		
-			delete[] m_bigdata_frequency[i][j];													  /*||*/																																	  //		
-		}																						  /*||*/																																	  //		
-		delete[] m_bigdata_frequency[i];														  /*||*/																																	  //		
-	}																							  /*||*/																																	  //		
-	delete[] m_bigdata_frequency;																  /*||*/																																	  //		
-	/**************************************************************************************************/																																	  //		
-}																																																											  //
-/**********************************************************************************************************************************************************************************************************************************************/
+///**********************************************************************************************************************************************************************************************************************************************/
+///*																										BAR2PLOT																										 					  */
+///**********************************************************************************************************************************************************************************************************************************************/
+//void InsermLibrary::LOCA::loc_bar2plot(ELAN *p_elan, PROV *p_prov, int p_numberFrequencyBand, string p_path, string p_exp_task, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int* v_window_ms, int nb_site, mainEventBLOC **p_mainEvents, vector<int> p_correspondingEvents)//
+//{																																																											  //
+//	string contents;																																																						  //																																																						  //
+//	int  nbEventUsed = 0, beginInd = 0;																																																		  //
+//	int v_win_sam[2];																																																						  //
+//	vector<int> indexEventUsed, eventUsed;																																																  	  //
+//	double ***m_bigdata_frequency;																																																			  //
+//	vector<vector<vector<double>>> p_value3D;
+//	int copyIndex;																																																							  //
+//	PVALUECOORD **significantValue = nullptr;
+//	
+//	v_win_sam[0] = round(64 * v_window_ms[0] / 1000);																																														  //
+//	v_win_sam[1] = round(64 * v_window_ms[1] / 1000);																																														  //
+//																																																											  //
+//	/*******************************************************************************************************************************************************************************************/											  //
+//	/*												On garde uniquement les évennements du TRC qui correspondent à ceux passer par v_code et a_code					   						   */											  //
+//	/*******************************************************************************************************************************************************************************************/											  //
+//	for (int i = 0; i < triggTRC->numberTrigg; i++)																																			   //											  //
+//	{																																														   //											  //
+//		for (int j = 0; j < v_codeLength; j++)																																				   //											  //
+//		{																																													   //											  //
+//			if (triggTRC->trigg[i]->valueTrigger == v_code[j])																																   //											  //
+//			{																																												   //											  //
+//				indexEventUsed.push_back(i);																																				   //											  //
+//				eventUsed.push_back(triggTRC->trigg[i]->valueTrigger);																														   //											  //
+//			}																																												   //											  //
+//		}																																													   //											  //
+//	}																																														   //											  //
+//																																															   //											  //
+//	nbEventUsed = indexEventUsed.size();																																					   //											  //
+//	/*******************************************************************************************************************************************************************************************/											  //
+//																																																											  //
+//	/****************************************** Allocate Memory *******************************************/																																  //
+//	m_bigdata_frequency = new double**[nbEventUsed];												  /*||*/																																  //
+//	for (int i = 0; i < nbEventUsed; i++)															  /*||*/																																  //
+//	{																								  /*||*/																																  //
+//		m_bigdata_frequency[i] = new double*[p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb];	  /*||*/																																  //
+//		for (int j = 0; j < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; j++)				  /*||*/																																  //
+//		{																							  /*||*/																																  //
+//			m_bigdata_frequency[i][j] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();		  	  /*||*/																																  //
+//		}																							  /*||*/																																  //
+//	}																								  /*||*/																																  //
+//	/******************************************************************************************************/																																  //
+//																																																											  //
+//	/*******************************************************************************************************************************************************************************************/											  //
+//	/*														Extract EEG DATA within w_window_ms around event																				   */											  //
+//	/*******************************************************************************************************************************************************************************************/											  //
+//	/*********************************************************************************************************************/																	   //											  //
+//	/*												Read Mono Data														 */																	   //											  //
+//	/*********************************************************************************************************************/																	   //											  //
+//	cout << "Reading Hilberted Bipo ..." << endl;																	 //																	   //											  //
+//	for (int i = 0; i < nbEventUsed; i++)																				 //																	   //											  //
+//	{																													 //																	   //											  //
+//		beginInd = triggDownTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0];								 //																	   //											  //
+//		for (int j = 0; j < (v_win_sam[1] - v_win_sam[0]) + 1; j++)														 //																	   //											  //
+//		{																												 //																	   //											  //
+//			for (int k = 0; k < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; k++)								 //																	   //											  //
+//			{																											 //																	   //											  //
+//				m_bigdata_frequency[i][k][j] = p_elan->elanFreqBand[p_numberFrequencyBand]->eeg.data_double[0][k][beginInd + j];															   //											  //
+//			}																											 //																	   //											  //
+//		}																												 //																	   //											  //
+//	}																													 //																	   //											  //
+//	/*********************************************************************************************************************/																	   //											  //
+//	/*******************************************************************************************************************************************************************************************/											  //
+//																																																											  //
+//	if (opt->statsOption.useKruskall)
+//	{
+//		copyIndex = 0;
+//		p_value3D = calculatePValueKRUS(p_elan->elanFreqBand[p_numberFrequencyBand], p_prov, p_correspondingEvents, m_bigdata_frequency, v_window_ms);
+//		if (opt->statsOption.useFDRKrus)
+//		{
+//			significantValue = calculateFDR(p_value3D, copyIndex);
+//		}
+//		else
+//		{
+//			significantValue = new PVALUECOORD *[p_value3D.size() * p_value3D[0].size() * p_value3D[0][0].size()];
+//			for (int i = 0; i < p_value3D.size(); i++)
+//			{
+//				for (int j = 0; j < p_value3D[i].size(); j++)
+//				{
+//					for (int k = 0; k < p_value3D[i][j].size(); k++)
+//					{
+//						significantValue[copyIndex] = new PVALUECOORD();
+//						significantValue[copyIndex]->elec = i;
+//						significantValue[copyIndex]->condit = j;
+//						significantValue[copyIndex]->window = k;
+//						significantValue[copyIndex]->vectorpos = copyIndex;
+//						significantValue[copyIndex]->pValue = p_value3D[i][j][k];
+//						copyIndex++;
+//					}
+//				}
+//			}
+//		}
+//	}
+//
+//	drawBars(p_elan, significantValue, copyIndex, p_path, p_exp_task, 2, m_bigdata_frequency, v_code, v_codeLength, a_code, a_codeLength, v_win_sam, nb_site, indexEventUsed, eventUsed);													  //
+//																																																											  //
+//	/****************************************** Free Memory *******************************************/																																	  //			
+//	for (int i = 0; i < copyIndex; i++)															  /*||*/																																	  //	
+//	{																							  /*||*/																																	  //	
+//		delete significantValue[i];																  /*||*/																																	  //	
+//	}																							  /*||*/																																	  //	
+//	delete significantValue;																	  /*||*/																																	  //	
+//																							      /*||*/																																	  //	
+//	for (int i = 0; i < nbEventUsed; i++)														  /*||*/																																	  //		
+//	{																							  /*||*/																																	  //		
+//		for (int j = 0; j < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; j++)			  /*||*/																																	  //		
+//		{																						  /*||*/																																	  //		
+//			delete[] m_bigdata_frequency[i][j];													  /*||*/																																	  //		
+//		}																						  /*||*/																																	  //		
+//		delete[] m_bigdata_frequency[i];														  /*||*/																																	  //		
+//	}																							  /*||*/																																	  //		
+//	delete[] m_bigdata_frequency;																  /*||*/																																	  //		
+//	/**************************************************************************************************/																																	  //		
+//}																																																											  //
+///**********************************************************************************************************************************************************************************************************************************************/
 
 /**********************************************************************************************************************************************************************************************************************************************/
 /*																										Drawcards																										 					  */
 /**********************************************************************************************************************************************************************************************************************************************/
-void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, vector<int> indexEventUsed, vector<int> EventUsed)
+void InsermLibrary::LOCA::drawCards(ELAN *p_elan, string p_path, string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, vector<int> indexEventUsed, vector<int> EventUsed)
 {
 	string a_rt;
 	stringstream tifNameStream;
@@ -2752,7 +2426,7 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 					}
 					else
 					{
-						std::cout << "ATTENTION, PLEASE : NO EVENT WITH TYPE = " << v_code[k] << endl;
+						cout << "ATTENTION, PLEASE : NO EVENT WITH TYPE = " << v_code[k] << endl;
 					}
 
 					/*delete tab each turn*/
@@ -2909,7 +2583,7 @@ void InsermLibrary::LOCA::drawCards(InsermLibrary::ELAN *p_elan, string p_path, 
 	/**************************************************************************************************/																																	  //
 }																																																											  //
 																																																											  //
-void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, PVALUECOORD **p_significantValue, int p_sizeSignificant, std::string p_path, std::string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, std::string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, std::vector<int> indexEventUsed, std::vector<int> EventUsed)
+void InsermLibrary::LOCA::drawBars(ELAN *p_elan, PVALUECOORD **p_significantValue, int p_sizeSignificant, string p_path, string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, vector<int> indexEventUsed, vector<int> EventUsed)
 {
 	string a_rt;
 	stringstream tifNameStream;
@@ -3101,7 +2775,7 @@ void InsermLibrary::LOCA::drawBars(InsermLibrary::ELAN *p_elan, PVALUECOORD **p_
 					}
 					else
 					{
-						std::cout << "ATTENTION, PLEASE : NO EVENT WITH TYPE = " << v_code[k] << endl;
+						cout << "ATTENTION, PLEASE : NO EVENT WITH TYPE = " << v_code[k] << endl;
 					}
 
 					/*************** Free Memory ***************/
@@ -3239,11 +2913,10 @@ vector<int> InsermLibrary::LOCA::findNum(int *tab, int sizetab, int value2find)	
 }																																																											  //
 /**********************************************************************************************************************************************************************************************************************************************/
 
-
 /*****************************************************************************************************************************************************************************************************************************************************/
 /*																										TRIALMAT																										 						     */
 /*****************************************************************************************************************************************************************************************************************************************************/
-void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numberFrequencyBand, InsermLibrary::PROV *p_prov, std::string p_outputMapLabel, std::string p_outputFolder, mainEventBLOC **p_mainEvents, std::vector<int> p_correspondingEvents)
+void InsermLibrary::LOCA::loca_trialmat(ELAN *p_elan, int p_numberFrequencyBand, PROV *p_prov, string p_outputMapLabel, string p_outputFolder, vector<int> p_correspondingEvents)
 {
 	stringstream outputPicLabel;
 
@@ -3252,10 +2925,10 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 	int v_window_ms[2], v_window_sam[2];
 	int mini = 0, Maxi = 0;
 
-	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+	for (int i = 0; i < p_prov->visuBlocs.size(); i++)
 	{
-		mini = min(mini, p_prov->visuBlocs[i]->dispBloc->epochWindow[0]);
-		Maxi = max(Maxi, p_prov->visuBlocs[i]->dispBloc->epochWindow[1]);
+		mini = min(mini, p_prov->visuBlocs[i].dispBloc.epochWindow[0]);
+		Maxi = max(Maxi, p_prov->visuBlocs[i].dispBloc.epochWindow[1]);
 	}
 
 	v_window_ms[0] = mini;
@@ -3277,289 +2950,163 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 	cat2ellaExtractData(p_elan->elanFreqBand[p_numberFrequencyBand], bigdata, v_window_sam);
 
 	//[======================================================================================================================================================================================]
-	QColor *ColorMapJet = new QColor[512];
-	jetColorMap512(ColorMapJet);
-	//[======================================================================================================================================================================================]
-	int numberCol = p_prov->getNumberCol();
-	int numberRow = p_prov->getNumberRow();
-	MATRIXCOORD *coordMat = new MATRIXCOORD[numberRow * numberCol];
-	QPixmap *pixmapTemplate = new QPixmap(576, 432);
-	QPainter *painterTemplate = new QPainter(pixmapTemplate);
-	pixmapTemplate->fill(QColor(Qt::white));
-	createMapTemplate(painterTemplate, coordMat, p_prov, v_window_ms, ColorMapJet, p_mainEvents, triggCatEla->mainGroupSub, numberRow, numberCol);
-	//[======================================================================================================================================================================================]
-	v_window_sam[0] = round((64 * p_prov->visuBlocs[0]->dispBloc->epochWindow[0]) / 1000);
-	v_window_sam[1] = round((64 * p_prov->visuBlocs[0]->dispBloc->epochWindow[1]) / 1000);
-	outputPicLabel << p_outputFolder << "/" << p_outputMapLabel;
-	//[======================================================================================================================================================================================]
-
-	//[======================================================================================================================================================================================]
 	int copyIndex = 0;
 	vector<vector<vector<double>>> p_value3D;
-	PVALUECOORD **significantValue;
+	vector<PVALUECOORD> significantValue;
 
 	if (opt->statsOption.useWilcoxon)
 	{
-		p_value3D = calculatePValue(p_elan->elanFreqBand[p_numberFrequencyBand], numberRow, numberCol, p_prov, p_correspondingEvents, bigdata, v_window_ms);
-
+		p_value3D = InsermLibrary::Stats::pValuesWilcoxon(p_elan->elanFreqBand[p_numberFrequencyBand], p_prov, triggCatEla, p_correspondingEvents, bigdata);
 		if (opt->statsOption.useFDRWil)
 		{
-			significantValue = calculateFDR(p_value3D, copyIndex);
+			significantValue = InsermLibrary::Stats::FDR(p_value3D, copyIndex, opt->statsOption.pWilcoxon);
 		}
 		else
 		{
-			significantValue = new PVALUECOORD *[p_value3D.size() * p_value3D[0].size() * p_value3D[0][0].size()];
-			for (int i = 0; i < p_value3D.size(); i++)
-			{
-				for (int j = 0; j < p_value3D[i].size(); j++)
-				{
-					for (int k = 0; k < p_value3D[i][j].size(); k++)
-					{
-						significantValue[copyIndex] = new PVALUECOORD();
-						significantValue[copyIndex]->elec = i;
-						significantValue[copyIndex]->condit = j;
-						significantValue[copyIndex]->window = k;
-						significantValue[copyIndex]->vectorpos = copyIndex;
-						significantValue[copyIndex]->pValue = p_value3D[i][j][k];
-
-						copyIndex++;
-					}
-				}
-			}
+			significantValue = InsermLibrary::Stats::loadPValues(p_value3D, opt->statsOption.pWilcoxon);
 		}
 	}
 
-	//[======================================================================================================================================================================================]
+	//[==================================================================================================]
+	mapsGenerator mGen(opt->picOption.width, opt->picOption.height);
+	mGen.trialmatTemplate(triggCatEla->mainGroupSub, v_window_ms, p_prov);
+	//[==================================================================================================]
+	int numberCol = p_prov->nbCol();
+	int numberRow = p_prov->nbRow();
+	v_window_sam[0] = round((64 * p_prov->visuBlocs[0].dispBloc.epochWindow[0]) / 1000);
+	v_window_sam[1] = round((64 * p_prov->visuBlocs[0].dispBloc.epochWindow[1]) / 1000);
+	outputPicLabel << p_outputFolder << "/" << p_outputMapLabel;
 
 	QPixmap *pixmapChanel = nullptr, *pixmapSubSubMatrix = nullptr;
 	QPainter *painterChanel = nullptr, *painterSubSubMatrix = nullptr;
-
 	for (int i = 0; i < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; i++)
 	{
-		if (painterChanel != nullptr)
-		{
-			delete painterChanel;
-			painterChanel = nullptr;
-		}
-		if (pixmapChanel != nullptr)
-		{
-			delete pixmapChanel;
-			pixmapChanel = nullptr;
-		}
-
-		pixmapChanel = new QPixmap(*pixmapTemplate);
+		deleteAndNullify(painterChanel);
+		deleteAndNullify(pixmapChanel);
+		pixmapChanel = new QPixmap(mGen.pixmapTemplate);
 		painterChanel = new QPainter(pixmapChanel);
 
-		/********************************************************************/
-		/*			Calculate Min Max for each chanel						*/
-		/********************************************************************/
 		double stdRes = stdMean(bigdata[i], v_window_sam);
 		double Maxi = 2 * abs(stdRes);
 		double Mini = -2 * abs(stdRes);
-		/********************************************************************/
+		mGen.graduateColorBar(painterChanel, Maxi);
 
-		graduateColorBar(painterChanel, Maxi);
-
-		int fullMatrixWidth = 394;
-		int fullMatrixHeigth = 352;
-		int SUBMatrixWidth = fullMatrixWidth / numberCol;
-		int indexPos = 0;
-		int numberSubTrial = 0;
+		int SUBMatrixWidth = mGen.MatrixRect.width() / numberCol;
 		int interpolFactorX = opt->picOption.interpolationFactorX;	//1 if no interpolation and lowest quality for matrix
 		int interpolFactorY = opt->picOption.interpolationFactorY;	//1 if no interpolation and lowest quality for matrix
 
+		int indexPos = 0;
+		int numberSubTrial = 0;
 		for (int j = 0; j < numberCol; j++)
 		{ 
 			for (int k = 0; k < numberRow; k++)
 			{
 				//==================
 				//So here we search for the row/col index since it is possible for user to have a prov file totaly not weel ordonanced
-				for (int z = 0; z < p_prov->numberVisuBlocs; z++)
+				for (int z = 0; z < p_prov->visuBlocs.size(); z++)
 				{
-					if (p_prov->visuBlocs[z]->dispBloc->col == j + 1)
+					if (p_prov->visuBlocs[z].dispBloc.col == j + 1)
 					{
-						if (p_prov->visuBlocs[z]->dispBloc->row == k + 1)
+						if (p_prov->visuBlocs[z].dispBloc.row == k + 1)
 						{
-							int winMsMin = p_prov->visuBlocs[z]->dispBloc->epochWindow[0];
-							int winMsMax = p_prov->visuBlocs[z]->dispBloc->epochWindow[1];
+							int winMsMin = p_prov->visuBlocs[z].dispBloc.epochWindow[0];
+							int winMsMax = p_prov->visuBlocs[z].dispBloc.epochWindow[1];
 							int winSamMin = round((64 * winMsMin) / 1000);
 							int winSamMax = round((64 * winMsMax) / 1000);
-							int a = triggCatEla->mainGroupSub[p_correspondingEvents[z]];
-							int b = triggCatEla->mainGroupSub[p_correspondingEvents[z] + 1];
-							int numberSubTrial = b - a;
+							int nbSampleWindow = winSamMax - winSamMin;
+							int indexBegTrigg = triggCatEla->mainGroupSub[p_correspondingEvents[z]];
+							int numberSubTrial = triggCatEla->mainGroupSub[p_correspondingEvents[z] + 1] - indexBegTrigg;
 							int subsubMatrixHeigth = 0;
 							
-							std::vector<int> colorX[512], colorY[512];
+							vector<int> colorX[512], colorY[512];
 							if (interpolFactorX > 1)
 							{
-								vector<vector<double>> eegDataInterpolated = interpolateData(bigdata[i], numberSubTrial, (winSamMax - winSamMin), a, interpolFactorX);
-								vector<vector<double>> eegDataInterpolated2 = interpolateDataVert(eegDataInterpolated, interpolFactorY);
-								eegData2ColorMap(eegDataInterpolated2, colorX, colorY, numberSubTrial, (winSamMax - winSamMin), interpolFactorX, interpolFactorY, Mini, Maxi);
+								vector<vector<double>> dataInterpolatedHoriz = mGen.horizontalInterpolation(bigdata[i], interpolFactorX, triggCatEla, numberSubTrial, nbSampleWindow, indexBegTrigg);
+								vector<vector<double>> dataInterpolatedVerti = mGen.verticalInterpolation(dataInterpolatedHoriz, interpolFactorY);
+								mGen.eegData2ColorMap(colorX, colorY, dataInterpolatedVerti, numberSubTrial, nbSampleWindow, interpolFactorX, interpolFactorY, Maxi);
+								
 								subsubMatrixHeigth = interpolFactorY * (numberSubTrial - 1);
 							}
 							else
 							{
-								//interpolFactorX = 1; //Sécurité !
-
-								for (int l = 0; l < numberSubTrial; l++)													   
-								{																							   
-									for (int m = 0; m < (winSamMax - winSamMin); m++)
-									{
-										double r = (bigdata[i][triggCatEla->trigg[a + l]->origPos][m] - Mini) / (Maxi - Mini);                                     
-
-										int col = 0 + (511 * r);
-										if (col < 0)
-										{
-											col = 0;
-										}
-										else if (col > 511)
-										{
-											col = 511;
-										}
-										/*2Dim vector, since changing he color of the qt pen takes time , we fill every pixel 
-											of one color, then the next, then the next , etc ...*/
-										colorX[col].push_back(m);
-										colorY[col].push_back(l);
-									}
-								}
-
+								mGen.eegData2ColorMap(colorX, colorY, bigdata[i], triggCatEla, numberSubTrial, nbSampleWindow, indexBegTrigg, Maxi);
+								
 								subsubMatrixHeigth = numberSubTrial;
 							}
 
-							/***************************************************************************************************************/
-							/*							ceate subBlock and paste it on the big Matrix									   */
-							/***************************************************************************************************************/
-							if (painterSubSubMatrix != nullptr)																		  	   //
-							{																											   //
-								delete painterSubSubMatrix;																				   //
-								painterSubSubMatrix = nullptr;																			   //
-							}																											   //
-							if (pixmapSubSubMatrix != nullptr)																		 	   //
-							{																											   //
-								delete pixmapSubSubMatrix;																				   //
-								pixmapSubSubMatrix = nullptr;																			   //
-							}																											   //
-							pixmapSubSubMatrix = new QPixmap(interpolFactorX * (winSamMax - winSamMin), subsubMatrixHeigth);			   //
-							painterSubSubMatrix = new QPainter(pixmapSubSubMatrix);													  	   //
-							painterSubSubMatrix->setBackgroundMode(Qt::BGMode::TransparentMode);										   //
-																																		   //
-							for (int l = 0; l < 512; l++)																				   //
-							{																											   //
-								painterSubSubMatrix->setPen(QColor(ColorMapJet[l].red(), ColorMapJet[l].green(), ColorMapJet[l].blue()));  //
-								for (int m = 0; m < colorX[l].size(); m++)																   //
-								{																										   //
-									painterSubSubMatrix->drawPoint(QPoint(colorX[l][m], subsubMatrixHeigth - colorY[l][m]));			   //
-								}																										   //
-							}																											   //
-																																		   //
-							indexPos = (((j + 1) * numberRow) - 1) - p_correspondingEvents[z];											   //
-							painterChanel->drawPixmap(coordMat[indexPos].x, coordMat[indexPos].y, 										   //
-								pixmapSubSubMatrix->scaled(QSize(coordMat[indexPos].width, coordMat[indexPos].heigth), 					   //
-								Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));					   //
-							/***************************************************************************************************************/
+							/***************************************************/
+							/*	ceate subBlock and paste it on the big Matrix  */
+							/***************************************************/
+							deleteAndNullify(painterSubSubMatrix);
+							deleteAndNullify(pixmapSubSubMatrix);
+							pixmapSubSubMatrix = new QPixmap(interpolFactorX * nbSampleWindow, subsubMatrixHeigth);	
+							painterSubSubMatrix = new QPainter(pixmapSubSubMatrix);	
+							painterSubSubMatrix->setBackgroundMode(Qt::BGMode::TransparentMode);
+							
+							for (int l = 0; l < 512; l++)
+							{	
+								painterSubSubMatrix->setPen(QColor(mGen.ColorMapJet[l].red(), mGen.ColorMapJet[l].green(), mGen.ColorMapJet[l].blue()));  
+								for (int m = 0; m < colorX[l].size(); m++)
+								{
+									painterSubSubMatrix->drawPoint(QPoint(colorX[l][m], subsubMatrixHeigth - colorY[l][m]));
+								}	
+							}
+
+							indexPos = (((j + 1) * numberRow) - 1) - p_correspondingEvents[z];	
+							painterChanel->drawPixmap(mGen.subMatrixes[indexPos].x(), mGen.subMatrixes[indexPos].y(),
+								pixmapSubSubMatrix->scaled(QSize(mGen.subMatrixes[indexPos].width(), mGen.subMatrixes[indexPos].height()), 
+								Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));
+
 
 							/*********************************************************************************************************/
 							/*	 							    Ajout des temps de réaction sur la carte							 */
 							/*		=> Si un des temps de reaction n'a pas sa valeur de défault, à priori ils y seront tous			 */
 							/*********************************************************************************************************/
-							if (triggCatEla->trigg[a + 2]->rt_ms != 10000000) 													 	 //
-							{																										 //
-								painterChanel->setPen(QColor(Qt::black));															 //
-								for (int l = 0; l < numberSubTrial; l++)															 //
-								{																									 //
-									int xReactionTimeMs = abs(winMsMin) + triggCatEla->trigg[a + l]->rt_ms;							 //
-									double xScale = (double)(winMsMax - winMsMin) / fullMatrixWidth;								 //
-									double xRt = 75 + (xReactionTimeMs / xScale);													 //
-																																	 //
-									int yTrialPosition = coordMat[indexPos].y + coordMat[indexPos].heigth;							 //
-									double yRt = yTrialPosition - (((double)coordMat[indexPos].heigth / numberSubTrial) * l);		 //
-																																	 //
-									painterChanel->setBrush(Qt::black);																 //
-									painterChanel->drawEllipse(QPoint(xRt, yRt), 2, 2);												 //
-								}																									 //
-							}																										 //
-							/*********************************************************************************************************/
+							if (triggCatEla->trigg[indexBegTrigg + 2].rt_ms != 10000000) 
+							{
+								painterChanel->setPen(QColor(Qt::black));
+								for (int l = 0; l < numberSubTrial; l++)
+								{	
+									int xReactionTimeMs = abs(winMsMin) + triggCatEla->trigg[indexBegTrigg + l].rt_ms;
+									double xScale = (double)(winMsMax - winMsMin) / mGen.MatrixRect.width();
+									double xRt = mGen.MatrixRect.x() + (xReactionTimeMs / xScale);
+
+									int yTrialPosition = mGen.subMatrixes[indexPos].y() + mGen.subMatrixes[indexPos].height();	
+									double yRt = yTrialPosition - (((double)mGen.subMatrixes[indexPos].height() / numberSubTrial) * l) - 1;
+					
+									painterChanel->setBrush(Qt::black);	
+									painterChanel->drawEllipse(QPoint(xRt, yRt), (int)(0.0034722 * mGen.MatrixRect.width()), (int)(0.004629629 * mGen.MatrixRect.height()));
+								}	
+							}	
 						}
 					}
 				}
 			}
 		}
 
-		/*************************************************************************************************/
-		/*	 						Ligne blanche marquant l'évennement principal	 					 */
-		/*************************************************************************************************/
-		int zeroBorder = ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * abs(v_window_ms[0]));	 //
-		painterChanel->setPen(QColor(255, 255, 255, 255)); //white										 //
-		painterChanel->drawLine(74 + zeroBorder, 385, 74 + zeroBorder, 33);								 //
-		painterChanel->drawLine(75 + zeroBorder, 385, 75 + zeroBorder, 33);								 //
-		painterChanel->drawLine(76 + zeroBorder, 385, 76 + zeroBorder, 33);								 //
-		/*************************************************************************************************/
-		
-		//================================= Display STATS
+		mGen.drawVerticalZeroLine(painterChanel, v_window_ms);
+
+		// Display STATS
 		if (opt->statsOption.useWilcoxon)
-		{
-			for (int j = 0; j < numberCol; j++)
+		{   
+			vector<int> allIndexCurrentMap = mGen.checkIfNeedDisplayStat(significantValue, i);
+			if (allIndexCurrentMap.size() > 0)
 			{
-				for (int k = 0; k < numberRow; k++)
-				{
-					int xTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].x + zeroBorder;
-					int yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 0 + coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].heigth;
-
-					if (k == numberRow - 1)
-					{
-						yTest = coordMat[((numberRow * numberCol) - 1) - (k + (j*numberRow))].y - 0;
-					}
-
-					bool checkStat = false;
-					for (int l = 0; l < p_value3D[i][k].size(); l++)
-					{
-						for (int m = 0; m < copyIndex; m++)
-						{
-							if (opt->statsOption.useFDRWil == true)
-							{
-								checkStat = (p_value3D[i][k][l] == significantValue[m]->pValue);
-							}
-							else
-							{
-								checkStat = (significantValue[m]->pValue < 0.01);
-							}
-
-							if (checkStat && significantValue[m]->elec == i && significantValue[m]->window == l)
-							{
-								int dataPlus2 = ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * abs((100))); //abs de 100 car overlap 50% de la fenêtre de 200 ms
-								int xBeg = xTest + ((dataPlus2 / 2) * (l));
-								int xEnd = xBeg + dataPlus2;
-
-								//painterChanel->setPen(QColor(Qt::GlobalColor::white));
-								painterChanel->setPen(QColor(Qt::GlobalColor::black));
-								painterChanel->drawLine(xBeg, yTest, xEnd, yTest);
-								painterChanel->drawLine(xBeg, yTest + 1, xEnd, yTest + 1);
-							}
-						}
-					}
-				}
+				vector<vector<int>> indexCurrentMap = mGen.checkIfConditionStat(significantValue, allIndexCurrentMap, p_prov->nbRow());
+				mGen.displayStatsOnMap(painterChanel, indexCurrentMap, significantValue, v_window_ms, p_prov->nbRow());
 			}
 		}
-		//======================================================================================================
 
-		/**********************************************************************************************************/
-		/*								Picture Label and output path											  */
-		/**********************************************************************************************************/
-		string elecName = p_elan->trc->nameElectrodePositiv[p_elan->m_bipole[i]];								  //
-		string labelPicPath = p_outputMapLabel;																	  //
-		labelPicPath.append(elecName.c_str()).append(".jpg");													  //
-		string outputPicPath = outputPicLabel.str();															  //
-		outputPicPath.append(elecName.c_str()).append(".jpg");													  //
-																												  //
-		QFont labelPic;																							  //
-		labelPic.setPixelSize(11);																				  //
-		painterChanel->setFont(labelPic);																		  //
-		painterChanel->setPen(QColor(Qt::GlobalColor::black));													  //
-		painterChanel->drawText(QPoint(120, 23), QString(labelPicPath.c_str()));								  //
-		/**********************************************************************************************************/
+		// Display Title
+		string elecName = p_elan->trc->nameElectrodePositiv[p_elan->m_bipole[i]];
+		mGen.drawMapTitle(painterChanel, p_outputMapLabel, elecName);
 
+		//Save Map
+		string outputPicPath = outputPicLabel.str();
+		outputPicPath.append(elecName.c_str()).append(".jpg");
 		pixmapChanel->save(outputPicPath.c_str(), "JPG");
 	}
+	
 
 	for (int i = 0; i < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; i++)
 	{
@@ -3571,110 +3118,13 @@ void InsermLibrary::LOCA::loca_trialmat(InsermLibrary::ELAN *p_elan, int p_numbe
 	}
 	delete[] bigdata;
 
-	delete painterTemplate;
-	painterTemplate = nullptr;
-	delete pixmapTemplate;
-	pixmapTemplate = nullptr;
-
-	delete painterChanel;
-	painterChanel = nullptr;
-	delete pixmapChanel;
-	pixmapChanel = nullptr;
-
-	delete painterSubSubMatrix;
-	painterSubSubMatrix = nullptr;
-	delete pixmapSubSubMatrix;
-	pixmapSubSubMatrix = nullptr;
-
-	for (int i = 0; i < copyIndex; i++)
-	{
-		delete significantValue[i];
-	}
-	delete significantValue;
-
-	delete ColorMapJet;
-	delete coordMat;
+	deleteAndNullify(painterChanel);
+	deleteAndNullify(pixmapChanel);
+	deleteAndNullify(painterSubSubMatrix);
+	deleteAndNullify(pixmapSubSubMatrix);
 }
 
-vector<vector<vector<double>>> InsermLibrary::LOCA::calculatePValue(elan_struct_t *p_elan_struct, int row, int col, InsermLibrary::PROV *p_prov, std::vector<int> correspEvent, double ***bigdata, int windowMS[2])
-{
-	vector<vector<vector<double>>> p_value3D;
-	for (int i = 0; i < p_elan_struct->chan_nb; i++)
-	{
-		vector<vector<double>> p_valueBig;
-
-		for (int j = 0; j < col; j++)
-		{
-			for (int k = 0; k < row; k++)
-			{
-				for (int z = 0; z < p_prov->numberVisuBlocs; z++)
-				{
-					if (p_prov->visuBlocs[z]->dispBloc->col == j + 1)
-					{
-						if (p_prov->visuBlocs[z]->dispBloc->row == k + 1)
-						{
-							int a = triggCatEla->mainGroupSub[correspEvent[z]];
-							int b = triggCatEla->mainGroupSub[correspEvent[z] + 1];
-							int numberSubTrial = b - a;
-
-							vector<double> baseLineData, eegData;
-							vector<vector<double>> eegDataBig;
-							double temp = 0, temp2 = 0;
-
-							for (int l = 0; l < numberSubTrial; l++)
-							{
-								int baselineDebut = round((64 * (p_prov->visuBlocs[z]->dispBloc->baseLineWindow[0] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0])) / 1000);
-								int baselineFin = round((64 * (p_prov->visuBlocs[z]->dispBloc->baseLineWindow[1] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0])) / 1000);
-
-								for (int m = 0; m < (baselineFin - baselineDebut); m++)
-								{
-									temp += bigdata[i][triggCatEla->trigg[a + l]->origPos][baselineDebut + m];
-								}
-								baseLineData.push_back(temp / (baselineFin - baselineDebut));
-								temp = 0;
-							}
-
-							int numberWin = (p_prov->visuBlocs[z]->dispBloc->epochWindow[1] - p_prov->visuBlocs[z]->dispBloc->epochWindow[0]) / (200 / 2);  // 200/2 car overlap 50% /!\
-
-							for (int n = 0; n < numberWin - 1; n++)
-							{
-
-								for (int l = 0; l < numberSubTrial; l++)
-								{
-									//boucle moyenne des X fenetres que l'on veut (même taille que base line)
-
-									int winDebut = round((64 * (0 + (100 * n) + (p_prov->visuBlocs[z]->dispBloc->epochWindow[0] - windowMS[0]))) / 1000);
-									int winFin = round((64 * (200 + (100 * n) + (p_prov->visuBlocs[z]->dispBloc->epochWindow[0] - windowMS[0]))) / 1000);
-
-									for (int m = 0; m < (winFin - winDebut); m++)
-									{
-										temp += bigdata[i][triggCatEla->trigg[a + l]->origPos][winDebut + m];
-									}
-									eegData.push_back(temp / (winFin - winDebut));
-									temp = 0;
-								}
-								eegDataBig.push_back(eegData);
-								eegData.clear();
-							}
-							
-							vector<double> p_value;
-							for (int l = 0; l < eegDataBig.size(); l++)
-							{
-								p_value.push_back(wilcoxon(baseLineData, eegDataBig[l]));
-							}
-							p_valueBig.push_back(p_value);
-						}
-					}
-				}
-			}
-		}
-		p_value3D.push_back(p_valueBig);
-	}
-
-	return p_value3D;
-}
-
-vector<vector<vector<double>>> InsermLibrary::LOCA::calculatePValueKRUS(elan_struct_t *p_elan_struct, InsermLibrary::PROV *p_prov, std::vector<int> correspEvent, double ***eegData, int windowMS[2])
+vector<vector<vector<double>>> InsermLibrary::LOCA::calculatePValueKRUS(elan_struct_t *p_elan_struct, PROV *p_prov, vector<int> correspEvent, double ***eegData, int windowMS[2])
 {
 	vector<vector<vector<double>>> p_value3D;
 	for (int i = 0; i < p_elan_struct->chan_nb; i++)
@@ -3696,7 +3146,7 @@ vector<vector<vector<double>>> InsermLibrary::LOCA::calculatePValueKRUS(elan_str
 
 			for (int m = 0; m < (baselineFin - baselineDebut); m++)
 			{
-			temp += eegData[triggCatEla->trigg[a + l]->origPos][i][baselineDebut + m];
+			temp += eegData[triggCatEla->trigg[a + l].origPos][i][baselineDebut + m];
 			}
 			baseLineData.push_back(temp / (baselineFin - baselineDebut));
 			temp = 0;
@@ -3718,7 +3168,7 @@ vector<vector<vector<double>>> InsermLibrary::LOCA::calculatePValueKRUS(elan_str
 
 				for (int m = 0; m < (winFin - winDebut); m++)
 				{
-					temp2 += eegData[triggCatEla->trigg[a + l]->origPos][i][winDebut + m];
+					temp2 += eegData[triggCatEla->trigg[a + l].origPos][i][winDebut + m];
 				}
 				EEGData.push_back(temp2 / (winFin - winDebut));
 				temp2 = 0;
@@ -3753,7 +3203,7 @@ vector<vector<vector<double>>> InsermLibrary::LOCA::calculatePValueKRUS(elan_str
 	return p_value3D;
 }
 
-InsermLibrary::PVALUECOORD** InsermLibrary::LOCA::calculateFDR(std::vector<std::vector<std::vector<double>>> pArray3D, int &p_copyIndex)
+InsermLibrary::PVALUECOORD** InsermLibrary::LOCA::calculateFDR(vector<vector<vector<double>>> pArray3D, int &p_copyIndex)
 {
 	int V = pArray3D.size() * pArray3D[0].size() * pArray3D[0][0].size();
 	int compteur = 0;
@@ -3780,7 +3230,7 @@ InsermLibrary::PVALUECOORD** InsermLibrary::LOCA::calculateFDR(std::vector<std::
 	}
 
 	//heapsort if quicksort pas assez rapide              //compteur -1 peut être à cause de la sortie de boucle
-	std::sort(preFDRValues, preFDRValues + compteur,
+	sort(preFDRValues, preFDRValues + compteur,
 		[](PVALUECOORD *a, PVALUECOORD *b) {
 		return (a->pValue < b->pValue);
 	});
@@ -3805,7 +3255,7 @@ InsermLibrary::PVALUECOORD** InsermLibrary::LOCA::calculateFDR(std::vector<std::
 		significantValue[i]->pValue = preFDRValues[i]->pValue;
 	}
 
-	std::sort(significantValue, significantValue + p_copyIndex,
+	sort(significantValue, significantValue + p_copyIndex,
 		[](PVALUECOORD *a, PVALUECOORD *b) {
 		return ((a->vectorpos < b->vectorpos));
 	});
@@ -3819,75 +3269,36 @@ InsermLibrary::PVALUECOORD** InsermLibrary::LOCA::calculateFDR(std::vector<std::
 	return significantValue;
 }
 
-std::vector<int> InsermLibrary::LOCA::processEvents(InsermLibrary::PROV *p_prov, mainEventBLOC **p_mainEvents)
+vector<int> InsermLibrary::LOCA::processEvents(PROV *p_prov)
 {
-	//mainEventBLOC **stimEvents = new mainEventBLOC*[p_prov->numberVisuBlocs];
-	secondaryEventBLOC ***responseEvents = new secondaryEventBLOC**[p_prov->numberVisuBlocs];
-	int * sizeResp = new int[p_prov->numberVisuBlocs];
-
-	int numberCol = p_prov->getNumberCol();
-	int numberRow = p_prov->getNumberRow();
-
-	for (int z = 0; z < numberCol; z++)
-	{
-		for (int y = 0; y < numberRow; y++)
-		{
-			for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-			{
-				if ((p_prov->visuBlocs[i]->dispBloc->col == z + 1) && (p_prov->visuBlocs[i]->dispBloc->row == y + 1))
-				{
-					p_mainEvents[i] = new mainEventBLOC(p_prov->visuBlocs[i]->mainEvent->mainEventCode, p_prov->visuBlocs[i]->mainEvent->mainEventLabel);
-
-					responseEvents[i] = new secondaryEventBLOC*[p_prov->visuBlocs[i]->numberSecondaryEvents];
-					sizeResp[i] = p_prov->visuBlocs[i]->numberSecondaryEvents;
-
-					for (int j = 0; j < p_prov->visuBlocs[i]->numberSecondaryEvents; j++)
-					{
-						responseEvents[i][j] = new secondaryEventBLOC(p_prov->visuBlocs[i]->secondaryEvents[j]->secondaryEventCode, p_prov->visuBlocs[i]->secondaryEvents[j]->sizeSecondaryEvent, p_prov->visuBlocs[i]->secondaryEvents[j]->secondaryEventLabel);
-					}
-				}
-			}
-		}
-	}
-
-	cat2ellaRTTrigg(p_mainEvents, p_prov->numberVisuBlocs, responseEvents, sizeResp);					//	Extract triggers 
-	std::vector<int> correspondingEvent = sortTrials(p_prov, p_mainEvents, numberCol, numberRow);		//	Get the index corresponding to trials sorted according to input	
-
-	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-	{
-		for (int j = 0; j < p_prov->visuBlocs[i]->numberSecondaryEvents; j++)
-		{
-			delete responseEvents[i][j];
-		}
-		delete responseEvents[i];
-	}
-	delete responseEvents;
-	delete sizeResp;
-
-	return correspondingEvent;
+	cat2ellaRTTrigg(p_prov);	//	Extract triggers 
+	return sortTrials(p_prov);	//	Get the index corresponding to trials sorted according to input	
 }
 
-void InsermLibrary::LOCA::cat2ellaRTTrigg(mainEventBLOC **p_mainEvents, int p_numberMainEvents, secondaryEventBLOC ***p_responseEvents, int* p_sizeRespEvents)
+void InsermLibrary::LOCA::cat2ellaRTTrigg(PROV *p_prov)
 {
-	std::vector<int> downSampTimeTrigg, downSampValueTrigg, index2delete, index2keep;
+	vector<int> downSampTimeTrigg, downSampValueTrigg, index2delete, index2keep;
 	bool tokeep = false, found = false;
 	int totnumberevent, s_nextlat, s_rtms, s_rtcode, resplat;
 
 	for (int i = 0; i < triggDownTRC->numberTrigg; i++)
 	{
-		downSampTimeTrigg.push_back(triggDownTRC->trigg[i]->sampleTrigger);
-		downSampValueTrigg.push_back(triggDownTRC->trigg[i]->valueTrigger);
+		downSampTimeTrigg.push_back(triggDownTRC->trigg[i].sampleTrigger);
+		downSampValueTrigg.push_back(triggDownTRC->trigg[i].valueTrigger);
 	}
 
 	//Si les valeurs du .pos ne sont pas dans les valeurs que l'on cherche 
 	for (int i = 0; i < downSampValueTrigg.size(); i++)
 	{
 		tokeep = false;
-		for (int j = 0; j < p_numberMainEvents; j++)
+		for (int j = 0; j < p_prov->visuBlocs.size(); j++)
 		{
-			if (downSampValueTrigg[i] == p_mainEvents[j]->mainEventCode)
+			for (int k = 0; k < p_prov->visuBlocs[j].mainEventBloc.eventCode.size(); k++)
 			{
-				tokeep = true;
+				if (downSampValueTrigg[i] == p_prov->visuBlocs[j].mainEventBloc.eventCode[k])
+				{
+					tokeep = true;
+				}
 			}
 		}
 
@@ -3923,14 +3334,14 @@ void InsermLibrary::LOCA::cat2ellaRTTrigg(mainEventBLOC **p_mainEvents, int p_nu
 	triggCatElaNoSort = new TRIGGINFO(&downSampValueTrigg[0], &downSampTimeTrigg[0], (int)downSampTimeTrigg.size(), 1);
 	totnumberevent = downSampTimeTrigg.size();
 
-	std::vector<int> test;
-	for (int m = 0; m < p_numberMainEvents; m++)
+	vector<int> test;
+	for (int m = 0; m < p_prov->visuBlocs.size(); m++)
 	{
-		for (int j = 0; j < p_sizeRespEvents[m]; j++)
+		for (int j = 0; j < p_prov->visuBlocs[m].secondaryEvents.size(); j++)
 		{
-			if (find(test.begin(), test.end(), p_responseEvents[m][j]->secondaryEventCode[0]) == test.end())
+			if (find(test.begin(), test.end(), p_prov->visuBlocs[m].secondaryEvents[j].eventCode[0]) == test.end())
 			{
-				test.push_back(p_responseEvents[m][j]->secondaryEventCode[0]); //If multiple secondary code, just use the first one of the list
+				test.push_back(p_prov->visuBlocs[m].secondaryEvents[j].eventCode[0]); //If multiple secondary code, just use the first one of the list
 			}
 		}
 	}
@@ -3939,18 +3350,18 @@ void InsermLibrary::LOCA::cat2ellaRTTrigg(mainEventBLOC **p_mainEvents, int p_nu
 	{
 		if (i < totnumberevent - 1)
 		{
-			s_nextlat = triggCatEla->trigg[i + 1]->sampleTrigger;
+			s_nextlat = triggCatEla->trigg[i + 1].sampleTrigger;
 		}
 		else
 		{
-			s_nextlat = triggDownTRC->trigg[triggDownTRC->numberTrigg - 1]->sampleTrigger;
+			s_nextlat = triggDownTRC->trigg[triggDownTRC->numberTrigg - 1].sampleTrigger;
 		}
 
-		std::vector<int> m_tpos, m_sam;
+		vector<int> m_tpos, m_sam;
 		for (int k = index2keep[i] + 1; k < triggDownTRC->numberTrigg - 1; k++)
 		{
-			m_tpos.push_back(triggDownTRC->trigg[k]->valueTrigger);
-			m_sam.push_back(triggDownTRC->trigg[k]->sampleTrigger);
+			m_tpos.push_back(triggDownTRC->trigg[k].valueTrigger);
+			m_sam.push_back(triggDownTRC->trigg[k].sampleTrigger);
 		}
 
 		s_rtms = 10000000;
@@ -3966,41 +3377,45 @@ void InsermLibrary::LOCA::cat2ellaRTTrigg(mainEventBLOC **p_mainEvents, int p_nu
 				int s_resplat = m_sam[re];
 				if (s_resplat < s_nextlat)
 				{
-					s_rtms = min(s_rtms, 1000 * (((double)s_resplat - triggDownTRC->trigg[index2keep[i]]->sampleTrigger) / 64));
+					s_rtms = min(s_rtms, 1000 * (((double)s_resplat - triggDownTRC->trigg[index2keep[i]].sampleTrigger) / 64));
 					s_rtcode = s_resp; 
 				}
 			}
 		}
 
 		//assign rt_ms value to struct here
-		triggCatEla->trigg[i]->rt_ms = s_rtms;
-		triggCatEla->trigg[i]->rt_code = s_rtcode;
+		triggCatEla->trigg[i].rt_ms = s_rtms;
+		triggCatEla->trigg[i].rt_code = s_rtcode;
+
+		//TEST inv
+		triggCatElaNoSort->trigg[i].rt_ms = s_rtms;
+		triggCatElaNoSort->trigg[i].rt_code = s_rtcode;
 	}
 }
 
-std::vector<int> InsermLibrary::LOCA::sortTrials(InsermLibrary::PROV *p_prov, mainEventBLOC **p_mainEvents, int numCol, int numRow)
+vector<int> InsermLibrary::LOCA::sortTrials(PROV *p_prov)
 {
 	enum sortingChoice { CodeSort = 'C', LatencySort = 'L' };
 	bool codeSortPrimary = false;
 	string sortChoice = "";
-	std::vector<int> correspondingEvent;
+	vector<int> correspondingEvent;
 
-	correspondingEvent = sortByMainCode(p_prov, p_mainEvents, numCol, numRow);
+	correspondingEvent = sortByMainCode(p_prov);
 
-	for (int i = 0; i < p_prov->numberVisuBlocs; i++)
+	for (int i = 0; i < p_prov->visuBlocs.size(); i++)
 	{
-		if (p_prov->visuBlocs[i]->dispBloc->col == 1)
+		if (p_prov->visuBlocs[i].dispBloc.col == 1)
 		{
-			std::vector<int> otherLine;
+			vector<int> otherLine;
 			for (int j = 0; j < correspondingEvent.size(); j++)
 			{
-				if (correspondingEvent[j] == (p_prov->visuBlocs[i]->dispBloc->row - 1) + (numRow * (p_prov->visuBlocs[i]->dispBloc->col - 1)))
+				if (correspondingEvent[j] == (p_prov->visuBlocs[i].dispBloc.row - 1) + (p_prov->nbRow() * (p_prov->visuBlocs[i].dispBloc.col - 1)))
 				{
 					otherLine.push_back(j);
 				}
 			}
 
-			sortChoice = p_prov->visuBlocs[i]->dispBloc->sort;
+			sortChoice = p_prov->visuBlocs[i].dispBloc.sort;
 			vector<string> sortSplit = split<string>(sortChoice, "_");
 
 			for (int j = 1; j < sortSplit.size(); j++)
@@ -4022,25 +3437,28 @@ std::vector<int> InsermLibrary::LOCA::sortTrials(InsermLibrary::PROV *p_prov, ma
 	return correspondingEvent;
 }
 
-std::vector<int> InsermLibrary::LOCA::sortByMainCode(InsermLibrary::PROV *p_prov, mainEventBLOC **p_mainEvents, int numCol, int numRow)
+vector<int> InsermLibrary::LOCA::sortByMainCode(PROV *p_prov)
 {
 	//Get index according to code		
-	std::vector<int> correspondingEvent, test;
-	for (int z = 0; z < numCol; z++)
+	vector<int> correspondingEvent, test;
+	for (int z = 0; z < p_prov->nbCol(); z++)
 	{
-		for (int y = 0; y < numRow; y++)
+		for (int y = 0; y < p_prov->nbRow(); y++)
 		{
-			for (int k = 0; k < (p_prov->numberVisuBlocs); k++)
+			for (int k = 0; k < (p_prov->visuBlocs.size()); k++)
 			{
-				if ((p_prov->visuBlocs[k]->dispBloc->col == z + 1) && (p_prov->visuBlocs[k]->dispBloc->row == y + 1))
+				if ((p_prov->visuBlocs[k].dispBloc.col == z + 1) && (p_prov->visuBlocs[k].dispBloc.row == y + 1))
 				{
 					correspondingEvent.push_back(y); 	//Get the right order of bloc in case prov file is in disorder
 					
 					for (int j = 0; j < triggCatEla->numberTrigg; j++)
 					{
-						if (triggCatEla->trigg[j]->valueTrigger == p_mainEvents[k]->mainEventCode)
+						for (int w = 0; w < p_prov->visuBlocs[k].mainEventBloc.eventCode.size(); w++)
 						{
-							test.push_back(j);
+							if (triggCatEla->trigg[j].valueTrigger == p_prov->visuBlocs[k].mainEventBloc.eventCode[w])   // p_mainEvents[k]->mainEventCode)
+							{
+								test.push_back(j);
+							}
 						}
 					}
 				}
@@ -4052,10 +3470,10 @@ std::vector<int> InsermLibrary::LOCA::sortByMainCode(InsermLibrary::PROV *p_prov
 	vector<int> valueT, sampleT, rtMs, rtCode, origPos;
 	for (int i = 0; i < triggCatEla->numberTrigg; i++)
 	{
-		valueT.push_back(triggCatEla->trigg[test[i]]->valueTrigger);
-		sampleT.push_back(triggCatEla->trigg[test[i]]->sampleTrigger);
-		rtMs.push_back(triggCatEla->trigg[test[i]]->rt_ms);
-		rtCode.push_back(triggCatEla->trigg[test[i]]->rt_code);
+		valueT.push_back(triggCatEla->trigg[test[i]].valueTrigger);
+		sampleT.push_back(triggCatEla->trigg[test[i]].sampleTrigger);
+		rtMs.push_back(triggCatEla->trigg[test[i]].rt_ms);
+		rtCode.push_back(triggCatEla->trigg[test[i]].rt_code);
 		origPos.push_back(test[i]);
 	}
 
@@ -4067,8 +3485,7 @@ std::vector<int> InsermLibrary::LOCA::sortByMainCode(InsermLibrary::PROV *p_prov
 	triggCatEla->mainGroupSub.push_back(0);
 	for (int m = 0; m < sampleT.size() - 1; m++)
 	{
-		//if (sampleT[m] > sampleT[m + 1])
-		if (valueT[m] != valueT[m + 1])
+		if(valueT[m] != valueT[m + 1])
 		{
 			triggCatEla->mainGroupSub.push_back(m + 1);
 		}
@@ -4078,47 +3495,48 @@ std::vector<int> InsermLibrary::LOCA::sortByMainCode(InsermLibrary::PROV *p_prov
 	return correspondingEvent;
 }
 
-void InsermLibrary::LOCA::sortBySecondaryCode(std::vector<int> totreat)
+void InsermLibrary::LOCA::sortBySecondaryCode(vector<int> totreat)
 {
 	for (int i = 0; i < totreat.size(); i++)
 	{
 		int beginSort = triggCatEla->mainGroupSub[totreat[i]];
 		int endSort = triggCatEla->mainGroupSub[totreat[i] + 1];
 		
-		std::sort(triggCatEla->trigg + beginSort, triggCatEla->trigg + endSort,
-			[](TRIGG *a, TRIGG *b) {
-			return (a->rt_code == b->rt_code);
+		sort(triggCatEla->trigg.begin() + beginSort, triggCatEla->trigg.begin() + endSort,
+			[](TRIGG a, TRIGG b) {
+			return (a.rt_code == b.rt_code);
 		});
 	}
 }
 
-void InsermLibrary::LOCA::sortByLatency(std::vector<int> totreat)
+void InsermLibrary::LOCA::sortByLatency(vector<int> totreat)
 {
 	for (int i = 0; i < 1/*totreat.size()*/; i++)
 	{		
 		int beginSort = triggCatEla->mainGroupSub[totreat[i]];
 		int endSort = triggCatEla->mainGroupSub[totreat[i] + 1];
 
-		std::sort(triggCatEla->trigg + beginSort, triggCatEla->trigg + endSort,
-				[](TRIGG *a, TRIGG *b) {
-				return (a->rt_ms < b->rt_ms);
+		sort(triggCatEla->trigg.begin() + beginSort, triggCatEla->trigg.begin() + endSort,
+				[](TRIGG a, TRIGG b) {
+				return (a.rt_ms < b.rt_ms);
 			});
 	}
 }
 
 void InsermLibrary::LOCA::cat2ellaExtractData(elan_struct_t *p_elan_struct, double ***p_eegData, int v_win_sam[2])
 {
+	//===fin test inv
 	cout << "Exctracting data" << endl;
-	std::string toSearch = p_elan_struct->comment;
-	if (toSearch.find("by eeg2env C++") != std::string::npos)
+	string toSearch = p_elan_struct->comment;
+	if (toSearch.find("by eeg2env C++") != string::npos)
 	{
-		std::cout << "new" << std::endl;
+		cout << "new" << endl;
 		for (int i = 0; i < p_elan_struct->chan_nb; i++)
 		{
 			for (int j = 0; j < triggCatEla->numberTrigg; j++)
 			{
-				//int trigTime = triggCatEla->trigg[j]->sampleTrigger;
-				int trigTime = triggCatElaNoSort->trigg[j]->sampleTrigger;
+				//int trigTime = triggCatEla->trigg[j].sampleTrigger + triggCatEla->trigg[j].rt_ms;
+				int trigTime = triggCatElaNoSort->trigg[j].sampleTrigger;
 				int beginTime = trigTime + v_win_sam[0];
 				int endTime = trigTime + v_win_sam[1];
 
@@ -4129,15 +3547,15 @@ void InsermLibrary::LOCA::cat2ellaExtractData(elan_struct_t *p_elan_struct, doub
 			}
 		}
 	}
-	else if (toSearch.find("") != std::string::npos)
+	else if (toSearch.find("") != string::npos)
 	{
-		std::cout << "running analysis" << std::endl;
+		cout << "running analysis" << endl;
 		for (int i = 0; i < p_elan_struct->chan_nb; i++)
 		{
 			for (int j = 0; j < triggCatEla->numberTrigg; j++)
 			{
 				//int trigTime = triggCatEla->trigg[j]->sampleTrigger;
-				int trigTime = triggCatElaNoSort->trigg[j]->sampleTrigger;
+				int trigTime = triggCatElaNoSort->trigg[j].sampleTrigger;
 				int beginTime = trigTime + v_win_sam[0];
 				int endTime = trigTime + v_win_sam[1];
 
@@ -4150,13 +3568,13 @@ void InsermLibrary::LOCA::cat2ellaExtractData(elan_struct_t *p_elan_struct, doub
 	}
 	else
 	{
-		std::cout << "old" << std::endl;
+		cout << "old" << endl;
 		for (int i = 0; i < p_elan_struct->chan_nb; i++)
 		{
 			for (int j = 0; j < triggCatEla->numberTrigg; j++)
 			{
 				//int trigTime = triggCatEla->trigg[j]->sampleTrigger;
-				int trigTime = triggCatElaNoSort->trigg[j]->sampleTrigger;
+				int trigTime = triggCatElaNoSort->trigg[j].sampleTrigger;
 				int beginTime = trigTime + v_win_sam[0];
 				int endTime = trigTime + v_win_sam[1];
 
@@ -4173,250 +3591,9 @@ void InsermLibrary::LOCA::cat2ellaExtractData(elan_struct_t *p_elan_struct, doub
 	cout << "End of Data Extraction " << endl;
 }
 
-std::vector<std::vector<double>> InsermLibrary::LOCA::interpolateData(double **p_eegData, int p_numberSubTrial, int p_windowSize, int p_beginTrigg, int p_interpolFactor)
-{
-	vector<vector<double>> eegDataInterpolated;
-	for (int l = 0; l < p_numberSubTrial; l++)
-	{
-		vector<double> eegDataOneTrial;
-		for (int m = 0; m < p_windowSize; m++)
-		{
-			double val1 = p_eegData[triggCatEla->trigg[p_beginTrigg + l]->origPos][m];
-			double val2 = p_eegData[triggCatEla->trigg[p_beginTrigg + l]->origPos][m + 1];
-
-			for (int n = 0; n < p_interpolFactor; n++)
-			{
-				double coeff = (double)n / p_interpolFactor;
-				eegDataOneTrial.push_back(((1 - coeff)*val1) + (coeff * val2));
-			}
-		}
-		eegDataInterpolated.push_back(eegDataOneTrial);
-	}
-
-	return eegDataInterpolated;
-}
-
-std::vector<std::vector<double>> InsermLibrary::LOCA::interpolateDataVert(std::vector<std::vector<double>> p_eegData, int p_interpolFactor)
-{
-	int vertSize = p_eegData.size();
-	int horizSize = p_eegData[0].size();
-
-	vector<vector<double>> eegDataInterpolated;
-	for (int l = 0; l < horizSize; l++)
-	{
-		vector<double> eegDataOneSample;
-		for (int m = 0; m < vertSize - 1; m++)
-		{
-			double val1 = p_eegData[m][l];
-			double val2 = p_eegData[m + 1][l];
-
-			for (int n = 0; n < p_interpolFactor; n++)
-			{
-				double coeff = (double)n / p_interpolFactor;
-				eegDataOneSample.push_back(((1 - coeff)*val1) + (coeff * val2));
-			}
-		}
-		eegDataInterpolated.push_back(eegDataOneSample);
-	}
-
-	return eegDataInterpolated;
-}
-
-void InsermLibrary::LOCA::eegData2ColorMap(std::vector<std::vector<double>> p_eegDataInterpolated, std::vector<int> p_colorX[512], std::vector<int> p_colorY[512], int p_numberSubTrial, int p_windowSize, int p_interpolFactorX, int p_interpolFactorY, double p_minVal, double p_maxVal)
-{
-	for (int l = 0; l < p_interpolFactorY * (p_numberSubTrial - 1); l++)
-	{
-		for (int m = 0; m < p_interpolFactorX * p_windowSize; m++)
-		{
-			//double r = (p_eegDataInterpolated[l][m] - p_minVal) / (p_maxVal - p_minVal); //si p_eegDataInterpolated seulement par le nombre de sample
-			double r = (p_eegDataInterpolated[m][l] - p_minVal) / (p_maxVal - p_minVal);  //si p_eegDataInterpolated par nombre de sample puis par trials
-
-			int col = 0 + (511 * r);
-			if (col < 0)
-			{
-				col = 0;
-			}
-			else if (col > 511)
-			{
-				col = 511;
-			}
-			/*2Dim vector, since changing he color of the qt pen takes time , we fill every pixel
-			of one color, then the next, then the next , etc ...*/
-			p_colorX[col].push_back(m);
-			p_colorY[col].push_back(l);
-		}
-	}
-}
-
-/********************************************************************************************************************************************/
-/*							Create a template with non variable object inside the image													    */
-/********************************************************************************************************************************************/
-void InsermLibrary::LOCA::createMapTemplate(QPainter *p_painterTemplate, MATRIXCOORD *p_coordMat, InsermLibrary::PROV *p_prov, int v_window_ms[2], QColor *p_colorMap, mainEventBLOC **p_mainEvents, vector<int> p_indexes, int p_numberRow, int p_numberCol)
-{
-	matrixLines(p_painterTemplate, p_coordMat, p_indexes, p_numberRow, p_numberCol);
-	createTimeLegend(p_painterTemplate, v_window_ms);
-	createTrialLegend(p_painterTemplate, p_coordMat, p_prov, p_mainEvents, p_numberRow);
-	createColorBar(p_painterTemplate, p_colorMap);
-}
-
-void InsermLibrary::LOCA::createColorBar(QPainter *p_painterTemplate, QColor *p_colorMap)
-{
-	/*************************************************************************************************************************************************************************************/
-	/*					Create Rectangle for Color legend according to chosen color map	and pregraduate it with the zero since it won't change place									 */
-	/*************************************************************************************************************************************************************************************/
-	p_painterTemplate->drawRect(484, 33, 21, 352);																																		 //
-	for (int i = 0; i < 512; i++)																																						 //
-	{																																													 //
-		QPainterPath qpathRect;																																							 //
-		qpathRect.moveTo(QPoint(485, 33 + (((double)352 / 512)*i)));																													 //
-		qpathRect.lineTo(QPoint(485 + 19, 33 + (((double)352 / 512)*(i + 1))));																											 //
-																																														 //
-		p_painterTemplate->setPen(p_colorMap[511 - i]);																																	 //
-		p_painterTemplate->drawPath(qpathRect);																																			 //
-	}																																													 //
-	p_painterTemplate->drawLine(484, 209, 488, 209);																																	 //
-	p_painterTemplate->drawText(QPoint(507, 215), QString("0"));																														 //
-	p_painterTemplate->drawLine(501, 209, 505, 209);																																	 //
-	/*************************************************************************************************************************************************************************************/
-}
-
-void InsermLibrary::LOCA::createTrialLegend(QPainter *p_painterTemplate, MATRIXCOORD *p_coordMat, InsermLibrary::PROV *p_prov, mainEventBLOC **p_mainEvents, int p_numberMainEvents)
-{
-	/************************************************************************************************************************************************************/
-	/*																Matrix Trial Legend																			*/
-	/************************************************************************************************************************************************************/
-	int d, e;
-	QFont fontTrialLegend;																																		//
-	fontTrialLegend.setPixelSize(15);																															//
-	double stepTrialLegend = 352 / p_numberMainEvents;																											//
-																																								//
-	p_painterTemplate->setPen(QColor(Qt::darkRed));																												//
-	p_painterTemplate->setFont(fontTrialLegend);																												//
-
-	for (int a = 0; a < p_numberMainEvents; a++)
-	{
-		for (int i = 0; i < p_prov->numberVisuBlocs; i++)
-		{
-			if (p_prov->visuBlocs[i]->dispBloc->col == 1)
-			{
-				if (p_prov->visuBlocs[i]->dispBloc->row == a + 1)
-				{
-					if (a == 0)
-					{
-						d = 385;
-						e = p_coordMat[p_numberMainEvents - 1 - a].y;
-					}
-					else
-					{
-						d = p_coordMat[p_numberMainEvents - a].y;
-						e = p_coordMat[p_numberMainEvents - a - 1].y;
-					}
-					
-					p_painterTemplate->drawText(QPoint(1, (d - (double)(d - e) / 2)), QString(p_mainEvents[i]->mainEventLabel.c_str()));
-				}
-			}
-		}
-	}
-	///************************************************************************************************************************************************************/
-
-}
-
-void InsermLibrary::LOCA::createTimeLegend(QPainter *p_painterTemplate, int v_window_ms[2])
-{
-	/*********************************************************************************************************************************************************************************************************/
-	/*																					Matrix Time Legend																									 */
-	/*********************************************************************************************************************************************************************************************************/
-	int zeroBorder = ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * abs(v_window_ms[0]));																											 //
-	double stepTimeLegend = v_window_ms[1] / 5;																																								 //
-																																																			 //
-	p_painterTemplate->setBackgroundMode(Qt::BGMode::OpaqueMode);																																	 		 //
-	p_painterTemplate->drawLine(75, 385, 469, 385);																																							 //
-	p_painterTemplate->drawLine(469, 385, 469, 381);																																						 //
-																																																			 //
-	p_painterTemplate->drawText(QPoint((73 + zeroBorder) - ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * stepTimeLegend) - 9, 400), QString(QString().number(0 - stepTimeLegend)));				 //
-	p_painterTemplate->drawText(QPoint(73 + zeroBorder, 400), QString("0"));																																 //
-	p_painterTemplate->drawText(QPoint((73 + zeroBorder) + ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * (stepTimeLegend)) - 9, 400), QString(QString().number(0 + stepTimeLegend)));				 //
-	p_painterTemplate->drawText(QPoint((73 + zeroBorder) + ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * (2 * stepTimeLegend)) - 9, 400), QString(QString().number(0 + (2 * stepTimeLegend))));	 //
-	p_painterTemplate->drawText(QPoint((73 + zeroBorder) + ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * (3 * stepTimeLegend)) - 9, 400), QString(QString().number(0 + (3 * stepTimeLegend))));	 //
-	p_painterTemplate->drawText(QPoint((73 + zeroBorder) + ceil((double)394 / (v_window_ms[1] - v_window_ms[0]) * (4 * stepTimeLegend)) - 9, 400), QString(QString().number(0 + (4 * stepTimeLegend))));	 //
-	p_painterTemplate->drawText(QPoint(460, 400), QString(QString().number(v_window_ms[1])));																												 //
-	/*********************************************************************************************************************************************************************************************************/
-}
-
-void InsermLibrary::LOCA::matrixLines(QPainter *p_painterTemplate, MATRIXCOORD *p_coordMat, vector<int> p_indexes, int p_numberRow, int p_numberCol)
-{
-	int xBegin = 0, yBegin = 0, xEnd = 0, yEnd = 0;
-	int fullMatrixWidth = 394, fullMatrixHeigth = 352;
-	int numberHorizLine = p_numberRow - 1, numberVerticLine = p_numberCol - 1;
-	int actualMatrixWidth = fullMatrixWidth - (numberVerticLine * 2), actualMatrixHeigth = fullMatrixHeigth - (numberHorizLine * 2);
-	int heigthcumul;
-
-	////Fill an array with x,y coordinates and width and heigth corresponding to each part of submatrix
-	for (int i = 0; i < p_numberCol; i++)
-	{
-		heigthcumul = 0;
-		for (int j = 0; j < p_numberRow; j++)
-		{
-			p_coordMat[j + (i*p_numberRow)].width = (actualMatrixWidth / p_numberCol);
-			p_coordMat[j + (i*p_numberRow)].heigth = round(actualMatrixHeigth * ((double)(p_indexes[p_numberRow - j] - p_indexes[p_numberRow - 1 - j]) / triggCatEla->numberTrigg));
-
-			p_coordMat[j + (i*p_numberRow)].x = 75 + (((actualMatrixWidth / p_numberCol) + 2) * i);
-			p_coordMat[j + (i*p_numberRow)].y = 33 + heigthcumul;
-
-			heigthcumul += p_coordMat[j + (i*p_numberRow)].heigth + 2;
-		}
-	}
-
-
-	//horizontal lines
-	for (int i = 0; i < p_numberRow - 1; i++)
-	{
-		xBegin = p_coordMat[i+1].x;
-		yBegin = p_coordMat[i+1].y - 2;
-		xEnd = p_coordMat[i].x + fullMatrixWidth - 1;
-		yEnd = yBegin;
-
-		//p_painterTemplate->setPen(QColor(Qt::black));
-		p_painterTemplate->setPen(QColor(Qt::white));
-		p_painterTemplate->drawLine(xBegin, yBegin, xEnd, yEnd);
-
-		xBegin = p_coordMat[i + 1].x;
-		yBegin = p_coordMat[i + 1].y - 1;
-		xEnd = p_coordMat[i].x + fullMatrixWidth - 1;
-		yEnd = yBegin;
-
-		//p_painterTemplate->setPen(QColor(Qt::black));
-		p_painterTemplate->setPen(QColor(Qt::white));
-		p_painterTemplate->drawLine(xBegin, yBegin, xEnd, yEnd);
-	}
-
-	//vertical lines
-	if (p_numberCol > 1)
-	{
-		for (int i = 0; i < p_numberCol - 1; i++)
-		{
-			xBegin = p_coordMat[((i+1)*p_numberRow)].x - 2;
-			yBegin = 33;
-			xEnd = xBegin;
-			yEnd = 33 + fullMatrixHeigth;
-
-			p_painterTemplate->drawLine(xBegin, yBegin, xEnd, yEnd);
-
-			xBegin = p_coordMat[((i + 1)*p_numberRow)].x - 1;
-			yBegin = 33;
-			xEnd = xBegin;
-			yEnd = 33 + fullMatrixHeigth;
-
-			p_painterTemplate->drawLine(xBegin, yBegin, xEnd, yEnd);
-
-		}
-	}
-}
-/********************************************************************************************************************************************/
-
-/********************************************************************************************************************/
-/*						Calculate standard derivation = mean then sqrt(sum((data-mean)²))							*/
-/********************************************************************************************************************/
+/****************************************************************/
+/*	Standard Derivation => mean then sqrt(sum((data-mean)²))	*/
+/****************************************************************/
 double InsermLibrary::LOCA::stdMean(double **p_eegDataChanel, int p_window_sam[2])
 {
 	double *v_erp, *v_std;
@@ -4430,7 +3607,7 @@ double InsermLibrary::LOCA::stdMean(double **p_eegDataChanel, int p_window_sam[2
 		double tempErp = 0;																								
 		for (int m = 0; m < (p_window_sam[1] - p_window_sam[0]); m++)													
 		{																												
-			tempErp += p_eegDataChanel[triggCatEla->trigg[i]->origPos][m];
+			tempErp += p_eegDataChanel[triggCatEla->trigg[i].origPos][m];
 		}																												
 		v_erp[i] = tempErp / (p_window_sam[1] - p_window_sam[0]);														
 	}																													
@@ -4440,7 +3617,7 @@ double InsermLibrary::LOCA::stdMean(double **p_eegDataChanel, int p_window_sam[2
 		double tempStd = 0;																								
 		for (int m = 0; m < (p_window_sam[1] - p_window_sam[0]); m++)													
 		{																												
-			tempStd += (p_eegDataChanel[triggCatEla->trigg[i]->origPos][m] - v_erp[i]) * (p_eegDataChanel[triggCatEla->trigg[i]->origPos][m] - v_erp[i]);
+			tempStd += (p_eegDataChanel[triggCatEla->trigg[i].origPos][m] - v_erp[i]) * (p_eegDataChanel[triggCatEla->trigg[i].origPos][m] - v_erp[i]);
 		}																												
 		v_std[i] = sqrt(tempStd / (p_window_sam[1] - p_window_sam[0] - 1));													
 	}																													
@@ -4458,102 +3635,3 @@ double InsermLibrary::LOCA::stdMean(double **p_eegDataChanel, int p_window_sam[2
 
 	return tempstd;
 }
-/********************************************************************************************************************/
-
-/******************************************************************************************************************/
-/*			Create Rectangle for Color legend according to chosen color map	and graduate it						  */
-/******************************************************************************************************************/
-void InsermLibrary::LOCA::graduateColorBar(QPainter *p_painterTemplate, int p_maxiValue)																								 //
-{																																														 //
-	p_painterTemplate->setPen(QColor(0, 0, 0, 255));																																	 //
-	double stepColorLegend = (double)p_maxiValue / 10;																																	 //
-	double stepColorLegend2 = ((double)352 / (2 * stepColorLegend));																													 //
-																																														 //
-	for (int i = 0; i < floor(stepColorLegend); i++)																																	 //
-	{																																													 //
-		p_painterTemplate->drawLine(484, 209 + (stepColorLegend2 + stepColorLegend2 * i), 488, 209 + (stepColorLegend2 + stepColorLegend2 * i));								 		 //
-		p_painterTemplate->drawLine(501, 209 + (stepColorLegend2 + stepColorLegend2 * i), 505, 209 + (stepColorLegend2 + stepColorLegend2 * i));								 		 //
-																																														 //
-		p_painterTemplate->drawLine(484, 209 - (stepColorLegend2 + stepColorLegend2 * i), 488, 209 - (stepColorLegend2 + stepColorLegend2 * i));								 		 //
-		p_painterTemplate->drawLine(501, 209 - (stepColorLegend2 + stepColorLegend2 * i), 505, 209 - (stepColorLegend2 + stepColorLegend2 * i));								 		 //
-																																														 //
-		p_painterTemplate->drawText(QPoint(507, 215 + (((double)352 / (2 * stepColorLegend)) + (((double)352 / (2 * stepColorLegend)) * i))), QString(QString().number(-10 - (10 * i))));//
-		p_painterTemplate->drawText(QPoint(507, 215 - (((double)352 / (2 * stepColorLegend)) + (((double)352 / (2 * stepColorLegend)) * i))), QString(QString().number(10 + (10 * i)))); //
-	}																																													 //
-}																																														 //
-/******************************************************************************************************************/
-
-/******************************************************************************************************************/
-/*																												  */
-/******************************************************************************************************************/
-void InsermLibrary::LOCA::jetColorMap512(QColor *p_C)
-{
-	int compteur = 0;
-	for (int i = 0; i < 57; i++)
-	{
-		p_C[i].setBlue(143.4375 + (i * 1.9649));
-	}
-
-	compteur = 57;
-	for (int i = 0; i < 130; i++)
-	{
-		p_C[compteur].setGreen((double)0.4366 + (i * 1.9649));
-		p_C[compteur].setBlue(255);
-		compteur++;
-	}
-
-	compteur = 187;
-	for (int i = 0; i < 130; i++)
-	{
-		p_C[compteur].setRed(0.8733 + (i * 1.9649));
-		p_C[compteur].setGreen(255);
-		p_C[compteur].setBlue(254.1267 - (i * 1.9649));
-		compteur++;
-	}
-
-	compteur = 317;
-	for (int i = 0; i < 130; i++)
-	{
-		p_C[compteur].setRed(255);
-		p_C[compteur].setGreen(253.6901 - (i * 1.9649));
-		p_C[compteur].setBlue(0);
-		compteur++;
-	}
-
-	compteur = 447;
-	for (int i = 0; i < 65; i++)
-	{
-		p_C[compteur].setRed(253.2534 - (i * 1.9649));
-		p_C[compteur].setGreen(0);
-		p_C[compteur].setBlue(0);
-		compteur++;
-	}
-
-	//for (int i = 447; i < 512; i++)
-	//{
-	//	std::cout << C[i].red() <<" et " << C[i].green() << " et " << C[i].blue() << endl;
-	//}
-}
-/******************************************************************************************************************/
-/*****************************************************************************************************************************************************************************************************************************************************/
-
-/******************************************************************************************************************/
-/*																												  */
-/******************************************************************************************************************/
-template<typename T> vector<T> InsermLibrary::LOCA::split(const T & str, const T & delimiters)					  //
-{																												  //
-	/*Exemple : vector<string> v = split<string>("Hello, there; World", ";,"); */								  //
-	vector<T> v;																								  //
-	T::size_type start = 0;																						  //
-	auto pos = str.find_first_of(delimiters, start);															  //
-	while (pos != T::npos) {																					  //
-		if (pos != start) // ignore empty tokens																  //
-			v.emplace_back(str, start, pos - start);															  //
-		start = pos + 1;																						  //
-		pos = str.find_first_of(delimiters, start);																  //
-	}																											  //
-	if (start < str.length()) // ignore trailing delimiter														  //
-		v.emplace_back(str, start, str.length() - start); // add what's left of the string						  //
-	return v;																									  //
-}																												  //
-/******************************************************************************************************************/

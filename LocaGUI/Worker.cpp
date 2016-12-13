@@ -3,26 +3,27 @@
 #include "Windows.h"
 
 // --- CONSTRUCTOR ---
-Worker::Worker(InsermLibrary::OptionLOCA *p_LOCAOpt, std::vector<std::vector<double>> p_freqBandValue, std::vector <std::vector<bool>> p_anaDetails, std::vector<std::string> p_trc, std::vector<std::string> p_prov, std::string folderPatient, std::vector<std::string> p_tasks, std::vector<std::string> p_exptasks)
+Worker::Worker(OptionLOCA *p_LOCAOpt, vector<vector<double>> p_freqBandValue, vector <vector<bool>> p_anaDetails, vector<string> p_trc, vector<string> p_prov, string folderPatient, vector<string> p_tasks, vector<string> p_exptasks)
 {
 	// you could copy data from constructor arguments to internal variables here.
 	LOCAOpt = p_LOCAOpt;
 	if (LOCAOpt == nullptr)
 	{
-		LOCAOpt = new InsermLibrary::OptionLOCA();
+		LOCAOpt = new OptionLOCA();
 	}
 
 	numberFiles = p_trc.size();
-	locaAnaOpt = new InsermLibrary::LOCAANALYSISOPTION*[numberFiles];
+	locaAnaOpt = new LOCAANALYSISOPTION*[numberFiles];
 	for (int i = 0; i < numberFiles; i++)
 	{
-		locaAnaOpt[i] = new InsermLibrary::LOCAANALYSISOPTION(p_freqBandValue, p_anaDetails, p_trc[i], p_prov[i], folderPatient, p_tasks[i], p_exptasks[i]);
+		locaAnaOpt[i] = new LOCAANALYSISOPTION(p_freqBandValue, p_anaDetails, p_trc[i], p_prov[i], folderPatient, p_tasks[i], p_exptasks[i]);
 	}
 
-	qRegisterMetaType<InsermLibrary::ELAN*>("InsermLibrary::ELAN*");
-	
+	//qRegisterMetaType<InsermLibrary::ELAN*>("InsermLibrary::ELAN*");
+	qRegisterMetaType<ELAN*>("ELAN*");
+
 	//get every pointer to connect when creation worker 
-	loca = new InsermLibrary::LOCA(LOCAOpt);
+	loca = new LOCA(LOCAOpt);
 
 }
 
@@ -36,7 +37,7 @@ Worker::~Worker() {
 	delete locaAnaOpt;
 }
 
-InsermLibrary::LOCA * Worker::returnLoca()
+LOCA * Worker::returnLoca()
 {
 	return loca;
 }
@@ -48,10 +49,10 @@ void Worker::process()
 {
 	// allocate resources using new here
 	//qDebug("Hello World!");
-	std::stringstream TRCfilePath, LOCAfilePath, displayText, TimeDisp;
+	stringstream TRCfilePath, LOCAfilePath, displayText, TimeDisp;
 	SYSTEMTIME LocalTime;
-	std::vector<std::string>ElecPosSave, ElecNegSave;
-	std::vector<unsigned int>SignalPosSave,toDelete;
+	vector<string>ElecPosSave, ElecNegSave;
+	vector<unsigned int>SignalPosSave,toDelete;
 
 	int progressPerCent = 100 / numberFiles;
 	int actualPerCent = 0;
@@ -63,7 +64,7 @@ void Worker::process()
 		TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond;
 		emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
 
-		std::stringstream().swap(TRCfilePath);
+		stringstream().swap(TRCfilePath);
 		TRCfilePath << locaAnaOpt[i]->patientFolder << "/" << locaAnaOpt[i]->expTask << "/" << locaAnaOpt[i]->trcPath;
 
 		displayText << "Processing : " << TRCfilePath.str();
@@ -95,7 +96,7 @@ void Worker::process()
 
 		if (i == 0)
 		{
-			elan = new InsermLibrary::ELAN(trc, locaAnaOpt[i]->frequencys.size());
+			elan = new ELAN(trc, locaAnaOpt[i]->frequencys.size());
 
 			emit sendElanPointer(elan); //send Elan pointer to pop up window to choose Elec to analyse
 			while (bip == false) //While bipole not created 
@@ -131,13 +132,13 @@ void Worker::process()
 			}
 		}
 
-		std::stringstream().swap(displayText);
+		stringstream().swap(displayText);
 		displayText << "Number of Bip : " << elan->m_bipole.size();
 		emit sendLogInfo(QString::fromStdString(displayText.str()));
 
 		emit sendLogInfo(QString::fromStdString("Beginning Analysis ..."));
 
-		InsermLibrary::PROV *p_provVISU = new InsermLibrary::PROV(locaAnaOpt[i]->provPath);
+		PROV *p_provVISU = new PROV(locaAnaOpt[i]->provPath);
 		LOCAfilePath << locaAnaOpt[i]->patientFolder << "/" << locaAnaOpt[i]->expTask;
 
 		if (locaAnaOpt[i]->task == "VISU")
@@ -185,7 +186,7 @@ void Worker::process()
 			loca->LocaVISU(elan, p_provVISU, locaAnaOpt[i]);
 		}
 
-		std::stringstream().swap(TimeDisp);
+		stringstream().swap(TimeDisp);
 		GetLocalTime(&LocalTime);
 		TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond;
 		emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
@@ -203,37 +204,37 @@ void Worker::process()
 	emit sendLogInfo(QString::fromStdString("Generating Comportemental Performance Result"));
 	//generate array comportemental performance
 	//Get every folder corresponding to one LOCALIZER exam
-	std::stringstream().swap(TRCfilePath);
+	stringstream().swap(TRCfilePath);
 	TRCfilePath << locaAnaOpt[0]->patientFolder << "/";
-	std::vector<std::string> directoryList = InsermLibrary::CRperf::getAllFolderNames(TRCfilePath.str());
+	vector<string> directoryList = CRperf::getAllFolderNames(TRCfilePath.str());
 
-	InsermLibrary::CRData** files = new InsermLibrary::CRData*[4];
+	CRData** files = new CRData*[4];
 	files[0] = files[1] = files[2] = files[3] = nullptr;
 	for (int i = 0; i < directoryList.size(); i++)
 	{
-		std::stringstream().swap(TRCfilePath);
+		stringstream().swap(TRCfilePath);
 		TRCfilePath << locaAnaOpt[0]->patientFolder << "/" << directoryList[i] << "/" << directoryList[i] << ".CR";
 		QFile f(QString::fromStdString(TRCfilePath.str()));
 		if (f.exists())
 		{
-			std::stringstream().swap(displayText);
+			stringstream().swap(displayText);
 			displayText << "Existing CR File : " << TRCfilePath.str();
 			emit sendLogInfo(QString::fromStdString(displayText.str()));
 
-			std::vector<std::string> dirSplit = loca->split<std::string>(directoryList[i], "_");
-			int numberOfConditions = InsermLibrary::CRperf::whichOneAmI(directoryList[i]);
+			vector<string> dirSplit = split<string>(directoryList[i], "_");
+			int numberOfConditions = CRperf::whichOneAmI(directoryList[i]);
 			if (numberOfConditions != -1)
 			{
-				int numberOf = InsermLibrary::CRperf::whereAmI(directoryList[i]);
-				files[numberOf] = InsermLibrary::CRperf::getCRInfo(TRCfilePath.str(), directoryList[i], numberOfConditions);
+				int numberOf = CRperf::whereAmI(directoryList[i]);
+				files[numberOf] = CRperf::getCRInfo(TRCfilePath.str(), directoryList[i], numberOfConditions);
 			}
 		}
 	}
 
 	//Pass struct to create csv array
-	std::stringstream().swap(TRCfilePath);
+	stringstream().swap(TRCfilePath);
 	TRCfilePath << locaAnaOpt[0]->patientFolder << "/RapportPerfComportementale.csv";
-	InsermLibrary::CRperf::createCSVPerformanceReport(TRCfilePath.str(), files);
+	CRperf::createCSVPerformanceReport(TRCfilePath.str(), files);
 
 	emit sendLogInfo(QString::fromStdString("Done !"));
 	emit sendLogInfo(QString::fromStdString("ByeBye"));

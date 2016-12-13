@@ -6,10 +6,12 @@
 #include <QtWidgets/qcheckbox.h>
 
 #include <vector>
-
 #include "ui_locagui.h"
 #include "LOCA.h"
 #include "Worker.h"
+
+using namespace std;
+using namespace InsermLibrary;
 
 class LocaGUI : public QMainWindow
 {
@@ -19,12 +21,11 @@ public:
 	LocaGUI(QWidget *parent = 0);
 	~LocaGUI();
 	void setUpGUI(QMainWindow* QTGUIClass);
-	void readFreqFile(std::string p_pathFreq);
-	template<typename T> std::vector<T> split(const T & str, const T & delimiters);
+	void readFreqFile(string p_pathFreq);
 	void connectAllBordel();
-	void loadTRCFromFolder(std::string p_pathFolder);
-	void loadTRCListWidget(std::vector<std::vector<std::string>> p_trcList);
-	void addProv2List(std::string p_locaName);
+	void loadTRCFromFolder(string p_pathFolder);
+	void loadTRCListWidget(vector<vector<string>> p_trcList);
+	void addProv2List(string p_locaName);
 	void removeProv2List(int p_index);
 
 public slots:
@@ -35,8 +36,8 @@ public slots:
 	void removeTRC2List();
 	void provClicked(QListWidgetItem *provItem);
 	void displayLog(QString info);
-	void receiveElanPointer(InsermLibrary::ELAN *p_elan);
-	void receiveOptionPointer(InsermLibrary::OptionLOCA *optionLOCA);
+	void receiveElanPointer(ELAN *p_elan);
+	void receiveOptionPointer(OptionLOCA *optionLOCA);
 
 	void upDateProgressBar(int value);
 	void finishedRuning();
@@ -48,18 +49,18 @@ signals:
 	void bipDone(bool);
 
 private:
-	std::vector<std::string> freqBandName;
-	std::vector<std::vector<double>> freqBandValue;
+	vector<string> freqBandName;
+	vector<vector<double>> freqBandValue;
 	QWidget **freqTAB = nullptr;
 	QCheckBox ***freqCheckBox = nullptr;
 	QListWidgetItem **listTRCWidget = nullptr;
-	std::vector<int> indexTRCList;
-	std::vector<std::string> directoryList;
-	std::vector<std::vector<std::string>> trcList;
+	vector<int> indexTRCList;
+	vector<string> directoryList;
+	vector<vector<string>> trcList;
 	Ui::LocaGUIClass ui;
 	QThread* thread = nullptr;
 	Worker* worker = nullptr;
-	InsermLibrary::OptionLOCA *optionLOCAGUI = nullptr;
+	OptionLOCA *optionLOCAGUI = nullptr;
 
 	bool alreadyRunning = false;
 };
