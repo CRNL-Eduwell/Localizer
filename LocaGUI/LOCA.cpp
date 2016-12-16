@@ -2,6 +2,8 @@
 #include <time.h>  
 #include <QDir>
 
+#include "barsGenerator.h"
+
 /****************************************************************************************************************************/
 /******************************************               LOCA Methods              *****************************************/
 /****************************************************************************************************************************/
@@ -1430,11 +1432,7 @@ void InsermLibrary::LOCA::LocaAUDI(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTIO
 					/********************************************************************************************************************************************************************************************************/
 					/*																							loc_env2plot																							    */
 					/********************************************************************************************************************************************************************************************************/
-					stringstream().swap(pathFreq);																																										//
-					pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-					stringstream().swap(cheatMode);																																									//
-					cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
-					//loc_bar2plot(p_elan,p_prov, i, cheatMode.str(), pathFreq.str(), code, 13, strCode, 13, window_ms, 20, stimEvents, correspondingEvents);																										//				
+					loc_bar2plot(p_elan, p_prov, p_anaopt, correspondingEvents, i);
 					/********************************************************************************************************************************************************************************************************/
 					stringstream().swap(outputMessage);
 					outputMessage << "Hilbert Env Pictures DONE !";
@@ -1477,11 +1475,7 @@ void InsermLibrary::LOCA::LocaAUDI(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTIO
 						/********************************************************************************************************************************************************************************************************/
 						/*																							loc_env2plot																							    */
 						/********************************************************************************************************************************************************************************************************/
-						stringstream().swap(pathFreq);																																										//
-						pathFreq << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0";  //
-						stringstream().swap(cheatMode);																																									//
-						cheatMode << p_anaopt->patientFolder << "/" << p_anaopt->expTask;																																		//
-						//loc_bar2plot(p_elan,p_prov, i, cheatMode.str(), pathFreq.str(), code, 13, strCode, 13, window_ms, 20, stimEvents, correspondingEvents);																										//				
+						loc_bar2plot(p_elan, p_prov, p_anaopt, correspondingEvents, i);
 						/********************************************************************************************************************************************************************************************************/
 						stringstream().swap(outputMessage);
 						outputMessage << "Hilbert Env Pictures DONE !";
@@ -1855,7 +1849,7 @@ void InsermLibrary::LOCA::loc2_write_conf(string confFile_path, TRC *p_trc, ELAN
 /**********************************************************************************************************************************************************************************************************************************************/
 /*																										EEG2ERP																											 				      */
 /**********************************************************************************************************************************************************************************************************************************************/
-void InsermLibrary::LOCA::loc_eeg2erp(ELAN *p_elan, string p_path, string p_exp_task, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int* v_window_ms, int nb_site)										  //
+void InsermLibrary::LOCA::loc_eeg2erp(ELAN *p_elan, string p_path, string p_exp_task, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int* v_window_ms, int nb_site)														  //
 {																																																											  //
 	string contents;																																																						  //																																																						  
 	int  nbEventUsed = 0, beginPos = 0;																																																		  //
@@ -1869,14 +1863,14 @@ void InsermLibrary::LOCA::loc_eeg2erp(ELAN *p_elan, string p_path, string p_exp_
 	/*******************************************************************************************************************************************************************************************/											  //
 	/*												On garde uniquement les évennements du TRC qui correspondent à ceux passer par v_code et a_code					   						   */											  //
 	/*******************************************************************************************************************************************************************************************/											  //
-	for (int i = 0; i < triggTRC->numberTrigg /*p_elan->trc->sampleTrigg.size() - 1*/; i++)																									   //											  //
+	for (int i = 0; i < triggTRC->numberTrigg; i++)																																			   //											  //
 	{																																														   //											  //
 		for (int j = 0; j < v_codeLength; j++)																																				   //											  //
 		{																																													   //											  //
-			if (triggTRC->trigg[i].valueTrigger/*p_elan->trc->valueTrigg[i]*/ == v_code[j])																								   //											  //
+			if (triggTRC->trigg[i].valueTrigger == v_code[j])																																   //											  //
 			{																																												   //											  //
 				indexEventUsed.push_back(i);																																				   //											  //
-				eventUsed.push_back(triggTRC->trigg[i].valueTrigger/*p_elan->trc->valueTrigg[i]*/);																						   //											  //
+				eventUsed.push_back(triggTRC->trigg[i].valueTrigger);																														   //											  //
 			}																																												   //											  //
 		}																																													   //											  //
 	}																																														   //											  //
@@ -1916,14 +1910,14 @@ void InsermLibrary::LOCA::loc_eeg2erp(ELAN *p_elan, string p_path, string p_exp_
 	/*********************************************************************************************************************/																	   //											  //
 	/*												Read Mono Data														 */																	   //											  //
 	/*********************************************************************************************************************/																	   //											  //
-	cout << "Reading Data Mono ..." << endl;																		 //																	   //											  //
+	cout << "Reading Data Mono ..." << endl;																			 //																	   //											  //
 	for (int i = 0; i < nbEventUsed; i++)																				 //																	   //											  //
 	{																													 //																	   //											  //
 		for (int j = 0; j < (v_win_sam[1] - v_win_sam[0]) + 1; j++)														 //																	   //											  //
 		{																												 //																	   //											  //
 			for (int k = 0; k < p_elan->trc->nameElectrodePositiv.size(); k++)											 //																	   //											  //
 			{																											 //																	   //											  //
-				beginPos = triggTRC->trigg[indexEventUsed[i]].sampleTrigger + v_win_sam[0]; //p_elan->trc->sampleTrigg[indexEventUsed[i]] + v_win_sam[0];									 //																	   //											  //
+				beginPos = triggTRC->trigg[indexEventUsed[i]].sampleTrigger + v_win_sam[0];								 //																	   //											  //
 				m_bigdata_mono[i][k][j] = p_elan->trc->eegData[k][beginPos + j];										 //																	   //											  //
 			}																											 //																	   //											  //
 		}																												 //																	   //											  //
@@ -1933,7 +1927,7 @@ void InsermLibrary::LOCA::loc_eeg2erp(ELAN *p_elan, string p_path, string p_exp_
 	/*********************************************************************************************************************/																	   //											  //
 	/*												Read Bipo Data														 */																	   //											  //
 	/*********************************************************************************************************************/																	   //											  //
-	cout << "Reading Data Bipo ..." << endl;																		 //																	   //											  //
+	cout << "Reading Data Bipo ..." << endl;																			 //																	   //											  //
 	for (int i = 0; i < nbEventUsed; i++)																				 //																	   //											  //
 	{																													 //																	   //											  //
 		for (int k = 0; k < p_elan->m_bipole.size(); k++)																 //																	   //											  //
@@ -2062,126 +2056,6 @@ void InsermLibrary::LOCA::loc_env2plot(ELAN *p_elan, int p_numberFrequencyBand, 
 	/**************************************************************************************************/																																	  //		
 }																																																											  //
 /**********************************************************************************************************************************************************************************************************************************************/
-
-///**********************************************************************************************************************************************************************************************************************************************/
-///*																										BAR2PLOT																										 					  */
-///**********************************************************************************************************************************************************************************************************************************************/
-//void InsermLibrary::LOCA::loc_bar2plot(ELAN *p_elan, PROV *p_prov, int p_numberFrequencyBand, string p_path, string p_exp_task, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int* v_window_ms, int nb_site, mainEventBLOC **p_mainEvents, vector<int> p_correspondingEvents)//
-//{																																																											  //
-//	string contents;																																																						  //																																																						  //
-//	int  nbEventUsed = 0, beginInd = 0;																																																		  //
-//	int v_win_sam[2];																																																						  //
-//	vector<int> indexEventUsed, eventUsed;																																																  	  //
-//	double ***m_bigdata_frequency;																																																			  //
-//	vector<vector<vector<double>>> p_value3D;
-//	int copyIndex;																																																							  //
-//	PVALUECOORD **significantValue = nullptr;
-//	
-//	v_win_sam[0] = round(64 * v_window_ms[0] / 1000);																																														  //
-//	v_win_sam[1] = round(64 * v_window_ms[1] / 1000);																																														  //
-//																																																											  //
-//	/*******************************************************************************************************************************************************************************************/											  //
-//	/*												On garde uniquement les évennements du TRC qui correspondent à ceux passer par v_code et a_code					   						   */											  //
-//	/*******************************************************************************************************************************************************************************************/											  //
-//	for (int i = 0; i < triggTRC->numberTrigg; i++)																																			   //											  //
-//	{																																														   //											  //
-//		for (int j = 0; j < v_codeLength; j++)																																				   //											  //
-//		{																																													   //											  //
-//			if (triggTRC->trigg[i]->valueTrigger == v_code[j])																																   //											  //
-//			{																																												   //											  //
-//				indexEventUsed.push_back(i);																																				   //											  //
-//				eventUsed.push_back(triggTRC->trigg[i]->valueTrigger);																														   //											  //
-//			}																																												   //											  //
-//		}																																													   //											  //
-//	}																																														   //											  //
-//																																															   //											  //
-//	nbEventUsed = indexEventUsed.size();																																					   //											  //
-//	/*******************************************************************************************************************************************************************************************/											  //
-//																																																											  //
-//	/****************************************** Allocate Memory *******************************************/																																  //
-//	m_bigdata_frequency = new double**[nbEventUsed];												  /*||*/																																  //
-//	for (int i = 0; i < nbEventUsed; i++)															  /*||*/																																  //
-//	{																								  /*||*/																																  //
-//		m_bigdata_frequency[i] = new double*[p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb];	  /*||*/																																  //
-//		for (int j = 0; j < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; j++)				  /*||*/																																  //
-//		{																							  /*||*/																																  //
-//			m_bigdata_frequency[i][j] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();		  	  /*||*/																																  //
-//		}																							  /*||*/																																  //
-//	}																								  /*||*/																																  //
-//	/******************************************************************************************************/																																  //
-//																																																											  //
-//	/*******************************************************************************************************************************************************************************************/											  //
-//	/*														Extract EEG DATA within w_window_ms around event																				   */											  //
-//	/*******************************************************************************************************************************************************************************************/											  //
-//	/*********************************************************************************************************************/																	   //											  //
-//	/*												Read Mono Data														 */																	   //											  //
-//	/*********************************************************************************************************************/																	   //											  //
-//	cout << "Reading Hilberted Bipo ..." << endl;																	 //																	   //											  //
-//	for (int i = 0; i < nbEventUsed; i++)																				 //																	   //											  //
-//	{																													 //																	   //											  //
-//		beginInd = triggDownTRC->trigg[indexEventUsed[i]]->sampleTrigger + v_win_sam[0];								 //																	   //											  //
-//		for (int j = 0; j < (v_win_sam[1] - v_win_sam[0]) + 1; j++)														 //																	   //											  //
-//		{																												 //																	   //											  //
-//			for (int k = 0; k < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; k++)								 //																	   //											  //
-//			{																											 //																	   //											  //
-//				m_bigdata_frequency[i][k][j] = p_elan->elanFreqBand[p_numberFrequencyBand]->eeg.data_double[0][k][beginInd + j];															   //											  //
-//			}																											 //																	   //											  //
-//		}																												 //																	   //											  //
-//	}																													 //																	   //											  //
-//	/*********************************************************************************************************************/																	   //											  //
-//	/*******************************************************************************************************************************************************************************************/											  //
-//																																																											  //
-//	if (opt->statsOption.useKruskall)
-//	{
-//		copyIndex = 0;
-//		p_value3D = calculatePValueKRUS(p_elan->elanFreqBand[p_numberFrequencyBand], p_prov, p_correspondingEvents, m_bigdata_frequency, v_window_ms);
-//		if (opt->statsOption.useFDRKrus)
-//		{
-//			significantValue = calculateFDR(p_value3D, copyIndex);
-//		}
-//		else
-//		{
-//			significantValue = new PVALUECOORD *[p_value3D.size() * p_value3D[0].size() * p_value3D[0][0].size()];
-//			for (int i = 0; i < p_value3D.size(); i++)
-//			{
-//				for (int j = 0; j < p_value3D[i].size(); j++)
-//				{
-//					for (int k = 0; k < p_value3D[i][j].size(); k++)
-//					{
-//						significantValue[copyIndex] = new PVALUECOORD();
-//						significantValue[copyIndex]->elec = i;
-//						significantValue[copyIndex]->condit = j;
-//						significantValue[copyIndex]->window = k;
-//						significantValue[copyIndex]->vectorpos = copyIndex;
-//						significantValue[copyIndex]->pValue = p_value3D[i][j][k];
-//						copyIndex++;
-//					}
-//				}
-//			}
-//		}
-//	}
-//
-//	drawBars(p_elan, significantValue, copyIndex, p_path, p_exp_task, 2, m_bigdata_frequency, v_code, v_codeLength, a_code, a_codeLength, v_win_sam, nb_site, indexEventUsed, eventUsed);													  //
-//																																																											  //
-//	/****************************************** Free Memory *******************************************/																																	  //			
-//	for (int i = 0; i < copyIndex; i++)															  /*||*/																																	  //	
-//	{																							  /*||*/																																	  //	
-//		delete significantValue[i];																  /*||*/																																	  //	
-//	}																							  /*||*/																																	  //	
-//	delete significantValue;																	  /*||*/																																	  //	
-//																							      /*||*/																																	  //	
-//	for (int i = 0; i < nbEventUsed; i++)														  /*||*/																																	  //		
-//	{																							  /*||*/																																	  //		
-//		for (int j = 0; j < p_elan->elanFreqBand[p_numberFrequencyBand]->chan_nb; j++)			  /*||*/																																	  //		
-//		{																						  /*||*/																																	  //		
-//			delete[] m_bigdata_frequency[i][j];													  /*||*/																																	  //		
-//		}																						  /*||*/																																	  //		
-//		delete[] m_bigdata_frequency[i];														  /*||*/																																	  //		
-//	}																							  /*||*/																																	  //		
-//	delete[] m_bigdata_frequency;																  /*||*/																																	  //		
-//	/**************************************************************************************************/																																	  //		
-//}																																																											  //
-///**********************************************************************************************************************************************************************************************************************************************/
 
 /**********************************************************************************************************************************************************************************************************************************************/
 /*																										Drawcards																										 					  */
@@ -2493,18 +2367,12 @@ void InsermLibrary::LOCA::drawCards(ELAN *p_elan, string p_path, string p_exp_ta
 						v_lim[l] = m_lim[k][l] / maxCurveLegend;
 
 						/*x = position de départ   +  prochaine éléctrode   +  data (prochaine) colonne*/
-						//x = (screenWidth * 0.0586) + ((190 * (nbcol/*3*/ + 1)) * (i % 3)) + ((600 / nbcol) * (k / 3)) + ((l *(600 / nbcol) /*(screenWidth * 0.0586)*/) / ((v_win_sam[1] - v_win_sam[0]) + 1));
 						x = (screenWidth * 0.0586) + (570 * (i % 3)) + ((480 / nbcol) * (k / 3)) + ((l *(480 / nbcol)) / ((v_win_sam[1] - v_win_sam[0]) + 1));
 
 						/*y = position de départ - data + plot éléctrode*/
-
 						y = (130 - ((25 ) * v_erp[l])) + (screenHeigth * 0.0406 * (j));
 						yP = (130 - ((25)  * (v_erp[l] + v_lim[l])) + (screenHeigth * 0.0406 * (j)));
 						yM = (130 - ((25)  * (v_erp[l] - v_lim[l])) + (screenHeigth * 0.0406 * (j)));
-
-						//y = (200 - (50 * (v_erp[l] /*/ 2*/))) + (screenHeigth * 0.0406 * (j));
-						//yP = (200 - (50 * ((v_erp[l] + v_lim[l]) /*/ 2*/))) + (screenHeigth * 0.0406 * (j));
-						//yM = (200 - (50 * ((v_erp[l] - v_lim[l]) /*/ 2*/))) + (screenHeigth * 0.0406 * (j));
 
 						if (l == 0)
 						{
@@ -2582,322 +2450,7 @@ void InsermLibrary::LOCA::drawCards(ELAN *p_elan, string p_path, string p_exp_ta
 	delete[] m_erpMMax;																			  /*||*/																																	  //	
 	/**************************************************************************************************/																																	  //
 }																																																											  //
-																																																											  //
-void InsermLibrary::LOCA::drawBars(ELAN *p_elan, PVALUECOORD **p_significantValue, int p_sizeSignificant, string p_path, string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, vector<int> indexEventUsed, vector<int> EventUsed)
-{
-	string a_rt;
-	stringstream tifNameStream;
-	QString tifName;
-	vector<int> v_id, v_origid, v_f;
-	double *v_erp, *v_lim, *m_erpPMax, *m_erpMMax, *v_data_e, *m_erpP, *m_erpM, **data;
-	double s_mean = 0, s_std = 0, s_sem = 0, s_lim = 0, tempMean = 0, tempErp = 0, tempStd = 0, tempErpM = 0, tempMax1 = 0, tempMax2 = 0, maxCurveLegend = 0;
-	int s_figure = 0, s_pos = 0, nb_elec_perfigure = 3, screenWidth = 0, screenHeigth = 0, nbcol = 0, s_x = 0, s_y = 0, compteur = 0;
-	bool goIn = false;
-	int compteurElec = 0;
-	bool *sizeSigcheck = new bool[p_sizeSignificant]();
-
-	/****************************************** Allocate Memory *******************************************/																																	  //
-	data = new double*[indexEventUsed.size()];														  /*||*/																																	  //	
-	for (int i = 0; i < indexEventUsed.size(); i++)												 	  /*||*/																																	  //	
-	{																								  /*||*/																																	  //	
-		data[i] = new double[(v_win_sam[1] - v_win_sam[0]) + 1]();									  /*||*/																																	  //	
-	}																							 	  /*||*/																																	  //	
-	v_erp = new double[v_codeLength]();																  /*||*/																																	  //	
-	v_lim = new double[v_codeLength]();																  /*||*/																																	  //		
-	m_erpP = new double[v_codeLength];																  /*||*/																																	  //	
-	m_erpM = new double[v_codeLength];																  /*||*/																																	  //	
-	m_erpPMax = new double[v_codeLength]();															  /*||*/																																	  //	
-	m_erpMMax = new double[v_codeLength]();															  /*||*/																																	  //	
-	/******************************************************************************************************/																																	  //
-																																																												  //
-	/*******************************************************************************************************************************************************************************************/												  //
-	/*																	Create Card for each group of 3 elec																				   */												  //
-	/*******************************************************************************************************************************************************************************************/												  //
-	for (int i = 0; i < p_elan->ss_elec->a_rt.size(); i++)																																	   //												  //
-	{
-		a_rt = p_elan->ss_elec->a_rt[i];
-		v_id = p_elan->ss_elec->v_id[i];
-		v_origid = p_elan->ss_elec->v_origid[i];
-
-		if (i > 0)
-		{
-			compteurElec += p_elan->ss_elec->v_id[i - 1].size()- 1;
-		}
-
-		s_pos = i % nb_elec_perfigure;
-		if (s_pos == 0)
-		{
-			if (s_figure > 0) //On a finis une série de 3, on enregistre l'image
-			{
-				pixMap->save(tifName, "JPG");
-			}
-			s_figure = s_figure + 1;
-			screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
-			screenHeigth = GetSystemMetrics(SM_CYFULLSCREEN);
-
-			if (painter != nullptr)
-			{
-				delete painter;
-				painter = nullptr;
-			}
-			if (pixMap != nullptr)
-			{
-				delete pixMap;
-				pixMap = nullptr;
-			}
-
-			pixMap = new QPixmap(screenWidth, screenHeigth);
-			pixMap->fill(QColor(Qt::white));
-			//======================================================
-			painter = new QPainter(pixMap);
-			painter->setBackgroundMode(Qt::BGMode::OpaqueMode);
-			painter->setFont(QFont("Arial", 12, 1, false));
-
-			stringstream().swap(tifNameStream);
-			tifNameStream << p_path << "/" << p_exp_task << "_bar_f" << s_figure << ".jpg";
-			tifName = &tifNameStream.str()[0];
-		}
-
-		// as input, I take up to three electrodes, and for each electrode and site
-		// along that electrode, I want to plot a certain number of plots.So I need
-		// the data for each condition, with a time - axis.
-		// draw electrode, with 20 sites, equally spaced.
-
-		nbcol = ceil((double)v_codeLength / 3);
-
-		s_x = screenWidth * 0.0586 + (570 * (i % 3));
-		s_y = screenHeigth * 0.0325;
-		for (int j = 0; j < v_codeLength; j++)
-		{
-			switch (j % 3)
-			{
-			case 0:
-				painter->setPen(QColor(0, 0, 255, 255)); //blue
-				painter->drawText(s_x, s_y, a_code[j].c_str());
-				break;
-			case 1:
-				painter->setPen(QColor(255, 0, 0, 255)); //red
-				painter->drawText(s_x, s_y, a_code[j].c_str());
-				break;
-			case 2:
-				painter->setPen(QColor(0, 255, 0, 255)); //green
-				painter->drawText(s_x, s_y, a_code[j].c_str());
-				break;
-			default:
-				painter->setPen(QColor(0, 0, 0, 255)); //black
-				break;
-			}
-			s_y = s_y + 25;
-
-			if ((j + 1) % 3 == 0)
-			{
-				s_x = s_x + (480 / nbcol); // 600 / nbcol
-				s_y = screenHeigth * 0.0325;
-			}
-		}
-
-		//On repasse en noir
-		painter->setPen(QColor(0, 0, 0, 255)); //black
-
-		//écris le nom de l'éléc
-		painter->drawText((screenWidth * 0.028) + 8 + (570 * (i % 3)), screenHeigth * 0.090, a_rt.c_str());
-		/*Dessine la structure de l'éléctrode*/
-		QRect recElec((screenWidth * 0.028) + ((570) * (i % 3)), screenHeigth * 0.094, screenWidth * 0.0105, screenHeigth * 0.812);
-		painter->drawRect(recElec);
-		painter->fillRect(recElec, QColor(255, 255, 255, 128));
-
-
-
-		for (int j = 0; j < nb_site; j++)
-		{
-			painter->fillRect((screenWidth * 0.028) + (570 * (i % 3)), (screenHeigth * 0.094) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), screenWidth * 0.0105, screenHeigth * 0.0203, QColor(0, 0, 0, 255));//QColor(R G B Alpha)
-
-			//numéro d'index du plot de l'éléctrode
-			painter->drawText((screenWidth * 0.015) + (570 * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(j + 1));
-
-			v_f = findNum(&v_id[0], v_id.size(), j + 1);
-
-			goIn = (v_f.empty() == false) && (v_f[0] + 1 < v_id.size()-1); //-1 ou pas (-1 mis le 08/11/16, pourquoi avant ca marchait?)
-
-			if (goIn == true)
-			{
-				//then we can extract the data
-				for (int k = 0; k < indexEventUsed.size(); k++)
-				{
-					for (int l = 0; l < (v_win_sam[1] - v_win_sam[0]) + 1; l++)
-					{
-						data[k][l] = bigdata[k][compteur][l];
-					}
-				}
-				compteur++;
-
-				//then we loop across conditions
-				for (int k = 0; k < v_codeLength; k++)
-				{
-					v_f = findNum(&EventUsed[0], EventUsed.size(), v_code[k]);
-
-					/************ Allocate Memory ************/																																	  
-					v_data_e = new double[v_f.size()];   /*||*/
-					/*****************************************/
-
-					if (v_f.empty() == false)
-					{
-						tempErp = 0;
-						tempStd = 0;
-
-						for (int l = 0; l < v_f.size(); l++)
-						{
-							tempMean = 0;
-							for (int m = 0; m < (v_win_sam[1] - v_win_sam[0]) + 1; m++)
-							{
-								tempMean += data[v_f[l]][m];
-							}
-							v_data_e[l] = tempMean / ((v_win_sam[1] - v_win_sam[0]) + 1);
-							v_data_e[l] = (v_data_e[l] - 1000) / 10;
-						}
-
-						for (int l = 0; l < v_f.size(); l++)
-						{
-							tempErp += v_data_e[l];
-						}
-						s_mean = tempErp / v_f.size();
-						
-						for (int l = 0; l < v_f.size(); l++)
-						{
-							tempStd += (v_data_e[l] - s_mean) * (v_data_e[l] - s_mean);
-						}
-						s_std = sqrt(tempStd / v_f.size() - 1);
-
-						s_sem = s_std / sqrt(v_f.size());
-						s_lim = 1.96 * s_sem;
-						v_erp[k] = s_mean;
-						v_lim[k] = s_lim;
-					}
-					else
-					{
-						cout << "ATTENTION, PLEASE : NO EVENT WITH TYPE = " << v_code[k] << endl;
-					}
-
-					/*************** Free Memory ***************/
-					delete[] v_data_e;					   /*||*/
-					/*******************************************/
-				}
-
-				for (int k = 0; k < v_codeLength; k++)
-				{
-						m_erpP[k] = v_erp[k] + v_lim[k];
-						m_erpM[k] = v_erp[k] - v_lim[k];
-				}
-
-				for (int k = 0; k < v_codeLength; k++)
-				{
-					m_erpPMax[k] = *(max_element(m_erpP, m_erpP + v_codeLength));
-					m_erpMMax[k] = abs(*(min_element(m_erpM, m_erpM + v_codeLength)));
-
-				}
-
-				tempMax1 = *(max_element(m_erpPMax, m_erpPMax + v_codeLength));
-				tempMax2 = *(max_element(m_erpMMax, m_erpMMax + v_codeLength));
-
-				maxCurveLegend = max(tempMax1, tempMax2);
-
-				painter->setPen(QColor(255, 0, 255, 255)); //pink petant
-				painter->drawText((screenWidth * 0.04) + (570 * (i % 3)), (screenHeigth * 0.107) + (screenHeigth * 0.0203) + (screenHeigth * 0.0406 * (j)), QString().setNum(round(maxCurveLegend)));
-				painter->setPen(QColor(0, 0, 0, 255)); //noir
-
-				int coeffEsp = ceil(450 / v_codeLength);
-				double x = (screenWidth * 0.0586) + (570 * (i % 3));
-				double y = (screenHeigth * 0.107) + (screenHeigth * 0.0173) + (screenHeigth * 0.0406 * (j));
-				double x_Krus = 0;
-				double y_Krus = 0;
-
-				double ma = *(max_element(&m_erpPMax[0], &m_erpPMax[0] + v_codeLength));
-				double mi = abs(*(min_element(&m_erpMMax[0], &m_erpMMax[0] + v_codeLength)));
-
-				ma = ma / maxCurveLegend;
-				mi = mi / maxCurveLegend;
-
-				double scaleFactor = 20 / max(ma, mi);
-
-				bool firstE = false;
-				for (int k = 0; k < v_codeLength; k++)
-				{
-					v_erp[k] = v_erp[k] / maxCurveLegend;
-					v_lim[k] = v_lim[k] / maxCurveLegend;
-					
-					switch (k % 3)
-					{
-					case 0:
-						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * (v_erp[k] - v_lim[k]), Qt::GlobalColor::gray);
-						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * (v_erp[k] + v_lim[k]), Qt::GlobalColor::gray);
-						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * v_erp[k], Qt::GlobalColor::blue); //blue //carré de 20 par 20 max
-						break;
-					case 1:
-						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * (v_erp[k] - v_lim[k]), Qt::GlobalColor::gray);
-						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * (v_erp[k] + v_lim[k]), Qt::GlobalColor::gray);
-						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * v_erp[k], Qt::GlobalColor::red); //red //carré de 20 par 20 max
-						break;
-					case 2:
-						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * (v_erp[k] - v_lim[k]), Qt::GlobalColor::gray);
-						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * (v_erp[k] + v_lim[k]), Qt::GlobalColor::gray);
-						painter->fillRect(x + (coeffEsp * k), y, 20, -scaleFactor * v_erp[k], Qt::GlobalColor::green); //green //carré de 20 par 20 max
-						break;
-					default:
-						break;
-					}	
-
-					for (int z = 0; z < p_sizeSignificant; z++)
-					{
-						if (((p_significantValue[z]->elec == compteurElec + j) && (p_significantValue[z]->window == k)))
-						{
-							if ((sizeSigcheck[z] == false))
-							{
-								if (firstE == false)
-								{
-									painter->setBrush(Qt::white);
-									painter->drawEllipse(x - 55, y - 7, 13, 13);
-
-									firstE = true;
-								}
-
-								x_Krus = 112 + (570 * (i % 3)) + (coeffEsp * k);
-								y_Krus = y + (-scaleFactor * (v_erp[k] + v_lim[k])) - 4; //100 + (41 * (j));
-								painter->setPen(QColor(255, 0, 255, 255)); //pink petant
-								painter->drawLine(x_Krus, y_Krus, x_Krus + 19, y_Krus);
-								painter->setPen(QColor(0, 0, 0, 255)); //noir
-
-								sizeSigcheck[z] = true;
-							}
-						}
-					}
-				}					
-				painter->drawLine(x, y, x + 450, y);
-																																															   //											  //
-				//on remet en noir																																							   //											  //
-				painter->setPen(QColor(0, 0, 0, 255));																																		   //											  //
-			}//end if (v_f.empty() == false)																																				   //											  //
-		}//end for nb site 																																									   //											  //
-	}//end for nb_elec																																										   //											  //
-																																															   //											  //
-	pixMap->save(tifName, "JPG");																																							   //											  //
-	/*******************************************************************************************************************************************************************************************/											  //
-																																																											  //
-	/****************************************** Free Memory *******************************************/																																	  //
-	for (int i = 0; i < indexEventUsed.size(); i++)												  /*||*/																																	  //		
-	{																							  /*||*/																																	  //		
-		delete[] data[i];																		  /*||*/																																	  //		
-	}																							  /*||*/																																	  //		
-	delete[] data;																				  /*||*/																																	  //		
-	delete[] v_erp;																				  /*||*/																																	  //			
-	delete[] v_lim;																				  /*||*/																																	  //	
-	delete[] m_erpP;																			  /*||*/																																	  //	
-	delete[] m_erpM;																			  /*||*/																																	  //	
-	delete[] m_erpPMax;																			  /*||*/																																	  //	
-	delete[] m_erpMMax;																			  /*||*/																																	  //	
-	/**************************************************************************************************/																																	  //
-	delete sizeSigcheck;
-}																																																											  //
-																																																											  //
+																																																											  //				
 vector<int> InsermLibrary::LOCA::findNum(int *tab, int sizetab, int value2find)																																								  //
 {																																																											  //
 	vector<int> temp;																																																						  //
@@ -2912,6 +2465,83 @@ vector<int> InsermLibrary::LOCA::findNum(int *tab, int sizetab, int value2find)	
 	return temp;																																																							  //
 }																																																											  //
 /**********************************************************************************************************************************************************************************************************************************************/
+/**********************************************************************************************************************************************************************************************************************************************/
+/*																										BAR2PLOT																										 					  */
+/**********************************************************************************************************************************************************************************************************************************************/
+void InsermLibrary::LOCA::loc_bar2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt, vector<int> p_correspondingEvents, int currentFreqBand)
+{
+	vector<int> indexEventUsed, eventUsed;
+	int windowSample[2]{ round(64 * p_prov->visuBlocs[0].dispBloc.epochWindow[0] / 1000),
+						 round(64 * p_prov->visuBlocs[0].dispBloc.epochWindow[1] / 1000) };
+	double ***m_bigDataFrequency = nullptr;
+	int copyIndex = 0;
+	vector<vector<vector<double>>> p_value3D;
+	vector<PVALUECOORD> significantValue;
+
+	for (int i = 0; i < triggTRC->numberTrigg; i++)	
+	{					
+		for (int j = 0; j < p_prov->visuBlocs.size(); j++)	
+		{						
+			if (triggTRC->trigg[i].valueTrigger == p_prov->visuBlocs[j].mainEventBloc.eventCode[0])	
+			{									
+				indexEventUsed.push_back(i);
+				eventUsed.push_back(triggTRC->trigg[i].valueTrigger);
+			}													
+		}					
+	}		
+
+	m_bigDataFrequency = new double**[eventUsed.size()];
+	for (int i = 0; i < eventUsed.size(); i++)		
+	{												
+		m_bigDataFrequency[i] = new double*[p_elan->elanFreqBand[currentFreqBand]->chan_nb];	 
+		for (int j = 0; j < p_elan->elanFreqBand[currentFreqBand]->chan_nb; j++)	
+		{										
+			m_bigDataFrequency[i][j] = new double[(windowSample[1] - windowSample[0]) + 1]();	
+		}												
+	}																		
+
+	cout << "Reading Hilberted Mono ..." << endl;
+	for (int i = 0; i < eventUsed.size(); i++)
+	{		
+		int beginInd = triggDownTRC->trigg[indexEventUsed[i]].sampleTrigger + windowSample[0];
+		for (int j = 0; j < (windowSample[1] - windowSample[0]) + 1; j++)
+		{	
+			for (int k = 0; k < p_elan->elanFreqBand[currentFreqBand]->chan_nb; k++)
+			{
+				m_bigDataFrequency[i][k][j] = p_elan->elanFreqBand[currentFreqBand]->eeg.data_double[0][k][beginInd + j];
+			}
+		}
+	}
+
+	if (opt->statsOption.useKruskall)
+	{
+		copyIndex = 0;
+		p_value3D = InsermLibrary::Stats::pValuesKruskall(p_elan->elanFreqBand[currentFreqBand], p_prov, triggCatEla, p_correspondingEvents, m_bigDataFrequency);
+		if (opt->statsOption.useFDRKrus)
+		{
+			significantValue = InsermLibrary::Stats::FDR(p_value3D, copyIndex, opt->statsOption.pWilcoxon);
+		}
+		else
+		{
+			significantValue = InsermLibrary::Stats::loadPValues(p_value3D, opt->statsOption.pWilcoxon);
+		}
+	}
+
+	InsermLibrary::DrawPlotsVisu::drawBars b = InsermLibrary::DrawPlotsVisu::drawBars::drawBars(p_prov);
+	b.drawDataOnTemplate(p_elan, p_anaopt, currentFreqBand, m_bigDataFrequency, eventUsed, significantValue);
+
+	for (int i = 0; i < eventUsed.size(); i++)
+	{		
+		for (int j = 0; j < p_elan->elanFreqBand[currentFreqBand]->chan_nb; j++)	
+		{	
+			delete[] m_bigDataFrequency[i][j];
+		}			
+		delete[] m_bigDataFrequency[i];
+	}	
+	delete[] m_bigDataFrequency;
+}
+
+
 
 /*****************************************************************************************************************************************************************************************************************************************************/
 /*																										TRIALMAT																										 						     */
@@ -3122,151 +2752,6 @@ void InsermLibrary::LOCA::loca_trialmat(ELAN *p_elan, int p_numberFrequencyBand,
 	deleteAndNullify(pixmapChanel);
 	deleteAndNullify(painterSubSubMatrix);
 	deleteAndNullify(pixmapSubSubMatrix);
-}
-
-vector<vector<vector<double>>> InsermLibrary::LOCA::calculatePValueKRUS(elan_struct_t *p_elan_struct, PROV *p_prov, vector<int> correspEvent, double ***eegData, int windowMS[2])
-{
-	vector<vector<vector<double>>> p_value3D;
-	for (int i = 0; i < p_elan_struct->chan_nb; i++)
-	{
-		vector<double> baseLineData, EEGData;
-		vector<vector<double>> eegDataBig;
-		double temp = 0, temp2 = 0;
-		vector<vector<double>> p_valueBig;
-
-		//On calcule la valeur pour la base line (cas silence)
-		int a = triggCatEla->mainGroupSub[correspEvent[correspEvent.size() - 1]];
-		int b = triggCatEla->mainGroupSub[correspEvent[correspEvent.size() - 1] + 1];
-		int numberSubTrial = b - a;
-		
-		for (int l = 0; l < numberSubTrial; l++)
-		{
-			int baselineDebut = 16;
-			int baselineFin = 48;
-
-			for (int m = 0; m < (baselineFin - baselineDebut); m++)
-			{
-			temp += eegData[triggCatEla->trigg[a + l].origPos][i][baselineDebut + m];
-			}
-			baseLineData.push_back(temp / (baselineFin - baselineDebut));
-			temp = 0;
-		}
-		
-		//On calcule la valeur pour le premier cas 
-		for (int n = 0; n < triggCatEla->mainGroupSub.size() - 2; n++)
-		{
-			a = triggCatEla->mainGroupSub[correspEvent[n]];
-			b = triggCatEla->mainGroupSub[correspEvent[n+1]];
-			numberSubTrial = b - a;
-
-			for (int l = 0; l < numberSubTrial; l++)
-			{
-				//boucle moyenne des X fenetres que l'on veut (même taille que base line)
-
-				int winDebut = 16;
-				int winFin = 48;
-
-				for (int m = 0; m < (winFin - winDebut); m++)
-				{
-					temp2 += eegData[triggCatEla->trigg[a + l].origPos][i][winDebut + m];
-				}
-				EEGData.push_back(temp2 / (winFin - winDebut));
-				temp2 = 0;
-			}
-			eegDataBig.push_back(EEGData);
-			EEGData.clear();
-		}
-
-
-		//On calcule les p
-		double *dataArray[2];
-		int nbSamplePerGroup[2];
-		for (int n = 0; n < 1; n++)   //(une seule fenêtre qui prend tout en compte )
-		{
-			double p = 0, H = 0;
-			vector<double> P_VALUE;
-			dataArray[0] = &baseLineData[0];
-			for (int l = 0; l < eegDataBig.size(); l++)
-			{
-				dataArray[1] = &eegDataBig[l][0];
-				nbSamplePerGroup[0] = eegDataBig[l].size();
-				nbSamplePerGroup[1] = eegDataBig[l].size();
-
-				kruskal_wallis(dataArray, 2, nbSamplePerGroup, &H, &p, 1);
-				P_VALUE.push_back(p);
-			}
-			p_valueBig.push_back(P_VALUE);
-		}
-		p_value3D.push_back(p_valueBig);
-	}
-
-	return p_value3D;
-}
-
-InsermLibrary::PVALUECOORD** InsermLibrary::LOCA::calculateFDR(vector<vector<vector<double>>> pArray3D, int &p_copyIndex)
-{
-	int V = pArray3D.size() * pArray3D[0].size() * pArray3D[0][0].size();
-	int compteur = 0;
-	double CV = log(V) + 0.5772;
-	double slope = 0.01 / (V * CV);
-
-	PVALUECOORD **preFDRValues = new PVALUECOORD *[V];
-	for (int i = 0; i < pArray3D.size(); i++)
-	{
-		for (int j = 0; j < pArray3D[i].size(); j++)
-		{
-			for (int k = 0; k < pArray3D[i][j].size(); k++)
-			{
-				preFDRValues[compteur] = new PVALUECOORD();
-				preFDRValues[compteur]->elec = i;
-				preFDRValues[compteur]->condit = j;
-				preFDRValues[compteur]->window = k;
-				preFDRValues[compteur]->vectorpos = compteur;
-				preFDRValues[compteur]->pValue = pArray3D[i][j][k];
-
-				compteur++;
-			}
-		}
-	}
-
-	//heapsort if quicksort pas assez rapide              //compteur -1 peut être à cause de la sortie de boucle
-	sort(preFDRValues, preFDRValues + compteur,
-		[](PVALUECOORD *a, PVALUECOORD *b) {
-		return (a->pValue < b->pValue);
-	});
-
-	for (int i = 1; i < V; i++)														//pas 0 car premier point pose problème
-	{
-		if (preFDRValues[i]->pValue >((double)slope * i))
-		{
-			p_copyIndex = i;
-			break;
-		}
-	}
-
-	PVALUECOORD **significantValue = new PVALUECOORD *[p_copyIndex];
-	for (int i = 0; i < p_copyIndex; i++)
-	{
-		significantValue[i] = new PVALUECOORD();
-		significantValue[i]->elec = preFDRValues[i]->elec;
-		significantValue[i]->condit = preFDRValues[i]->condit;
-		significantValue[i]->window = preFDRValues[i]->window;
-		significantValue[i]->vectorpos = preFDRValues[i]->vectorpos;
-		significantValue[i]->pValue = preFDRValues[i]->pValue;
-	}
-
-	sort(significantValue, significantValue + p_copyIndex,
-		[](PVALUECOORD *a, PVALUECOORD *b) {
-		return ((a->vectorpos < b->vectorpos));
-	});
-
-	for (int i = 0; i < V; i++)
-	{
-		delete preFDRValues[i];
-	}
-	delete preFDRValues;
-
-	return significantValue;
 }
 
 vector<int> InsermLibrary::LOCA::processEvents(PROV *p_prov)

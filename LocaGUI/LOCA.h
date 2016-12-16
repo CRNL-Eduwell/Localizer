@@ -77,13 +77,9 @@ namespace InsermLibrary
 		void loc2_write_conf(string confFile_path, TRC *p_trc, ELAN *p_elan);
 		void loc_eeg2erp(ELAN *p_elan, string p_path, string p_exp_task, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int* v_window_ms, int nb_site);
 		void loc_env2plot(ELAN *p_elan, int p_numberFrequencyBand, string p_path, string p_exp_task, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int* v_window_ms, int nb_site);
-		//void loc_bar2plot(ELAN *p_elan, PROV *p_prov, int p_numberFrequencyBand, string p_path, string p_exp_task, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int* v_window_ms, int nb_site, mainEventBLOC **p_mainEvents, vector<int> p_correspondingEvents);
 		void drawCards(ELAN *p_elan, string p_path, string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, vector<int> indexEventUsed, vector<int> EventUsed);
-		void drawBars(ELAN *p_elan, PVALUECOORD **p_significantValue, int p_sizeSignificant, string p_path, string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, vector<int> indexEventUsed, vector<int> EventUsed);
 		vector<int> processEvents(PROV *p_prov);
 		void loca_trialmat(ELAN *p_elan, int p_numberFrequencyBand, PROV *p_prov, string p_outputMapLabel, string p_outputFolder, vector<int> p_correspondingEvents);
-		vector<vector<vector<double>>> calculatePValueKRUS(elan_struct_t *p_elan_struct, PROV *p_prov, vector<int> correspEvent, double ***eegData, int windowMS[2]);
-		PVALUECOORD **calculateFDR(vector<vector<vector<double>>> pArray3D, int &p_copyIndex);
 		void cat2ellaRTTrigg(PROV *p_prov);
 		vector<int> sortTrials(PROV *p_prov);
 		vector<int> sortByMainCode(PROV *p_prov);
@@ -92,6 +88,9 @@ namespace InsermLibrary
 		void cat2ellaExtractData(elan_struct_t *p_elan_struct, double ***p_eegData, int v_win_sam[2]);
 		double stdMean(double **p_eegDataChanel, int p_window_sam[2]);
 		vector<int> findNum(int *tab, int sizetab, int value2find);
+
+
+		void loc_bar2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt, vector<int> p_correspondingEvents, int currentFreqBand);
 
 	signals : 
 		void sendLogInfo(QString);

@@ -1,5 +1,19 @@
 #include "Utility.h"
 
+vector<int> InsermLibrary::findIndexes(int *tab, int sizetab, int value2find)	
+{
+	vector<int> indexesFound;	
+	for (int i = 0; i < sizetab; i++)
+	{
+		if (tab[i] == value2find)
+		{	
+			indexesFound.push_back(i);	
+		}	
+	}	
+			
+	return indexesFound;	
+}
+
 InsermLibrary::LOCAANALYSISOPTION::LOCAANALYSISOPTION(vector<vector<double>> p_frequencys, vector<vector<bool>> p_analysisDetails, string p_trcPath, string p_provPath, string p_patientFolder, string p_task, string p_expTask)
 {
 	frequencys = p_frequencys;

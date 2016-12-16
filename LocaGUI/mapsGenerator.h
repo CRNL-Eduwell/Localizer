@@ -1,14 +1,12 @@
 #pragma once
-//min size trial mat (576,432)
 #include <iostream>
 #include <QPixmap>
 #include <QPainter>
+#include <QFileInfo>
 #include <QColormap>
 #include <QTextOption>
 #include "Utility.h"
-//#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\PROV\PROV.h"
 #include "PROV.h"
-#include <QFileInfo>
 
 using namespace std;
 

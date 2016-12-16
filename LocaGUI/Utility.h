@@ -29,8 +29,8 @@ namespace InsermLibrary
 		return v;
 	}
 
-	template<typename T> 
-	void deleteAndNullify(T pointer)
+	template<typename T>
+	void deleteAndNullify(T* pointer)
 	{
 		if (pointer != nullptr)
 		{
@@ -38,6 +38,81 @@ namespace InsermLibrary
 			pointer = nullptr;
 		}
 	}
+
+	template<typename T>
+	inline T* allocate1DArray(int sizeFirstDim)
+	{
+		return new T[sizeFirstDim]();
+	}
+
+	template<typename T>
+	inline void deAllocate1DArray(T* myArray)
+	{
+		delete[] myArray;
+		myArray = nullptr;
+	}
+
+	template<typename T>
+	T** allocate2DArray(int sizeFirstDim, int sizeSecondDim)
+	{
+		T** myArray = new T*[sizeFirstDim];
+		for (int i = 0; i < sizeFirstDim; i++)
+		{
+			myArray[i] = new T[sizeSecondDim]();
+		}
+		return myArray;
+	}
+
+	template<typename T>
+	void deAllocate2DArray(T** myArray, int sizeFirstDim)
+	{
+		for (int i = 0; i < sizeFirstDim; i++)
+		{
+			delete[] myArray[i];
+		}
+		delete[] myArray;
+		myArray = nullptr;
+	}
+
+	template<typename T>
+	T stdDeviation(T* myArray, int sizeFirstDim)
+	{
+		T stdTempValue = 0;
+		
+		T meanValue = mean1DArray(myArray, int sizeFirstDim);
+		for (int i = 0; i < sizeFirstDim; i++)
+		{
+			stdTempValue += (myArray[i] - meanValue) * (myArray[i] - meanValue);
+		}
+
+		return sqrt(stdTempValue / (sizeFirstDim - 1));
+	}
+
+	template<typename T>
+	T stdDeviation(T* myArray, int sizeFirstDim, int mean)
+	{
+		T stdTempValue = 0;
+
+		for (int i = 0; i < sizeFirstDim; i++)
+		{
+			stdTempValue += (myArray[i] - mean) * (myArray[i] - mean);
+		}
+
+		return sqrt(stdTempValue / (sizeFirstDim - 1));
+	}
+
+	template<typename T>
+	T mean1DArray(T* myArray, int sizeFirstDim)
+	{
+		T sumValues = 0;
+		for (int i = 0; i < sizeFirstDim; i++)
+		{
+			sumValues += myArray[i];
+		}
+		return (sumValues / sizeFirstDim);
+	}
+
+	vector<int> findIndexes(int *tab, int sizetab, int value2find);
 	//===
 	
 	class LOCAANALYSISOPTION
