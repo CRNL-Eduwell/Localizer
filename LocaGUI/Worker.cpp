@@ -109,16 +109,15 @@ void Worker::process()
 		else
 		{
 			/*On remplace le TRC que l'on va analysé*/
-			delete elan->trc;
-			elan->trc = nullptr;
+			deleteAndNullify1D(elan->trc);
 			elan->trc = trc;
 
 			/*On a changé de trc mais ce sont les mêmes index qui sont supprimés*/
-			for (int i = elan->index_supp.size() - 1; i >= 0; i--)																																												  //
-			{																																																							  //
-				trc->nameElectrodePositiv.erase(trc->nameElectrodePositiv.begin() + elan->index_supp[i]);																																		  //
-				trc->signalPosition.erase(trc->signalPosition.begin() + elan->index_supp[i]);																																					  //
-				trc->nameElectrodeNegativ.erase(trc->nameElectrodeNegativ.begin() + elan->index_supp[i]);																																		  //
+			for (int i = elan->index_supp.size() - 1; i >= 0; i--)	
+			{						
+				trc->nameElectrodePositiv.erase(trc->nameElectrodePositiv.begin() + elan->index_supp[i]);	
+				trc->signalPosition.erase(trc->signalPosition.begin() + elan->index_supp[i]);	
+				trc->nameElectrodeNegativ.erase(trc->nameElectrodeNegativ.begin() + elan->index_supp[i]);	
 				trc->eegData.erase(trc->eegData.begin() + elan->index_supp[i]);
 			}
 
@@ -141,61 +140,14 @@ void Worker::process()
 		PROV *p_provVISU = new PROV(locaAnaOpt[i]->provPath);
 		LOCAfilePath << locaAnaOpt[i]->patientFolder << "/" << locaAnaOpt[i]->expTask;
 
-		if (locaAnaOpt[i]->task == "VISU")
-		{
-			loca->LocaVISU(elan, p_provVISU, locaAnaOpt[i]);
-		}
-		else if (locaAnaOpt[i]->task == "LEC1")
-		{
-			loca->LocaLEC1(elan, p_provVISU, locaAnaOpt[i]);
-		}
-		else if (locaAnaOpt[i]->task == "MCSE")
-		{
-			loca->LocaMCSE(elan, p_provVISU, locaAnaOpt[i]);
-		}
-		else if (locaAnaOpt[i]->task == "MVIS")
-		{
-			loca->LocaMVIS(elan, p_provVISU, locaAnaOpt[i]);
-		}
-		else if (locaAnaOpt[i]->task == "MVEB")
-		{
-			loca->LocaMVEB(elan, p_provVISU, locaAnaOpt[i]);
-		}
-		else if (locaAnaOpt[i]->task == "MASS")
-		{
-			loca->LocaMASS(elan, p_provVISU, locaAnaOpt[i]);
-		}
-		else if (locaAnaOpt[i]->task == "LEC2")
-		{
-			loca->LocaLEC2(elan, p_provVISU, locaAnaOpt[i]);
-		}
-		else if (locaAnaOpt[i]->task == "MOTO")
-		{
-			loca->LocaMOTO(elan, p_provVISU, locaAnaOpt[i]);
-		}
-		else if (locaAnaOpt[i]->task == "AUDI")
-		{
-			loca->LocaAUDI(elan, p_provVISU, locaAnaOpt[i]);
-		}
-		else if (locaAnaOpt[i]->task == "ARFA")
-		{
-			loca->LocaARFA(elan, p_provVISU, locaAnaOpt[i]);
-		}
-		else if (locaAnaOpt[i]->task == "MARM")
-		{
-			loca->LocaVISU(elan, p_provVISU, locaAnaOpt[i]);
-		}
+		loca->LocaSauron(elan, p_provVISU, locaAnaOpt[i]);
 
 		stringstream().swap(TimeDisp);
 		GetLocalTime(&LocalTime);
 		TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond;
 		emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
 
-		delete p_provVISU;
-		p_provVISU = nullptr;
-		
-		//delete elan->trc;
-		//elan->trc = nullptr;
+		deleteAndNullify1D(p_provVISU);
 
 		actualPerCent += progressPerCent;
 		emit upScroll(actualPerCent);
@@ -239,15 +191,9 @@ void Worker::process()
 	emit sendLogInfo(QString::fromStdString("Done !"));
 	emit sendLogInfo(QString::fromStdString("ByeBye"));
 
-	delete elan;   
-	elan = nullptr;
-	delete loca;
-	loca = nullptr;
-	for (int i = 0; i < 4; i++)
-	{
-		delete files[i];
-	}
-	delete files;
+	deleteAndNullify1D(elan);
+	deleteAndNullify1D(loca);
+	deleteAndNullify2D(files, 4);
 
 	emit finished();
 }

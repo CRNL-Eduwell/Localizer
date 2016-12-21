@@ -62,24 +62,15 @@ namespace InsermLibrary
 	public:
 		LOCA(OptionLOCA *p_options);
 		~LOCA();
-		void LocaVISU(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
-		void LocaLEC1(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
-		void LocaMCSE(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
-		void LocaMVIS(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
-		void LocaMVEB(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
-		void LocaMASS(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
-		void LocaLEC2(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
-		void LocaMOTO(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
-		void LocaAUDI(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
-		void LocaARFA(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
+		void LocaSauron(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
 		void loc_create_pos(string posFile_path, string posXFile_path, TRC *p_trc, int p_beginningCode, PROV *p_prov);
 		void renameTrigger(TRIGGINFO *triggers, TRIGGINFO* downsampledTriggers, PROV *p_prov);
 		void loc2_write_conf(string confFile_path, TRC *p_trc, ELAN *p_elan);
-		void loc_eeg2erp(ELAN *p_elan, string p_path, string p_exp_task, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int* v_window_ms, int nb_site);
-		void loc_env2plot(ELAN *p_elan, int p_numberFrequencyBand, string p_path, string p_exp_task, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int* v_window_ms, int nb_site);
-		void drawCards(ELAN *p_elan, string p_path, string p_exp_task, int cards2Draw, double *** bigdata, int* v_code, int v_codeLength, string* a_code, int a_codeLength, int v_win_sam[2], int nb_site, vector<int> indexEventUsed, vector<int> EventUsed);
-		vector<int> processEvents(PROV *p_prov);
+		void loc_eeg2erp(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt);
+		void loc_env2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt, int currentFreqBand);
+		void loc_bar2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt, vector<int> p_correspondingEvents, int currentFreqBand);
 		void loca_trialmat(ELAN *p_elan, int p_numberFrequencyBand, PROV *p_prov, string p_outputMapLabel, string p_outputFolder, vector<int> p_correspondingEvents);
+		vector<int> processEvents(PROV *p_prov);
 		void cat2ellaRTTrigg(PROV *p_prov);
 		vector<int> sortTrials(PROV *p_prov);
 		vector<int> sortByMainCode(PROV *p_prov);
@@ -87,10 +78,6 @@ namespace InsermLibrary
 		void sortByLatency(vector<int> totreat);
 		void cat2ellaExtractData(elan_struct_t *p_elan_struct, double ***p_eegData, int v_win_sam[2]);
 		double stdMean(double **p_eegDataChanel, int p_window_sam[2]);
-		vector<int> findNum(int *tab, int sizetab, int value2find);
-
-
-		void loc_bar2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt, vector<int> p_correspondingEvents, int currentFreqBand);
 
 	signals : 
 		void sendLogInfo(QString);

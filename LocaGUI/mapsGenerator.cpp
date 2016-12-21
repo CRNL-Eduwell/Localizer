@@ -524,30 +524,22 @@ void mapsGenerator::createTimeLegend(QPainter *painter, int windowMS[2])
 
 void mapsGenerator::createTrialsLegend(QPainter *painter, PROV *p_prov)
 {
-	for (int a = 0; a < p_prov->visuBlocs.size(); a++)
+	for (int k = 0; k < (p_prov->visuBlocs.size()); k++)
 	{
-		for (int i = 0; i < p_prov->visuBlocs.size(); i++)
+		int index2Draw = (p_prov->visuBlocs.size() - 1) - (p_prov->visuBlocs[k].dispBloc.row - 1);
+		if (QFileInfo(p_prov->visuBlocs[k].dispBloc.path.c_str()).exists())
 		{
-			if (p_prov->visuBlocs[i].dispBloc.col == 1)
-			{
-				if (p_prov->visuBlocs[i].dispBloc.row == a + 1)
-				{
-					if (QFileInfo(p_prov->visuBlocs[i].dispBloc.path.c_str()).exists())
-					{
-						QRect myLegendRect(0.013020833 * fullMap.width(), subMatrixes[i].y(), 0.1119618055 * fullMap.width(), subMatrixes[i].height());
-						QPixmap image(p_prov->visuBlocs[i].dispBloc.path.c_str());
-						image.scaled(myLegendRect.size(), Qt::AspectRatioMode::KeepAspectRatio);
-						painter->drawPixmap(myLegendRect,image);
-					}
-					else 
-					{
-						painter->setPen(QColor(Qt::darkRed));
-						int offset = subMatrixes[i].height() / 2;
-						QRect myLegendRect(0.013020833 * fullMap.width(), subMatrixes[i].y() + offset, 0.1119618055 * fullMap.width(), subMatrixes[0].height());
-						painter->drawText(myLegendRect, QString::fromStdString(p_prov->visuBlocs[p_prov->visuBlocs.size() - 1 - i].mainEventBloc.eventLabel));
-					}
-				}
-			}
+			QRect myLegendRect(0.013020833 * fullMap.width(), subMatrixes[index2Draw].y(), 0.1119618055 * fullMap.width(), subMatrixes[index2Draw].height());
+			QPixmap image(p_prov->visuBlocs[k].dispBloc.path.c_str());
+			image.scaled(myLegendRect.size(), Qt::AspectRatioMode::KeepAspectRatio);
+			painter->drawPixmap(myLegendRect, image);
+		}
+		else
+		{
+			painter->setPen(QColor(Qt::darkRed));
+			int offset = subMatrixes[index2Draw].height() / 2;
+			QRect myLegendRect(0.013020833 * fullMap.width(), subMatrixes[index2Draw].y() + offset, 0.1119618055 * fullMap.width(), subMatrixes[0].height());
+			painter->drawText(myLegendRect, QString::fromStdString(p_prov->visuBlocs[k].mainEventBloc.eventLabel));
 		}
 	}
 }

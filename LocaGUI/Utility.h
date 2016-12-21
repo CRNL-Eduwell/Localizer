@@ -30,12 +30,25 @@ namespace InsermLibrary
 	}
 
 	template<typename T>
-	void deleteAndNullify(T* pointer)
+	void deleteAndNullify1D(T* pointer)
 	{
 		if (pointer != nullptr)
 		{
 			delete pointer;
 			pointer = nullptr;
+		}
+	}
+
+	template<typename T>
+	void deleteAndNullify2D(T** pointer, int sizeFirstDim)
+	{
+		if (pointer != nullptr)
+		{
+			for (int i = 0; i < sizeFirstDim; i++)
+			{
+				delete pointer;
+				pointer = nullptr;
+			}
 		}
 	}
 
@@ -68,6 +81,36 @@ namespace InsermLibrary
 	{
 		for (int i = 0; i < sizeFirstDim; i++)
 		{
+			delete[] myArray[i];
+		}
+		delete[] myArray;
+		myArray = nullptr;
+	}
+
+	template<typename T>
+	T*** allocate3DArray(int sizeFirstDim, int sizeSecondDim, int sizeThirdDim)
+	{
+		T*** myArray = new T**[sizeFirstDim];
+		for (int i = 0; i < sizeFirstDim; i++)
+		{
+			myArray[i] = new T*[sizeSecondDim];
+			for (int j = 0; j < sizeSecondDim; j++)
+			{
+				myArray[i][j] = new T[sizeThirdDim]();
+			}
+		}
+		return myArray;
+	}
+
+	template<typename T>
+	void deAllocate3DArray(T** myArray, int sizeFirstDim, int sizeSecondDim)
+	{
+		for (int i = 0; i < sizeFirstDim; i++)
+		{
+			for (int j = 0; j < sizeSecondDim; j++)
+			{
+				delete[] myArray[i][j];
+			}
 			delete[] myArray[i];
 		}
 		delete[] myArray;
@@ -111,6 +154,18 @@ namespace InsermLibrary
 		}
 		return (sumValues / sizeFirstDim);
 	}
+
+	template<typename T>
+	T mean2DArray(T** myArray, int sizeFirstDim, int posSecondDim)
+	{
+		T sumValues = 0;
+		for (int i = 0; i < sizeFirstDim; i++)
+		{
+			sumValues += myArray[i][posSecondDim];
+		}
+		return (sumValues / sizeFirstDim);
+	}
+
 
 	vector<int> findIndexes(int *tab, int sizetab, int value2find);
 	//===
