@@ -21,17 +21,20 @@ public:
 public slots:
 	void process();
 	void BipDoneeee(bool);
+	void winCloseeee(bool);
 signals:
 	void finished();
 	void error(QString err);
 	void sendLogInfo(QString);
 	void sendElanPointer(ELAN *p_elan);
+	void sendTest();
 	void upScroll(int value);
 
 private:
 	LOCA *loca = nullptr;
 	OptionLOCA *LOCAOpt = nullptr;
 	bool bip = false;
+	bool wclo = false;
 	LOCAANALYSISOPTION **locaAnaOpt = nullptr;
 	ELAN *elan = nullptr;
 	int numberFiles = 0;

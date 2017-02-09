@@ -49,7 +49,7 @@ void InsermLibrary::LOCA::LocaSauron(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPT
 
 	if (p_anaopt->analysisDetails[0][0])
 	{
-		loc_eeg2erp(p_elan, p_prov, p_anaopt);
+		loc_eeg2erp(p_elan, p_prov, p_anaopt, "");
 		stringstream().swap(outputMessage);
 		outputMessage << "ERP Pictures DONE !";
 		emit sendLogInfo(QString::fromStdString(outputMessage.str()));
@@ -120,16 +120,53 @@ void InsermLibrary::LOCA::LocaSauron(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPT
 
 				if (p_anaopt->analysisDetails[i + 1][2])
 				{
-					/*****************************************/
-					/*				loc_env2plot			 */
-					/*****************************************/	
-					if (p_anaopt->task != "AUDI")
+					//===============================================================================================================================================================================
+					stringstream().swap(pictureLabel);
+					stringstream().swap(folderTrialsSM);
+					if (p_anaopt->task == "AUDI" || p_anaopt->task == "MOTO" || p_anaopt->task == "MVIS"
+												 || p_anaopt->task == "MVEB" || p_anaopt->task == "ARFA")
 					{
-						loc_env2plot(p_elan, p_prov, p_anaopt, i);
+						pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_bar_";
+						folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_bar";
 					}
 					else
 					{
-						loc_bar2plot(p_elan, p_prov, p_anaopt, correspondingEvents, i);
+						pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_plots_";
+						folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_plots";
+					}
+
+					if (opt->statsOption.useKruskall)
+					{
+						if (opt->statsOption.useFDRKrus)
+						{
+							folderTrialsSM << "_FDR" << opt->statsOption.pKruskall;
+						}
+						else
+						{
+							folderTrialsSM << "_P" << opt->statsOption.pKruskall;
+						}
+					}
+
+					if (!QDir(&folderTrialsSM.str()[0]).exists())
+					{
+						stringstream().swap(outputMessage);
+						outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+						emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+						QDir().mkdir(&folderTrialsSM.str()[0]);
+					}
+					//===============================================================================================================================================================================
+
+					/*****************************************/
+					/*				loc_env2plot			 */
+					/*****************************************/	
+					if (p_anaopt->task == "AUDI" || p_anaopt->task == "MOTO" || p_anaopt->task == "MVIS"
+												 || p_anaopt->task == "MVEB" || p_anaopt->task == "ARFA")
+					{
+						loc_bar2plot(p_elan, p_prov, p_anaopt, correspondingEvents, i, folderTrialsSM.str());
+					}
+					else
+					{
+						loc_env2plot(p_elan, p_prov, p_anaopt, i, folderTrialsSM.str());
 					}
 					/*****************************************/
 					stringstream().swap(outputMessage);
@@ -144,6 +181,18 @@ void InsermLibrary::LOCA::LocaSauron(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPT
 					stringstream().swap(folderTrialsSM);
 					pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 					folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+
+					if (opt->statsOption.useWilcoxon)
+					{
+						if (opt->statsOption.useFDRWil)
+						{
+							folderTrialsSM << "_FDR" << opt->statsOption.pWilcoxon;
+						}
+						else
+						{
+							folderTrialsSM << "_P" << opt->statsOption.pWilcoxon;
+						}
+					}
 
 					if (!QDir(&folderTrialsSM.str()[0]).exists())
 					{
@@ -172,16 +221,53 @@ void InsermLibrary::LOCA::LocaSauron(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPT
 				{
 					if (p_anaopt->analysisDetails[i + 1][2])
 					{
-						/*****************************************/
-						/*				loc_env2plot			 */
-						/*****************************************/
-						if (p_anaopt->task != "AUDI")
+						//===============================================================================================================================================================================
+						stringstream().swap(pictureLabel);
+						stringstream().swap(folderTrialsSM);
+						if (p_anaopt->task == "AUDI" || p_anaopt->task == "MOTO" || p_anaopt->task == "MVIS"
+													 || p_anaopt->task == "MVEB" || p_anaopt->task == "ARFA")
 						{
-							loc_env2plot(p_elan, p_prov, p_anaopt, i);
+							pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_bar_";
+							folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_bar";
 						}
 						else
 						{
-							loc_bar2plot(p_elan, p_prov, p_anaopt, correspondingEvents, i);
+							pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_plots_";
+							folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_plots";
+						}
+
+						if (opt->statsOption.useKruskall)
+						{
+							if (opt->statsOption.useFDRKrus)
+							{
+								folderTrialsSM << "_FDR" << opt->statsOption.pKruskall;
+							}
+							else
+							{
+								folderTrialsSM << "_P" << opt->statsOption.pKruskall;
+							}
+						}
+
+						if (!QDir(&folderTrialsSM.str()[0]).exists())
+						{
+							stringstream().swap(outputMessage);
+							outputMessage << "Creating Output Folder for" << p_anaopt->frequencys[i][0] << " -> " << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << " Hz data";
+							emit sendLogInfo(QString::fromStdString(outputMessage.str()));
+							QDir().mkdir(&folderTrialsSM.str()[0]);
+						}
+						//===============================================================================================================================================================================
+
+						/*****************************************/
+						/*				loc_env2plot			 */
+						/*****************************************/
+						if (p_anaopt->task == "AUDI" || p_anaopt->task == "MOTO" || p_anaopt->task == "MVIS"
+													 || p_anaopt->task == "MVEB" || p_anaopt->task == "ARFA")
+						{
+							loc_bar2plot(p_elan, p_prov, p_anaopt, correspondingEvents, i, folderTrialsSM.str());
+						}
+						else
+						{
+							loc_env2plot(p_elan, p_prov, p_anaopt, i, folderTrialsSM.str());
 						}
 						/*****************************************/
 						stringstream().swap(outputMessage);
@@ -196,6 +282,18 @@ void InsermLibrary::LOCA::LocaSauron(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPT
 						stringstream().swap(folderTrialsSM);
 						pictureLabel << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_ds" << (p_elan->trc->samplingFrequency / 64) << "_sm0_trials_";
 						folderTrialsSM << p_anaopt->patientFolder << "/" << p_anaopt->expTask << "/" << p_anaopt->expTask << "_f" << p_anaopt->frequencys[i][0] << "f" << p_anaopt->frequencys[i][p_anaopt->frequencys[i].size() - 1] << "_trials";
+						
+						if (opt->statsOption.useWilcoxon)
+						{
+							if (opt->statsOption.useFDRWil)
+							{
+								folderTrialsSM << "_FDR" << opt->statsOption.pWilcoxon;
+							}
+							else
+							{
+								folderTrialsSM << "_P" << opt->statsOption.pWilcoxon;
+							}
+						}
 
 						if (!QDir(&folderTrialsSM.str()[0]).exists())
 						{
@@ -205,7 +303,7 @@ void InsermLibrary::LOCA::LocaSauron(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPT
 							QDir().mkdir(&folderTrialsSM.str()[0]);
 						}
 						//===============================================================================================================================================================================
-
+						
 						loca_trialmat(p_elan, i, p_prov, pictureLabel.str(), folderTrialsSM.str(), correspondingEvents);
 						stringstream().swap(outputMessage);
 						outputMessage << "Frequency Maps DONE !";
@@ -236,7 +334,10 @@ void InsermLibrary::LOCA::loc_create_pos(string posFile_path, string posXFile_pa
 
 	//start .pos after last beginningCode that indicates beginning of expe
 	vector<int> indexBegin = findIndexes((int*)&p_trc->valueTrigg[0], p_trc->sampleTrigg.size() - 1, p_beginningCode);
-	beginValue = indexBegin[indexBegin.size() - 1] + 1;
+	if (indexBegin.size() > 0)
+	{
+		beginValue = indexBegin[indexBegin.size() - 1] + 1;
+	}
 
 	//create two pointer and class containing trigger info for further use
 	if (triggTRC != nullptr)
@@ -400,7 +501,7 @@ void InsermLibrary::LOCA::loc2_write_conf(string confFile_path, TRC *p_trc, ELAN
 /**************************************************************/
 /*							EEG2ERP							  */
 /**************************************************************/
-void InsermLibrary::LOCA::loc_eeg2erp(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt)
+void InsermLibrary::LOCA::loc_eeg2erp(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt, string outputFolder)
 {
 	vector<int> indexEventUsed, eventUsed;
 	int windowSample[2]{ (int)round(p_elan->trc->samplingFrequency * p_prov->visuBlocs[0].dispBloc.epochWindow[0] / 1000),
@@ -446,7 +547,7 @@ void InsermLibrary::LOCA::loc_eeg2erp(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOP
 		}
 	}
 
-	InsermLibrary::DrawPlotsVisu::drawPlots d = InsermLibrary::DrawPlotsVisu::drawPlots::drawPlots(p_prov);
+	InsermLibrary::DrawPlotsVisu::drawPlots d = InsermLibrary::DrawPlotsVisu::drawPlots::drawPlots(p_prov, outputFolder);
 	d.drawDataOnTemplate(p_elan, p_anaopt, m_bigdata_mono, eventUsed, -1, 0);
 	d.drawDataOnTemplate(p_elan, p_anaopt, m_bigdata_bipo, eventUsed, -1, 1);
 
@@ -457,7 +558,7 @@ void InsermLibrary::LOCA::loc_eeg2erp(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOP
 /**************************************************************/
 /*							ENV2PLOT						  */
 /**************************************************************/
-void InsermLibrary::LOCA::loc_env2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt, int currentFreqBand)
+void InsermLibrary::LOCA::loc_env2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt, int currentFreqBand, string outputFolder)
 {
 	vector<int> indexEventUsed, eventUsed;
 	int windowSample[2]{ (int) round(64 * p_prov->visuBlocs[0].dispBloc.epochWindow[0] / 1000),
@@ -491,7 +592,7 @@ void InsermLibrary::LOCA::loc_env2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISO
 		}
 	}			
 
-	InsermLibrary::DrawPlotsVisu::drawPlots d = InsermLibrary::DrawPlotsVisu::drawPlots::drawPlots(p_prov);
+	InsermLibrary::DrawPlotsVisu::drawPlots d = InsermLibrary::DrawPlotsVisu::drawPlots::drawPlots(p_prov, outputFolder);
 	d.drawDataOnTemplate(p_elan, p_anaopt, m_bigdata_frequency, eventUsed, currentFreqBand, 2);
 	deAllocate3DArray(m_bigdata_frequency, eventUsed.size(), p_elan->elanFreqBand[currentFreqBand]->chan_nb);
 }
@@ -499,13 +600,14 @@ void InsermLibrary::LOCA::loc_env2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISO
 /**************************************************************/
 /*							BAR2PLOT						  */
 /**************************************************************/
-void InsermLibrary::LOCA::loc_bar2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt, vector<int> p_correspondingEvents, int currentFreqBand)
+void InsermLibrary::LOCA::loc_bar2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt, vector<int> p_correspondingEvents, int currentFreqBand, string outputFolder)
 {
 	vector<int> indexEventUsed, eventUsed;
 	int windowSample[2]{ (int) round(64 * p_prov->visuBlocs[0].dispBloc.epochWindow[0] / 1000),
 						 (int) round(64 * p_prov->visuBlocs[0].dispBloc.epochWindow[1] / 1000) };
 	int copyIndex = 0;
 	vector<vector<vector<double>>> p_value3D;
+	vector<vector<vector<int>>> p_sign3D;
 	vector<PVALUECOORD> significantValue;
 
 	for (int i = 0; i < triggTRC->numberTrigg; i++)	
@@ -539,17 +641,20 @@ void InsermLibrary::LOCA::loc_bar2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISO
 	{
 		copyIndex = 0;
 		p_value3D = InsermLibrary::Stats::pValuesKruskall(p_elan->elanFreqBand[currentFreqBand], p_prov, triggCatEla, p_correspondingEvents, m_bigDataFrequency);
+		p_sign3D = InsermLibrary::Stats::signKruskall(p_elan->elanFreqBand[currentFreqBand], p_prov, triggCatEla, p_correspondingEvents, m_bigDataFrequency);
 		if (opt->statsOption.useFDRKrus)
 		{
-			significantValue = InsermLibrary::Stats::FDR(p_value3D, copyIndex, opt->statsOption.pWilcoxon);
+			significantValue = InsermLibrary::Stats::FDR(p_value3D, p_sign3D, copyIndex, opt->statsOption.pWilcoxon);
 		}
 		else
 		{
-			significantValue = InsermLibrary::Stats::loadPValues(p_value3D, opt->statsOption.pWilcoxon);
+			significantValue = InsermLibrary::Stats::loadPValues(p_value3D, p_sign3D, opt->statsOption.pWilcoxon);
 		}
+
+		InsermLibrary::Stats::exportStatsData(p_elan, p_prov, significantValue, outputFolder, true);
 	}
 
-	InsermLibrary::DrawPlotsVisu::drawBars b = InsermLibrary::DrawPlotsVisu::drawBars::drawBars(p_prov);
+	InsermLibrary::DrawPlotsVisu::drawBars b = InsermLibrary::DrawPlotsVisu::drawBars::drawBars(p_prov, outputFolder);
 	b.drawDataOnTemplate(p_elan, p_anaopt, currentFreqBand, m_bigDataFrequency, eventUsed, significantValue);
 
 	deAllocate3DArray(m_bigDataFrequency, eventUsed.size(), p_elan->elanFreqBand[currentFreqBand]->chan_nb);
@@ -585,21 +690,26 @@ void InsermLibrary::LOCA::loca_trialmat(ELAN *p_elan, int p_numberFrequencyBand,
 	//[======================================================================================================================================================================================]
 	int copyIndex = 0;
 	vector<vector<vector<double>>> p_value3D;
+	vector<vector<vector<int>>> p_sign3D;
 	vector<PVALUECOORD> significantValue;
 
 	if (opt->statsOption.useWilcoxon)
 	{
 		p_value3D = InsermLibrary::Stats::pValuesWilcoxon(p_elan->elanFreqBand[p_numberFrequencyBand], p_prov, triggCatEla, p_correspondingEvents, bigdata);
+		p_sign3D = InsermLibrary::Stats::signWilcoxon(p_elan->elanFreqBand[p_numberFrequencyBand], p_prov, triggCatEla, p_correspondingEvents, bigdata);
+
 		if (opt->statsOption.useFDRWil)
 		{
-			significantValue = InsermLibrary::Stats::FDR(p_value3D, copyIndex, opt->statsOption.pWilcoxon);
+			significantValue = InsermLibrary::Stats::FDR(p_value3D, p_sign3D, copyIndex, opt->statsOption.pWilcoxon);
 		}
 		else
 		{
-			significantValue = InsermLibrary::Stats::loadPValues(p_value3D, opt->statsOption.pWilcoxon);
+			significantValue = InsermLibrary::Stats::loadPValues(p_value3D, p_sign3D, opt->statsOption.pWilcoxon);
 		}
-	}
 
+		InsermLibrary::Stats::exportStatsData(p_elan, p_prov, significantValue, p_outputFolder, false);
+	}
+	
 	//[==================================================================================================]
 	mapsGenerator mGen(opt->picOption.width, opt->picOption.height);
 	mGen.trialmatTemplate(triggCatEla->mainGroupSub, v_window_ms, p_prov);
@@ -871,6 +981,20 @@ void InsermLibrary::LOCA::cat2ellaRTTrigg(PROV *p_prov)
 		//TEST inv
 		triggCatElaNoSort->trigg[i].rt_ms = s_rtms;
 		triggCatElaNoSort->trigg[i].rt_code = s_rtcode;
+	}
+
+	if (p_prov->invertmapsinfo != "")
+	{
+		for (int i = triggCatEla->trigg.size() - 1; i >= 0; i--)
+		{
+			if (triggCatEla->trigg[i].rt_ms == 10000000)
+			{
+				triggCatElaNoSort->trigg.erase(triggCatElaNoSort->trigg.begin() + i);
+				triggCatElaNoSort->numberTrigg = triggCatElaNoSort->trigg.size();
+				triggCatEla->trigg.erase(triggCatEla->trigg.begin() + i);
+				triggCatEla->numberTrigg = triggCatEla->trigg.size();
+			}
+		}
 	}
 }
 

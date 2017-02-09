@@ -166,10 +166,32 @@ namespace InsermLibrary
 		return (sumValues / sizeFirstDim);
 	}
 
-
 	vector<int> findIndexes(int *tab, int sizetab, int value2find);
 	//===
-	
+	struct picOptionLOCA
+	{
+		int width = 576;
+		int height = 432;
+		int interpolationFactorX = 3;
+		int interpolationFactorY = 3;
+	};
+
+	struct statsOptionLOCA
+	{
+		bool useWilcoxon = true;
+		bool useFDRWil = true;
+		float pWilcoxon = 0.01;
+		bool useKruskall = true;
+		bool useFDRKrus = true;
+		float pKruskall = 0.01;
+	};
+
+	struct OptionLOCA
+	{
+		picOptionLOCA picOption;
+		statsOptionLOCA statsOption;
+	};
+
 	class LOCAANALYSISOPTION
 	{
 	public:
@@ -192,6 +214,7 @@ namespace InsermLibrary
 		int window = -69;
 		int vectorpos = -69;
 		double pValue = -69;
+		int weight = 0;
 	};
 
 	class TRIGG

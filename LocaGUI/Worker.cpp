@@ -54,6 +54,16 @@ void Worker::process()
 	vector<string>ElecPosSave, ElecNegSave;
 	vector<unsigned int>SignalPosSave,toDelete;
 
+	//emit sendTest(); //send to win
+	//while (wclo == false) //While win not closed 
+	//{
+	//	QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
+	//}
+
+	//emit sendLogInfo(QString::fromStdString("Bipole created !"));
+
+
+
 	int progressPerCent = 100 / numberFiles;
 	int actualPerCent = 0;
 	emit upScroll(actualPerCent);
@@ -203,5 +213,13 @@ void Worker::BipDoneeee(bool boo)
 	if (boo == true)
 	{
 		bip = true;
+	}
+}
+
+void Worker::winCloseeee(bool wClo)
+{
+	if (wClo == true)
+	{
+		wclo = true;
 	}
 }

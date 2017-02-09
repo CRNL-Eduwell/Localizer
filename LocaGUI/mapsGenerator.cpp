@@ -462,7 +462,7 @@ void mapsGenerator::createTimeLegend(QPainter *painter, int windowMS[2])
 {
 	int stepTimeLegend = 200;
 
-	while ((windowMS[1] / stepTimeLegend) > 10)
+	while ((windowMS[1] / stepTimeLegend) > 5 || (abs(windowMS[0]) / stepTimeLegend) > 5)
 	{
 		stepTimeLegend += 200;
 	}
@@ -492,14 +492,14 @@ void mapsGenerator::createTimeLegend(QPainter *painter, int windowMS[2])
 
 	for (int i = 1; i < numberTickRight + 1; i++)
 	{
-		if (((i * stepTimeLegend) / 1000) >= 1)
-		{
-			pixelsWide = fm.width("XXXX");
-		}
-		else
-		{
-			pixelsWide = fm.width("XXX");
-		}
+		//if (((i * stepTimeLegend) / 1000) >= 1)
+		//{
+		pixelsWide = fm.width("XXXX");
+		//}
+		//else
+		//{
+		//	pixelsWide = fm.width("XXX");
+		//}
 		width = pixelsWide;
 
 		int ohterBorder = ceil((double)MatrixRect.width() / (windowMS[1] - windowMS[0]) * (i * stepTimeLegend));
@@ -511,7 +511,7 @@ void mapsGenerator::createTimeLegend(QPainter *painter, int windowMS[2])
 
 	for (int i = 1; i < numberTickLeft + 1; i++)
 	{
-		pixelsWide = fm.width("XXXX");
+		pixelsWide = fm.width("XXXXX");
 		width = pixelsWide;
 
 		int ohterBorder = ceil((double)MatrixRect.width() / (windowMS[1] - windowMS[0]) * (i * stepTimeLegend));
@@ -531,8 +531,18 @@ void mapsGenerator::createTrialsLegend(QPainter *painter, PROV *p_prov)
 		{
 			QRect myLegendRect(0.013020833 * fullMap.width(), subMatrixes[index2Draw].y(), 0.1119618055 * fullMap.width(), subMatrixes[index2Draw].height());
 			QPixmap image(p_prov->visuBlocs[k].dispBloc.path.c_str());
-			image.scaled(myLegendRect.size(), Qt::AspectRatioMode::KeepAspectRatio);
-			painter->drawPixmap(myLegendRect, image);
+
+			if (p_prov->visuBlocs.size() < 5)
+			{
+				image = image.scaledToWidth(myLegendRect.width(), Qt::TransformationMode::FastTransformation);
+				int offset = (subMatrixes[index2Draw].height() - image.height()) / 2;
+				painter->drawPixmap(myLegendRect.x(), myLegendRect.y() + offset, image.width(), image.height(), image);
+			}
+			else
+			{
+				image.scaled(myLegendRect.size(), Qt::KeepAspectRatio);
+				painter->drawPixmap(myLegendRect, image);
+			}
 		}
 		else
 		{

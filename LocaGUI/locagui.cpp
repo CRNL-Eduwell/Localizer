@@ -15,6 +15,7 @@
 #include "locaguiBIP.h"
 #include "locaguiOpt.h"
 #include "locaOops.h"
+#include "DisplayStats.h"
 
 //#include "vld.h"
 
@@ -339,7 +340,13 @@ void LocaGUI::launchAnalysis()
 
 		QObject::connect(worker, SIGNAL(sendElanPointer(ELAN*)), this, SLOT(receiveElanPointer(ELAN*)));
 		QObject::connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
+
+
+		QObject::connect(worker, SIGNAL(sendTest()), this, SLOT(receiveOpenSig()));
 		QObject::connect(this, SIGNAL(bipDone(bool)), worker, SLOT(BipDoneeee(bool)));
+
+
+		QObject::connect(this, SIGNAL(winClose(bool)), worker, SLOT(winCloseeee(bool)));
 
 		QObject::connect(worker, SIGNAL(finished()), this, SLOT(finishedRuning()));
 
@@ -455,6 +462,16 @@ void LocaGUI::receiveElanPointer(ELAN *p_elan)
 	delete test;
 }
 
+
+void LocaGUI::receiveOpenSig()
+{
+	DisplayStats *st = new DisplayStats(0);
+	st->exec();
+	emit winClose(true);
+	delete st;
+}
+
+
 void LocaGUI::openOptions()
 {
 	locaguiOpt *test2 = new locaguiOpt();
@@ -492,3 +509,5 @@ void LocaGUI::finishedRuning()
 {
 	alreadyRunning = false;
 }
+
+

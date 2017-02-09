@@ -73,9 +73,10 @@ void InsermLibrary::DrawPlotsVisu::baseCanvas::drawTemplate(PROV *p_prov)
 
 //===
 
-InsermLibrary::DrawPlotsVisu::drawBars::drawBars(PROV *p_prov) : baseCanvas(p_prov)
+InsermLibrary::DrawPlotsVisu::drawBars::drawBars(PROV *p_prov, string outputFolder) : baseCanvas(p_prov)
 {
 	currentProv = p_prov;
+	picOutputFolder = outputFolder;
 }
 
 InsermLibrary::DrawPlotsVisu::drawBars::~drawBars()
@@ -98,6 +99,37 @@ void InsermLibrary::DrawPlotsVisu::drawBars::drawDataOnTemplate(ELAN *p_elan, LO
 	int windowSample[2]{ (int) round(64 * currentProv->visuBlocs[0].dispBloc.epochWindow[0] / 1000), 
 						 (int) round(64 * currentProv->visuBlocs[0].dispBloc.epochWindow[1] / 1000) };
 
+	vector<vector<int>> v_idCopy = p_elan->ss_elec->v_id;
+	vector<vector<int>> v_origIdCopy = p_elan->ss_elec->v_origid;
+
+	for (int i = 0; i < v_idCopy.size(); i++)
+	{
+		//for (int j = 0; j < v_idCopy[i].size() - 1; j++)
+		//{
+		//	if (v_idCopy[i][j + 1] - v_idCopy[i][j] != 1)
+		//	{
+		//		v_idCopy[i].erase(v_idCopy[i].begin() + j + 1);
+		//		v_origIdCopy[i].erase(v_origIdCopy[i].begin() + j + 1);
+		//	}
+		//}
+
+		for (int j = v_idCopy[i].size() - 1; j > 0; j--)
+		{
+			if (v_idCopy[i][j] - v_idCopy[i][j - 1] != 1)
+			{
+				v_idCopy[i].erase(v_idCopy[i].begin() + j);
+				v_origIdCopy[i].erase(v_origIdCopy[i].begin() + j);
+			}
+		}
+	}
+
+
+	for (int i = 0; i < v_idCopy.size(); i++)
+	{
+		v_idCopy[i].erase(v_idCopy[i].begin());
+		v_origIdCopy[i].erase(v_origIdCopy[i].begin());
+	}
+
 	double *v_erp = allocate1DArray<double>(currentProv->nbRow());
 	double *v_lim = allocate1DArray<double>(currentProv->nbRow());
 	double *m_erpP = allocate1DArray<double>(currentProv->nbRow());
@@ -111,12 +143,12 @@ void InsermLibrary::DrawPlotsVisu::drawBars::drawDataOnTemplate(ELAN *p_elan, LO
 	for (int i = 0; i < p_elan->ss_elec->a_rt.size(); i++)	
 	{
 		a_rt = p_elan->ss_elec->a_rt[i];
-		v_id = p_elan->ss_elec->v_id[i];
-		v_origid = p_elan->ss_elec->v_origid[i];
+		v_id = v_idCopy[i];
+		v_origid = v_origIdCopy[i];
 
 		if (i > 0)
 		{
-			compteurElec += p_elan->ss_elec->v_id[i - 1].size() - 1;
+			compteurElec += v_idCopy[i - 1].size() - 1;
 		}
 
 		s_pos = i % nbElecPerFigure;
@@ -145,7 +177,28 @@ void InsermLibrary::DrawPlotsVisu::drawBars::drawDataOnTemplate(ELAN *p_elan, LO
 			expTask << p_anaopt->patientFolder << "/" << p_anaopt->expTask;
 
 			stringstream().swap(tifNameStream);
-			tifNameStream << expTask.str() << "/" << path.str() << "_bar_f" << s_figure << ".jpg";
+			//tifNameStream << expTask.str() << "/" << path.str() << "_bar_f" << s_figure << ".jpg";
+
+			tifNameStream << picOutputFolder << "/" << path.str() << "_bar_";
+			if (p_elan->ss_elec->a_rt[i] != "")
+			{
+				tifNameStream << p_elan->ss_elec->a_rt[i] << "_";
+			}
+			if (i + 1 < p_elan->ss_elec->a_rt.size())
+			{
+				if (p_elan->ss_elec->a_rt[i + 1] != "")
+				{
+					tifNameStream << p_elan->ss_elec->a_rt[i + 1] << "_";
+				}
+			}
+			if (i + 2 < p_elan->ss_elec->a_rt.size())
+			{
+				if (p_elan->ss_elec->a_rt[i + 2] != "")
+				{
+					tifNameStream << p_elan->ss_elec->a_rt[i + 2] << "";
+				}
+			}
+			tifNameStream << ".jpg";
 			tifName = &tifNameStream.str()[0];
 		}
 
@@ -155,7 +208,7 @@ void InsermLibrary::DrawPlotsVisu::drawBars::drawDataOnTemplate(ELAN *p_elan, LO
 		for (int j = 0; j < nbSite; j++)
 		{
 			v_f = findIndexes(&v_id[0], v_id.size(), j + 1);
-			goIn = (v_f.empty() == false) && (v_f[0] + 1 < v_id.size());
+			goIn = (v_f.empty() == false) && (v_f[0] + 1 <= v_id.size());
 
 			if (goIn == true)
 			{
@@ -312,9 +365,10 @@ void InsermLibrary::DrawPlotsVisu::drawBars::drawDataOnTemplate(ELAN *p_elan, LO
 
 //===
 
-InsermLibrary::DrawPlotsVisu::drawPlots::drawPlots(PROV *p_prov) : baseCanvas(p_prov)
+InsermLibrary::DrawPlotsVisu::drawPlots::drawPlots(PROV *p_prov, string outputFolder) : baseCanvas(p_prov)
 {
 	currentProv = p_prov;
+	picOutputFolder = outputFolder;
 }
 
 InsermLibrary::DrawPlotsVisu::drawPlots::~drawPlots()
@@ -336,6 +390,9 @@ void InsermLibrary::DrawPlotsVisu::drawPlots::drawDataOnTemplate(ELAN *p_elan, L
 	QPixmap *pixmap = nullptr;
 	bool goIn = false;
 	
+	vector<vector<int>> v_idCopy = p_elan->ss_elec->v_id;
+	vector<vector<int>> v_origIdCopy = p_elan->ss_elec->v_origid;
+
 	if (cards2Draw == 2)
 	{
 		samplingFreq = p_elan->elanFreqBand[currentFreqBand]->eeg.sampling_freq;
@@ -343,6 +400,37 @@ void InsermLibrary::DrawPlotsVisu::drawPlots::drawDataOnTemplate(ELAN *p_elan, L
 	else
 	{
 		samplingFreq = p_elan->trc->samplingFrequency;
+	}
+
+	if ((cards2Draw == 1 || cards2Draw == 2) && modif == false)
+	{
+		modif = true;
+		for (int i = 0; i < v_idCopy.size(); i++)
+		{
+			//for (int j = 0; j < v_idCopy[i].size() - 1; j++)
+			//{
+			//	if (v_idCopy[i][j + 1] - v_idCopy[i][j] != 1)
+			//	{
+			//		v_idCopy[i].erase(v_idCopy[i].begin() + j + 1);
+			//		v_origIdCopy[i].erase(v_origIdCopy[i].begin() + j + 1);
+			//	}
+			//}
+
+			for (int j = v_idCopy[i].size() - 1; j > 0; j--)
+			{
+				if (v_idCopy[i][j] - v_idCopy[i][j - 1] != 1)
+				{
+					v_idCopy[i].erase(v_idCopy[i].begin() + j);
+					v_origIdCopy[i].erase(v_origIdCopy[i].begin() + j);
+				}
+			}
+		}
+
+		for (int i = 0; i < v_idCopy.size(); i++)
+		{
+			v_idCopy[i].erase(v_idCopy[i].begin());
+			v_origIdCopy[i].erase(v_origIdCopy[i].begin());
+		}
 	}
 
 	int windowSample[2]{ (int) round(samplingFreq * currentProv->visuBlocs[0].dispBloc.epochWindow[0] / 1000),
@@ -363,12 +451,12 @@ void InsermLibrary::DrawPlotsVisu::drawPlots::drawDataOnTemplate(ELAN *p_elan, L
 	for (int i = 0; i < p_elan->ss_elec->a_rt.size(); i++)
 	{
 		a_rt = p_elan->ss_elec->a_rt[i];
-		v_id = p_elan->ss_elec->v_id[i];
-		v_origid = p_elan->ss_elec->v_origid[i];
+		v_id = v_idCopy[i];
+		v_origid = v_origIdCopy[i];
 
 		if (i > 0)
 		{
-			compteurElec += p_elan->ss_elec->v_id[i - 1].size() - 1;
+			compteurElec += v_idCopy[i - 1].size() - 1;
 		}
 
 		s_pos = i % nbElecPerFigure;
@@ -405,7 +493,8 @@ void InsermLibrary::DrawPlotsVisu::drawPlots::drawDataOnTemplate(ELAN *p_elan, L
 				path << p_anaopt->expTask << "_f" << p_anaopt->frequencys[currentFreqBand][0] << "f"
 					 << p_anaopt->frequencys[currentFreqBand][p_anaopt->frequencys[currentFreqBand].size() - 1] << "_ds"
 					 << (p_elan->trc->samplingFrequency / 64) << "_sm0";
-				tifNameStream << expTask.str() << "/" << path.str() << "_plot_f" << s_figure << ".jpg";
+				//tifNameStream << expTask.str() << "/" << path.str() << "_plot_f" << s_figure << ".jpg";
+				tifNameStream << picOutputFolder << "/" << path.str() << "_plot_f" << s_figure << ".jpg";
 				break;
 			default:
 				cout << "Attention Erreur" << endl;
@@ -426,10 +515,10 @@ void InsermLibrary::DrawPlotsVisu::drawPlots::drawDataOnTemplate(ELAN *p_elan, L
 				goIn = (v_f.empty() == false) && (v_f[0] + 1 <= v_id.size());
 				break;
 			case 1:
-				goIn = (v_f.empty() == false) && (v_f[0] + 1 <= v_id.size() - 1);
+				goIn = (v_f.empty() == false) && (v_f[0] + 1 <= v_id.size());
 				break;
 			case 2:
-				goIn = (v_f.empty() == false) && (v_f[0] + 1 <= v_id.size() - 1);
+				goIn = (v_f.empty() == false) && (v_f[0] + 1 <= v_id.size());
 				break;
 			}
 
@@ -445,6 +534,7 @@ void InsermLibrary::DrawPlotsVisu::drawPlots::drawDataOnTemplate(ELAN *p_elan, L
 				}
 				compteur++;
 
+				//cout << "j: " << j << " et compteur : " << compteur;
 				//then we loop across conditions
 				for (int k = 0; k < currentProv->nbRow(); k++)
 				{

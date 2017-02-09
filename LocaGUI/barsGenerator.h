@@ -32,21 +32,24 @@ namespace InsermLibrary
 		class drawBars : public baseCanvas
 		{
 		public :
-			drawBars(PROV *p_prov);
+			drawBars(PROV *p_prov, string outputFolder);
 			~drawBars();
 			void drawDataOnTemplate(ELAN *p_elan, LOCAANALYSISOPTION *p_anaopt, int currentFreqBand, double *** bigdata, vector<int> p_eventsUsed, vector<PVALUECOORD> p_significantValue);
 		public :
 			PROV *currentProv;
+			string picOutputFolder;
 		};
 
 		class drawPlots : public baseCanvas
 		{
 		public:
-			drawPlots(PROV *p_prov);
+			drawPlots(PROV *p_prov, string outputFolder);
 			~drawPlots();
 			void drawDataOnTemplate(ELAN *p_elan, LOCAANALYSISOPTION *p_anaopt, double *** bigdata, vector<int> p_eventsUsed, int currentFreqBand, int cards2Draw);
 		public:
+			bool modif = false;
 			PROV *currentProv;
+			string picOutputFolder;
 		};
 	}
 }

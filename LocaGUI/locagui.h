@@ -10,6 +10,7 @@
 #include "LOCA.h"
 #include "Worker.h"
 
+
 using namespace std;
 using namespace InsermLibrary;
 
@@ -41,12 +42,20 @@ public slots:
 
 	void upDateProgressBar(int value);
 	void finishedRuning();
+
+
+	void receiveOpenSig();
+
+
+
 private slots :
 	void openOptions();
 	void openAbout();
 
 signals:
 	void bipDone(bool);
+
+	void winClose(bool);
 
 private:
 	vector<string> freqBandName;

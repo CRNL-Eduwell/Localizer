@@ -19,12 +19,17 @@ namespace InsermLibrary
 	{
 	public :
 		static vector<vector<vector<double>>> pValuesWilcoxon(elan_struct_t *p_elan_struct, PROV *p_prov, TRIGGINFO *triggCatEla, vector<int> correspEvent, double ***bigdata);
+		static vector<vector<vector<int>>> signWilcoxon(elan_struct_t *p_elan_struct, PROV *p_prov, TRIGGINFO *triggCatEla, vector<int> correspEvent, double ***bigdata);
+
 		static vector<vector<vector<double>>> pValuesKruskall(elan_struct_t *p_elan_struct, PROV *p_prov, TRIGGINFO *triggCatEla, vector<int> correspEvent, double ***eegData);
-		static vector<PVALUECOORD> FDR(vector<vector<vector<double>>> pValues3D, int &copyIndex, float pLimit);
-		static vector<PVALUECOORD> loadPValues(vector<vector<vector<double>>> pValues3D);
-		static vector<PVALUECOORD> loadPValues(vector<vector<vector<double>>> pValues3D, float pLimit);
+		static vector<vector<vector<int>>> signKruskall(elan_struct_t *p_elan_struct, PROV *p_prov, TRIGGINFO *triggCatEla, vector<int> correspEvent, double ***bigdata);
+
+		static vector<PVALUECOORD> FDR(vector<vector<vector<double>>> pValues3D, vector<vector<vector<int>>> pSign3D, int &copyIndex, float pLimit);
+		static vector<PVALUECOORD> loadPValues(vector<vector<vector<double>>> pValues3D, vector<vector<vector<int>>> pSign3D);
+		static vector<PVALUECOORD> loadPValues(vector<vector<vector<double>>> pValues3D, vector<vector<vector<int>>> pSign3D, float pLimit);
+		static void exportStatsData(ELAN *p_elan, PROV *p_prov, vector<PVALUECOORD> pValues, string outputFolder, bool isBar);
 		static void exportPChanels(string outputFolder, vector<vector<vector<double>>> pValues3D);
-		static void exportFDRChanels(string outputFolder, vector<PVALUECOORD> pValuesFDR, vector<vector<vector<double>>> pValues3D);
+		static void exportFDRChanels(string outputFolder, vector<PVALUECOORD> pValuesFDR);
 	};
 }
 
