@@ -1,0 +1,893 @@
+#include "LOCA.h"
+
+InsermLibrary::LOCA::LOCA(userOption *userOpt)
+{
+	this->userOpt = userOpt;
+}
+
+InsermLibrary::LOCA::~LOCA()
+{
+	//deleteAndNullify1D(userOpt);
+}
+
+/************/
+/* eeg2erp  */
+/************/
+void InsermLibrary::LOCA::eeg2erp(eegContainer *myeegContainer, PROV *myprovFile)
+{
+	int *windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.samplingFrequency);
+	vec1<string> origFilePath = split<string>(myeegContainer->originalFilePath, "/");
+	string outputFolder = myeegContainer->originalFilePath;
+	outputFolder.append("_ERP/");
+	if (!QDir(&outputFolder.c_str()[0]).exists())
+	{
+		emit sendLogInfo(QString::fromStdString("Creating Output Folder for erp Maps"));
+		QDir().mkdir(&outputFolder.c_str()[0]);
+	}
+	string picPathMono = outputFolder; 
+	picPathMono = picPathMono.append(origFilePath[origFilePath.size() - 1]);
+
+	processEvents(myeegContainer, myprovFile); 
+
+	vec3<float> bigDataMono = vec3<float>(triggCatEla->triggers.size(), vec2<float>(myeegContainer->flatElectrodes.size(), vec1<float>(windowSam[1] - windowSam[0])));
+	vec3<float> bigDataBipo = vec3<float>(triggCatEla->triggers.size(), vec2<float>(myeegContainer->bipoles.size(), vec1<float>(windowSam[1] - windowSam[0])));
+
+	cout << "Reading Data Mono ..." << endl;
+	for (int i = 0; i < triggCatEla->triggers.size(); i++)
+	{
+		for (int j = 0; j < (windowSam[1] - windowSam[0]); j++)
+		{
+			for (int k = 0; k < myeegContainer->flatElectrodes.size(); k++)
+			{
+				int beginPos = triggCatEla->triggers[i].trigger.sample + windowSam[0];
+				bigDataMono[i][k][j] = myeegContainer->eegData[k][beginPos + j];
+			}
+		}
+	}
+
+	cout << "Reading Data Bipo ..." << endl;
+	for (int i = 0; i < triggCatEla->triggers.size(); i++)
+	{
+		for (int k = 0; k < myeegContainer->bipoles.size(); k++)
+		{
+			for (int j = 0; j < (windowSam[1] - windowSam[0]); j++)
+			{
+				bigDataBipo[i][k][j] = bigDataMono[i][myeegContainer->bipoles[k].positivElecId][j] -
+									   bigDataMono[i][myeegContainer->bipoles[k].negativElecId][j];
+			}
+		}
+	}
+
+	drawPlots b = drawPlots(myprovFile, picPathMono, userOpt->picOption.sizePlotmap);
+	b.drawDataOnTemplate(bigDataMono, triggCatEla, myeegContainer, 0);
+	emit sendLogInfo("Mono Maps Generated");
+	b.drawDataOnTemplate(bigDataBipo, triggCatEla, myeegContainer, 1);
+	emit sendLogInfo("Bipo Maps Generated");
+
+	delete windowSam;
+}
+
+void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrentLoca, locaFolder *currentLoca)
+{
+	this->idCurrentLoca = idCurrentLoca;
+	this->currentLoca = currentLoca;
+
+	for (int i = 0; i < userOpt->freqOption.frequencyBands.size(); i++)
+	{
+		if (userOpt->anaOption[idCurrentLoca].anaOpt[i].eeg2env)
+		{
+			string freqFolder = createIfFreqFolderExistNot(myeegContainer, userOpt->freqOption.frequencyBands[i]);
+			myeegContainer->ToHilbert(myeegContainer->elanFrequencyBand[i], 
+									  userOpt->freqOption.frequencyBands[i].freqBandValue);
+
+			emit sendLogInfo("Hilbert Envelloppe Calculated");
+			toBeNamedCorrectlyFunction(myeegContainer, i, freqFolder, userOpt->anaOption[idCurrentLoca].anaOpt[i]);
+		}
+		else 
+		{
+			if (i < currentLoca->freqFolder.size())
+			{
+				int sizeFreq = userOpt->freqOption.frequencyBands[i].freqBandValue.size() - 1;
+				string fMin = to_string(userOpt->freqOption.frequencyBands[i].freqBandValue[0]);
+				string fMax = to_string(userOpt->freqOption.frequencyBands[i].freqBandValue[sizeFreq]);
+
+				if ((currentLoca->freqFolder[i].frequencyName == "f" + fMin + "f" + fMax) &&
+					(currentLoca->freqFolder[i].sm0eeg != ""))
+				{
+					int loadFile = ef_read_elan_file((char*)currentLoca->freqFolder[i].sm0eeg.c_str(), myeegContainer->elanFrequencyBand[i]);
+					if (loadFile == 0)
+					{
+						ELANFunctions::convertELANAnalogDataToDigital(myeegContainer->elanFrequencyBand[i]);
+						string freqFolder = createIfFreqFolderExistNot(myeegContainer, userOpt->freqOption.frequencyBands[i]);
+						emit sendLogInfo("Envelloppe File Loaded");
+						toBeNamedCorrectlyFunction(myeegContainer, i, freqFolder, userOpt->anaOption[idCurrentLoca].anaOpt[i]);
+					}
+					else
+					{
+						emit sendLogInfo("Problem loading file, end of analyse for this frequency");
+					}
+				}
+				else
+				{
+					emit sendLogInfo("No Envellope File found, end of analyse for this frequency");
+				}
+			}
+			else
+			{
+				emit sendLogInfo("No Folder for this frequency, end of analyse for this frequency");
+			}
+		}
+	}
+}
+
+void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreqfrequency, 
+													 string freqFolder, analysisOption a)
+{
+	vector<PROV> provFiles = loadProvCurrentLoca();
+	for (int i = 0; i < provFiles.size(); i++)
+	{
+		createPosFile(myeegContainer, &provFiles[i]); //need to add something before .pos to specify according to prov file
+		createConfFile(myeegContainer);
+		processEventsDown(myeegContainer, &provFiles[i]);
+
+		if (provFiles[i].invertmapsinfo != "")
+			swapStimResp(triggCatEla, &provFiles[i]);
+
+		if (a.env2plot)//env2plot
+		{
+			if (shouldPerformBarPlot(currentLoca->locaName))
+			{
+				barplot(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
+			}
+			else
+			{
+				if (provFiles[i].invertmapsinfo == "")
+					env2plot(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
+			}
+		}
+
+		if (a.trialmat)
+			timeTrialmatrices(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
+	}
+}
+
+/**************************************************/
+/* Elan Compatibility							  */
+/*   - Pos File : Events from eeg Data			  */
+/*	 - Conf File								  */
+/*	 - Rename Trigger : For visualisation purpose */
+/**************************************************/
+void InsermLibrary::LOCA::createPosFile(eegContainer *myeegContainer, PROV *myprovFile)
+{
+	if (myprovFile->changeCodeFilePath != "")
+	{
+		renameTriggers(myeegContainer->triggEeg, myeegContainer->triggEegDownsampled, myprovFile);
+	}
+
+	ofstream posFile(myeegContainer->originalFilePath + ".pos", ios::out);
+	ofstream posFileX(myeegContainer->originalFilePath + "_ds" + to_string(myeegContainer->sampInfo.downsampFactor) + ".pos", ios::out);
+
+	for (int i = 0; i < myeegContainer->triggEeg->triggers.size(); i++)
+	{
+		posFile << myeegContainer->triggEeg->triggers[i].trigger.sample << setw(10) 
+				<< myeegContainer->triggEeg->triggers[i].trigger.code << setw(10) << "0" << endl;
+		posFileX << myeegContainer->triggEegDownsampled->triggers[i].trigger.sample << setw(10)
+				 << myeegContainer->triggEegDownsampled->triggers[i].trigger.code << setw(10) << "0" << endl;
+	}
+
+	posFile.close();
+	posFileX.close();
+}
+
+void InsermLibrary::LOCA::createConfFile(eegContainer *myeegContainer)
+{
+	ofstream confFile(myeegContainer->originalFilePath + ".conf", ios::out);
+
+	confFile << "nb_channel" << "  " << myeegContainer->flatElectrodes.size() << endl;
+	confFile << "sec_per_page" << "  " << 4 << endl;
+	confFile << "amp_scale_type" << "  " << 1 << endl;
+	confFile << "amp_scale_val" << "  " << 1 << endl;
+
+	confFile << "channel_visibility" << endl;
+	for (int i = 0; i < myeegContainer->flatElectrodes.size(); i++)
+	{
+		confFile << 1 << endl;
+	}
+	/**********************************************************/
+	/* We print the bipole Id as long as the next is from the */
+	/* same Electrode : A'1, A'2, A'3 ... then when the next  */
+	/* one is not from the same Electrode (B'1) we put -1 and */
+	/*				we go again until the end				  */
+	/**********************************************************/
+	confFile << "channel_reference" << endl;
+	confFile << "-1" << endl;
+
+	for (int i = 0; i < myeegContainer->bipoles.size() - 1; i++)
+	{
+		if (myeegContainer->bipoles[i].negativElecId + 1 != myeegContainer->bipoles[i + 1].negativElecId)
+		{
+			//-1
+			confFile << myeegContainer->bipoles[i].negativElecId << endl;
+			confFile << "-1" << endl;
+		}
+		else
+		{
+			confFile << myeegContainer->bipoles[i].negativElecId << endl;
+		}
+	}
+	confFile.close();
+}
+
+void InsermLibrary::LOCA::renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *downsampledEegTriggers, 
+										 PROV *myprovFile)
+{
+	stringstream buffer;
+	ifstream provFile(myprovFile->changeCodeFilePath, ios::binary);
+	if (provFile)
+	{
+		buffer << provFile.rdbuf();
+		provFile.close();
+	}
+	else
+	{
+		cout << " Error opening Change Code File @ " << myprovFile->changeCodeFilePath << endl;
+	}
+
+	vector<int> oldMainCode, oldSecondaryCode, newMainCode, newSecondaryCode;
+	vector<string> lineSplit = InsermLibrary::split<string>(buffer.str(), "\r\n");
+	for (int i = 0; i < lineSplit.size(); i++)
+	{
+		vector<string> elementSplit = InsermLibrary::split<string>(lineSplit[i], "+=");
+		oldMainCode.push_back(atoi(&(elementSplit[0])[0]));
+		oldSecondaryCode.push_back(atoi(&(elementSplit[1])[0]));
+		newMainCode.push_back(atoi(&(elementSplit[2])[0]));
+		newSecondaryCode.push_back(atoi(&(elementSplit[3])[0]));
+	}
+
+	int idVisuBloc = 0;
+	for (int i = 0; i < oldMainCode.size(); i++)
+	{
+		for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
+		{
+			for (int k = 0; k < myprovFile->visuBlocs[j].mainEventBloc.eventCode.size(); k++)
+			{
+				if (myprovFile->visuBlocs[j].mainEventBloc.eventCode[k] == oldMainCode[i])
+				{
+					idVisuBloc = j;
+				}
+			}
+		}
+
+		int winSamMin = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[0]) / 1000);
+		int winSamMax = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[1]) / 1000);
+
+		int idSecondaryEvent = 0;
+		for (int j = 0; j < downsampledEegTriggers->triggers.size(); j++)
+		{
+			int winMax = downsampledEegTriggers->triggers[j].trigger.sample + winSamMax;
+			int winMin = downsampledEegTriggers->triggers[j].trigger.sample - abs(winSamMin);
+
+			if (downsampledEegTriggers->triggers[j].trigger.code == oldMainCode[i])
+			{
+				eegTriggers->triggers[j].trigger.code = newMainCode[i];
+				downsampledEegTriggers->triggers[j].trigger.code = newMainCode[i];
+
+				idSecondaryEvent = j + 1;
+				while ((downsampledEegTriggers->triggers[idSecondaryEvent].trigger.sample < winMax) &&
+					(downsampledEegTriggers->triggers[idSecondaryEvent].trigger.sample > winMin))
+				{
+					if (downsampledEegTriggers->triggers[idSecondaryEvent].trigger.code == oldSecondaryCode[i])
+					{
+						eegTriggers->triggers[idSecondaryEvent].trigger.code = newSecondaryCode[i];
+						downsampledEegTriggers->triggers[idSecondaryEvent].trigger.code = newSecondaryCode[i];
+						idSecondaryEvent++;
+					}
+					else
+					{
+						idSecondaryEvent++;
+					}
+				}
+			}
+		}
+	}
+}
+
+/******************************************/
+/* Trigger manipulation for visualisation */
+/******************************************/
+void InsermLibrary::LOCA::processEvents(eegContainer *myeegContainer, PROV *myprovFile)
+{
+	TRIGGINFO *downEegTriggers = new TRIGGINFO(myeegContainer->triggEeg);
+	pairStimResp(downEegTriggers, myprovFile);
+	deleteUnsignificativEvents(downEegTriggers, myprovFile);
+
+	triggCatEla2 = new TRIGGINFO(downEegTriggers);
+	sortTrials(triggCatEla2, myprovFile, myeegContainer->sampInfo.downsampledFrequency);
+
+	deleteAndNullify1D(triggCatEla2);
+	deleteAndNullify1D(downEegTriggers);
+}
+
+void InsermLibrary::LOCA::processEventsDown(eegContainer *myeegContainer, PROV *myprovFile)
+{
+	TRIGGINFO *downEegTriggers = new TRIGGINFO(myeegContainer->triggEegDownsampled);
+	pairStimResp(downEegTriggers, myprovFile);
+	deleteUnsignificativEvents(downEegTriggers, myprovFile);
+
+	triggCatEla2 = new TRIGGINFO(downEegTriggers);
+	sortTrials(triggCatEla2, myprovFile, myeegContainer->sampInfo.downsampledFrequency);
+
+	deleteAndNullify1D(triggCatEla2);
+	deleteAndNullify1D(downEegTriggers);
+}
+
+void InsermLibrary::LOCA::pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile)
+{
+	vector<int> mainEventsCode = myprovFile->getMainCodes();
+	vector<int> respEventsCode = myprovFile->getSecondaryCodes();
+	
+	int idVisuBloc = 0;
+	for (int i = 0; i < mainEventsCode.size(); i++)
+	{
+		for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
+		{
+			for (int k = 0; k < myprovFile->visuBlocs[j].mainEventBloc.eventCode.size(); k++)
+			{
+				if (myprovFile->visuBlocs[j].mainEventBloc.eventCode[k] == mainEventsCode[i])
+				{
+					idVisuBloc = j;
+				}
+			}
+		}
+
+		int winSamMin = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[0]) / 1000);
+		int winSamMax = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[1]) / 1000);
+
+		int idSecondaryEvent = 0;
+		for (int j = 0; j < downsampledEegTriggers->triggers.size(); j++)
+		{
+			int winMax = downsampledEegTriggers->triggers[j].trigger.sample + winSamMax;
+			int winMin = downsampledEegTriggers->triggers[j].trigger.sample - abs(winSamMin);
+
+			if (downsampledEegTriggers->triggers[j].trigger.code == mainEventsCode[i])
+			{
+				idSecondaryEvent = j + 1;
+				if (idSecondaryEvent < downsampledEegTriggers->triggers.size() - 1)
+				{
+					while ((downsampledEegTriggers->triggers[idSecondaryEvent].trigger.sample < winMax) &&
+						(downsampledEegTriggers->triggers[idSecondaryEvent].trigger.sample > winMin))
+					{
+
+						if (find(respEventsCode.begin(), respEventsCode.end(), downsampledEegTriggers->triggers[idSecondaryEvent].trigger.code) != respEventsCode.end())
+						{
+							downsampledEegTriggers->triggers[j].response.code = downsampledEegTriggers->triggers[idSecondaryEvent].trigger.code;
+							downsampledEegTriggers->triggers[j].response.sample = downsampledEegTriggers->triggers[idSecondaryEvent].trigger.sample;
+							idSecondaryEvent++;
+						}
+						else
+						{
+							idSecondaryEvent++;
+						}
+
+					}
+				}
+			}
+		}
+	}
+}
+
+void InsermLibrary::LOCA::deleteUnsignificativEvents(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile)
+{
+	vector<int> idToKeep, idToDelete;
+	for (int i = 0; i < downsampledEegTriggers->triggers.size(); i++)
+	{
+		bool keepTrigger = false;
+		for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
+		{
+			for (int k = 0; k < myprovFile->visuBlocs[j].mainEventBloc.eventCode.size(); k++)
+			{
+				if (downsampledEegTriggers->triggers[i].trigger.code ==
+					myprovFile->visuBlocs[j].mainEventBloc.eventCode[k])
+				{
+					keepTrigger = true;
+				}
+			}
+		}
+
+		if (keepTrigger)
+			idToKeep.push_back(i);
+		else
+			idToDelete.push_back(i);
+	}
+
+	for (int i = idToDelete.size() - 1; i >= 0; i--)
+		downsampledEegTriggers->triggers.erase(downsampledEegTriggers->triggers.begin() + idToDelete[i]);
+}
+
+void InsermLibrary::LOCA::sortTrials(TRIGGINFO *eegTriggersTemp, PROV *myprovFile, int downSampFreq)
+{
+	enum sortingChoice { CodeSort = 'C', LatencySort = 'L' };
+
+	vector<int> dataId;
+	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
+	{
+		for (int j = 0; j < eegTriggersTemp->triggers.size(); j++)
+		{
+			if (eegTriggersTemp->triggers[j].trigger.code == myprovFile->visuBlocs[i].mainEventBloc.eventCode[0])
+			{
+				dataId.push_back(j);
+			}
+		}
+	}
+
+	deleteAndNullify1D(triggCatEla);
+	triggCatEla = new TRIGGINFO(eegTriggersTemp, dataId);
+	for (int i = 0; i < triggCatEla->triggers.size(); i++)
+	{
+		triggCatEla->triggers[i].trigger.time = 1000 * ((float)triggCatEla->triggers[i].trigger.sample / downSampFreq);
+		triggCatEla->triggers[i].response.time = 1000 * ((float)triggCatEla->triggers[i].response.sample / downSampFreq);
+		triggCatEla->triggers[i].rtSample = triggCatEla->triggers[i].response.sample - triggCatEla->triggers[i].trigger.sample;
+		triggCatEla->triggers[i].rtMs = triggCatEla->triggers[i].response.time - triggCatEla->triggers[i].trigger.time;
+	}
+
+	//get first id of each new main code
+	triggCatEla->subGroupStimTrials.push_back(0);
+	vector<int> mainEventsCode = myprovFile->getMainCodes();
+	for (int i = 0; i < triggCatEla->triggers.size() - 1; i++)
+	{
+		if (triggCatEla->triggers[i].trigger.code != triggCatEla->triggers[i + 1].trigger.code)
+		{
+			triggCatEla->subGroupStimTrials.push_back(i + 1);
+		}
+	}
+	triggCatEla->subGroupStimTrials.push_back(triggCatEla->triggers.size());
+
+	//according to the rest sort by what is wanted
+	int beg = 0, end = 0;
+	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
+	{
+		string currentSort = myprovFile->visuBlocs[i].dispBloc.sort;
+		vector<string> sortSplited = split<string>(currentSort, "_");
+		for (int j = 1; j < sortSplited.size(); j++)
+		{
+			sortingChoice Choice = (sortingChoice)(sortSplited[j][0]);
+			switch (Choice)
+			{
+			//Sort by resp code
+			case CodeSort:	
+								beg = triggCatEla->subGroupStimTrials[i];
+								end = triggCatEla->subGroupStimTrials[i + 1];
+								sort(triggCatEla->triggers.begin() + beg, triggCatEla->triggers.begin() + end,
+									[](TRIGG a, TRIGG b) {
+									return (a.response.code < b.response.code);
+								});
+				break;
+			//Sort by reaction time
+			case LatencySort:  
+								beg = triggCatEla->subGroupStimTrials[i];
+								end = triggCatEla->subGroupStimTrials[i + 1];
+								sort(triggCatEla->triggers.begin() + beg, triggCatEla->triggers.begin() + end,
+									[](TRIGG a, TRIGG b) {
+									return (a.rtMs < b.rtMs);
+								});
+				break;
+			}
+		}
+	}
+}
+
+void InsermLibrary::LOCA::swapStimResp(TRIGGINFO *eegTriggers, PROV *myprovFile)
+{
+	for (int i = 0; i < eegTriggers->triggers.size(); i++)
+	{
+		swap(eegTriggers->triggers[i].trigger, eegTriggers->triggers[i].response);
+		eegTriggers->triggers[i].rtSample = -eegTriggers->triggers[i].rtSample;
+		eegTriggers->triggers[i].rtMs = -eegTriggers->triggers[i].rtMs;
+	}
+
+	//This is the new window to visualize data
+	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
+	{
+		myprovFile->visuBlocs[i].dispBloc.epochWindow[0] = myprovFile->invertmaps.epochWindow[0];
+		myprovFile->visuBlocs[i].dispBloc.epochWindow[1] = myprovFile->invertmaps.epochWindow[1];
+
+		myprovFile->visuBlocs[i].dispBloc.baseLineWindow[0] = myprovFile->invertmaps.baseLineWindow[0];
+		myprovFile->visuBlocs[i].dispBloc.baseLineWindow[1] = myprovFile->invertmaps.baseLineWindow[1];
+	}
+}
+
+/*********************************/
+/* Various check before analysis */
+/*********************************/
+string InsermLibrary::LOCA::createIfFreqFolderExistNot(eegContainer *myeegContainer, frequency currentFreq)
+{
+	string fMin = to_string(currentFreq.freqBandValue[0]);
+	string fMax = to_string(currentFreq.freqBandValue[currentFreq.freqBandValue.size() - 1]);
+	string freqFolder = myeegContainer->originalFilePath + "_f" + fMin + "f" + fMax + "/";
+
+	if (!QDir(&freqFolder.c_str()[0]).exists())
+	{
+		emit sendLogInfo(QString::fromStdString("Creating Output Folder for" + fMin + " -> " + fMax + " Hz data"));
+		QDir().mkdir(&freqFolder.c_str()[0]);
+	}
+
+	return freqFolder;
+}
+
+vector<PROV> InsermLibrary::LOCA::loadProvCurrentLoca()
+{
+	vector<PROV> provFiles;
+	for (int i = 0; i < userOpt->statOption.locaWilcoxon.size(); i++)
+	{
+		if (userOpt->statOption.locaWilcoxon[i].contains(QString::fromStdString(currentLoca->locaName)))
+		{
+			provFiles.push_back(PROV("./Resources/Config/Prov/" + userOpt->statOption.locaWilcoxon[i].toStdString() + ".prov"));
+		}
+	}
+
+	for (int i = 0; i < userOpt->statOption.locaKruskall.size(); i++)
+	{
+		if (userOpt->statOption.locaKruskall[i].contains(QString::fromStdString(currentLoca->locaName)))
+		{
+			provFiles.push_back(PROV("./Resources/Config/Prov/" + userOpt->statOption.locaKruskall[i].toStdString() + ".prov"));
+		}
+	}
+
+	if (provFiles.size() == 0) //We search if .prov with the loca name and no stat requierement
+	{
+		provFiles.push_back(PROV("./Resources/Config/Prov/" + currentLoca->locaName + ".prov"));
+	}
+
+	return provFiles;
+}
+
+bool InsermLibrary::LOCA::shouldPerformBarPlot(string locaName)
+{
+	for (int i = 0; i < userOpt->statOption.locaKruskall.size(); i++)
+	{
+		if (userOpt->statOption.locaKruskall[i].contains(QString::fromStdString(currentLoca->locaName)))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/************/
+/* Barplot  */
+/************/
+void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, 
+								  string freqFolder)
+{
+	string mapsFolder = getMapsFolderBar(freqFolder);
+	string mapPath = prepareFolderAndPathsBar(mapsFolder, myeegContainer->sampInfo.downsampFactor);
+	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency);
+
+	//== get Bloc of eeg data we want to display center around events
+	vec3<float> bigData;
+	bigData.resize(triggCatEla->triggers.size(), vec2<float>(myeegContainer->bipoles.size(), vec1<float>(windowSam[1] - windowSam[0])));
+	ELANFunctions::readBlocDataEventsAllChannels(myeegContainer->elanFrequencyBand[idCurrentFreqfrequency], triggCatEla, bigData, windowSam);
+
+	//== calculate stat
+	vec1<PVALUECOORD> significantValue = calculateStatisticKruskall(bigData, myeegContainer, myprovFile, mapsFolder);
+
+	//==
+	drawBars b = drawBars(myprovFile, mapPath, userOpt->picOption.sizePlotmap);
+	b.drawDataOnTemplate(bigData, triggCatEla, significantValue, myeegContainer);
+
+	delete windowSam;
+}
+
+string InsermLibrary::LOCA::getMapsFolderBar(string freqFolder)
+{
+	string mapsFolder = freqFolder;
+	vec1<string> dd = split<string>(mapsFolder, "/");
+	mapsFolder.append(dd[dd.size() - 1]);
+
+	mapsFolder.append("_bar");
+
+	stringstream streamPValue;
+	streamPValue << fixed << setprecision(2) << userOpt->statOption.pKruskall;
+	if (userOpt->statOption.kruskall)
+	{
+		if (userOpt->statOption.FDRkruskall)
+			mapsFolder.append("_FDR" + streamPValue.str());
+		else
+			mapsFolder.append("_P" + streamPValue.str());
+	}
+
+	return mapsFolder;
+}
+
+string InsermLibrary::LOCA::prepareFolderAndPathsBar(string mapsFolder, int dsSampFreq)
+{
+	if (!QDir(&mapsFolder.c_str()[0]).exists())
+		QDir().mkdir(&mapsFolder.c_str()[0]);
+
+	vec1<string> dd = split<string>(mapsFolder, "/");
+
+	return string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + to_string(dsSampFreq) + "_sm0_bar_");
+}
+
+vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticKruskall(vec3<float> &bigData, eegContainer *myeegContainer,
+																  PROV *myprovFile, string freqFolder)
+{
+	vector<PVALUECOORD> significantValue;
+	if (userOpt->statOption.kruskall)
+	{
+		int copyIndex = 0;
+		vec3<float> pValue3D; vec3<int> psign3D;
+		Stats::pValuesKruskall(pValue3D, psign3D, bigData, triggCatEla, myeegContainer->sampInfo.downsampledFrequency, myprovFile);
+		if (userOpt->statOption.FDRkruskall)
+		{
+			significantValue = Stats::FDR(pValue3D, psign3D, copyIndex, userOpt->statOption.pKruskall);
+		}
+		else
+		{
+			significantValue = Stats::loadPValues(pValue3D, psign3D, userOpt->statOption.pKruskall);
+		}
+		Stats::exportStatsData(myeegContainer, myprovFile, significantValue, freqFolder, true);
+	}
+
+	return significantValue;
+}
+
+/************/
+/* Env2Plot */
+/************/
+void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, 
+								   string freqFolder)
+{
+	string mapsFolder = getMapsFolderPlot(freqFolder);
+	string mapPath = prepareFolderAndPathsPlot(mapsFolder, myeegContainer->sampInfo.downsampFactor);
+	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency);
+
+	//== get Bloc of eeg data we want to display center around events
+	vec3<float> bigData;
+	bigData.resize(triggCatEla->triggers.size(), vec2<float>(myeegContainer->bipoles.size(), vec1<float>(windowSam[1] - windowSam[0])));
+	ELANFunctions::readBlocDataEventsAllChannels(myeegContainer->elanFrequencyBand[idCurrentFreqfrequency], triggCatEla, bigData, windowSam);
+
+	//==
+	drawPlots b = drawPlots(myprovFile, mapPath, userOpt->picOption.sizePlotmap);
+	b.drawDataOnTemplate(bigData, triggCatEla, myeegContainer, 2);
+
+	delete windowSam;
+}
+
+string InsermLibrary::LOCA::getMapsFolderPlot(string freqFolder)
+{
+	string mapsFolder = freqFolder;
+	vec1<string> dd = split<string>(mapsFolder, "/");
+	mapsFolder.append(dd[dd.size() - 1]);
+	return mapsFolder.append("_plots");
+}
+
+string InsermLibrary::LOCA::prepareFolderAndPathsPlot(string mapsFolder, int dsSampFreq)
+{
+	if (!QDir(&mapsFolder.c_str()[0]).exists())
+		QDir().mkdir(&mapsFolder.c_str()[0]);
+
+	vec1<string> dd = split<string>(mapsFolder, "/");
+
+	return string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + to_string(dsSampFreq) + "_sm0_plot_");
+}
+
+/************/
+/* TrialMat */
+/************/
+void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, 
+											string freqFolder)
+{
+	vector<PVALUECOORD> significantValue;
+	//== get some useful information
+	string mapsFolder = getMapsFolderTrial(myprovFile, freqFolder);
+	string mapPath = prepareFolderAndPathsTrial(mapsFolder, myeegContainer->sampInfo.downsampledFrequency);
+	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency);
+	int nbCol = myprovFile->nbCol();
+	int nbRow = myprovFile->nbRow();
+
+	//== get Bloc of eeg data we want to display center around events
+	vec3<float> bigData;
+	bigData.resize(myeegContainer->bipoles.size(), vec2<float>(triggCatEla->triggers.size(), vec1<float>(windowSam[1] - windowSam[0])));
+	ELANFunctions::readBlocDataAllChannels(myeegContainer->elanFrequencyBand[idCurrentFreqfrequency], triggCatEla, bigData, windowSam);
+
+	//== calculate stat
+	if (shouldPerformStatTrial(currentLoca->locaName))
+		significantValue = calculateStatisticWilcoxon(bigData, myeegContainer, myprovFile, mapsFolder);
+
+	//== Draw for each plot and according to a template to reduce drawing time
+	mapsGenerator mGen(userOpt->picOption.sizeTrialmap.width(), userOpt->picOption.sizeTrialmap.height());
+	mGen.trialmatTemplate(triggCatEla->subGroupStimTrials, myprovFile);
+
+	QPixmap *pixmapChanel = nullptr, *pixmapSubSubMatrix = nullptr;
+	QPainter *painterChanel = nullptr, *painterSubSubMatrix = nullptr;
+	for (int i = 0; i < myeegContainer->elanFrequencyBand[idCurrentFreqfrequency]->chan_nb; i++)
+	{
+		deleteAndNullify1D(painterChanel);
+		deleteAndNullify1D(pixmapChanel);
+		pixmapChanel = new QPixmap(mGen.pixmapTemplate);
+		painterChanel = new QPainter(pixmapChanel);
+
+		float stdRes = MATLABFUNC::stdMean(bigData[i], windowSam);
+		float Maxi = 2.0 * abs(stdRes);
+		float Mini = -2.0 * abs(stdRes);
+		mGen.graduateColorBar(painterChanel, Maxi);
+
+		int SUBMatrixWidth = mGen.MatrixRect.width() / nbCol;
+		int interpolFactorX = userOpt->picOption.interpolationtrialmap.width();	
+		int interpolFactorY = userOpt->picOption.interpolationtrialmap.height();
+
+		int indexPos = 0;
+		for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
+		{
+			int *currentWinMs = myprovFile->getWindowMs(j);
+			int *currentWinSam = myprovFile->getWindowSam(myeegContainer->sampInfo.downsampledFrequency, j);
+			int nbSampleWindow = currentWinSam[1] - currentWinSam[0];
+			int indexBegTrigg = triggCatEla->subGroupStimTrials[j];
+			int numberSubTrial = triggCatEla->subGroupStimTrials[j + 1] - indexBegTrigg;
+			int subsubMatrixHeigth = 0;
+
+			vec1<int> colorX[512], colorY[512];
+			if (interpolFactorX > 1)
+			{
+				vec2<float> dataInterpolatedHoriz = mGen.horizontalInterpolation(bigData[i], interpolFactorX,
+																				 indexBegTrigg, numberSubTrial);
+				vec2<float> dataInterpolatedVerti = mGen.verticalInterpolation(dataInterpolatedHoriz, interpolFactorY);
+				mGen.eegData2ColorMap(colorX, colorY, dataInterpolatedVerti, Maxi);
+				subsubMatrixHeigth = interpolFactorY * (numberSubTrial - 1);
+			}
+			else
+			{
+				mGen.eegData2ColorMap(colorX, colorY, bigData[i], Maxi);
+				subsubMatrixHeigth = numberSubTrial;
+			}
+
+			/***************************************************/
+			/*	ceate subBlock and paste it on the big Matrix  */
+			/***************************************************/
+			deleteAndNullify1D(painterSubSubMatrix);
+			deleteAndNullify1D(pixmapSubSubMatrix);
+			pixmapSubSubMatrix = new QPixmap(interpolFactorX * nbSampleWindow, subsubMatrixHeigth);
+			painterSubSubMatrix = new QPainter(pixmapSubSubMatrix);
+			painterSubSubMatrix->setBackgroundMode(Qt::BGMode::TransparentMode);
+
+			for (int k = 0; k < 512; k++)
+			{
+				painterSubSubMatrix->setPen(QColor(mGen.ColorMapJet[k].red(), mGen.ColorMapJet[k].green(), mGen.ColorMapJet[k].blue()));
+				for (int l = 0; l < colorX[k].size(); l++)
+				{
+					painterSubSubMatrix->drawPoint(QPoint(colorX[k][l], subsubMatrixHeigth - colorY[k][l]));
+				}
+			}
+
+			indexPos = myprovFile->visuBlocs.size() - 1 - j;
+			painterChanel->drawPixmap(mGen.subMatrixes[indexPos].x(), mGen.subMatrixes[indexPos].y(),
+				pixmapSubSubMatrix->scaled(QSize(mGen.subMatrixes[indexPos].width(), mGen.subMatrixes[indexPos].height()),
+					Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));
+
+			/********************************************************************/
+			/*	 		Add reaction time on map								*/
+			/*	=> If one has not the default value, they should all be there	*/
+			/********************************************************************/
+			if (triggCatEla->triggers[indexBegTrigg + 2].rtMs != 10000000)
+			{
+				painterChanel->setPen(QColor(Qt::black));
+				for (int l = 0; l < numberSubTrial; l++)
+				{
+					int xReactionTimeMs = abs(currentWinMs[0]) + triggCatEla->triggers[indexBegTrigg + l].rtMs;
+					double xScale = (double)(currentWinMs[1] - currentWinMs[0]) / mGen.MatrixRect.width();
+					double xRt = mGen.MatrixRect.x() + (xReactionTimeMs / xScale);
+
+					int yTrialPosition = mGen.subMatrixes[indexPos].y() + mGen.subMatrixes[indexPos].height();
+					double yRt = yTrialPosition - (((double)mGen.subMatrixes[indexPos].height() / numberSubTrial) * l) - 1;
+
+					painterChanel->setBrush(Qt::black);
+					painterChanel->drawEllipse(QPoint(xRt, yRt), (int)(0.0034722 * mGen.MatrixRect.width()), 
+																 (int)(0.004629629 * mGen.MatrixRect.height()));
+				}
+			}
+
+			delete currentWinMs;
+			delete currentWinSam;
+		}
+
+		mGen.drawVerticalZeroLine(painterChanel, myprovFile);
+
+		//Display Stat
+		if (userOpt->statOption.wilcoxon)
+		{
+			vector<int> allIdCurrentMap = mGen.checkIfNeedDisplayStat(significantValue, i);
+			if (allIdCurrentMap.size() > 0)
+			{
+				vec2<int> idCurrentMap = mGen.checkIfConditionStat(significantValue, allIdCurrentMap, nbRow);
+				mGen.displayStatsOnMap(painterChanel, idCurrentMap, significantValue, myprovFile);
+			}
+		}
+
+		//Display title on map and then Save
+		string outputPicPath = mapPath;
+		string elecName = myeegContainer->flatElectrodes[myeegContainer->bipoles[i].positivElecId];
+		outputPicPath.append(elecName.c_str()).append(".jpg");
+		mGen.drawMapTitle(painterChanel, outputPicPath);
+		pixmapChanel->save(outputPicPath.c_str(), "JPG");
+	}
+
+	delete windowSam;
+	deleteAndNullify1D(painterChanel);
+	deleteAndNullify1D(pixmapChanel);
+	deleteAndNullify1D(painterSubSubMatrix);
+	deleteAndNullify1D(pixmapSubSubMatrix);
+
+	emit sendLogInfo("Time Trials Matrices generated");
+}
+
+string InsermLibrary::LOCA::getMapsFolderTrial(PROV *myprovFile, string freqFolder)
+{
+	string mapsFolder = freqFolder;
+	vec1<string> dd = split<string>(mapsFolder, "/");
+	mapsFolder.append(dd[dd.size() - 1]);
+
+	if (myprovFile->invertmapsinfo == "")
+		mapsFolder.append("_trials_stim");
+	else
+		mapsFolder.append("_trials_resp");
+
+	stringstream streamPValue;
+	streamPValue << fixed << setprecision(2) << userOpt->statOption.pWilcoxon;
+	if (userOpt->statOption.wilcoxon)
+	{
+		if (userOpt->statOption.FDRwilcoxon)
+			mapsFolder.append("_FDR" + streamPValue.str());
+		else
+			mapsFolder.append("_P" + streamPValue.str());
+	}
+
+	return mapsFolder;
+}
+
+string InsermLibrary::LOCA::prepareFolderAndPathsTrial(string mapsFolder, int dsSampFreq)
+{
+	if (!QDir(&mapsFolder.c_str()[0]).exists())
+		QDir().mkdir(&mapsFolder.c_str()[0]);
+
+	vec1<string> dd = split<string>(mapsFolder, "/");
+
+	return string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + to_string(dsSampFreq) + "_sm0_trials_");
+}
+
+bool InsermLibrary::LOCA::shouldPerformStatTrial(string locaName)
+{
+	for (int i = 0; i < userOpt->statOption.locaWilcoxon.size(); i++)
+	{
+		if (userOpt->statOption.locaWilcoxon[i].contains(QString::fromStdString(currentLoca->locaName)))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticWilcoxon(vec3<float> &bigData, eegContainer *myeegContainer,
+															PROV *myprovFile, string freqFolder)
+{
+	vector<PVALUECOORD> significantValue;
+	if (userOpt->statOption.wilcoxon)
+	{
+		int copyIndex = 0;
+		vec3<float> pValue3D; vec3<int> psign3D;
+		Stats::pValuesWilcoxon(pValue3D, psign3D, bigData, triggCatEla, myeegContainer->sampInfo.downsampledFrequency, myprovFile);
+		if (userOpt->statOption.FDRwilcoxon)
+		{
+			significantValue = Stats::FDR(pValue3D, psign3D, copyIndex, userOpt->statOption.pWilcoxon);
+		}
+		else
+		{
+			significantValue = Stats::loadPValues(pValue3D, psign3D, userOpt->statOption.pWilcoxon);
+		}
+		Stats::exportStatsData(myeegContainer, myprovFile, significantValue, freqFolder, false);
+	}
+
+	return significantValue;
+}

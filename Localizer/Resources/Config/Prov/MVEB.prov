@@ -1,0 +1,9 @@
+ROW;COL;Name;Path;Window;BaseLine;Main Event;Maint Event Label;Secondary Events;Secondary Events Label;Sort
+1;1;LOAD2;/home/LOAD2.jpg;-500:6000;-200:0;20;LOAD2;1:2;OSEF;C0_L1
+2;1;LOAD4;/home/LOAD4.jpg;-500:6000;-200:0;40;LOAD4;1:2;OSEF;C0_L1
+3;1;LOAD6;/home/LOAD6.jpg;-500:6000;-200:0;60;LOAD6;1:2;OSEF;C0_L1
+4;1;CnTrl;/home/CnTrl.jpg;-500:6000;-200:0;21;CnTrl;1:2;OSEF;C0_L1
+5;1;CnTrl;/home/CnTrl.jpg;-500:6000;-200:0;41;CnTrl;1:2;OSEF;C0_L1
+6;1;CnTrl;/home/CnTrl.jpg;-500:6000;-200:0;61;CnTrl;1:2;OSEF;C0_L1
+NO_CHANGE_CODE
+NO_INVERT
