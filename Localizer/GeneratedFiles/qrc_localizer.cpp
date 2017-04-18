@@ -7,7 +7,7 @@
 *****************************************************************************/
 
 static const unsigned char qt_resource_data[] = {
-  // D:/Users/Florian/Documents/Visual Studio 2015/Projects/Localizer/Localizer/Resources/Config/frequencyBand.txt
+  // D:/Users/Florian/Documents/Arbeit/Repository/C++/Localizer/Localizer/Resources/Config/frequencyBand.txt
   0x0,0x0,0x0,0x1e,
   0x47,
   0x61,0x6d,0x6d,0x61,0xd,0xa,0x35,0x30,0x3a,0x31,0x30,0x3a,0x31,0x35,0x30,0xd,
