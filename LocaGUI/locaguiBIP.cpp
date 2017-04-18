@@ -59,11 +59,11 @@ void LocaGUIBIP::createBipoles()
 	//}
 
 	//On enlève les éléc qu'on veut pas																																																  //
-	int pos = std::find(elan->index_supp.begin(), elan->index_supp.end(), 0) - elan->index_supp.begin();																																				  //
-	pos = pos - 1;																																																					  //
+	//int pos = std::find(elan->index_supp.begin(), elan->index_supp.end(), 0) - elan->index_supp.begin();																																				  //
+	////pos = pos - 1;																																																					  //
 
-	if (pos < elan->index_supp.size())																																																	  //
-	{																																																								  //
+	//if (pos < elan->index_supp.size() - 1)																																																	  //
+	//{																																																								  //
 		//array sort puis on vide																																																	  //
 		sort(elan->index_supp.begin(), elan->index_supp.end());																																													  //
 		for (int i = elan->index_supp.size() - 1; i >= 0; i--)																																											  //
@@ -73,7 +73,7 @@ void LocaGUIBIP::createBipoles()
 			elan->trc->nameElectrodeNegativ.erase(elan->trc->nameElectrodeNegativ.begin() + elan->index_supp[i]);																																		  //
 			elan->trc->eegData.erase(elan->trc->eegData.begin() + elan->index_supp[i]);
 		}																																																							  //
-	}																																																								  //
+	//}																																																								  //
 
 	//elan->eeg_loc_montage(elan->trc->nameElectrodePositiv, elan->trc->signalPosition);
 	//accept();

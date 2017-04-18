@@ -117,7 +117,7 @@ void LocaGUI::readFreqFile(string p_pathFreq)
 			int step = atoi(splitValue[1].c_str());
 			int fMax = atoi(splitValue[2].c_str());
 
-			for (int i = 0; i <= step; i++)
+			for (int i = 0; i <= ((fMax - fMin) / step); i++)
 			{
 				tempFreqVal.push_back(fMin + (i * step));
 			}
@@ -437,13 +437,13 @@ void LocaGUI::provClicked(QListWidgetItem *provItem)
 { 
 	QFileDialog *fileDialProv = new QFileDialog(this);
 	fileDialProv->setFileMode(QFileDialog::FileMode::ExistingFile);
-	QString fileName = fileDialProv->getOpenFileName(this, tr("Chosse Wanted PROV File"), "C:\\", tr("PROV Files (*.prov *.PROV)"));
+	QString fileName = fileDialProv->getOpenFileName(this, tr("Chosse Wanted PROV File"), "./Config/Prov/", tr("PROV Files (*.prov *.PROV)"));
 
 	QFile provFile(fileName.toStdString().c_str());
 	if (provFile.exists())
 	{
-		provItem->setBackgroundColor(Qt::green);
 		provItem->setText(fileName);
+		provItem->setBackgroundColor(Qt::green);
 	}
 	
 }

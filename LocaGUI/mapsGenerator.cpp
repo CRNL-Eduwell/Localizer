@@ -390,6 +390,7 @@ void mapsGenerator::createColorBar(QPainter *painter)
 void mapsGenerator::defineLineSeparation(QPainter *painter, vector<int> nbTrialPerRow, int nbCol)
 {
 	int nbRow = nbTrialPerRow.size() - 1;
+
 	int nbHorizLine = nbRow;
 	int nbVertLine = nbCol - 1;
 	float sizePxLine = 0.005208333 * MatrixRect.width();

@@ -170,8 +170,8 @@ void Worker::process()
 	TRCfilePath << locaAnaOpt[0]->patientFolder << "/";
 	vector<string> directoryList = CRperf::getAllFolderNames(TRCfilePath.str());
 
-	CRData** files = new CRData*[4];
-	files[0] = files[1] = files[2] = files[3] = nullptr;
+	CRData** files = new CRData*[5];
+	files[0] = files[1] = files[2] = files[3] = files[4] = nullptr;
 	for (int i = 0; i < directoryList.size(); i++)
 	{
 		stringstream().swap(TRCfilePath);

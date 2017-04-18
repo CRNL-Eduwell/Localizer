@@ -32,6 +32,7 @@ namespace InsermLibrary
 			static void LEC1CR(LOCAANALYSISOPTION *p_anaopt, TRIGGINFO *triggers);
 			static void MCSECR(LOCAANALYSISOPTION *p_anaopt, TRIGGINFO *triggers);
 			static void MVISMVEBCR(LOCAANALYSISOPTION *p_anaopt, TRIGGINFO *triggers);
+			static void MARA(LOCAANALYSISOPTION *p_anaopt, TRIGGINFO *triggers);
 
 			static vector<string> getAllFolderNames(string rootPath);
 			static CRData* getCRInfo(string filePath, string rootName, int numberConditions);

@@ -74,6 +74,10 @@ void InsermLibrary::LOCA::LocaSauron(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPT
 	{
 		InsermLibrary::CRperf::MVISMVEBCR(p_anaopt, triggCatEla);
 	}
+	else if (p_anaopt->task == "MARA")
+	{
+		InsermLibrary::CRperf::MARA(p_anaopt, triggCatEla);
+	}
 	//EndCr
 
 	//Inv
@@ -159,8 +163,8 @@ void InsermLibrary::LOCA::LocaSauron(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPT
 					/*****************************************/
 					/*				loc_env2plot			 */
 					/*****************************************/	
-					if (p_anaopt->task == "AUDI" || p_anaopt->task == "MOTO" || p_anaopt->task == "MVIS"
-												 || p_anaopt->task == "MVEB" || p_anaopt->task == "ARFA")
+					if (p_anaopt->task == "AUDI" || p_anaopt->task == "MOTO" || p_anaopt->task == "ARFA" ||
+						p_anaopt->task == "MVIS" || p_anaopt->task == "MVEB")
 					{
 						loc_bar2plot(p_elan, p_prov, p_anaopt, correspondingEvents, i, folderTrialsSM.str());
 					}
@@ -260,8 +264,8 @@ void InsermLibrary::LOCA::LocaSauron(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPT
 						/*****************************************/
 						/*				loc_env2plot			 */
 						/*****************************************/
-						if (p_anaopt->task == "AUDI" || p_anaopt->task == "MOTO" || p_anaopt->task == "MVIS"
-													 || p_anaopt->task == "MVEB" || p_anaopt->task == "ARFA")
+						if (p_anaopt->task == "AUDI" || p_anaopt->task == "MOTO" || p_anaopt->task == "ARFA" ||
+							p_anaopt->task == "MVIS" || p_anaopt->task == "MVEB")
 						{
 							loc_bar2plot(p_elan, p_prov, p_anaopt, correspondingEvents, i, folderTrialsSM.str());
 						}
@@ -415,6 +419,7 @@ void InsermLibrary::LOCA::renameTrigger(TRIGGINFO *triggers, TRIGGINFO* downsamp
 					count = j + 1;
 					winMax = downsampledTriggers->trigg[j].sampleTrigger + winSamMax;
 					winMin = downsampledTriggers->trigg[j].sampleTrigger - abs(winSamMin);//+ winSamMin;
+
 					while ((downsampledTriggers->trigg[count].sampleTrigger < winMax) && (downsampledTriggers->trigg[count].sampleTrigger > winMin))
 					{
 						if (downsampledTriggers->trigg[count].valueTrigger == oldSecondaryCode[i])
@@ -433,7 +438,8 @@ void InsermLibrary::LOCA::renameTrigger(TRIGGINFO *triggers, TRIGGINFO* downsamp
 						}	
 						else
 						{
-							break;
+							count++;
+							//break;
 						}
 					}
 				}
@@ -547,6 +553,10 @@ void InsermLibrary::LOCA::loc_eeg2erp(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOP
 		}
 	}
 
+	cout << eventUsed.size() << endl;
+	cout << (windowSample[1] - windowSample[0]) << endl;
+	cout << p_elan->trc->nameElectrodePositiv.size() << endl;
+
 	InsermLibrary::DrawPlotsVisu::drawPlots d = InsermLibrary::DrawPlotsVisu::drawPlots::drawPlots(p_prov, outputFolder);
 	d.drawDataOnTemplate(p_elan, p_anaopt, m_bigdata_mono, eventUsed, -1, 0);
 	d.drawDataOnTemplate(p_elan, p_anaopt, m_bigdata_bipo, eventUsed, -1, 1);
@@ -600,36 +610,97 @@ void InsermLibrary::LOCA::loc_env2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISO
 /**************************************************************/
 /*							BAR2PLOT						  */
 /**************************************************************/
+//void InsermLibrary::LOCA::loc_bar2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt, vector<int> p_correspondingEvents, int currentFreqBand, string outputFolder)
+//{
+//	vector<int> indexEventUsed, eventUsed;
+//	int windowSample[2]{ (int) round(64 * p_prov->visuBlocs[0].dispBloc.epochWindow[0] / 1000),
+//						 (int) round(64 * p_prov->visuBlocs[0].dispBloc.epochWindow[1] / 1000) };
+//	int copyIndex = 0;
+//	vector<vector<vector<double>>> p_value3D;
+//	vector<vector<vector<int>>> p_sign3D;
+//	vector<PVALUECOORD> significantValue;
+//
+//	for (int i = 0; i < triggTRC->numberTrigg; i++)	
+//	{					
+//		for (int j = 0; j < p_prov->visuBlocs.size(); j++)	
+//		{						
+//			if (triggTRC->trigg[i].valueTrigger == p_prov->visuBlocs[j].mainEventBloc.eventCode[0])	
+//			{									
+//				indexEventUsed.push_back(i);
+//				eventUsed.push_back(triggTRC->trigg[i].valueTrigger);
+//			}													
+//		}					
+//	}																		
+//
+//	double ***m_bigDataFrequency = allocate3DArray<double>(eventUsed.size(), p_elan->elanFreqBand[currentFreqBand]->chan_nb, (windowSample[1] - windowSample[0]) + 1);
+//
+//	cout << "Reading Hilberted Bipo ..." << endl;
+//	for (int i = 0; i < eventUsed.size(); i++)
+//	{		
+//		int beginInd = triggDownTRC->trigg[indexEventUsed[i]].sampleTrigger + windowSample[0];
+//		for (int j = 0; j < (windowSample[1] - windowSample[0]) + 1; j++)
+//		{	
+//			for (int k = 0; k < p_elan->elanFreqBand[currentFreqBand]->chan_nb; k++)
+//			{
+//				m_bigDataFrequency[i][k][j] = p_elan->elanFreqBand[currentFreqBand]->eeg.data_double[0][k][beginInd + j];
+//			}
+//		}
+//	}
+//
+//	if (opt->statsOption.useKruskall)
+//	{
+//		copyIndex = 0;
+//		p_value3D = InsermLibrary::Stats::pValuesKruskall(p_elan->elanFreqBand[currentFreqBand], p_prov, triggCatEla, p_correspondingEvents, m_bigDataFrequency);
+//		p_sign3D = InsermLibrary::Stats::signKruskall(p_elan->elanFreqBand[currentFreqBand], p_prov, triggCatEla, p_correspondingEvents, m_bigDataFrequency);
+//		if (opt->statsOption.useFDRKrus)
+//		{
+//			significantValue = InsermLibrary::Stats::FDR(p_value3D, p_sign3D, copyIndex, opt->statsOption.pKruskall);
+//		}
+//		else
+//		{
+//			significantValue = InsermLibrary::Stats::loadPValues(p_value3D, p_sign3D, opt->statsOption.pKruskall);
+//		}
+//
+//		InsermLibrary::Stats::exportStatsData(p_elan, p_prov, significantValue, outputFolder, true);
+//	}
+//
+//	InsermLibrary::DrawPlotsVisu::drawBars b = InsermLibrary::DrawPlotsVisu::drawBars::drawBars(p_prov, outputFolder);
+//	b.drawDataOnTemplate(p_elan, p_anaopt, currentFreqBand, m_bigDataFrequency, eventUsed, significantValue);
+//
+//	deAllocate3DArray(m_bigDataFrequency, eventUsed.size(), p_elan->elanFreqBand[currentFreqBand]->chan_nb);
+//}
+
 void InsermLibrary::LOCA::loc_bar2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISOPTION *p_anaopt, vector<int> p_correspondingEvents, int currentFreqBand, string outputFolder)
 {
 	vector<int> indexEventUsed, eventUsed;
-	int windowSample[2]{ (int) round(64 * p_prov->visuBlocs[0].dispBloc.epochWindow[0] / 1000),
-						 (int) round(64 * p_prov->visuBlocs[0].dispBloc.epochWindow[1] / 1000) };
+	int windowSample[2]{ (int)round(64 * p_prov->visuBlocs[0].dispBloc.epochWindow[0] / 1000),
+		(int)round(64 * p_prov->visuBlocs[0].dispBloc.epochWindow[1] / 1000) };
 	int copyIndex = 0;
 	vector<vector<vector<double>>> p_value3D;
 	vector<vector<vector<int>>> p_sign3D;
 	vector<PVALUECOORD> significantValue;
 
-	for (int i = 0; i < triggTRC->numberTrigg; i++)	
-	{					
-		for (int j = 0; j < p_prov->visuBlocs.size(); j++)	
-		{						
-			if (triggTRC->trigg[i].valueTrigger == p_prov->visuBlocs[j].mainEventBloc.eventCode[0])	
-			{									
+	for (int i = 0; i < triggTRC->numberTrigg; i++)
+	{
+		for (int j = 0; j < p_prov->visuBlocs.size(); j++)
+		{
+			if (triggTRC->trigg[i].valueTrigger == p_prov->visuBlocs[j].mainEventBloc.eventCode[0])
+			{
 				indexEventUsed.push_back(i);
 				eventUsed.push_back(triggTRC->trigg[i].valueTrigger);
-			}													
-		}					
-	}																		
+			}
+		}
+	}
 
 	double ***m_bigDataFrequency = allocate3DArray<double>(eventUsed.size(), p_elan->elanFreqBand[currentFreqBand]->chan_nb, (windowSample[1] - windowSample[0]) + 1);
 
-	cout << "Reading Hilberted Mono ..." << endl;
+	cout << "Reading Hilberted Bipo ..." << endl;
 	for (int i = 0; i < eventUsed.size(); i++)
-	{		
-		int beginInd = triggDownTRC->trigg[indexEventUsed[i]].sampleTrigger + windowSample[0];
+	{
+		//int beginInd = triggDownTRC->trigg[indexEventUsed[i]].sampleTrigger + windowSample[0];
+		int beginInd = triggCatEla->trigg[i].sampleTrigger + windowSample[0];
 		for (int j = 0; j < (windowSample[1] - windowSample[0]) + 1; j++)
-		{	
+		{
 			for (int k = 0; k < p_elan->elanFreqBand[currentFreqBand]->chan_nb; k++)
 			{
 				m_bigDataFrequency[i][k][j] = p_elan->elanFreqBand[currentFreqBand]->eeg.data_double[0][k][beginInd + j];
@@ -644,14 +715,31 @@ void InsermLibrary::LOCA::loc_bar2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISO
 		p_sign3D = InsermLibrary::Stats::signKruskall(p_elan->elanFreqBand[currentFreqBand], p_prov, triggCatEla, p_correspondingEvents, m_bigDataFrequency);
 		if (opt->statsOption.useFDRKrus)
 		{
-			significantValue = InsermLibrary::Stats::FDR(p_value3D, p_sign3D, copyIndex, opt->statsOption.pWilcoxon);
+			significantValue = InsermLibrary::Stats::FDR(p_value3D, p_sign3D, copyIndex, opt->statsOption.pKruskall);
 		}
 		else
 		{
-			significantValue = InsermLibrary::Stats::loadPValues(p_value3D, p_sign3D, opt->statsOption.pWilcoxon);
+			significantValue = InsermLibrary::Stats::loadPValues(p_value3D, p_sign3D, opt->statsOption.pKruskall);
 		}
 
 		InsermLibrary::Stats::exportStatsData(p_elan, p_prov, significantValue, outputFolder, true);
+	}
+	deAllocate3DArray(m_bigDataFrequency, eventUsed.size(), p_elan->elanFreqBand[currentFreqBand]->chan_nb);
+
+	m_bigDataFrequency = allocate3DArray<double>(eventUsed.size(), p_elan->elanFreqBand[currentFreqBand]->chan_nb, (windowSample[1] - windowSample[0]) + 1);
+
+	cout << "Reading Hilberted Bipo ..." << endl;
+	for (int i = 0; i < eventUsed.size(); i++)
+	{
+		int beginInd = triggDownTRC->trigg[indexEventUsed[i]].sampleTrigger + windowSample[0];
+		//int beginInd = triggCatEla->trigg[i].sampleTrigger + windowSample[0];
+		for (int j = 0; j < (windowSample[1] - windowSample[0]) + 1; j++)
+		{
+			for (int k = 0; k < p_elan->elanFreqBand[currentFreqBand]->chan_nb; k++)
+			{
+				m_bigDataFrequency[i][k][j] = p_elan->elanFreqBand[currentFreqBand]->eeg.data_double[0][k][beginInd + j];
+			}
+		}
 	}
 
 	InsermLibrary::DrawPlotsVisu::drawBars b = InsermLibrary::DrawPlotsVisu::drawBars::drawBars(p_prov, outputFolder);
@@ -659,7 +747,6 @@ void InsermLibrary::LOCA::loc_bar2plot(ELAN *p_elan, PROV *p_prov, LOCAANALYSISO
 
 	deAllocate3DArray(m_bigDataFrequency, eventUsed.size(), p_elan->elanFreqBand[currentFreqBand]->chan_nb);
 }
-
 /**************************************************************/
 /*							TRIALMAT						  */
 /**************************************************************/
@@ -1009,32 +1096,29 @@ vector<int> InsermLibrary::LOCA::sortTrials(PROV *p_prov)
 
 	for (int i = 0; i < p_prov->visuBlocs.size(); i++)
 	{
-		if (p_prov->visuBlocs[i].dispBloc.col == 1)
+		vector<int> otherLine;
+		for (int j = 0; j < correspondingEvent.size(); j++)
 		{
-			vector<int> otherLine;
-			for (int j = 0; j < correspondingEvent.size(); j++)
+			if (correspondingEvent[j] == (p_prov->visuBlocs[i].dispBloc.row - 1) + (p_prov->nbRow() * (p_prov->visuBlocs[i].dispBloc.col - 1)))
 			{
-				if (correspondingEvent[j] == (p_prov->visuBlocs[i].dispBloc.row - 1) + (p_prov->nbRow() * (p_prov->visuBlocs[i].dispBloc.col - 1)))
-				{
-					otherLine.push_back(j);
-				}
+				otherLine.push_back(j);
 			}
+		}
 
-			sortChoice = p_prov->visuBlocs[i].dispBloc.sort;
-			vector<string> sortSplit = split<string>(sortChoice, "_");
+		sortChoice = p_prov->visuBlocs[i].dispBloc.sort;
+		vector<string> sortSplit = split<string>(sortChoice, "_");
 
-			for (int j = 1; j < sortSplit.size(); j++)
+		for (int j = 1; j < sortSplit.size(); j++)
+		{
+			sortingChoice Choice = (sortingChoice)(sortSplit[j][0]);
+			int numberChoice = int(sortSplit[j][1]) - 48; // -48 because integer 0 is 48 in char so it'll be the number
+
+			switch (Choice)
 			{
-				sortingChoice Choice = (sortingChoice)(sortSplit[j][0]);
-				int numberChoice = int(sortSplit[j][1]) - 48; // -48 because integer 0 is 48 in char so it'll be the number
-
-				switch (Choice)
-				{
-				case CodeSort:		sortBySecondaryCode(otherLine);
-									break;
-				case LatencySort:   sortByLatency(otherLine);
-									break;
-				}
+			case CodeSort:		sortBySecondaryCode(otherLine);
+								break;
+			case LatencySort:   sortByLatency(otherLine);
+								break;
 			}
 		}
 	}

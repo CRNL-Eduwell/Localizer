@@ -265,7 +265,7 @@ vector<vector<vector<double>>> InsermLibrary::Stats::pValuesKruskall(elan_struct
 	int numberCol = p_prov->nbCol();
 	int numberRow = p_prov->nbRow();
 	//===
-	int v_window_ms[2];
+	int v_window_ms[2], v_window_sam[2];
 	int mini = 0, Maxi = 0;
 	for (int i = 0; i < p_prov->visuBlocs.size(); i++)
 	{
@@ -276,6 +276,9 @@ vector<vector<vector<double>>> InsermLibrary::Stats::pValuesKruskall(elan_struct
 	v_window_ms[0] = mini;
 	v_window_ms[1] = Maxi;
 	//===
+
+	v_window_sam[0] = round((64 * v_window_ms[0]) / 1000);
+	v_window_sam[1] = round((64 * v_window_ms[1]) / 1000);
 
 	vector<vector<vector<double>>> p_value3D;
 	for (int i = 0; i < p_elan_struct->chan_nb; i++)
@@ -292,12 +295,13 @@ vector<vector<vector<double>>> InsermLibrary::Stats::pValuesKruskall(elan_struct
 
 		for (int l = 0; l < numberSubTrial; l++)
 		{
-			int baselineDebut = 16;
-			int baselineFin = 48;
+			int baselineDebut = 0;  //=16;
+			int baselineFin = v_window_sam[1] - v_window_sam[0];   //=48;
 
 			for (int m = 0; m < (baselineFin - baselineDebut); m++)
 			{
-				temp += eegData[triggCatEla->trigg[a + l].origPos][i][baselineDebut + m];
+				//temp += eegData[triggCatEla->trigg[a + l].origPos][i][baselineDebut + m];
+				temp += eegData[a + l][i][baselineDebut + m];
 			}
 			baseLineData.push_back(temp / (baselineFin - baselineDebut));
 			temp = 0;
@@ -314,12 +318,13 @@ vector<vector<vector<double>>> InsermLibrary::Stats::pValuesKruskall(elan_struct
 			{
 				//boucle moyenne des X fenetres que l'on veut (même taille que base line)
 
-				int winDebut = 16;
-				int winFin = 48;
+				int winDebut = 0;  //=16;
+				int winFin = v_window_sam[1] - v_window_sam[0];   //=48;
 
 				for (int m = 0; m < (winFin - winDebut); m++)
 				{
-					temp2 += eegData[triggCatEla->trigg[a + l].origPos][i][winDebut + m];
+					//temp2 += eegData[triggCatEla->trigg[a + l].origPos][i][winDebut + m];
+					temp2 += eegData[a + l][i][winDebut + m];
 				}
 				EEGData.push_back(temp2 / (winFin - winDebut));
 				temp2 = 0;
@@ -391,7 +396,8 @@ vector<vector<vector<int>>> InsermLibrary::Stats::signKruskall(elan_struct_t *p_
 
 			for (int m = 0; m < (baselineFin - baselineDebut); m++)
 			{
-				temp += eegData[triggCatEla->trigg[a + l].origPos][i][baselineDebut + m];
+				//temp += eegData[triggCatEla->trigg[a + l].origPos][i][baselineDebut + m];
+				temp += eegData[a + l][i][baselineDebut + m];
 			}
 			baseLineData.push_back(temp / (baselineFin - baselineDebut));
 			temp = 0;
@@ -413,7 +419,8 @@ vector<vector<vector<int>>> InsermLibrary::Stats::signKruskall(elan_struct_t *p_
 
 				for (int m = 0; m < (winFin - winDebut); m++)
 				{
-					temp2 += eegData[triggCatEla->trigg[a + l].origPos][i][winDebut + m];
+					//temp2 += eegData[triggCatEla->trigg[a + l].origPos][i][winDebut + m];
+					temp2 += eegData[a + l][i][winDebut + m];
 				}
 				EEGData.push_back(temp2 / (winFin - winDebut));
 				temp2 = 0;

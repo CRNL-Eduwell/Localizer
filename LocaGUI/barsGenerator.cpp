@@ -148,7 +148,7 @@ void InsermLibrary::DrawPlotsVisu::drawBars::drawDataOnTemplate(ELAN *p_elan, LO
 
 		if (i > 0)
 		{
-			compteurElec += v_idCopy[i - 1].size() - 1;
+			compteurElec += v_idCopy[i - 1].size();// -1;
 		}
 
 		s_pos = i % nbElecPerFigure;
@@ -281,6 +281,7 @@ void InsermLibrary::DrawPlotsVisu::drawBars::drawDataOnTemplate(ELAN *p_elan, LO
 				int coeffEsp = ceil(450 / currentProv->nbRow());
 				double x = (screenWidth * 0.0586) + (570 * (i % 3));
 				double y = (screenHeigth * 0.107) + (screenHeigth * 0.0173) + (screenHeigth * 0.0406 * (j));
+				
 				double x_Krus = 0;
 				double y_Krus = 0;
 
@@ -321,7 +322,7 @@ void InsermLibrary::DrawPlotsVisu::drawBars::drawDataOnTemplate(ELAN *p_elan, LO
 
 					for (int z = 0; z < p_significantValue.size(); z++)
 					{
-						if (((p_significantValue[z].elec == compteurElec + j) && (p_significantValue[z].window == k)))
+						if (((p_significantValue[z].elec == compteurElec + j - 1) && (p_significantValue[z].window == k)))
 						{
 							if ((sizeSigcheck[z] == false))
 							{
@@ -333,7 +334,11 @@ void InsermLibrary::DrawPlotsVisu::drawBars::drawDataOnTemplate(ELAN *p_elan, LO
 								}
 
 								x_Krus = 112 + (570 * (i % 3)) + (coeffEsp * k);
+								//if barplot is positiv , we need to move y up
+								//otherwise it's just above the 0 line
 								y_Krus = y + (-scaleFactor * (v_erp[k] + v_lim[k])) - 4;
+								y_Krus = min(y_Krus, y - 4);
+
 								painter->setPen(QColor(255, 0, 255, 255)); //pink petant
 								painter->drawLine(x_Krus, y_Krus, x_Krus + 19, y_Krus);
 								painter->setPen(QColor(0, 0, 0, 255)); //noir
