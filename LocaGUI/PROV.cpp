@@ -4,6 +4,12 @@ InsermLibrary::PROV::PROV(string provFilePath)
 {
 	filePath = provFilePath;
 	extractProvBloc(filePath);
+	sort(visuBlocs.begin(), visuBlocs.end(),
+		[](BLOC a, BLOC b) {
+		return ((a.dispBloc.row < b.dispBloc.row) && (a.dispBloc.col == b.dispBloc.col));
+	});
+
+	getRightOrderBloc();
 }
 
 InsermLibrary::PROV::~PROV()
@@ -39,6 +45,74 @@ int InsermLibrary::PROV::nbRow()
 	}
 
 	return max;
+}
+
+vector<int> InsermLibrary::PROV::getMainCodes()
+{
+	vector<int> mainEventsCode;
+	for (int m = 0; m < visuBlocs.size(); m++)
+	{
+		if (find(mainEventsCode.begin(), mainEventsCode.end(), visuBlocs[m].mainEventBloc.eventCode[0]) == mainEventsCode.end())
+		{
+			mainEventsCode.push_back(visuBlocs[m].mainEventBloc.eventCode[0]);
+		}
+	}
+	return mainEventsCode;
+}
+
+vector<int> InsermLibrary::PROV::getSecondaryCodes()
+{
+	vector<int> respEventsCode;
+	for (int m = 0; m < visuBlocs.size(); m++)
+	{
+		for (int j = 0; j < visuBlocs[m].secondaryEvents.size(); j++)
+		{
+			if (find(respEventsCode.begin(), respEventsCode.end(), visuBlocs[m].secondaryEvents[j].eventCode[0]) == respEventsCode.end())
+			{
+				respEventsCode.push_back(visuBlocs[m].secondaryEvents[j].eventCode[0]); //If multiple secondary code, just use the first one of the list
+			}
+		}
+	}
+	return respEventsCode;
+}
+
+int *InsermLibrary::PROV::getBiggestWindowMs()
+{
+	int window_ms[2]{ 0,0 }; 
+	for (int i = 0; i < visuBlocs.size(); i++)
+	{
+		window_ms[0] = min(window_ms[0], visuBlocs[i].dispBloc.epochWindow[0]);
+		window_ms[1] = max(window_ms[1], visuBlocs[i].dispBloc.epochWindow[1]);
+	}
+
+	return new int[2]{ window_ms[0], window_ms[1] };
+}
+
+int *InsermLibrary::PROV::getBiggestWindowSam(int samplingFreq)
+{
+	int window_sam[2]{ 0,0 };
+	int *window_ms = getBiggestWindowMs();
+	window_sam[0] = round((samplingFreq * window_ms[0]) / 1000);
+	window_sam[1] = round((samplingFreq * window_ms[1]) / 1000);
+	delete window_ms;
+
+	return new int[2]{ window_sam[0], window_sam[1] };
+}
+
+int *InsermLibrary::PROV::getWindowMs(int idBloc)
+{
+	return new int[2]{ visuBlocs[idBloc].dispBloc.epochWindow[0], visuBlocs[idBloc].dispBloc.epochWindow[1] };
+}
+
+int *InsermLibrary::PROV::getWindowSam(int samplingFreq, int idBloc)
+{
+	int window_sam[2]{ 0,0 };
+	int *window_ms = getWindowMs(idBloc);
+	window_sam[0] = round((samplingFreq * window_ms[0]) / 1000);
+	window_sam[1] = round((samplingFreq * window_ms[1]) / 1000);
+	delete window_ms;
+
+	return new int[2]{ window_sam[0], window_sam[1] };
 }
 
 void InsermLibrary::PROV::extractProvBloc(string provFilePath)
@@ -157,11 +231,11 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 		vector<string>splitInvertWin = split<string>(invertmapsinfo, "|");
 
 		vector<string>splitInvertEpochWin = split<string>(splitInvertWin[0], ":");
-			invertmaps.epochWindow[0] = atoi(&splitInvertEpochWin[0][0]);
-			invertmaps.epochWindow[1] = atoi(&splitInvertEpochWin[1][0]);
+		invertmaps.epochWindow[0] = atoi(&splitInvertEpochWin[0][0]);
+		invertmaps.epochWindow[1] = atoi(&splitInvertEpochWin[1][0]);
 		vector<string>splitInvertBaseLineWin = split<string>(splitInvertWin[1], ":");
-			invertmaps.baseLineWindow[0] = atoi(&splitInvertBaseLineWin[0][0]);
-			invertmaps.baseLineWindow[1] = atoi(&splitInvertBaseLineWin[1][0]);
+		invertmaps.baseLineWindow[0] = atoi(&splitInvertBaseLineWin[0][0]);
+		invertmaps.baseLineWindow[1] = atoi(&splitInvertBaseLineWin[1][0]);
 	}
 	else
 	{
@@ -187,4 +261,22 @@ vector<string> InsermLibrary::PROV::asciiDataProv(string provFilePath)
 		cout << " Error opening Prov File @ " << provFilePath << endl;																																					      //
 	}
 	return split<string>(buffer.str(), "\r\n");
+}
+
+//Get the right order of bloc in case prov file is in disorder
+void InsermLibrary::PROV::getRightOrderBloc()
+{
+	for (int z = 0; z < nbCol(); z++)
+	{
+		for (int y = 0; y < nbRow(); y++)
+		{
+			for (int k = 0; k < visuBlocs.size(); k++)
+			{
+				if ((visuBlocs[k].dispBloc.col == z + 1) && (visuBlocs[k].dispBloc.row == y + 1))
+				{
+					rightOrderBlocs.push_back(y);
+				}
+			}
+		}
+	}
 }

@@ -19,10 +19,18 @@ namespace InsermLibrary
 		~PROV();
 		int nbCol();
 		int nbRow();
+		vector<int> getMainCodes();
+		vector<int> getSecondaryCodes();
+		int *getBiggestWindowMs();
+		int *getBiggestWindowSam(int samplingFreq);
+		int *getWindowMs(int idBloc);
+		int *getWindowSam(int samplingFreq, int idBloc);
 	private:
 		void extractProvBloc(string provFilePath);
 		vector<string> asciiDataProv(string provFilePath);
+		void getRightOrderBloc();
 	public:
+		vector<int> rightOrderBlocs;
 		vector<BLOC> visuBlocs;
 		invertMap invertmaps;
 		string filePath = "";

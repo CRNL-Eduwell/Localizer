@@ -3,11 +3,13 @@
 
 #include <iostream>
 #include <fstream>		
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\ELAN\ELAN.h"	
-//#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\PROV\PROV.h"
-#include"PROV.h"
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\STATS\wilcox.h"
-#include "D:\Users\Florian\Documents\Arbeit\Software\DLL\C++\Debug\STATS\kruskall.h"
+
+#include "PROV.h"
+#include "eegContainerParameters.h"
+#include "eegContainer.h"
+
+#include "wilcox.h"
+#include "kruskall.h"
 #include "Utility.h"
 
 using namespace std;
@@ -17,19 +19,27 @@ namespace InsermLibrary
 {
 	class Stats
 	{
-	public :
-		static vector<vector<vector<double>>> pValuesWilcoxon(elan_struct_t *p_elan_struct, PROV *p_prov, TRIGGINFO *triggCatEla, vector<int> correspEvent, double ***bigdata);
-		static vector<vector<vector<int>>> signWilcoxon(elan_struct_t *p_elan_struct, PROV *p_prov, TRIGGINFO *triggCatEla, vector<int> correspEvent, double ***bigdata);
-
-		static vector<vector<vector<double>>> pValuesKruskall(elan_struct_t *p_elan_struct, PROV *p_prov, TRIGGINFO *triggCatEla, vector<int> correspEvent, double ***eegData);
-		static vector<vector<vector<int>>> signKruskall(elan_struct_t *p_elan_struct, PROV *p_prov, TRIGGINFO *triggCatEla, vector<int> correspEvent, double ***bigdata);
-
-		static vector<PVALUECOORD> FDR(vector<vector<vector<double>>> pValues3D, vector<vector<vector<int>>> pSign3D, int &copyIndex, float pLimit);
-		static vector<PVALUECOORD> loadPValues(vector<vector<vector<double>>> pValues3D, vector<vector<vector<int>>> pSign3D);
-		static vector<PVALUECOORD> loadPValues(vector<vector<vector<double>>> pValues3D, vector<vector<vector<int>>> pSign3D, float pLimit);
-		static void exportStatsData(ELAN *p_elan, PROV *p_prov, vector<PVALUECOORD> pValues, string outputFolder, bool isBar);
-		static void exportPChanels(string outputFolder, vector<vector<vector<double>>> pValues3D);
-		static void exportFDRChanels(string outputFolder, vector<PVALUECOORD> pValuesFDR);
+	public:
+		static void pValuesWilcoxon(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata, TRIGGINFO *triggCatEla,
+									int samplingFreq, PROV *myprovFile);
+		static void pValuesKruskall(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata, TRIGGINFO *triggCatEla, 
+									int samplingFreq, PROV *myprovFile);
+		static vec1<PVALUECOORD> FDR(vec3<float> &pValues3D, vec3<int> &pSign3D, int &copyIndex, float pLimit);
+		static vec1<PVALUECOORD> loadPValues(vec3<float> &pValues3D, vec3<int> &pSign3D);
+		static vec1<PVALUECOORD> loadPValues(vec3<float> &pValues3D, vec3<int> &pSign3D, float pLimit);
+		static void exportStatsData(eegContainer *myEegContainer, PROV *myprovFile, vec1<PVALUECOORD> pValues, 
+									string outputFolder, bool isBar);
+	private:
+		static vec1<float> getBaselineBlocWilcoxon(int currentChanel, int lowTrial, int numberSubTrial, int samplingFreq,
+												   displayBLOC dispBloc, vec3<float> &bigdata);
+		static vec2<float> getEegDataBlocWilcoxon(int currentChanel, int lowTrial, int numberSubTrial, int samplingFreq,
+												  int idBloc, PROV *myprovFile, vec3<float> &bigdata);
+		static vec1<int> getEegSignBlocWilcoxon(vec1<float> &baseLine, vec2<float> &eegDataBig);
+		//==
+		static vec1<float> getBaselineKruskall(vec3<float> &bigdata, TRIGGINFO *triggCatEla, int currentChanel, int* windowSam);
+		static vec2<float> getEEGDataKruskall(vec3<float> &bigdata, TRIGGINFO *triggCatEla, int currentChanel, int* windowSam);
+		static vec2<float> getPValuesKruskall(vec1<float> &baseLineData, vec2<float> &eegData);
+		static vec2<int> getEegSignKruskall(vec1<float> &baseLineData, vec2<float> &eegData);
 	};
 }
 

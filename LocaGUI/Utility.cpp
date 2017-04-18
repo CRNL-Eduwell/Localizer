@@ -1,98 +1,108 @@
 #include "Utility.h"
 
-vector<int> InsermLibrary::findIndexes(int *tab, int sizetab, int value2find)	
+vector<string> InsermLibrary::readTxtFile(string pathFile)
 {
-	vector<int> indexesFound;	
-	for (int i = 0; i < sizetab; i++)
+	stringstream buffer;
+	ifstream file(pathFile);
+	if (file)
 	{
-		if (tab[i] == value2find)
-		{	
-			indexesFound.push_back(i);	
-		}	
-	}	
+		buffer << file.rdbuf();
+		file.close();
+		return(split<string>(buffer.str(), "\r\n"));
+	}
+	else
+	{
+		cout << " Error opening : " << pathFile << endl;
+		return vector<string>();
+	}
+}
+
+void InsermLibrary::saveTxtFile(vector<QString> data, string pathFile)
+{
+	ofstream fichier(pathFile, ios::out);
+	for (int i = 0; i < data.size(); i++)
+	{
+		fichier << data[i].toStdString() << endl;
+	}
+	fichier.close();
+}
+
+void InsermLibrary::deblankString(std::string &myString)
+{
+	myString.erase(remove_if(myString.begin(), myString.end(), isspace), myString.end());
+}
+
+void InsermLibrary::uiUserElement::analysis(vector<locaAnalysisOption> &analysisToRun, int nbLoca)
+{
+	if (analysisToRun.size() > 0)
+		analysisToRun.clear();
+
+	vector<analysisOption> dd;
+	for (int i = 0; i < eeg2envCheckBox.size(); i++)
+	{
+		analysisOption analysisOneFrequency;
+		if(eeg2envCheckBox[i]->isChecked())
+			analysisOneFrequency.eeg2env = true;
+		else
+			analysisOneFrequency.eeg2env = false;
+
+		if (env2plotCheckBox[i]->isChecked())
+			analysisOneFrequency.env2plot = true;
+		else
+			analysisOneFrequency.env2plot = false;
+
+		if (trialmapCheckBox[i]->isChecked())
+			analysisOneFrequency.trialmat = true;
+		else
+			analysisOneFrequency.trialmat = false;
+
+		dd.push_back(analysisOneFrequency);
+	}
+
+	for (int i = 0; i < nbLoca; i++)
+	{
+		locaAnalysisOption newLoca;
+		newLoca.anaOpt = vector<analysisOption>(dd);
+		analysisToRun.push_back(newLoca);
+	}
+}
+
+InsermLibrary::freqOption::freqOption(string pathFreqFile)
+{
+	char buffer[256];
+	int count = 0;
+	frequency f;
+
+	ifstream fichierFreq(pathFreqFile, ios::out);
+	while (fichierFreq.getline(buffer, 256))
+	{
+		switch (count % 2)
+		{
+		case 0:
+			f = frequency();
+			f.freqName = buffer;
+			count++;
+			break;
+		case 1:
+			vector<string> splitValue = split<string>(buffer, ":");
+			int fMin = atoi(splitValue[0].c_str());
+			int step = atoi(splitValue[1].c_str());
+			int fMax = atoi(splitValue[2].c_str());
+
+			for (int i = 0; i <= ((fMax - fMin) / step); i++)
+			{
+				f.freqBandValue.push_back(fMin + (i * step));
+			}
+			count++;
 			
-	return indexesFound;	
-}
-
-InsermLibrary::LOCAANALYSISOPTION::LOCAANALYSISOPTION(vector<vector<double>> p_frequencys, vector<vector<bool>> p_analysisDetails, string p_trcPath, string p_provPath, string p_patientFolder, string p_task, string p_expTask)
-{
-	frequencys = p_frequencys;
-	analysisDetails = p_analysisDetails;
-	trcPath = p_trcPath;
-	provPath = p_provPath;
-	patientFolder = p_patientFolder;
-	task = p_task;
-	expTask = p_expTask;
-}
-
-InsermLibrary::LOCAANALYSISOPTION::~LOCAANALYSISOPTION()
-{
-
-}
-
-InsermLibrary::TRIGG::TRIGG(int p_valueTrigger, int p_sampleTrigger, int p_rtMs, int p_rtCode, int p_origPos)
-{
-	valueTrigger = p_valueTrigger;
-	sampleTrigger = p_sampleTrigger;
-	rt_ms = p_rtMs;
-	rt_code = p_rtCode;
-	origPos = p_origPos;
-}
-
-InsermLibrary::TRIGG::~TRIGG()
-{
-
-}
-
-InsermLibrary::TRIGGINFO::TRIGGINFO(unsigned long *p_valueTrigg, unsigned long *p_sampleTrigg, int p_numberTrigg, int p_downFactor)
-{
-	numberTrigg = p_numberTrigg;
-	downFactor = p_downFactor;
-
-	for (int i = 0; i < numberTrigg; i++)
-	{
-		TRIGG t(p_valueTrigg[i], p_sampleTrigg[i] / downFactor, 1000000, -1, -1); //10000000 et -1 default value
-		trigg.push_back(t);
+			f.freqFolderName.append("f").append(splitValue[0].c_str()).append("f").append(splitValue[2].c_str());
+			frequencyBands.push_back(f);
+			break;
+		}
 	}
 }
 
-InsermLibrary::TRIGGINFO::TRIGGINFO(int *p_valueTrigg, int *p_sampleTrigg, int *p_rtMs, int p_numberTrigg, int p_downFactor)
-{
-	numberTrigg = p_numberTrigg;
-	downFactor = p_downFactor;
-
-	for (int i = 0; i < numberTrigg; i++)
-	{
-		TRIGG t(p_valueTrigg[i], p_sampleTrigg[i], p_rtMs[i], -1, -1); // -1 default value
-		trigg.push_back(t);
-	}
-}
-
-InsermLibrary::TRIGGINFO::TRIGGINFO(int *p_valueTrigg, int *p_sampleTrigg, int *p_rtMs, int *p_rtCode, int *p_origPos, int p_numberTrigg, int p_downFactor)
-{
-	numberTrigg = p_numberTrigg;
-	downFactor = p_downFactor;
-
-	for (int i = 0; i < numberTrigg; i++)
-	{
-		TRIGG t(p_valueTrigg[i], p_sampleTrigg[i], p_rtMs[i], p_rtCode[i], p_origPos[i]); // -1 default value
-		trigg.push_back(t);
-	}
-}
-
-InsermLibrary::TRIGGINFO::TRIGGINFO(int *p_valueTrigg, int *p_sampleTrigg, int p_numberTrigg, int p_downFactor)
-{
-	numberTrigg = p_numberTrigg;
-	downFactor = p_downFactor;
-
-	for (int i = 0; i < numberTrigg; i++)
-	{
-		TRIGG t(p_valueTrigg[i], p_sampleTrigg[i] / downFactor, 10000000, -1, -1); //10000000 et -1 default value
-		trigg.push_back(t);
-	}
-}
-
-InsermLibrary::TRIGGINFO::~TRIGGINFO()
+InsermLibrary::freqOption::~freqOption()
 {
 
 }

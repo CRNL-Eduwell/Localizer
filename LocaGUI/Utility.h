@@ -2,8 +2,13 @@
 #define UTILITY_H
 
 #include <iostream>
-#include <algorithm>
 #include <vector>
+#include <fstream>	
+#include <sstream>
+
+#include <QGroupBox>
+#include <QCheckBox>
+#include <QFrame>
 
 using namespace std;
 
@@ -30,105 +35,13 @@ namespace InsermLibrary
 	}
 
 	template<typename T>
-	void deleteAndNullify1D(T* pointer)
+	void deleteAndNullify1D(T& pointer)
 	{
 		if (pointer != nullptr)
 		{
 			delete pointer;
 			pointer = nullptr;
 		}
-	}
-
-	template<typename T>
-	void deleteAndNullify2D(T** pointer, int sizeFirstDim)
-	{
-		if (pointer != nullptr)
-		{
-			for (int i = 0; i < sizeFirstDim; i++)
-			{
-				delete pointer;
-				pointer = nullptr;
-			}
-		}
-	}
-
-	template<typename T>
-	inline T* allocate1DArray(int sizeFirstDim)
-	{
-		return new T[sizeFirstDim]();
-	}
-
-	template<typename T>
-	inline void deAllocate1DArray(T* myArray)
-	{
-		delete[] myArray;
-		myArray = nullptr;
-	}
-
-	template<typename T>
-	T** allocate2DArray(int sizeFirstDim, int sizeSecondDim)
-	{
-		T** myArray = new T*[sizeFirstDim];
-		for (int i = 0; i < sizeFirstDim; i++)
-		{
-			myArray[i] = new T[sizeSecondDim]();
-		}
-		return myArray;
-	}
-
-	template<typename T>
-	void deAllocate2DArray(T** myArray, int sizeFirstDim)
-	{
-		for (int i = 0; i < sizeFirstDim; i++)
-		{
-			delete[] myArray[i];
-		}
-		delete[] myArray;
-		myArray = nullptr;
-	}
-
-	template<typename T>
-	T*** allocate3DArray(int sizeFirstDim, int sizeSecondDim, int sizeThirdDim)
-	{
-		T*** myArray = new T**[sizeFirstDim];
-		for (int i = 0; i < sizeFirstDim; i++)
-		{
-			myArray[i] = new T*[sizeSecondDim];
-			for (int j = 0; j < sizeSecondDim; j++)
-			{
-				myArray[i][j] = new T[sizeThirdDim]();
-			}
-		}
-		return myArray;
-	}
-
-	template<typename T>
-	void deAllocate3DArray(T** myArray, int sizeFirstDim, int sizeSecondDim)
-	{
-		for (int i = 0; i < sizeFirstDim; i++)
-		{
-			for (int j = 0; j < sizeSecondDim; j++)
-			{
-				delete[] myArray[i][j];
-			}
-			delete[] myArray[i];
-		}
-		delete[] myArray;
-		myArray = nullptr;
-	}
-
-	template<typename T>
-	T stdDeviation(T* myArray, int sizeFirstDim)
-	{
-		T stdTempValue = 0;
-		
-		T meanValue = mean1DArray(myArray, int sizeFirstDim);
-		for (int i = 0; i < sizeFirstDim; i++)
-		{
-			stdTempValue += (myArray[i] - meanValue) * (myArray[i] - meanValue);
-		}
-
-		return sqrt(stdTempValue / (sizeFirstDim - 1));
 	}
 
 	template<typename T>
@@ -166,46 +79,103 @@ namespace InsermLibrary
 		return (sumValues / sizeFirstDim);
 	}
 
-	vector<int> findIndexes(int *tab, int sizetab, int value2find);
-	//===
-	struct picOptionLOCA
+	template<class T>
+	using vec1 = vector<T>; /**< templated std vector alias */
+
+	template<class T>
+	using vec2 = vector<vec1<T>>; /**< templated std vector of std vector alias */
+
+	template<class T>
+	using vec3 = vector<vec2<T>>; /**< templated std vector of std vector of std vector alias */
+
+	vector<string> readTxtFile(string path);
+
+	void saveTxtFile(vector<QString> data, string pathFile);
+
+	void deblankString(std::string &myString);
+	
+	//=== Option structs passed in worker and localizer
+	
+	struct frequency
 	{
-		int width = 576;
-		int height = 432;
-		int interpolationFactorX = 3;
-		int interpolationFactorY = 3;
+		string freqName;
+		string freqFolderName;
+		vector<int> freqBandValue;
 	};
 
-	struct statsOptionLOCA
+	struct freqOption
 	{
-		bool useWilcoxon = true;
-		bool useFDRWil = true;
+		freqOption(string pathFreqFile = "./Resources/Config/frequencyBand.txt");
+		~freqOption();
+		vector<frequency> frequencyBands;
+	};
+
+	struct analysisOption
+	{
+		bool eeg2env;
+		bool env2plot;
+		bool trialmat;
+	};
+
+	struct locaAnalysisOption
+	{
+		bool localizer;
+		vector<analysisOption> anaOpt;
+	};
+
+	struct statOption
+	{
+		bool wilcoxon = true;
+		bool FDRwilcoxon = true;
 		float pWilcoxon = 0.01;
-		bool useKruskall = true;
-		bool useFDRKrus = true;
+		vector<QString> locaWilcoxon;
+		bool kruskall = true;
+		bool FDRkruskall = true;
 		float pKruskall = 0.01;
+		vector<QString> locaKruskall;
 	};
 
-	struct OptionLOCA
+	struct picOption
 	{
-		picOptionLOCA picOption;
-		statsOptionLOCA statsOption;
+		QSize sizeTrialmap;
+		QSize interpolationtrialmap;
+		QSize sizePlotmap;
 	};
 
-	class LOCAANALYSISOPTION
+	struct userOption
 	{
-	public:
-		LOCAANALYSISOPTION(vector<vector<double>> p_frequencys, vector<vector<bool>> p_analysisDetails, string p_trcPath, string p_provPath, string p_patientFolder, string p_task, string p_expTask);
-		~LOCAANALYSISOPTION();
-
-		vector<vector<double>> frequencys;
-		vector<vector<bool>> analysisDetails;
-		string trcPath = "";
-		string provPath = "";
-		string patientFolder = "";
-		string task = "";
-		string expTask = "";
+		vector<QString> locaPerf;
+		freqOption freqOption;
+		vector<locaAnalysisOption> anaOption;
+		statOption statOption;
+		picOption picOption;
 	};
+
+	//== UI stuff in localizer.cpp
+
+	struct uiUserElement
+	{
+		void analysis(vector<locaAnalysisOption> &analysisToRun, int nbLoca);
+
+		vector<QCheckBox *> eeg2envCheckBox;
+		vector<QFrame *>  sm0Frame;
+		vector<QFrame *>  sm250Frame;
+		vector<QFrame *>  sm500Frame;
+		vector<QFrame *>  sm1000Frame;
+		vector<QFrame *>  sm2500Frame;
+		vector<QFrame *>  sm5000Frame;
+		vector<QFrame *>  dsPOSFrame;
+		//===
+		vector<QGroupBox *> trialmapGroupBox;
+		vector<QCheckBox *> trialmapCheckBox;
+		vector<QFrame *>  trialmapFrame;
+		//===
+		vector<QGroupBox *> env2plotGroupBox;
+		vector<QCheckBox *> env2plotCheckBox;
+		vector<QFrame *>  env2plotFrame;
+	};
+
+	//==
 
 	struct PVALUECOORD
 	{
@@ -213,36 +183,8 @@ namespace InsermLibrary
 		int condit = -69;
 		int window = -69;
 		int vectorpos = -69;
-		double pValue = -69;
+		float pValue = -69;
 		int weight = 0;
-	};
-
-	class TRIGG
-	{
-	public:
-		TRIGG(int p_valueTrigger, int p_sampleTrigger, int p_rtMs, int p_rtCode, int p_origPos);
-		~TRIGG();
-
-		int valueTrigger;
-		int sampleTrigger;
-		int rt_ms;
-		int rt_code;
-		int origPos;
-	};
-
-	class TRIGGINFO
-	{
-	public:
-		TRIGGINFO(unsigned long *p_valueTrigg, unsigned long *p_sampleTrigg, int p_numberTrigg, int p_downFactor);
-		TRIGGINFO(int *p_valueTrigg, int *p_sampleTrigg, int *p_rtMs, int p_numberTrigg, int p_downFactor);
-		TRIGGINFO(int *p_valueTrigg, int *p_sampleTrigg, int *p_rtMs, int *p_rtCode, int *p_origPos, int p_numberTrigg, int p_downFactor);
-		TRIGGINFO(int *p_valueTrigg, int *p_sampleTrigg, int p_numberTrigg, int p_downFactor);
-		~TRIGGINFO();
-
-		vector<TRIGG> trigg;
-		vector<int> mainGroupSub;
-		int numberTrigg;
-		int downFactor;
 	};
 }
 

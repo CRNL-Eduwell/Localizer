@@ -1,225 +1,398 @@
 #include "Worker.h"
-#include "QCoreApplication"
-#include "Windows.h"
 
-// --- CONSTRUCTOR ---
-Worker::Worker(OptionLOCA *p_LOCAOpt, vector<vector<double>> p_freqBandValue, vector <vector<bool>> p_anaDetails, vector<string> p_trc, vector<string> p_prov, string folderPatient, vector<string> p_tasks, vector<string> p_exptasks)
+Worker::Worker(patientFolder *currentPatient, userOption *userOpt)
 {
-	// you could copy data from constructor arguments to internal variables here.
-	LOCAOpt = p_LOCAOpt;
-	if (LOCAOpt == nullptr)
-	{
-		LOCAOpt = new OptionLOCA();
-	}
-
-	numberFiles = p_trc.size();
-	locaAnaOpt = new LOCAANALYSISOPTION*[numberFiles];
-	for (int i = 0; i < numberFiles; i++)
-	{
-		locaAnaOpt[i] = new LOCAANALYSISOPTION(p_freqBandValue, p_anaDetails, p_trc[i], p_prov[i], folderPatient, p_tasks[i], p_exptasks[i]);
-	}
-
-	//qRegisterMetaType<InsermLibrary::ELAN*>("InsermLibrary::ELAN*");
-	qRegisterMetaType<ELAN*>("ELAN*");
-
-	//get every pointer to connect when creation worker 
-	loca = new LOCA(LOCAOpt);
-
+	patient = currentPatient;
+	optionUser = userOpt;
+	loca = new LOCA(optionUser);
 }
 
-// --- DECONSTRUCTOR ---
-Worker::~Worker() {
-	// free resources
-	for (int i = 0; i < numberFiles; i++)
-	{
-		delete locaAnaOpt[i];
-	}
-	delete locaAnaOpt;
+Worker::Worker(locaFolder *locaFold, userOption *userOpt)
+{
+	this->locaFold = locaFold;
+	optionUser = userOpt;
+	loca = new LOCA(optionUser);
 }
 
-LOCA * Worker::returnLoca()
+Worker::Worker(vector<singleFile> currentFiles, userOption *userOpt, int idFile = -1)
+{
+	files = vector<singleFile>(currentFiles);
+	this->idFile = idFile;
+	optionUser = userOpt;
+	loca = new LOCA(optionUser);
+}
+
+Worker::~Worker()
+{
+	deleteAndNullify1D(loca);
+}
+
+LOCA* Worker::getLoca()
 {
 	return loca;
 }
 
-//==========================================  Methods  =========================================== 
-//===========================================  Slots  =========================================== 
-//Start processing data.
-void Worker::process() 
+void Worker::processAnalysis()
 {
-	// allocate resources using new here
-	//qDebug("Hello World!");
-	stringstream TRCfilePath, LOCAfilePath, displayText, TimeDisp;
-	SYSTEMTIME LocalTime;
-	vector<string>ElecPosSave, ElecNegSave;
-	vector<unsigned int>SignalPosSave,toDelete;
-
-	//emit sendTest(); //send to win
-	//while (wclo == false) //While win not closed 
-	//{
-	//	QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
-	//}
-
-	//emit sendLogInfo(QString::fromStdString("Bipole created !"));
-
-
-
-	int progressPerCent = 100 / numberFiles;
-	int actualPerCent = 0;
-	emit upScroll(actualPerCent);
-	for (int i = 0; i < numberFiles; i++)
+	if (patient != nullptr)
 	{
-		//To get the local time
-		GetLocalTime(&LocalTime);
-		TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond;
-		emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
-
-		stringstream().swap(TRCfilePath);
-		TRCfilePath << locaAnaOpt[i]->patientFolder << "/" << locaAnaOpt[i]->expTask << "/" << locaAnaOpt[i]->trcPath;
-
-		displayText << "Processing : " << TRCfilePath.str();
-		emit sendLogInfo(QString::fromStdString(displayText.str()));
-
-		// 1) Faire l'analyse du TRC pour récupérer les data
-		MicromedLibrary::TRC *trc = new MicromedLibrary::TRC();
-		trc->HeaderInformations(TRCfilePath.str());
-
-		/************************/
-		/* Extraction des Notes */
-		/************************/
-		trc->DescriptorNote(TRCfilePath.str(), 208);
-		trc->NoteOperator(TRCfilePath.str(), trc->noteStart, trc->noteLength);
-
-		/***************************/
-		/* Extraction des Triggers */
-		/***************************/
-		trc->DescriptorTrigger(TRCfilePath.str(), 400);
-		trc->DigitalTriggers(TRCfilePath.str(), trc->triggerStart, trc->triggerLength);
-
-		//Extract chanel names and reorder them according their position in TRC file																									  
-		trc->DescriptorElectrode(TRCfilePath.str(), 192);
-		trc->ElectrodePresence(TRCfilePath.str(), trc->electrodeStart, trc->electrodeLength);
-		trc->SortElectrodeFromFile();
-		trc->ExtractAllChanels(TRCfilePath.str());
-
-		emit sendLogInfo(QString::fromStdString("Data extracted ! "));
-
-		if (i == 0)
-		{
-			elan = new ELAN(trc, locaAnaOpt[i]->frequencys.size());
-
-			emit sendElanPointer(elan); //send Elan pointer to pop up window to choose Elec to analyse
-			while (bip == false) //While bipole not created 
-			{
-				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
-			}
-
-			emit sendLogInfo(QString::fromStdString("Bipole created !"));
-		}
-		else
-		{
-			/*On remplace le TRC que l'on va analysé*/
-			deleteAndNullify1D(elan->trc);
-			elan->trc = trc;
-
-			/*On a changé de trc mais ce sont les mêmes index qui sont supprimés*/
-			for (int i = elan->index_supp.size() - 1; i >= 0; i--)	
-			{						
-				trc->nameElectrodePositiv.erase(trc->nameElectrodePositiv.begin() + elan->index_supp[i]);	
-				trc->signalPosition.erase(trc->signalPosition.begin() + elan->index_supp[i]);	
-				trc->nameElectrodeNegativ.erase(trc->nameElectrodeNegativ.begin() + elan->index_supp[i]);	
-				trc->eegData.erase(trc->eegData.begin() + elan->index_supp[i]);
-			}
-
-			for (int i = 0; i < elan->numberFrequencyBand; i++)
-			{
-				if (elan->elanFreqBand[i]->chan_nb > 0)
-				{
-					ef_free_data_array(elan->elanFreqBand[i]);
-					ef_free_struct(elan->elanFreqBand[i]);
-				}
-			}
-		}
-
-		stringstream().swap(displayText);
-		displayText << "Number of Bip : " << elan->m_bipole.size();
-		emit sendLogInfo(QString::fromStdString(displayText.str()));
-
-		emit sendLogInfo(QString::fromStdString("Beginning Analysis ..."));
-
-		PROV *p_provVISU = new PROV(locaAnaOpt[i]->provPath);
-		LOCAfilePath << locaAnaOpt[i]->patientFolder << "/" << locaAnaOpt[i]->expTask;
-
-		loca->LocaSauron(elan, p_provVISU, locaAnaOpt[i]);
-
-		stringstream().swap(TimeDisp);
-		GetLocalTime(&LocalTime);
-		TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond;
-		emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
-
-		deleteAndNullify1D(p_provVISU);
-
-		actualPerCent += progressPerCent;
-		emit upScroll(actualPerCent);
+		analysePatientFolder(patient);
 	}
-
-	emit sendLogInfo(QString::fromStdString("Generating Comportemental Performance Result"));
-	//generate array comportemental performance
-	//Get every folder corresponding to one LOCALIZER exam
-	stringstream().swap(TRCfilePath);
-	TRCfilePath << locaAnaOpt[0]->patientFolder << "/";
-	vector<string> directoryList = CRperf::getAllFolderNames(TRCfilePath.str());
-
-	CRData** files = new CRData*[5];
-	files[0] = files[1] = files[2] = files[3] = files[4] = nullptr;
-	for (int i = 0; i < directoryList.size(); i++)
+	else if (files.size() > 0)
 	{
-		stringstream().swap(TRCfilePath);
-		TRCfilePath << locaAnaOpt[0]->patientFolder << "/" << directoryList[i] << "/" << directoryList[i] << ".CR";
-		QFile f(QString::fromStdString(TRCfilePath.str()));
-		if (f.exists())
-		{
-			stringstream().swap(displayText);
-			displayText << "Existing CR File : " << TRCfilePath.str();
-			emit sendLogInfo(QString::fromStdString(displayText.str()));
-
-			vector<string> dirSplit = split<string>(directoryList[i], "_");
-			int numberOfConditions = CRperf::whichOneAmI(directoryList[i]);
-			if (numberOfConditions != -1)
-			{
-				int numberOf = CRperf::whereAmI(directoryList[i]);
-				files[numberOf] = CRperf::getCRInfo(TRCfilePath.str(), directoryList[i], numberOfConditions);
-			}
-		}
+		analyseSingleFiles(files);
 	}
-
-	//Pass struct to create csv array
-	stringstream().swap(TRCfilePath);
-	TRCfilePath << locaAnaOpt[0]->patientFolder << "/RapportPerfComportementale.csv";
-	CRperf::createCSVPerformanceReport(TRCfilePath.str(), files);
-
-	emit sendLogInfo(QString::fromStdString("Done !"));
-	emit sendLogInfo(QString::fromStdString("ByeBye"));
-
-	deleteAndNullify1D(elan);
-	deleteAndNullify1D(loca);
-	deleteAndNullify2D(files, 4);
 
 	emit finished();
 }
 
-void Worker::BipDoneeee(bool boo)
+void Worker::processERP()
 {
-	if (boo == true)
+	eegContainer *myContainer = extractEEGData(*locaFold);
+	PROV *myprovFile = new PROV("./Resources/Config/Prov/" + locaFold->locaName + ".prov");
+	if(myprovFile != nullptr)
+		loca->eeg2erp(myContainer, myprovFile);
+	deleteAndNullify1D(myContainer);
+	deleteAndNullify1D(myprovFile);
+
+	emit sendLogInfo("End of ERP Analysis");
+	emit finished();
+}
+
+void Worker::processToELAN()
+{
+	TRCFile *myTRC = nullptr;
+	
+	if (idFile == -1)
+		myTRC = new TRCFile(locaFold->trcFile);
+	else
+		myTRC = new TRCFile(files[idFile].filePath());
+
+	TRCFunctions::readTRCDataAllChanels(myTRC);
+	ELANFile *myELAN = ELANFunctions::micromedToElan(myTRC);
+	string posPath = myELAN->filePath();
+	posPath.replace(posPath.end() - 4, posPath.end(), ".pos");
+	ELANFunctions::writePosFile(myELAN, posPath);
+	ELANFunctions::writeFile(myELAN, myELAN->filePath());
+
+	deleteAndNullify1D(myELAN);
+	deleteAndNullify1D(myTRC);
+	emit sendLogInfo("End of conversion to ELAN file format");
+	emit finished();
+}
+
+void Worker::analysePatientFolder(patientFolder *currentPatient)
+{
+	stringstream TimeDisp;
+	SYSTEMTIME LocalTime;
+	eegContainer *myContainer = nullptr;
+
+	for (int i = 0; i < currentPatient->localizerFolder.size(); i++)
 	{
-		bip = true;
+		if (optionUser->anaOption[i].localizer)
+		{
+			emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + currentPatient->localizerFolder[i].pathToFolder + " ==="));			
+			myContainer = extractEEGData(currentPatient->localizerFolder[i], i, optionUser->freqOption.frequencyBands.size());
+			emit sendLogInfo("Number of Bip : " + QString::number(myContainer->bipoles.size()));
+			//==
+			stringstream().swap(TimeDisp);
+			GetLocalTime(&LocalTime);
+			TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
+			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
+			//==
+			loca->LocaSauron(myContainer, i, &currentPatient->localizerFolder[i]);
+			//==
+			stringstream().swap(TimeDisp);
+			GetLocalTime(&LocalTime);
+			TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
+			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
+			//==
+			sendLogInfo("End of Loca number " + QString::number(i) + "\n");
+			deleteAndNullify1D(myContainer);
+		}
+	}
+
+	//Generate comportemental perf report
+
+
+}
+
+void Worker::analyseSingleFiles(vector<singleFile> currentFiles)
+{
+	stringstream TimeDisp;
+	SYSTEMTIME LocalTime;
+	eegContainer *myContainer = nullptr;
+
+	for (int i = 0; i < currentFiles.size(); i++)
+	{
+		emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + currentFiles[i].rootFolder + " ==="));
+		myContainer = extractEEGData(currentFiles[i], i, optionUser->freqOption.frequencyBands.size());
+		emit sendLogInfo("Number of Bip : " + QString::number(myContainer->bipoles.size()));
+		//==
+		stringstream().swap(TimeDisp);
+		GetLocalTime(&LocalTime);
+		TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
+		emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
+		//==
+		for (int j = 0; j < optionUser->freqOption.frequencyBands.size(); j++)
+		{
+			if(optionUser->anaOption[i].anaOpt[j].eeg2env)
+				myContainer->ToHilbert(myContainer->elanFrequencyBand[j], optionUser->freqOption.frequencyBands[j].freqBandValue);
+		}
+		//==
+		stringstream().swap(TimeDisp);
+		GetLocalTime(&LocalTime);
+		TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
+		emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
+		//==
+		sendLogInfo("End of Loca number " + QString::number(i) + "\n");
+		
+		deleteAndNullify1D(myContainer);
 	}
 }
 
-void Worker::winCloseeee(bool wClo)
+eegContainer *Worker::extractEEGData(locaFolder currentLoca, int idFile, int nbFreqBand)
 {
-	if (wClo == true)
+	if (currentLoca.trcFile != "")
 	{
-		wclo = true;
+		emit sendLogInfo(QString::fromStdString("  => Reading : " + currentLoca.trcFile));
+		TRCFile *myTRC = new TRCFile(currentLoca.trcFile);
+		extractOriginalData(myTRC, optionUser->anaOption[idFile]);
+
+		eegContainer *myContainer = new eegContainer(myTRC, 64, nbFreqBand);
+		if (idFile == 0)
+		{
+			emit sendContainerPointer(myContainer);
+			while (bipCreated == false) //While bipole not created 
+			{
+				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
+			}
+			elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
+		}
+
+		myContainer->deleteElectrodes(elecToDeleteMem);
+		myContainer->getElectrodes();
+		myContainer->bipolarizeData();
+
+		emit sendLogInfo(QString::fromStdString("Bipole created !"));
+		return myContainer;
+	}
+	else if (currentLoca.eegFile != "" && currentLoca.eegEntFile != "")
+	{
+		emit sendLogInfo(QString::fromStdString("  => Reading : " + currentLoca.eegFile));
+		ELANFile *myElan = new ELANFile(currentLoca.eegFile);
+		ELANFunctions::readHeader(myElan, myElan->filePath());
+		if(currentLoca.posFile != "")
+			ELANFunctions::readPosFile(myElan, currentLoca.posFile);
+		extractOriginalData(myElan, optionUser->anaOption[idFile]);
+
+		eegContainer *myContainer = new eegContainer(myElan, 64, nbFreqBand);
+		if (idFile == 0)
+		{
+			emit sendContainerPointer(myContainer);
+			while (bipCreated == false) //While bipole not created 
+			{
+				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
+			}
+			elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
+		}
+
+		myContainer->deleteElectrodes(elecToDeleteMem);
+		myContainer->getElectrodes();
+		myContainer->bipolarizeData();
+
+		emit sendLogInfo(QString::fromStdString("Bipole created !"));
+		return myContainer;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+eegContainer *Worker::extractEEGData(locaFolder currentLoca)
+{
+	if (currentLoca.trcFile != "")
+	{
+		emit sendLogInfo(QString::fromStdString("  => Reading : " + currentLoca.trcFile));
+		TRCFile *myTRC = new TRCFile(currentLoca.trcFile);
+		TRCFunctions::readTRCDataAllChanels(myTRC);
+
+		eegContainer *myContainer = new eegContainer(myTRC, 64, 0);
+		emit sendContainerPointer(myContainer);
+		while (bipCreated == false) //While bipole not created 
+		{
+			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
+		}
+		elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
+
+		myContainer->deleteElectrodes(elecToDeleteMem);
+		myContainer->getElectrodes();
+		myContainer->bipolarizeData();
+
+		emit sendLogInfo(QString::fromStdString("Bipole created !"));
+		return myContainer;
+	}
+	else if (currentLoca.eegFile != "")
+	{
+		emit sendLogInfo(QString::fromStdString("  => Reading : " + currentLoca.eegFile));
+		ELANFile *myElan = new ELANFile(currentLoca.eegFile);
+		ELANFunctions::readHeader(myElan, myElan->filePath());
+		if (currentLoca.posFile != "")
+			ELANFunctions::readPosFile(myElan, currentLoca.posFile);
+		ELANFunctions::readDataAllChannels(myElan, myElan->filePath());
+
+		eegContainer *myContainer = new eegContainer(myElan, 64, 0);
+
+		emit sendContainerPointer(myContainer);
+		while (bipCreated == false) //While bipole not created 
+		{
+			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
+		}
+		elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
+
+		myContainer->deleteElectrodes(elecToDeleteMem);
+		myContainer->getElectrodes();
+		myContainer->bipolarizeData();
+
+		emit sendLogInfo(QString::fromStdString("Bipole created !"));
+		return myContainer;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+eegContainer *Worker::extractEEGData(singleFile currentFile, int idFile, int nbFreqBand)
+{
+	if (currentFile.trcFile != "")
+	{
+		emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFile.trcFile));
+		TRCFile *myTRC = new TRCFile(currentFile.trcFile);
+		extractOriginalData(myTRC, optionUser->anaOption[idFile]);
+
+		eegContainer *myContainer = new eegContainer(myTRC, 64, nbFreqBand);
+		emit sendContainerPointer(myContainer);
+		while (bipCreated == false) //While bipole not created 
+		{
+			QCoreApplication::processEvents(QEventLoop:: WaitForMoreEvents);	//check if list of elec validated
+		}
+		bipCreated = false; //Since we loop one or multiple file we need to recheck each time the good/bad elec
+		elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
+
+		myContainer->deleteElectrodes(elecToDeleteMem);
+		myContainer->getElectrodes();
+		myContainer->bipolarizeData();
+
+		emit sendLogInfo(QString::fromStdString("Bipole created !"));
+		return myContainer;
+	}
+	else if (currentFile.eegFile != "")// && currentFile.eegEntFile != "")
+	{
+		emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFile.eegFile));
+		ELANFile *myElan = new ELANFile(currentFile.eegFile);
+		ELANFunctions::readHeader(myElan, myElan->filePath());
+		if(currentFile.posFile != "")
+			ELANFunctions::readPosFile(myElan, currentFile.posFile);
+		extractOriginalData(myElan, optionUser->anaOption[idFile]);
+
+		eegContainer *myContainer = new eegContainer(myElan, 64, nbFreqBand);
+		emit sendContainerPointer(myContainer);
+		while (bipCreated == false) //While bipole not created 
+		{
+			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
+		}
+		bipCreated = false; //Since we loop one or multiple file we need to recheck each time the good/bad elec
+		elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
+
+		myContainer->deleteElectrodes(elecToDeleteMem);
+		myContainer->getElectrodes();
+		myContainer->bipolarizeData();
+
+		emit sendLogInfo(QString::fromStdString("Bipole created !"));
+		return myContainer;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+eegContainer *Worker::extractEEGData(singleFile currentFile)
+{
+	if (currentFile.trcFile != "")
+	{
+		emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFile.trcFile));
+		TRCFile *myTRC = new TRCFile(currentFile.trcFile);
+		TRCFunctions::readTRCDataAllChanels(myTRC);
+
+		eegContainer *myContainer = new eegContainer(myTRC, 64, 0);
+		emit sendContainerPointer(myContainer);
+		while (bipCreated == false) //While bipole not created 
+		{
+			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
+		}
+		elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
+
+		myContainer->deleteElectrodes(elecToDeleteMem);
+		myContainer->getElectrodes();
+		myContainer->bipolarizeData();
+
+		emit sendLogInfo(QString::fromStdString("Bipole created !"));
+		return myContainer;
+	}
+	else if (currentFile.eegFile != "")// && currentFile.eegEntFile != "")
+	{
+		emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFile.eegFile));
+		ELANFile *myElan = new ELANFile(currentFile.eegFile);
+		ELANFunctions::readHeader(myElan, myElan->filePath());
+		if (currentFile.posFile != "")
+			ELANFunctions::readPosFile(myElan, currentFile.posFile);
+		ELANFunctions::readDataAllChannels(myElan, myElan->filePath());
+
+		eegContainer *myContainer = new eegContainer(myElan, 64, 0);
+
+		emit sendContainerPointer(myContainer);
+		while (bipCreated == false) //While bipole not created 
+		{
+			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
+		}
+		elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
+
+		myContainer->deleteElectrodes(elecToDeleteMem);
+		myContainer->getElectrodes();
+		myContainer->bipolarizeData();
+
+		emit sendLogInfo(QString::fromStdString("Bipole created !"));
+		return myContainer;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+void Worker::extractOriginalData(TRCFile *myTRC, locaAnalysisOption anaOpt)
+{
+	for (int i = 0; i < anaOpt.anaOpt.size(); i++)
+	{
+		if (anaOpt.anaOpt[i].eeg2env)
+		{
+			TRCFunctions::readTRCDataAllChanels(myTRC);
+			return;
+		}
+	}
+}
+
+void Worker::extractOriginalData(ELANFile *myElan, locaAnalysisOption anaOpt)
+{
+	for (int i = 0; i < anaOpt.anaOpt.size(); i++)
+	{
+		if (anaOpt.anaOpt[i].eeg2env)
+		{
+			ELANFunctions::readDataAllChannels(myElan, myElan->filePath());
+			return;
+		}
 	}
 }

@@ -1,24 +1,23 @@
 #include "mapsGenerator.h"
 
-using namespace InsermLibrary;
 using namespace InsermLibrary::DrawCard;
 
-mapsGenerator::mapsGenerator(int width, int height)
+mapsGenerator::mapsGenerator(int width, int heigth)
 {
-	Heigth = height;
+	Heigth = heigth;
 	Width = width;
 }
 
 mapsGenerator::~mapsGenerator()
 {
-	delete ColorMapJet;
+	deleteAndNullify1D(ColorMapJet);
 }
 
-void mapsGenerator::trialmatTemplate(vector<int> trialsPerRow, int windowMS[2], InsermLibrary::PROV *p_prov)
+void mapsGenerator::trialmatTemplate(vector<int> trialsPerRow, PROV *myprovFile)
 {
 	double matrixWidth, matrixHeight;
 	QPoint MatrixtopLeft;
-	
+
 	double colorBarWidth, colorBarHeight;
 	QPoint colorBartopLeft;
 
@@ -48,7 +47,7 @@ void mapsGenerator::trialmatTemplate(vector<int> trialsPerRow, int windowMS[2], 
 	colorBarRect.setWidth(colorBarWidth);
 	colorBarRect.setHeight(colorBarHeight);
 	//==
-	
+
 	pixmapTemplate = QPixmap(Width, Heigth);
 	QPainter painterTemplate(&pixmapTemplate);
 	pixmapTemplate.fill(QColor(Qt::white));
@@ -56,8 +55,8 @@ void mapsGenerator::trialmatTemplate(vector<int> trialsPerRow, int windowMS[2], 
 	painterTemplate.drawRect(MatrixRect);
 	defineLineSeparation(&painterTemplate, trialsPerRow, 1);
 	createColorBar(&painterTemplate);
-	createTimeLegend(&painterTemplate, windowMS);
-	createTrialsLegend(&painterTemplate, p_prov);
+	createTimeLegend(&painterTemplate, myprovFile);
+	createTrialsLegend(&painterTemplate, myprovFile);
 }
 
 void mapsGenerator::graduateColorBar(QPainter *painter, int maxValue)
@@ -82,7 +81,7 @@ void mapsGenerator::graduateColorBar(QPainter *painter, int maxValue)
 	QFontMetrics fm(fff);
 	int pixelsWide = fm.width("0");
 
-	QRect zeroRect(0.8836805 * fullMap.width(), 0.4953703 * fullMap.height(), pixelsWide/*0.012152777 * fullMap.width()*/, 0.0254629 * fullMap.height());
+	QRect zeroRect(0.8836805 * fullMap.width(), 0.4953703 * fullMap.height(), pixelsWide, 0.0254629 * fullMap.height());
 	painter->drawText(zeroRect.x(), zeroRect.y(), QString("0"));
 
 	double verticalStep = (double)colorBarRect.height() / (2 * numberTick);
@@ -125,30 +124,38 @@ void mapsGenerator::graduateColorBar(QPainter *painter, int maxValue)
 	}
 }
 
-void mapsGenerator::drawVerticalZeroLine(QPainter *painter, int windowMs[2])
+void mapsGenerator::drawVerticalZeroLine(QPainter *painter, PROV* myprovFile)
 {
-	float sizePxLine = 0.005208333 * MatrixRect.width();
-	int zeroBorder = ceil((double)MatrixRect.width() / (windowMs[1] - windowMs[0]) * abs(windowMs[0]));
+	int *windowMS = myprovFile->getBiggestWindowMs();
 
-	painter->setPen(QColor(255, 255, 255, 255)); //white
+	float sizePxLine = 0.005208333 * MatrixRect.width();
+	int zeroBorder = ceil((double)MatrixRect.width() / (windowMS[1] - windowMS[0]) * abs(windowMS[0]));
+
+	painter->setPen(QColor(255, 255, 255, 255));
 	for (int i = 0; i < (sizePxLine / 2); i++)
 	{
-		painter->drawLine(MatrixRect.x() - i + zeroBorder, MatrixRect.y() + MatrixRect.height() - ((0.005208333 * MatrixRect.width()) - 2), MatrixRect.x() - i + zeroBorder, MatrixRect.y() + 1);
-		painter->drawLine(MatrixRect.x() + i + zeroBorder, MatrixRect.y() + MatrixRect.height() - ((0.005208333 * MatrixRect.width()) - 2), MatrixRect.x() + i + zeroBorder, MatrixRect.y() + 1);
+		painter->drawLine(MatrixRect.x() - i + zeroBorder, MatrixRect.y() + MatrixRect.height() - ((0.005208333 * MatrixRect.width()) - 2),
+						  MatrixRect.x() - i + zeroBorder, MatrixRect.y() + 1);
+		painter->drawLine(MatrixRect.x() + i + zeroBorder, MatrixRect.y() + MatrixRect.height() - ((0.005208333 * MatrixRect.width()) - 2), 
+						  MatrixRect.x() + i + zeroBorder, MatrixRect.y() + 1);
 	}
-	painter->drawLine(MatrixRect.x() + zeroBorder, MatrixRect.y() + MatrixRect.height() - ((0.005208333 * MatrixRect.width()) - 2), MatrixRect.x() + zeroBorder, MatrixRect.y() + 1);
+	painter->drawLine(MatrixRect.x() + zeroBorder, MatrixRect.y() + MatrixRect.height() - ((0.005208333 * MatrixRect.width()) - 2), 
+					  MatrixRect.x() + zeroBorder, MatrixRect.y() + 1);
+
+	delete windowMS;
 }
 
-void mapsGenerator::displayStatsOnMap(QPainter *painter, vector<vector<int>> indexCurrentMap, vector<PVALUECOORD> significantValue, int windowMS[2], int nbRow)
+void mapsGenerator::displayStatsOnMap(QPainter *painter, vec2<int> idCurrentMap, vec1<PVALUECOORD> significantValue, PROV* myprovFile)
 {
-	for (int y = nbRow - 1; y >= 0; y--)
+	int* windowMs = myprovFile->getBiggestWindowMs();
+	for (int y = myprovFile->nbRow() - 1; y >= 0; y--)
 	{
-		if (indexCurrentMap[y].size() > 0)
+		if (idCurrentMap[y].size() > 0)
 		{
-			for (int z = 0; z < indexCurrentMap[y].size(); z++)
+			for (int z = 0; z < idCurrentMap[y].size(); z++)
 			{
-				int xTimeMs = (significantValue[indexCurrentMap[y][z]].window * 100);
-				double MsByPx = separationLines[y].width() / (double)(windowMS[1] - windowMS[0]);
+				int xTimeMs = (significantValue[idCurrentMap[y][z]].window * 100);
+				double MsByPx = separationLines[y].width() / (double)(windowMs[1] - windowMs[0]);
 				double xBegWin = separationLines[y].x() + (xTimeMs * MsByPx);
 				double xEndWin = xBegWin + (200 * MsByPx);
 
@@ -162,32 +169,33 @@ void mapsGenerator::displayStatsOnMap(QPainter *painter, vector<vector<int>> ind
 			}
 		}
 	}
+	delete windowMs;
 }
 
-void mapsGenerator::drawMapTitle(QPainter *painter, string outputLabel, string elecName)
+void mapsGenerator::drawMapTitle(QPainter *painter, string title)
 {
-	string labelPicPath = outputLabel;
-	labelPicPath.append(elecName.c_str()).append(".jpg");
-
+	vector<string> splitFullPath = split<string>(title, "/");
 	painter->setPen(QColor(Qt::GlobalColor::black));
-	painter->drawText(QPoint(0.20833 * fullMap.width(), 0.0532407 * fullMap.height()), QString(labelPicPath.c_str()));
+	painter->drawText(QPoint(0.20833 * fullMap.width(), 0.0532407 * fullMap.height()), 
+					  QString(splitFullPath[splitFullPath.size()-1].c_str()));
 }
 
-vector<vector<double>> mapsGenerator::horizontalInterpolation(double ** chanelToInterpol, int interpolationFactor,
-									TRIGGINFO *triggCatEla, int nbSubTrials, int nbSampleWindow, int indexBegTrigg)
+vec2<float> mapsGenerator::horizontalInterpolation(vec2<float> chanelToInterpol, int interpolationFactor, int idBegTrigg, int nbSubTrials)
 {
-	vector<vector<double>> eegDataInterpolated;
-	for (int l = 0; l < nbSubTrials; l++)
-	{
-		vector<double> eegDataOneTrial;
-		for (int m = 0; m < nbSampleWindow; m++)
-		{
-			double beginValue = chanelToInterpol[triggCatEla->trigg[indexBegTrigg + l].origPos][m];
-			double endValue = chanelToInterpol[triggCatEla->trigg[indexBegTrigg + l].origPos][m + 1];
+	int nbSampleWin = chanelToInterpol[0].size() - 1;
 
-			for (int n = 0; n < interpolationFactor; n++)
+	vec2<float> eegDataInterpolated;
+	for (int i = 0; i < nbSubTrials; i++)
+	{
+		vector<float> eegDataOneTrial;
+		for (int j = 0; j < nbSampleWin; j++)
+		{
+			float beginValue = chanelToInterpol[idBegTrigg + i][j];
+			float endValue = chanelToInterpol[idBegTrigg + i][j + 1];
+
+			for (int k = 0; k < interpolationFactor; k++)
 			{
-				double coeff = (double)n / interpolationFactor;
+				float coeff = (float)k / interpolationFactor;
 				eegDataOneTrial.push_back(((1 - coeff) * beginValue) + (coeff * endValue));
 			}
 		}
@@ -197,124 +205,88 @@ vector<vector<double>> mapsGenerator::horizontalInterpolation(double ** chanelTo
 	return eegDataInterpolated;
 }
 
-vector<vector<double>> mapsGenerator::verticalInterpolation(vector<vector<double>> chanelToInterpol, int interpolationFactor)
+vec2<float> mapsGenerator::verticalInterpolation(vec2<float> chanelToInterpol, int interpolationFactor)
 {
 	int vertSize = chanelToInterpol.size();
 	int horizSize = chanelToInterpol[0].size();
 
-	vector<vector<double>> eegDataInterpolated;
-	for (int l = 0; l < horizSize; l++)
+	vec2<float> eegDataInterpolated;
+	for (int i = 0; i < horizSize; i++)
 	{
-		vector<double> eegDataOneSample;
-		for (int m = 0; m < vertSize - 1; m++)
+		vec1<float> eegDataOneSample;
+		for (int j = 0; j < vertSize - 1; j++)
 		{
-			double beginValue = chanelToInterpol[m][l];
-			double endValue = chanelToInterpol[m + 1][l];
+			float beginValue = chanelToInterpol[j][i];
+			float endValue = chanelToInterpol[j + 1][i];
 
-			for (int n = 0; n < interpolationFactor; n++)
+			for (int k = 0; k < interpolationFactor; k++)
 			{
-				double coeff = (double)n / interpolationFactor;
+				float coeff = (float)k / interpolationFactor;
 				eegDataOneSample.push_back(((1 - coeff) * beginValue) + (coeff * endValue));
 			}
 		}
-		eegDataInterpolated.push_back(eegDataOneSample);
+		eegDataInterpolated.push_back(move(eegDataOneSample));
 	}
 
 	return eegDataInterpolated;
 }
 
-void mapsGenerator::eegData2ColorMap(vector<int> colorX[512], vector<int> colorY[512], vector<vector<double>> interpolatedData, 
-							int nbSubTrials, int nbSampleWindow, int horizInterpFactor, int vertInterpFactor, double maxValue)
+void mapsGenerator::eegData2ColorMap(vec1<int> colorX[512], vec1<int> colorY[512], vec2<float> interpolatedData, 
+									 float maxValue)
 {
-	double minValue = -maxValue;
+	float minValue = -maxValue;
 
-	for (int l = 0; l < vertInterpFactor * (nbSubTrials - 1); l++)
+	for (int l = 0; l < interpolatedData[0].size(); l++)
 	{
-		for (int m = 0; m < horizInterpFactor * nbSampleWindow; m++)
+		for (int m = 0; m < interpolatedData.size(); m++)
 		{
-			double r = (interpolatedData[m][l] - minValue) / (maxValue - minValue); 
+			double r = (interpolatedData[m][l] - minValue) / (maxValue - minValue);
 
 			int col = 0 + (511 * r);
 			if (col < 0)
-			{
 				col = 0;
-			}
 			else if (col > 511)
-			{
 				col = 511;
-			}
 
-			/*2Dim vector, since changing he color of the qt pen takes time , we fill every pixel
-			of one color, then the next, then the next , etc ...*/
+			/*2Dim vector, since changing the color of the qt pen takes time , 
+			we fill every pixel of one color, then the next, then the next , etc ...*/
 			colorX[col].push_back(m);
 			colorY[col].push_back(l);
 		}
 	}
 }
 
-void mapsGenerator::eegData2ColorMap(vector<int> colorX[512], vector<int> colorY[512], double **eegData, TRIGGINFO *triggCatEla, 
-							int nbSubTrials, int nbSampleWindow, int indexBegTrigg, double maxValue)
+vec1<int> mapsGenerator::checkIfNeedDisplayStat(vec1<PVALUECOORD> significantValue, int idCurrentElec)
 {
-	double minValue = -maxValue;
-
-	for (int l = 0; l < nbSubTrials; l++)
-	{
-		for (int m = 0; m < nbSampleWindow; m++)
-		{
-			double r = (eegData[triggCatEla->trigg[indexBegTrigg + l].origPos][m] - minValue) / (maxValue - minValue);
-
-			int col = 0 + (511 * r);
-			if (col < 0)
-			{
-				col = 0;
-			}
-			else if (col > 511)
-			{
-				col = 511;
-			}
-
-			/*2Dim vector, since changing he color of the qt pen takes time , we fill every pixel
-			of one color, then the next, then the next , etc ...*/
-			colorX[col].push_back(m);
-			colorY[col].push_back(l);
-		}
-	}
-}
-
-vector<int> mapsGenerator::checkIfNeedDisplayStat(vector<PVALUECOORD> significantValue, int indexCurrentElec)
-{
-	vector<int> allIndexCurrentMap;
+	vector<int> significantIdCurrentMap;
 	for (int z = 0; z < significantValue.size(); z++)
 	{
-		if (significantValue[z].elec == indexCurrentElec)
+		if (significantValue[z].elec == idCurrentElec)
 		{
-			allIndexCurrentMap.push_back(z);
+			significantIdCurrentMap.push_back(z);
 		}
 	}
-
-	return allIndexCurrentMap;
+	return significantIdCurrentMap;
 }
 
-vector<vector<int>> mapsGenerator::checkIfConditionStat(vector<PVALUECOORD> significantValue, vector<int> allIndexMap, int numberRow)
+vec2<int> mapsGenerator::checkIfConditionStat(vec1<PVALUECOORD> significantValue, vec1<int> significantIdMap, int nbRow)
 {
-	vector<vector<int>> indexCurrentMap;
-	for (int y = numberRow - 1; y >= 0; y--)
+	vector<vector<int>> idCurrentMap;
+	for (int y = nbRow - 1; y >= 0; y--)
 	{
 		vector<int> indexCondition;
-		for (int z = 0; z < allIndexMap.size(); z++)
+		for (int z = 0; z < significantIdMap.size(); z++)
 		{
-			if (significantValue[allIndexMap[z]].condit == y)
+			if (significantValue[significantIdMap[z]].condit == y)
 			{
-				indexCondition.push_back(allIndexMap[z]);
+				indexCondition.push_back(significantIdMap[z]);
 			}
 		}
-		indexCurrentMap.push_back(indexCondition);
+		idCurrentMap.push_back(indexCondition);
 	}
 
-	return indexCurrentMap;
+	return idCurrentMap;
 }
-
-//=== Private 
 
 void mapsGenerator::jetColorMap512(QColor *colorMap)
 {
@@ -390,8 +362,6 @@ void mapsGenerator::createColorBar(QPainter *painter)
 void mapsGenerator::defineLineSeparation(QPainter *painter, vector<int> nbTrialPerRow, int nbCol)
 {
 	int nbRow = nbTrialPerRow.size() - 1;
-
-	int nbHorizLine = nbRow;
 	int nbVertLine = nbCol - 1;
 	float sizePxLine = 0.005208333 * MatrixRect.width();
 	int totalNbTrials = nbTrialPerRow[nbRow];
@@ -406,7 +376,7 @@ void mapsGenerator::defineLineSeparation(QPainter *painter, vector<int> nbTrialP
 
 			int realHeight = (MatrixRect.height() - 2 - (nbRow * sizePxLine));
 			double ratioTrials = ((double)(nbTrialPerRow[nbRow - j] - nbTrialPerRow[nbRow - j - 1])) / totalNbTrials;
-			
+
 			int height = round(realHeight * ratioTrials);
 
 			if (j % 3 == 0)
@@ -443,26 +413,13 @@ void mapsGenerator::defineLineSeparation(QPainter *painter, vector<int> nbTrialP
 			}
 		}
 	}
-
-	//for (int i = subMatrixes.size() - 1; i >= 0; i--)
-	//{
-	//	if (i % 2 == 0)
-	//	{
-	//		painter->fillRect(subMatrixes[i], QBrush(Qt::blue));
-	//		painter->fillRect(separationLines[i], QBrush(Qt::white));
-	//	}
-	//	else
-	//	{
-	//		painter->fillRect(subMatrixes[i], QBrush(Qt::red));
-	//		painter->fillRect(separationLines[i], QBrush(Qt::white));
-	//	}
-	//}
 }
 
-void mapsGenerator::createTimeLegend(QPainter *painter, int windowMS[2])
+void mapsGenerator::createTimeLegend(QPainter *painter, PROV *myprovFile)
 {
 	int stepTimeLegend = 200;
 
+	int *windowMS = myprovFile->getBiggestWindowMs();
 	while ((windowMS[1] / stepTimeLegend) > 5 || (abs(windowMS[0]) / stepTimeLegend) > 5)
 	{
 		stepTimeLegend += 200;
@@ -474,12 +431,12 @@ void mapsGenerator::createTimeLegend(QPainter *painter, int windowMS[2])
 
 	painter->setPen(Qt::black);
 
-	QFont fff;
-	fff.setPixelSize(0.0254629 * fullMap.height());
-	
-	painter->setFont(fff);
+	QFont font;
+	font.setPixelSize(0.0254629 * fullMap.height());
 
-	QFontMetrics fm(fff);
+	painter->setFont(font);
+
+	QFontMetrics fm(font);
 	int z = fm.width("0");
 	int pixelsWide = fm.width("0");
 
@@ -493,14 +450,7 @@ void mapsGenerator::createTimeLegend(QPainter *painter, int windowMS[2])
 
 	for (int i = 1; i < numberTickRight + 1; i++)
 	{
-		//if (((i * stepTimeLegend) / 1000) >= 1)
-		//{
 		pixelsWide = fm.width("XXXX");
-		//}
-		//else
-		//{
-		//	pixelsWide = fm.width("XXX");
-		//}
 		width = pixelsWide;
 
 		int ohterBorder = ceil((double)MatrixRect.width() / (windowMS[1] - windowMS[0]) * (i * stepTimeLegend));
@@ -521,36 +471,41 @@ void mapsGenerator::createTimeLegend(QPainter *painter, int windowMS[2])
 		legendValueRect.setWidth(width);
 		painter->drawText(legendValueRect, QString(QString().number(0 + (-i * stepTimeLegend))));
 	}
+
+	delete windowMS;
 }
 
-void mapsGenerator::createTrialsLegend(QPainter *painter, PROV *p_prov)
+void mapsGenerator::createTrialsLegend(QPainter *painter, PROV *myprovFile)
 {
-	for (int k = 0; k < (p_prov->visuBlocs.size()); k++)
+	for (int k = 0; k < (myprovFile->visuBlocs.size()); k++)
 	{
-		int index2Draw = (p_prov->visuBlocs.size() - 1) - (p_prov->visuBlocs[k].dispBloc.row - 1);
-		if (QFileInfo(p_prov->visuBlocs[k].dispBloc.path.c_str()).exists())
+		int index2Draw = (myprovFile->visuBlocs.size() - 1) - (myprovFile->visuBlocs[k].dispBloc.row - 1);
+		if (index2Draw < subMatrixes.size())
 		{
-			QRect myLegendRect(0.013020833 * fullMap.width(), subMatrixes[index2Draw].y(), 0.1119618055 * fullMap.width(), subMatrixes[index2Draw].height());
-			QPixmap image(p_prov->visuBlocs[k].dispBloc.path.c_str());
-
-			if (p_prov->visuBlocs.size() < 5)
+			if (QFileInfo(QString(".").append(myprovFile->visuBlocs[k].dispBloc.path.c_str())).exists())
 			{
-				image = image.scaledToWidth(myLegendRect.width(), Qt::TransformationMode::FastTransformation);
-				int offset = (subMatrixes[index2Draw].height() - image.height()) / 2;
-				painter->drawPixmap(myLegendRect.x(), myLegendRect.y() + offset, image.width(), image.height(), image);
+				QRect myLegendRect(0.013020833 * fullMap.width(), subMatrixes[index2Draw].y(), 0.1119618055 * fullMap.width(), subMatrixes[index2Draw].height());
+				QPixmap image(myprovFile->visuBlocs[k].dispBloc.path.c_str());
+
+				if (myprovFile->visuBlocs.size() < 5)
+				{
+					image = image.scaledToWidth(myLegendRect.width(), Qt::TransformationMode::FastTransformation);
+					int offset = (subMatrixes[index2Draw].height() - image.height()) / 2;
+					painter->drawPixmap(myLegendRect.x(), myLegendRect.y() + offset, image.width(), image.height(), image);
+				}
+				else
+				{
+					image.scaled(myLegendRect.size(), Qt::KeepAspectRatio);
+					painter->drawPixmap(myLegendRect, image);
+				}
 			}
 			else
 			{
-				image.scaled(myLegendRect.size(), Qt::KeepAspectRatio);
-				painter->drawPixmap(myLegendRect, image);
+				painter->setPen(QColor(Qt::darkRed));
+				int offset = subMatrixes[index2Draw].height() / 2;
+				QRect myLegendRect(0.013020833 * fullMap.width(), subMatrixes[index2Draw].y() + offset, 0.1119618055 * fullMap.width(), subMatrixes[0].height());
+				painter->drawText(myLegendRect, QString::fromStdString(myprovFile->visuBlocs[k].mainEventBloc.eventLabel));
 			}
-		}
-		else
-		{
-			painter->setPen(QColor(Qt::darkRed));
-			int offset = subMatrixes[index2Draw].height() / 2;
-			QRect myLegendRect(0.013020833 * fullMap.width(), subMatrixes[index2Draw].y() + offset, 0.1119618055 * fullMap.width(), subMatrixes[0].height());
-			painter->drawText(myLegendRect, QString::fromStdString(p_prov->visuBlocs[k].mainEventBloc.eventLabel));
 		}
 	}
 }

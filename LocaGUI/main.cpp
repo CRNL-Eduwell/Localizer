@@ -1,14 +1,10 @@
-#include "locagui.h"
 #include <QtWidgets/QApplication>
-#include <QStyleFactory>
-//#include "vld.h"
+#include "localizer.h"
 
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
-	LocaGUI w;
+	Localizer w;
 	w.show();
-	QApplication::setStyle(QStyleFactory::create("fusion"));
-
 	return a.exec();
 }

@@ -1,14 +1,15 @@
-#pragma once
+#ifndef _MAPSGENERATOR_H
+#define _MAPSGENERATOR_H
 #include <iostream>
-#include <QPixmap>
-#include <QPainter>
-#include <QFileInfo>
-#include <QColormap>
-#include <QTextOption>
 #include "Utility.h"
 #include "PROV.h"
 
+#include <QPainter>
+#include <QFileInfo>
+#include <QDir>
+
 using namespace std;
+using namespace InsermLibrary;
 
 namespace InsermLibrary
 {
@@ -20,38 +21,42 @@ namespace InsermLibrary
 			mapsGenerator(int width, int heigth);
 			~mapsGenerator();
 			//=== TrialMat Drawing Functions
-			void trialmatTemplate(vector<int> trialsPerRow, int windowMS[2], InsermLibrary::PROV *p_prov);
+			void trialmatTemplate(vector<int> trialsPerRow, PROV *myprovFile);
 			void graduateColorBar(QPainter *painter, int maxValue);
-			void drawVerticalZeroLine(QPainter *painter, int windowMs[2]);
-			void displayStatsOnMap(QPainter *painter, vector<vector<int>> indexCurrentMap, vector<PVALUECOORD> significantValue, int windowMS[2], int nbRow);
-			void drawMapTitle(QPainter *painter, string outputLabel, string elecName);
+			void drawVerticalZeroLine(QPainter *painter, PROV* myprovFile);
+			void displayStatsOnMap(QPainter *painter, vec2<int> idCurrentMap, vec1<PVALUECOORD> significantValue, PROV* myprovFile);
+			void drawMapTitle(QPainter *painter, string title);
 
 			//=== TrialMat Data2Color Functions
-			vector<vector<double>> horizontalInterpolation(double ** chanelToInterpol, int interpolationFactor, TRIGGINFO *triggCatEla, int nbSubTrials, int nbSampleWindow, int indexBegTrigg);
-			vector<vector<double>> verticalInterpolation(vector<vector<double>> chanelToInterpol, int interpolationFactor);
-			void eegData2ColorMap(vector<int> colorX[512], vector<int> colorY[512], vector<vector<double>> interpolatedData, int nbSubTrials, int nbSampleWindow, int horizInterpFactor, int vertInterpFactor, double maxValue);
-			void eegData2ColorMap(vector<int> colorX[512], vector<int> colorY[512], double **eegData, TRIGGINFO *triggCatEla, int nbSubTrials, int nbSampleWindow, int indexBegTrigg, double maxValue);
-
+			vec2<float> horizontalInterpolation(vec2<float> chanelToInterpol, int interpolationFactor, int idBegTrigg, int nbSubTrials);
+			vec2<float> verticalInterpolation(vec2<float> chanelToInterpol, int interpolationFactor);
+			void eegData2ColorMap(vec1<int> colorX[512], vec1<int> colorY[512], vec2<float> interpolatedData, float maxValue);
+		
 			//=== TrialMat Stats2Map
-			vector<int> checkIfNeedDisplayStat(vector<PVALUECOORD> significantValue, int indexCurrentElec);
-			vector<vector<int>> checkIfConditionStat(vector<PVALUECOORD> significantValue, vector<int> allIndexMap,  int numberRow);
+			vec1<int> checkIfNeedDisplayStat(vec1<PVALUECOORD> significantValue, int idCurrentElec);
+			vec2<int>checkIfConditionStat(vec1<PVALUECOORD> significantValue, vec1<int> significantIdMap, int nbRow);
 
 		private:
 			void jetColorMap512(QColor *colorMap);
 			void createColorBar(QPainter *painter);
 			void defineLineSeparation(QPainter *painter, vector<int> nbTrialPerRow, int nbCol);
-			void createTimeLegend(QPainter *painter, int windowMS[2]);
-			void createTrialsLegend(QPainter *painter, PROV *p_prov);
+			void createTimeLegend(QPainter *painter, PROV *myprovFile);
+			void createTrialsLegend(QPainter *painter, PROV *myprovFile);
 
-		public :
+		public:
 			QPixmap pixmapTemplate;
 			vector<QRect> subMatrixes;
 			vector<QRect> separationLines;
 			QRect MatrixRect;
 			QRect colorBarRect;
 			QRect fullMap;
-			QColor *ColorMapJet;
+			QColor *ColorMapJet = nullptr;
 			int Width, Heigth;
 		};
 	}
 }
+
+
+
+
+#endif

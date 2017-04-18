@@ -4,40 +4,64 @@
 #include <iostream>
 #include <QtWidgets/QMainWindow>
 #include <QDir>
-#include "LOCA.h"
+#include <QThread>
+
+#include "patientFolder.h"
+#include "singleFile.h"
+#include "Utility.h"
+#include "optionsStats.h"
+#include "optionsPerf.h"
+
+#include "eegContainer.h"
+
+#include"LOCA.h"
+#include "Windows.h"
+
 
 using namespace std;
+using namespace MicromedLibrary;
 using namespace InsermLibrary;
 
-class Worker : public QObject 
+class Worker : public QObject
 {
 	Q_OBJECT
 
 public:
-	Worker(OptionLOCA *p_LOCAOpt, vector<vector<double>> p_freqBandValue, vector <vector<bool>> p_anaDetails, vector<string> p_trc, vector<string> p_prov, string folderPatient, vector<string> p_tasks, vector<string> p_exptasks);
+	Worker(patientFolder *currentPatient, userOption *userOpt);
+	Worker(locaFolder *loca, userOption *userOpt);
+	Worker(vector<singleFile> currentFiles, userOption *userOpt, int idFile);
 	~Worker();
-	LOCA * returnLoca();
+	LOCA* getLoca();
+private:
+	void analysePatientFolder(patientFolder *currentPatient);
+	void analyseSingleFiles(vector<singleFile> currentFiles);
+	eegContainer *extractEEGData(locaFolder currentLoca, int idFile, int nbFreqBand);
+	eegContainer *extractEEGData(locaFolder currentLoca);
+	eegContainer *extractEEGData(singleFile currentFile, int idFile, int nbFreqBand);
+	eegContainer *extractEEGData(singleFile currentFile);
+	void extractOriginalData(TRCFile *myTRC, locaAnalysisOption anaOpt);
+	void extractOriginalData(ELANFile *myElan, locaAnalysisOption anaOpt);
 
 public slots:
-	void process();
-	void BipDoneeee(bool);
-	void winCloseeee(bool);
-signals:
-	void finished();
-	void error(QString err);
-	void sendLogInfo(QString);
-	void sendElanPointer(ELAN *p_elan);
-	void sendTest();
-	void upScroll(int value);
+	void processAnalysis();
+	void processERP();
+	void processToELAN();
 
+signals:
+	void sendLogInfo(QString);
+	void finished();
+	void sendContainerPointer(eegContainer *eegCont);
+
+public:
+	bool bipCreated = false;
 private:
 	LOCA *loca = nullptr;
-	OptionLOCA *LOCAOpt = nullptr;
-	bool bip = false;
-	bool wclo = false;
-	LOCAANALYSISOPTION **locaAnaOpt = nullptr;
-	ELAN *elan = nullptr;
-	int numberFiles = 0;
+	vector<int> elecToDeleteMem;
+	patientFolder *patient = nullptr;
+	locaFolder *locaFold = nullptr;
+	vector<singleFile> files;
+	int idFile = -1;
+	userOption *optionUser = nullptr;
 };
 
-#endif // WORKER_H
+#endif
