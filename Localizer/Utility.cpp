@@ -32,6 +32,18 @@ void InsermLibrary::deblankString(std::string &myString)
 	myString.erase(remove_if(myString.begin(), myString.end(), isspace), myString.end());
 }
 
+string InsermLibrary::GetCurrentWorkingDir()
+{
+	char buff[FILENAME_MAX];
+	GetCurrentDir(buff, FILENAME_MAX);
+	std::string current_working_dir(buff);
+
+	#if defined(_WIN32) || defined(_WIN64)
+		replace(current_working_dir.begin(), current_working_dir.end(), '\\', '/');
+	#endif
+	return current_working_dir;
+}
+
 void InsermLibrary::uiUserElement::analysis(vector<locaAnalysisOption> &analysisToRun, int nbLoca)
 {
 	if (analysisToRun.size() > 0)

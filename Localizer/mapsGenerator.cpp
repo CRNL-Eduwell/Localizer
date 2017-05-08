@@ -482,7 +482,7 @@ void mapsGenerator::createTrialsLegend(QPainter *painter, PROV *myprovFile)
 		int index2Draw = (myprovFile->visuBlocs.size() - 1) - (myprovFile->visuBlocs[k].dispBloc.row - 1);
 		if (index2Draw < subMatrixes.size())
 		{
-			QString relPath = QString(".").append(myprovFile->visuBlocs[k].dispBloc.path.c_str());
+			QString relPath = QString(myprovFile->visuBlocs[k].dispBloc.path.c_str());
 			if (QFileInfo(relPath).exists())
 			{
 				QRect myLegendRect(0.013020833 * fullMap.width(), subMatrixes[index2Draw].y(), 0.1119618055 * fullMap.width(), subMatrixes[index2Draw].height());

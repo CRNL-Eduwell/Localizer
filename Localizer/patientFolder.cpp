@@ -257,11 +257,17 @@ void analyzedDataFolder::getStatsInfo(string path)
 
 	if (splitFolder[5] == "trials")
 	{
-		typeDrawing = splitFolder[5] + "_" + splitFolder[6];
+		typeDrawing = splitFolder[5];
 
-		if (splitPath.size() - 1 < 7)
+		if (splitFolder.size() - 1 == 6)
 		{
-			if(splitFolder[7] != "")
+			typeDrawing = splitFolder[5] + "_" + splitFolder[6];
+		}
+
+		if (splitFolder.size() - 1 == 7)
+		{
+			typeDrawing = splitFolder[5] + "_" + splitFolder[6];
+			if (splitFolder[7] != "")
 				StatAnalysis = splitFolder[7];
 		}
 	}
@@ -269,7 +275,7 @@ void analyzedDataFolder::getStatsInfo(string path)
 	{
 		typeDrawing = splitFolder[5];
 
-		if (splitPath.size() - 1 < 6)
+		if (splitFolder.size() - 1 == 6)
 		{
 			if (splitFolder[6] != "")
 			{

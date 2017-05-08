@@ -425,9 +425,15 @@ void InsermLibrary::LOCA::sortTrials(TRIGGINFO *eegTriggersTemp, PROV *myprovFil
 	for (int i = 0; i < triggCatEla->triggers.size(); i++)
 	{
 		triggCatEla->triggers[i].trigger.time = 1000 * ((float)triggCatEla->triggers[i].trigger.sample / downSampFreq);
-		triggCatEla->triggers[i].response.time = 1000 * ((float)triggCatEla->triggers[i].response.sample / downSampFreq);
-		triggCatEla->triggers[i].rtSample = triggCatEla->triggers[i].response.sample - triggCatEla->triggers[i].trigger.sample;
-		triggCatEla->triggers[i].rtMs = triggCatEla->triggers[i].response.time - triggCatEla->triggers[i].trigger.time;
+
+		if(triggCatEla->triggers[i].response.sample != -1)
+			triggCatEla->triggers[i].response.time = 1000 * ((float)triggCatEla->triggers[i].response.sample / downSampFreq);
+
+		if (triggCatEla->triggers[i].response.sample != -1 && triggCatEla->triggers[i].trigger.sample != -1)
+		{
+			triggCatEla->triggers[i].rtSample = triggCatEla->triggers[i].response.sample - triggCatEla->triggers[i].trigger.sample;
+			triggCatEla->triggers[i].rtMs = 1000 * ((float)triggCatEla->triggers[i].rtSample / downSampFreq);
+		}
 	}
 
 	//get first id of each new main code
@@ -770,7 +776,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 			/*	 		Add reaction time on map								*/
 			/*	=> If one has not the default value, they should all be there	*/
 			/********************************************************************/
-			if (triggCatEla->triggers[indexBegTrigg + 2].rtMs != 10000000)
+			if (triggCatEla->triggers[indexBegTrigg + 2].rtMs != -1)
 			{
 				painterChanel->setPen(QColor(Qt::black));
 				for (int l = 0; l < numberSubTrial; l++)

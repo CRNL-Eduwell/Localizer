@@ -3,5 +3,5 @@ ROW;COL;Name;Path;Window;BaseLine;Main Event;Maint Event Label;Secondary Events;
 2;1;LOAD4;/home/LOAD4.jpg;-500:6000;-200:0;40;LOAD4;1:2;OSEF;C0_L1
 3;1;LOAD6;/home/LOAD6.jpg;-500:6000;-200:0;60;LOAD6;1:2;OSEF;C0_L1
 4;1;CnTrl;/home/CnTrl.jpg;-500:6000;-200:0;10;CnTrl;1:2;OSEF;C0_L1
-C:\System98\ExternalProgram\Localizer\Config\Prov\MVIS.chg
+/Resources/Config/Prov/MVIS.chg
 NO_INVERT

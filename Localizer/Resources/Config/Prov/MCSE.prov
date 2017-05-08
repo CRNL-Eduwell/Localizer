@@ -1,5 +1,5 @@
 ROW;COL;Name;Path;Window;BaseLine;Main Event;Maint Event Label;Secondary Events;Secondary Events Label;Sort
-1;1;POP;C:\System98\ExternalProgram\Localizer\Config\Pictures\MCSE\MCSE_EASY.jpg;-500:3500;-200:0;10;POP;100:200;OSEF;C0_L1
-2;1;SEARCH;C:\System98\ExternalProgram\Localizer\Config\Pictures\MCSE\MCSE_HARD.jpg;-500:3500;-200:0;60;SEARCH;100:200;OSEF;C0_L1
-C:\System98\ExternalProgram\Localizer\Config\Prov\MCSE.chg
+1;1;POP;/Resources/Config/Pictures/MCSE/MCSE_EASY.jpg;-500:3500;-200:0;10;POP;100:200;OSEF;C0_L1
+2;1;SEARCH;/Resources/Config/Pictures/MCSE/MCSE_HARD.jpg;-500:3500;-200:0;60;SEARCH;100:200;OSEF;C0_L1
+/Resources/Config/Prov/MCSE.chg
 NO_INVERT

@@ -1,5 +1,0 @@
-ROW;COL;Name;Path;Window;Main Event;Maint Event Label;Secondary Events;Secondary Events Label;Sort
-1;1;CORR;/home/corr.jpg;-5000:10000;-250:-50;200;st1;0:1;OSEF;C0_L1
-2;1;ERR;/home/err.jpg;-5000:10000;-250:-50;300;st2;0:1;OSEF;C0_L1
-C:\System98\ExternalProgram\Localizer\Config\Prov\MASS.chg
-NO_INVERT

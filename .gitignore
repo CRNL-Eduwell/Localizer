@@ -1,0 +1,9 @@
+Localizer.sln
+Localizer/GeneratedFiles/
+Localizer/x64/
+.vs/Localizer/v14/.suo
+Localizer.VC.VC.opendb
+Localizer.VC.db
+Localizer/Localizer.vcxproj
+Localizer/Localizer.vcxproj.filters
+Localizer/Localizer.vcxproj.user

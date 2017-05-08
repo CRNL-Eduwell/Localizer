@@ -1,4 +1,5 @@
 ROW;COL;Name;Path;Window;BaseLine;Main Event;Maint Event Label;Secondary Events;Secondary Events Label;Sort
 1;1;OK;/home/OK.jpg;-200:3000;-150:-50;10;OK;100;ok;C0_L1
 2;1;NOK;/home/NOK.jpg;-200:3000;-150:-50;20;NOK;200;nok;C0_L1
-C:\System98\ExternalProgram\Localizer\Config\Prov\MARD.chg
+/Resources/Config/Prov/MARD.chg
+NO_INVERT

@@ -117,6 +117,8 @@ int *InsermLibrary::PROV::getWindowSam(int samplingFreq, int idBloc)
 
 void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 {
+	string rootFolder = GetCurrentWorkingDir();
+
 	vector<string> myAsciiData = asciiDataProv(provFilePath);
 	int nbVisuBloc = (int)myAsciiData.size() - 3; //First line is legend, last line is possible changePath 
 
@@ -138,7 +140,7 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 				currentBloc.dispBloc.name = currentAsciiBloc[2];
 				break;
 			case 3:
-				currentBloc.dispBloc.path = currentAsciiBloc[3];
+				currentBloc.dispBloc.path = string(rootFolder + currentAsciiBloc[3]);
 				break;
 			case 4:
 			{
@@ -218,7 +220,7 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 
 	if (myAsciiData[nbVisuBloc + 1] != "NO_CHANGE_CODE")
 	{
-		changeCodeFilePath = myAsciiData[nbVisuBloc + 1];
+		changeCodeFilePath = string(rootFolder + myAsciiData[nbVisuBloc + 1]);
 	}
 	else
 	{

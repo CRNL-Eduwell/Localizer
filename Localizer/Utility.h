@@ -6,6 +6,14 @@
 #include <fstream>	
 #include <sstream>
 
+#if defined(_WIN32) || defined(_WIN64)
+	#include <direct.h>
+	#define GetCurrentDir _getcwd
+#else
+	#include <unistd.h>
+	#define GetCurrentDir getcwd
+#endif
+
 #include <QGroupBox>
 #include <QCheckBox>
 #include <QFrame>
@@ -94,6 +102,8 @@ namespace InsermLibrary
 
 	void deblankString(std::string &myString);
 	
+	string GetCurrentWorkingDir();
+
 	//=== Option structs passed in worker and localizer
 	
 	struct frequency
