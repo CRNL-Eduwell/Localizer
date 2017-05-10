@@ -48,14 +48,15 @@ namespace InsermLibrary
 		string createIfFreqFolderExistNot(eegContainer *myeegContainer, frequency currentFreq);
 		vector<PROV> loadProvCurrentLoca();
 		bool shouldPerformBarPlot(string locaName);
+		bool isBarPlot(string provFile);
 		//==
 		void barplot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, string freqFolder);
-		string getMapsFolderBar(string freqFolder);
+		string getMapsFolderBar(string freqFolder, PROV *myprovFile);
 		string prepareFolderAndPathsBar(string freqFolder, int dsSampFreq);
 		vector<PVALUECOORD> calculateStatisticKruskall(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, string freqFolder);
 		//==
 		void env2plot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, string freqFolder);
-		string getMapsFolderPlot(string freqFolder);
+		string getMapsFolderPlot(string freqFolder, PROV *myprovFile);
 		string prepareFolderAndPathsPlot(string freqFolder, int dsSampFreq);
 
 		//==

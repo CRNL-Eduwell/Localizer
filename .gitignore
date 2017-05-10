@@ -7,3 +7,13 @@ Localizer.VC.db
 Localizer/Localizer.vcxproj
 Localizer/Localizer.vcxproj.filters
 Localizer/Localizer.vcxproj.user
+x64/Debug/Localizer.exe
+x64/Debug/Localizer.ilk
+x64/Debug/Localizer.pdb
+x64/Debug/libfftw3-3.dll
+x64/Debug/libfftw3f-3.dll
+x64/Debug/libfftw3l-3.dll
+x64/Release/Localizer.exe
+x64/Release/libfftw3-3.dll
+x64/Release/libfftw3f-3.dll
+x64/Release/libfftw3l-3.dll

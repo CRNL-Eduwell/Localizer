@@ -132,10 +132,10 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 
 		if (provFiles[i].invertmapsinfo != "")
 			swapStimResp(triggCatEla, &provFiles[i]);
-
+		
 		if (a.env2plot)//env2plot
 		{
-			if (shouldPerformBarPlot(currentLoca->locaName))
+			if (shouldPerformBarPlot(currentLoca->locaName) || isBarPlot(provFiles[i].filePath))
 			{
 				barplot(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
 			}
@@ -146,8 +146,10 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 			}
 		}
 
-		if (a.trialmat)
+		if (a.trialmat && (isBarPlot(provFiles[i].filePath) == false || provFiles.size() == 1))
+		{
 			timeTrialmatrices(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
+		}
 	}
 }
 
@@ -314,6 +316,21 @@ void InsermLibrary::LOCA::processEventsDown(eegContainer *myeegContainer, PROV *
 	pairStimResp(downEegTriggers, myprovFile);
 	deleteUnsignificativEvents(downEegTriggers, myprovFile);
 
+	if (myprovFile->getSecondaryCodes()[0] != 0) //At this point , if there is secondary code, we need to check if all have been paired correctly 
+	{
+		vector<int> idToDel;
+		for (int i = 0; i < downEegTriggers->triggers.size(); i++)
+		{
+			if (downEegTriggers->triggers[i].response.code == -1)
+			{
+				idToDel.push_back(i);
+			}
+		}
+
+		for (int i = idToDel.size() - 1; i >= 0; i--)
+			downEegTriggers->triggers.erase(downEegTriggers->triggers.begin() + idToDel[i]);
+	}
+
 	triggCatEla2 = new TRIGGINFO(downEegTriggers);
 	sortTrials(triggCatEla2, myprovFile, myeegContainer->sampInfo.downsampledFrequency);
 
@@ -376,6 +393,7 @@ void InsermLibrary::LOCA::pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *
 	}
 }
 
+//Delete code that are not defined in prov file 
 void InsermLibrary::LOCA::deleteUnsignificativEvents(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile)
 {
 	vector<int> idToKeep, idToDelete;
@@ -482,6 +500,7 @@ void InsermLibrary::LOCA::sortTrials(TRIGGINFO *eegTriggersTemp, PROV *myprovFil
 	}
 }
 
+//First we need to check if all trigg have found a resp , otherwise delete
 void InsermLibrary::LOCA::swapStimResp(TRIGGINFO *eegTriggers, PROV *myprovFile)
 {
 	for (int i = 0; i < eegTriggers->triggers.size(); i++)
@@ -560,13 +579,28 @@ bool InsermLibrary::LOCA::shouldPerformBarPlot(string locaName)
 	return false;
 }
 
+bool InsermLibrary::LOCA::isBarPlot(string provFile)
+{
+	vec1<string> splitFile = split<string>(provFile, "_");
+	string toCheck = splitFile[splitFile.size() - 1];
+	transform(toCheck.begin(), toCheck.end(), toCheck.begin(), ::tolower);
+	if (toCheck == "_barplot")
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 /************/
 /* Barplot  */
 /************/
 void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, 
 								  string freqFolder)
 {
-	string mapsFolder = getMapsFolderBar(freqFolder);
+	string mapsFolder = getMapsFolderBar(freqFolder, myprovFile);
 	string mapPath = prepareFolderAndPathsBar(mapsFolder, myeegContainer->sampInfo.downsampFactor);
 	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency);
 
@@ -585,7 +619,7 @@ void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, int idCurrentFre
 	delete windowSam;
 }
 
-string InsermLibrary::LOCA::getMapsFolderBar(string freqFolder)
+string InsermLibrary::LOCA::getMapsFolderBar(string freqFolder, PROV *myprovFile)
 {
 	string mapsFolder = freqFolder;
 	vec1<string> dd = split<string>(mapsFolder, "/");
@@ -602,6 +636,9 @@ string InsermLibrary::LOCA::getMapsFolderBar(string freqFolder)
 		else
 			mapsFolder.append("_P" + streamPValue.str());
 	}
+
+	vector<string> myProv = split<string>(myprovFile->filePath, "/");
+	mapsFolder.append(" - " + myProv[myProv.size() - 1]);
 
 	return mapsFolder;
 }
@@ -645,7 +682,7 @@ vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticKruskall(vec3<float> &b
 void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, 
 								   string freqFolder)
 {
-	string mapsFolder = getMapsFolderPlot(freqFolder);
+	string mapsFolder = getMapsFolderPlot(freqFolder, myprovFile);
 	string mapPath = prepareFolderAndPathsPlot(mapsFolder, myeegContainer->sampInfo.downsampFactor);
 	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency);
 
@@ -661,12 +698,14 @@ void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, int idCurrentFr
 	delete windowSam;
 }
 
-string InsermLibrary::LOCA::getMapsFolderPlot(string freqFolder)
+string InsermLibrary::LOCA::getMapsFolderPlot(string freqFolder, PROV *myprovFile)
 {
 	string mapsFolder = freqFolder;
 	vec1<string> dd = split<string>(mapsFolder, "/");
 	mapsFolder.append(dd[dd.size() - 1]);
-	return mapsFolder.append("_plots");
+
+	vector<string> myProv = split<string>(myprovFile->filePath, "/");
+	return mapsFolder.append("_plots").append(" - " + myProv[myProv.size() - 1]);
 }
 
 string InsermLibrary::LOCA::prepareFolderAndPathsPlot(string mapsFolder, int dsSampFreq)
@@ -688,7 +727,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 	vector<PVALUECOORD> significantValue;
 	//== get some useful information
 	string mapsFolder = getMapsFolderTrial(myprovFile, freqFolder);
-	string mapPath = prepareFolderAndPathsTrial(mapsFolder, myeegContainer->sampInfo.downsampledFrequency);
+	string mapPath = prepareFolderAndPathsTrial(mapsFolder, myeegContainer->sampInfo.downsampFactor);
 	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency);
 	int nbCol = myprovFile->nbCol();
 	int nbRow = myprovFile->nbRow();
@@ -848,6 +887,9 @@ string InsermLibrary::LOCA::getMapsFolderTrial(PROV *myprovFile, string freqFold
 		else
 			mapsFolder.append("_P" + streamPValue.str());
 	}
+
+	vector<string> myProv = split<string>(myprovFile->filePath, "/");
+	mapsFolder.append(" - " + myProv[myProv.size() - 1]);
 
 	return mapsFolder;
 }
