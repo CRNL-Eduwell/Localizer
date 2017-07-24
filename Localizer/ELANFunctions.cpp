@@ -360,7 +360,7 @@ void InsermLibrary::ELANFunctions::writeOldElanData(elan_struct_t *elan, std::st
 	{
 		for (int k = 0; k < elan->chan_nb; k++) //nb de canaux totaux restant																							                                                      
 		{
-			tempValue = elan->eeg.data_float[0][k][j];
+			tempValue = elan->eeg.data_float[idMeasure][k][j];
 			char *c = (char*)&tempValue;
 			std::swap(c[0], c[1]);
 
