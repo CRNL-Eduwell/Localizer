@@ -220,8 +220,8 @@ void InsermLibrary::LOCA::createConfFile(eegContainer *myeegContainer)
 	confFile.close();
 }
 
-void InsermLibrary::LOCA::renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *downsampledEegTriggers, 
-										 PROV *myprovFile)
+void InsermLibrary::LOCA::renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *downsampledEegTriggers,
+	PROV *myprovFile)
 {
 	stringstream buffer;
 	ifstream provFile(myprovFile->changeCodeFilePath, ios::binary);
@@ -245,53 +245,72 @@ void InsermLibrary::LOCA::renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *down
 		newMainCode.push_back(atoi(&(elementSplit[2])[0]));
 		newSecondaryCode.push_back(atoi(&(elementSplit[3])[0]));
 	}
-
-	int idVisuBloc = 0;
-	for (int i = 0; i < oldMainCode.size(); i++)
+	
+	for (int k = 0; k < downsampledEegTriggers->triggers.size(); k++)
 	{
-		for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
+		int idVisuBloc = -1;
+		int idMain = -1;
+		int idSec = -1;
+		int dd = -1;
+		int idcode = -1;
+
+		for (int l = 0; l < oldMainCode.size(); l++)
 		{
-			for (int k = 0; k < myprovFile->visuBlocs[j].mainEventBloc.eventCode.size(); k++)
+			if (downsampledEegTriggers->triggers[k].trigger.code == oldMainCode[l])
 			{
-				if (myprovFile->visuBlocs[j].mainEventBloc.eventCode[k] == oldMainCode[i])
+				idMain = k;
+				for (int m = 0; m < myprovFile->visuBlocs.size(); m++)
 				{
-					idVisuBloc = j;
+					if(newMainCode[l] == myprovFile->visuBlocs[m].mainEventBloc.eventCode[0]);
+					idVisuBloc = m;
 				}
 			}
 		}
 
-		int winSamMin = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[0]) / 1000);
-		int winSamMax = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[1]) / 1000);
-
-		int idSecondaryEvent = 0;
-		for (int j = 0; j < downsampledEegTriggers->triggers.size(); j++)
+		if (idMain != -1)
 		{
-			int winMax = downsampledEegTriggers->triggers[j].trigger.sample + winSamMax;
-			int winMin = downsampledEegTriggers->triggers[j].trigger.sample - abs(winSamMin);
+			int winSamMin = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[0]) / 1000);
+			int winSamMax = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[1]) / 1000);
 
-			if (downsampledEegTriggers->triggers[j].trigger.code == oldMainCode[i])
+			dd = k + 1;
+
+			while (idSec == -1 && dd < downsampledEegTriggers->triggers.size() - 1)
 			{
-				eegTriggers->triggers[j].trigger.code = newMainCode[i];
-				downsampledEegTriggers->triggers[j].trigger.code = newMainCode[i];
-
-				idSecondaryEvent = j + 1;
-				while ((downsampledEegTriggers->triggers[idSecondaryEvent].trigger.sample < winMax) &&
-					(downsampledEegTriggers->triggers[idSecondaryEvent].trigger.sample > winMin))
+				for (int l = 0; l < oldMainCode.size(); l++)
 				{
-					if (downsampledEegTriggers->triggers[idSecondaryEvent].trigger.code == oldSecondaryCode[i])
+					if (downsampledEegTriggers->triggers[dd].trigger.code == oldSecondaryCode[l])
 					{
-						eegTriggers->triggers[idSecondaryEvent].trigger.code = newSecondaryCode[i];
-						downsampledEegTriggers->triggers[idSecondaryEvent].trigger.code = newSecondaryCode[i];
-						idSecondaryEvent++;
+						idSec = dd;
+						idcode = l;
 					}
-					else
+					else if (downsampledEegTriggers->triggers[dd].trigger.code == oldMainCode[l] && idSec == -1)
 					{
-						idSecondaryEvent++;
+						idMain = dd;
+						idcode = l;
 					}
+				}
+				dd++;
+			}
+
+
+			if (idMain != -1 && idSec != -1)
+			{
+				int winMax = downsampledEegTriggers->triggers[idMain].trigger.sample + winSamMax;
+				int winMin = downsampledEegTriggers->triggers[idMain].trigger.sample - abs(winSamMin);
+
+				if ((downsampledEegTriggers->triggers[idSec].trigger.sample < winMax) && 
+					(downsampledEegTriggers->triggers[idSec].trigger.sample > winMin))
+				{
+					eegTriggers->triggers[idMain].trigger.code = newMainCode[idcode];
+					downsampledEegTriggers->triggers[idMain].trigger.code = newMainCode[idcode];
+					eegTriggers->triggers[idSec].trigger.code = newSecondaryCode[idcode];
+					downsampledEegTriggers->triggers[idSec].trigger.code = newSecondaryCode[idcode];
 				}
 			}
 		}
+
 	}
+
 }
 
 /******************************************/
@@ -344,49 +363,64 @@ void InsermLibrary::LOCA::pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *
 	vector<int> respEventsCode = myprovFile->getSecondaryCodes();
 	
 	int idVisuBloc = 0;
-	for (int i = 0; i < mainEventsCode.size(); i++)
+	for (int k = 0; k < downsampledEegTriggers->triggers.size(); k++)
 	{
-		for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
+		int idVisuBloc = -1;
+		int idMain = -1;
+		int idSec = -1;
+		int dd = -1;
+		int idcode = -1;
+
+		for (int l = 0; l < mainEventsCode.size(); l++)
 		{
-			for (int k = 0; k < myprovFile->visuBlocs[j].mainEventBloc.eventCode.size(); k++)
+			if (downsampledEegTriggers->triggers[k].trigger.code == mainEventsCode[l])
 			{
-				if (myprovFile->visuBlocs[j].mainEventBloc.eventCode[k] == mainEventsCode[i])
+				idMain = k;
+				for (int m = 0; m < myprovFile->visuBlocs.size(); m++)
 				{
-					idVisuBloc = j;
+					if (mainEventsCode[l] == myprovFile->visuBlocs[m].mainEventBloc.eventCode[0]);
+						idVisuBloc = m;
 				}
 			}
 		}
 
-		int winSamMin = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[0]) / 1000);
-		int winSamMax = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[1]) / 1000);
-
-		int idSecondaryEvent = 0;
-		for (int j = 0; j < downsampledEegTriggers->triggers.size(); j++)
+		if (idMain != -1)
 		{
-			int winMax = downsampledEegTriggers->triggers[j].trigger.sample + winSamMax;
-			int winMin = downsampledEegTriggers->triggers[j].trigger.sample - abs(winSamMin);
+	
+			int winSamMin = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[0]) / 1000);
+			int winSamMax = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[1]) / 1000);
 
-			if (downsampledEegTriggers->triggers[j].trigger.code == mainEventsCode[i])
+			dd = k + 1;
+
+			while (idSec == -1 && dd < downsampledEegTriggers->triggers.size() - 1)
 			{
-				idSecondaryEvent = j + 1;
-				if (idSecondaryEvent < downsampledEegTriggers->triggers.size() - 1)
+				for (int l = 0; l < mainEventsCode.size(); l++)
 				{
-					while ((downsampledEegTriggers->triggers[idSecondaryEvent].trigger.sample < winMax) &&
-						(downsampledEegTriggers->triggers[idSecondaryEvent].trigger.sample > winMin))
+					if (downsampledEegTriggers->triggers[dd].trigger.code == respEventsCode[l])
 					{
-
-						if (find(respEventsCode.begin(), respEventsCode.end(), downsampledEegTriggers->triggers[idSecondaryEvent].trigger.code) != respEventsCode.end())
-						{
-							downsampledEegTriggers->triggers[j].response.code = downsampledEegTriggers->triggers[idSecondaryEvent].trigger.code;
-							downsampledEegTriggers->triggers[j].response.sample = downsampledEegTriggers->triggers[idSecondaryEvent].trigger.sample;
-							idSecondaryEvent++;
-						}
-						else
-						{
-							idSecondaryEvent++;
-						}
-
+						idSec = dd;
+						idcode = l;
 					}
+					else if (downsampledEegTriggers->triggers[dd].trigger.code == mainEventsCode[l] && idSec == -1)
+					{
+						idMain = dd;
+						idcode = l;
+					}
+				}
+				dd++;
+			}
+
+
+			if (idMain != -1 && idSec != -1)
+			{
+				int winMax = downsampledEegTriggers->triggers[idMain].trigger.sample + winSamMax;
+				int winMin = downsampledEegTriggers->triggers[idMain].trigger.sample - abs(winSamMin);
+
+				if ((downsampledEegTriggers->triggers[idSec].trigger.sample < winMax) &&
+					(downsampledEegTriggers->triggers[idSec].trigger.sample > winMin))
+				{
+					downsampledEegTriggers->triggers[idMain].response.code = downsampledEegTriggers->triggers[idSec].trigger.code;
+					downsampledEegTriggers->triggers[idMain].response.sample = downsampledEegTriggers->triggers[idSec].trigger.sample;
 				}
 			}
 		}
