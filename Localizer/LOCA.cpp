@@ -261,8 +261,8 @@ void InsermLibrary::LOCA::renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *down
 				idMain = k;
 				for (int m = 0; m < myprovFile->visuBlocs.size(); m++)
 				{
-					if(newMainCode[l] == myprovFile->visuBlocs[m].mainEventBloc.eventCode[0]);
-					idVisuBloc = m;
+					if(newMainCode[l] == myprovFile->visuBlocs[m].mainEventBloc.eventCode[0])
+						idVisuBloc = m;
 				}
 			}
 		}
@@ -278,7 +278,8 @@ void InsermLibrary::LOCA::renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *down
 			{
 				for (int l = 0; l < oldMainCode.size(); l++)
 				{
-					if (downsampledEegTriggers->triggers[dd].trigger.code == oldSecondaryCode[l])
+					if (downsampledEegTriggers->triggers[dd].trigger.code == oldSecondaryCode[l] && 
+						downsampledEegTriggers->triggers[idMain].trigger.code == oldMainCode[l])
 					{
 						idSec = dd;
 						idcode = l;
@@ -378,7 +379,7 @@ void InsermLibrary::LOCA::pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *
 				idMain = k;
 				for (int m = 0; m < myprovFile->visuBlocs.size(); m++)
 				{
-					if (mainEventsCode[l] == myprovFile->visuBlocs[m].mainEventBloc.eventCode[0]);
+					if (mainEventsCode[l] == myprovFile->visuBlocs[m].mainEventBloc.eventCode[0])
 						idVisuBloc = m;
 				}
 			}
@@ -396,7 +397,8 @@ void InsermLibrary::LOCA::pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *
 			{
 				for (int l = 0; l < mainEventsCode.size(); l++)
 				{
-					if (downsampledEegTriggers->triggers[dd].trigger.code == respEventsCode[l])
+					if (downsampledEegTriggers->triggers[dd].trigger.code == respEventsCode[l] && 
+						downsampledEegTriggers->triggers[idMain].trigger.code == mainEventsCode[l])
 					{
 						idSec = dd;
 						idcode = l;
