@@ -141,7 +141,7 @@ void InsermLibrary::ELANFunctions::readPosFile(ELANFile *elan, string pathPosFil
 	vector<string> posData = readTxtFile(pathPosFile);
 	for (int i = 0; i < posData.size(); i++)
 	{
-		vector<string> currentEventData = split<string>(posData[i], "\t");
+		vector<string> currentEventData = split<string>(posData[i], "\t ");
 		elan->triggers.push_back(eventElanFile(atoi(currentEventData[0].c_str()), atoi(currentEventData[1].c_str())));
 	}
 }
