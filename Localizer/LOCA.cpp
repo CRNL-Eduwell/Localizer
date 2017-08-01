@@ -299,8 +299,12 @@ void InsermLibrary::LOCA::renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *down
 				int winMax = downsampledEegTriggers->triggers[idMain].trigger.sample + winSamMax;
 				int winMin = downsampledEegTriggers->triggers[idMain].trigger.sample - abs(winSamMin);
 
-				if ((downsampledEegTriggers->triggers[idSec].trigger.sample < winMax) && 
-					(downsampledEegTriggers->triggers[idSec].trigger.sample > winMin))
+				bool isInWindow = (downsampledEegTriggers->triggers[idSec].trigger.sample < winMax) && 
+								  (downsampledEegTriggers->triggers[idSec].trigger.sample > winMin);
+				bool specialLoca = (currentLoca->locaName == "MARA" ||
+									currentLoca->locaName == "MARM" ||
+									currentLoca->locaName == "MARD");
+				if (isInWindow || specialLoca)
 				{
 					eegTriggers->triggers[idMain].trigger.code = newMainCode[idcode];
 					downsampledEegTriggers->triggers[idMain].trigger.code = newMainCode[idcode];
@@ -418,8 +422,12 @@ void InsermLibrary::LOCA::pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *
 				int winMax = downsampledEegTriggers->triggers[idMain].trigger.sample + winSamMax;
 				int winMin = downsampledEegTriggers->triggers[idMain].trigger.sample - abs(winSamMin);
 
-				if ((downsampledEegTriggers->triggers[idSec].trigger.sample < winMax) &&
-					(downsampledEegTriggers->triggers[idSec].trigger.sample > winMin))
+				bool isInWindow = (downsampledEegTriggers->triggers[idSec].trigger.sample < winMax) &&
+								  (downsampledEegTriggers->triggers[idSec].trigger.sample > winMin);
+				bool specialLoca = (currentLoca->locaName == "MARA" ||
+									currentLoca->locaName == "MARM" ||
+									currentLoca->locaName == "MARD");
+				if (isInWindow || specialLoca)
 				{
 					downsampledEegTriggers->triggers[idMain].response.code = downsampledEegTriggers->triggers[idSec].trigger.code;
 					downsampledEegTriggers->triggers[idMain].response.sample = downsampledEegTriggers->triggers[idSec].trigger.sample;
@@ -863,9 +871,12 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 					int yTrialPosition = mGen.subMatrixes[indexPos].y() + mGen.subMatrixes[indexPos].height();
 					double yRt = yTrialPosition - (((double)mGen.subMatrixes[indexPos].height() / numberSubTrial) * l) - 1;
 
-					painterChanel->setBrush(Qt::black);
-					painterChanel->drawEllipse(QPoint(xRt, yRt), (int)(0.0034722 * mGen.MatrixRect.width()), 
-																 (int)(0.004629629 * mGen.MatrixRect.height()));
+					if (xRt <= (mGen.MatrixRect.x() + mGen.MatrixRect.width()))
+					{
+						painterChanel->setBrush(Qt::black);
+						painterChanel->drawEllipse(QPoint(xRt, yRt), (int)(0.0034722 * mGen.MatrixRect.width()),
+												  (int)(0.004629629 * mGen.MatrixRect.height()));
+					}
 				}
 			}
 
