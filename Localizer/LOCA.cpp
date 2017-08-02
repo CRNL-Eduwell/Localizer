@@ -126,7 +126,7 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 	vector<PROV> provFiles = loadProvCurrentLoca();
 	for (int i = 0; i < provFiles.size(); i++)
 	{
-		createPosFile(myeegContainer, &provFiles[i]); //need to add something before .pos to specify according to prov file
+		createPosFile(myeegContainer, &provFiles[i]); 
 		createConfFile(myeegContainer);
 		processEventsDown(myeegContainer, &provFiles[i]);
 

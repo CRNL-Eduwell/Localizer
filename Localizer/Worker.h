@@ -53,7 +53,8 @@ signals:
 	void sendContainerPointer(eegContainer *eegCont);
 
 public:
-	bool bipCreated = false;
+	int bipCreated = -1;
+
 private:
 	LOCA *loca = nullptr;
 	vector<int> elecToDeleteMem;

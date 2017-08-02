@@ -71,7 +71,7 @@ private slots:
 	void UpdateSinglePostAna();
 
 signals:
-	void bipDone(bool);
+	void bipDone(int);
 
 private:
 	//==Data for analysis

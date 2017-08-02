@@ -376,7 +376,8 @@ void Localizer::processFolderAnalysis()
 
 			//=== 
 			connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
-			connect(this, &Localizer::bipDone, worker, [&] { worker->bipCreated = true; });
+			//connect(this, &Localizer::bipDone, worker, [&] { worker->bipCreated = true; });
+			connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
 
 			//=== Event From worker and thread
 			connect(thread, SIGNAL(started()), worker, SLOT(processAnalysis()));
@@ -420,7 +421,8 @@ void Localizer::processSingleAnalysis()
 
 			//=== 
 			connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
-			connect(this, &Localizer::bipDone, worker, [&] { worker->bipCreated = true; });
+			//connect(this, &Localizer::bipDone, worker, [&] { worker->bipCreated = true; });
+			connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
 
 			//=== Event From worker and thread
 			connect(thread, SIGNAL(started()), worker, SLOT(processAnalysis()));
@@ -465,7 +467,8 @@ void Localizer::processERPAnalysis()
 
 				//=== 
 				connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
-				connect(this, &Localizer::bipDone, worker, [&] { worker->bipCreated = true; });
+				//connect(this, &Localizer::bipDone, worker, [&] { worker->bipCreated = true; });
+				connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
 
 				//=== Event From worker and thread
 				connect(thread, SIGNAL(started()), worker, SLOT(processERP()));
@@ -517,7 +520,8 @@ void Localizer::processConvertToElan()
 
 				//=== 
 				connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
-				connect(this, &Localizer::bipDone, worker, [&] { worker->bipCreated = true; });
+				//connect(this, &Localizer::bipDone, worker, [&] { worker->bipCreated = true; });
+				connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
 
 				//=== Event From worker and thread
 				connect(thread, SIGNAL(started()), worker, SLOT(processToELAN()));
@@ -649,9 +653,9 @@ void Localizer::deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1
 void Localizer::receiveContainerPointer(eegContainer *eegCont)
 {
 	chooseElec *elecWin = new chooseElec(eegCont, 0);
-	elecWin->exec();
+	int res = elecWin->exec();
 	eegCont->bipolarizeData();
-	emit bipDone(true);
+	emit bipDone(res);
 	delete elecWin;
 }
 

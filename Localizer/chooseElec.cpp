@@ -45,6 +45,7 @@ void chooseElec::createBipoles()
 
 	//containerEeg->deleteElectrodes(containerEeg->idElecToDelete);
 	containerEeg = nullptr;
+	done(1);
 	close();
 }
 

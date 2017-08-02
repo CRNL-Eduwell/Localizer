@@ -93,22 +93,26 @@ void Worker::analysePatientFolder(patientFolder *currentPatient)
 		{
 			emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + currentPatient->localizerFolder[i].pathToFolder + " ==="));			
 			myContainer = extractEEGData(currentPatient->localizerFolder[i], i, optionUser->freqOption.frequencyBands.size());
-			emit sendLogInfo("Number of Bip : " + QString::number(myContainer->bipoles.size()));
-			//==
-			stringstream().swap(TimeDisp);
-			GetLocalTime(&LocalTime);
-			TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
-			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
-			//==
-			loca->LocaSauron(myContainer, i, &currentPatient->localizerFolder[i]);
-			//==
-			stringstream().swap(TimeDisp);
-			GetLocalTime(&LocalTime);
-			TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
-			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
-			//==
-			sendLogInfo("End of Loca number " + QString::number(i) + "\n");
-			deleteAndNullify1D(myContainer);
+
+			if (myContainer != nullptr)
+			{
+				emit sendLogInfo("Number of Bip : " + QString::number(myContainer->bipoles.size()));
+				//==
+				stringstream().swap(TimeDisp);
+				GetLocalTime(&LocalTime);
+				TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
+				emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
+				//==
+				loca->LocaSauron(myContainer, i, &currentPatient->localizerFolder[i]);
+				//==
+				stringstream().swap(TimeDisp);
+				GetLocalTime(&LocalTime);
+				TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
+				emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
+				//==
+				sendLogInfo("End of Loca number " + QString::number(i) + "\n");
+				deleteAndNullify1D(myContainer);
+			}
 		}
 	}
 
@@ -163,10 +167,13 @@ eegContainer *Worker::extractEEGData(locaFolder currentLoca, int idFile, int nbF
 		if (idFile == 0)
 		{
 			emit sendContainerPointer(myContainer);
-			while (bipCreated == false) //While bipole not created 
+			while (bipCreated == -1) //While bipole not created 
 			{
 				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
 			}
+			if (bipCreated == 0)
+				return nullptr;
+
 			elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
 		}
 
@@ -190,10 +197,13 @@ eegContainer *Worker::extractEEGData(locaFolder currentLoca, int idFile, int nbF
 		if (idFile == 0)
 		{
 			emit sendContainerPointer(myContainer);
-			while (bipCreated == false) //While bipole not created 
+			while (bipCreated == -1) //While bipole not created 
 			{
 				QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
 			}
+			if (bipCreated == 0)
+				return nullptr;
+
 			elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
 		}
 
@@ -220,10 +230,13 @@ eegContainer *Worker::extractEEGData(locaFolder currentLoca)
 
 		eegContainer *myContainer = new eegContainer(myTRC, 64, 0);
 		emit sendContainerPointer(myContainer);
-		while (bipCreated == false) //While bipole not created 
+		while (bipCreated == -1) //While bipole not created 
 		{
 			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
 		}
+		if (bipCreated == 0)
+			return nullptr;
+
 		elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
 
 		myContainer->deleteElectrodes(elecToDeleteMem);
@@ -245,10 +258,13 @@ eegContainer *Worker::extractEEGData(locaFolder currentLoca)
 		eegContainer *myContainer = new eegContainer(myElan, 64, 0);
 
 		emit sendContainerPointer(myContainer);
-		while (bipCreated == false) //While bipole not created 
+		while (bipCreated == -1) //While bipole not created 
 		{
 			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
 		}
+		if (bipCreated == 0)
+			return nullptr;
+
 		elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
 
 		myContainer->deleteElectrodes(elecToDeleteMem);
@@ -274,11 +290,14 @@ eegContainer *Worker::extractEEGData(singleFile currentFile, int idFile, int nbF
 
 		eegContainer *myContainer = new eegContainer(myTRC, 64, nbFreqBand);
 		emit sendContainerPointer(myContainer);
-		while (bipCreated == false) //While bipole not created 
+		while (bipCreated == -1) //While bipole not created 
 		{
 			QCoreApplication::processEvents(QEventLoop:: WaitForMoreEvents);	//check if list of elec validated
 		}
-		bipCreated = false; //Since we loop one or multiple file we need to recheck each time the good/bad elec
+		if (bipCreated == 0)
+			return nullptr;
+
+		bipCreated = -1; //Since we loop one or multiple file we need to recheck each time the good/bad elec
 		elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
 
 		myContainer->deleteElectrodes(elecToDeleteMem);
@@ -299,11 +318,15 @@ eegContainer *Worker::extractEEGData(singleFile currentFile, int idFile, int nbF
 
 		eegContainer *myContainer = new eegContainer(myElan, 64, nbFreqBand);
 		emit sendContainerPointer(myContainer);
-		while (bipCreated == false) //While bipole not created 
+		while (bipCreated == -1) //While bipole not created 
 		{
 			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
 		}
-		bipCreated = false; //Since we loop one or multiple file we need to recheck each time the good/bad elec
+		if (bipCreated == 0)
+			return nullptr;
+
+		bipCreated = -1; //Since we loop one or multiple file we need to recheck each time the good/bad elec
+
 		elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
 
 		myContainer->deleteElectrodes(elecToDeleteMem);
@@ -329,10 +352,13 @@ eegContainer *Worker::extractEEGData(singleFile currentFile)
 
 		eegContainer *myContainer = new eegContainer(myTRC, 64, 0);
 		emit sendContainerPointer(myContainer);
-		while (bipCreated == false) //While bipole not created 
+		while (bipCreated == -1) //While bipole not created 
 		{
 			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
 		}
+		if (bipCreated == 0)
+			return nullptr;
+
 		elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
 
 		myContainer->deleteElectrodes(elecToDeleteMem);
@@ -354,10 +380,14 @@ eegContainer *Worker::extractEEGData(singleFile currentFile)
 		eegContainer *myContainer = new eegContainer(myElan, 64, 0);
 
 		emit sendContainerPointer(myContainer);
-		while (bipCreated == false) //While bipole not created 
+		//while (bipCreated == false) //While bipole not created 
+		while (bipCreated == -1) //While bipole not created 
 		{
 			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
 		}
+		if (bipCreated == 0)
+			return nullptr;
+
 		elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
 
 		myContainer->deleteElectrodes(elecToDeleteMem);
