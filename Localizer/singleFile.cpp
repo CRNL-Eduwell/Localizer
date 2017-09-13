@@ -25,7 +25,7 @@ string singleFile::filePath()
 void singleFile::getFileData(string path)
 {
 	vector<string> splitNameShort = split<string>(path, "\\//");
-	shortName = splitNameShort[splitNameShort.size() - 1];
+	shortName = splitNameShort[splitNameShort.size() - 2];
 
 	vector<string> splitExt = split<string>(path, "\\/.");
 	fileExtention = splitExt[splitExt.size() - 1];
@@ -34,19 +34,24 @@ void singleFile::getFileData(string path)
 	QStringList splitRoot = QString(path.c_str()).split(splitName[splitName.size() - 1].c_str(), QString::SplitBehavior::SkipEmptyParts);
 	rootFolder = splitRoot[0].toStdString();
 
-	if (fileExtention.find("trc") != string::npos ||
-		fileExtention.find("TRC") != string::npos)
+	QDir currentDir(rootFolder.c_str());
+	currentDir.setNameFilters(QStringList() << "*.eeg" << "*.eeg.ent" << "*.pos" << "*.trc");
+
+	QRegExp rxTrc(QString::fromStdString(shortName) + ".trc", Qt::CaseSensitivity::CaseInsensitive);
+	QRegExp rxEeg(QString::fromStdString(shortName) + ".eeg", Qt::CaseSensitivity::CaseInsensitive);
+	QRegExp rxEnt(QString::fromStdString(shortName) + ".eeg.ent", Qt::CaseSensitivity::CaseInsensitive);
+	QRegExp rxPos(QString::fromStdString(shortName) + "_raw.pos", Qt::CaseSensitivity::CaseInsensitive);
+
+	QStringList fileFound = currentDir.entryList();
+	for (int i = 0; i < fileFound.size(); i++)
 	{
-		trcFile = path;
-	}
-	else if (fileExtention.find("eeg") != string::npos ||
-			 fileExtention.find("EEG") != string::npos)
-	{
-		eegFile = path;
-	}
-	else if (fileExtention.find("eeg.ent") != string::npos ||
-		fileExtention.find("EEG.ENT") != string::npos)
-	{
-		eegEntFile = path;
+		if (rxTrc.exactMatch(fileFound[i]))
+			trcFile = rootFolder + fileFound[i].toStdString();
+		if (rxEeg.exactMatch(fileFound[i]))
+			eegFile = rootFolder + fileFound[i].toStdString();
+		if (rxEnt.exactMatch(fileFound[i]))
+			eegEntFile = rootFolder + fileFound[i].toStdString();
+		if (rxPos.exactMatch(fileFound[i]))
+			posFile = rootFolder + fileFound[i].toStdString();
 	}
 }

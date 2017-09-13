@@ -88,7 +88,7 @@ void locaFolder::retrieveFiles(string path)
 	QRegExp rxTRC(locaFullName() + ".TRC");
 	QRegExp rxEeg(locaFullName() + ".eeg");
 	QRegExp rxEnt(locaFullName() + ".eeg.ent");
-	QRegExp rxPos(locaFullName() + ".pos");
+	QRegExp rxPos(locaFullName() + "_raw.pos");
 	QRegExp rxDsPos(locaFullName() + "_ds" + "(\\d+)" + ".pos");
 
 	QStringList fileFound = currentDir.entryList();

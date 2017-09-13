@@ -1,10 +1,10 @@
 #include "displayProv.h"
 
-displayProv::displayProv(QWidget *parent) : QDialog(parent)
+displayProv::displayProv(vector<QString> currentList, QWidget *parent) : QDialog(parent)
 {
 	ui.setupUi(this);
 	getProvList();
-	displayProvList();
+	displayProvList(currentList);
 	connectSignals();
 }
 
@@ -31,7 +31,7 @@ void displayProv::getProvList()
 	prov.erase(unique(prov.begin(), prov.end()), prov.end());
 }
 
-void displayProv::displayProvList()
+void displayProv::displayProvList(vector<QString> currentList)
 {
 	ui.listWidget->clear();
 
@@ -40,7 +40,11 @@ void displayProv::displayProvList()
 		QListWidgetItem *currentPROV = new QListWidgetItem(ui.listWidget);
 		currentPROV->setText(prov[i]);
 		currentPROV->setFlags(currentPROV->flags() | Qt::ItemIsUserCheckable); // set checkable flag
-		currentPROV->setCheckState(Qt::Unchecked); // AND initialize check state
+
+		if(std::find(currentList.begin(), currentList.end(), prov[i]) != currentList.end())
+			currentPROV->setCheckState(Qt::Checked);
+		else
+			currentPROV->setCheckState(Qt::Unchecked); // AND initialize check state
 	}
 }
 

@@ -1,0 +1,6 @@
+ROW;COL;Name;Path;Window;BaseLine;Main Event;Maint Event Label;Secondary Events;Secondary Events Label;Sort
+1;1;NORM;/home/NORM.jpg;-400:3000;-200:-0;10;NORM;1;NORM;C0_L1
+2;1;COTE;/home/COTE.jpg;-400:3000;-200:0;20;COTE;2;COTE;C0_L1
+3;1;COUL;/home/COUL.jpg;-400:3000;-200:0;60;COUL;3;COUL;C0_L1
+/Resources/Config/Prov/MLAH.chg
+NO_INVERT

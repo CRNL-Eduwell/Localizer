@@ -77,15 +77,22 @@ void optionsStats::readList()
 
 void optionsStats::openProvWindow()
 {
-	prov = new displayProv();
-	connect(prov, &displayProv::sendProvList, this, &optionsStats::getProvList);
-	prov->exec();
-	delete prov;
-
 	if (toggle)
+	{
+		prov = new displayProv(wantedLocaKW);
+		connect(prov, &displayProv::sendProvList, this, &optionsStats::getProvList);
+		prov->exec();
+		delete prov;
 		displayLoca(ui.listKW, wantedLocaKW);
+	}
 	else
+	{
+		prov = new displayProv(wantedLocaWil);
+		connect(prov, &displayProv::sendProvList, this, &optionsStats::getProvList);
+		prov->exec();
+		delete prov;
 		displayLoca(ui.listWil, wantedLocaWil);
+	}
 }
 
 void optionsStats::deleteProvFromList()

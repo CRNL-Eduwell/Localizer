@@ -49,7 +49,7 @@ void optionsPerf::readList()
 
 void optionsPerf::openProvWindow()
 {
-	prov = new displayProv();
+	prov = new displayProv(wantedLoca);
 	connect(prov, SIGNAL(sendProvList(vector<QString>)), this, SLOT(getProvList(vector<QString>)));
 	prov->exec();
 	delete prov;

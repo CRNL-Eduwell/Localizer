@@ -340,7 +340,7 @@ void InsermLibrary::LOCA::processEventsDown(eegContainer *myeegContainer, PROV *
 	pairStimResp(downEegTriggers, myprovFile);
 	deleteUnsignificativEvents(downEegTriggers, myprovFile);
 
-	if (myprovFile->getSecondaryCodes()[0] != 0) //At this point , if there is secondary code, we need to check if all have been paired correctly 
+	if (myprovFile->getSecondaryCodes()[0][0] != 0) //At this point , if there is secondary code, we need to check if all have been paired correctly 
 	{
 		vector<int> idToDel;
 		for (int i = 0; i < downEegTriggers->triggers.size(); i++)
@@ -365,7 +365,7 @@ void InsermLibrary::LOCA::processEventsDown(eegContainer *myeegContainer, PROV *
 void InsermLibrary::LOCA::pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile)
 {
 	vector<int> mainEventsCode = myprovFile->getMainCodes();
-	vector<int> respEventsCode = myprovFile->getSecondaryCodes();
+	vector<vector<int>> respEventsCode = myprovFile->getSecondaryCodes();
 	
 	int idVisuBloc = 0;
 	for (int k = 0; k < downsampledEegTriggers->triggers.size(); k++)
@@ -401,7 +401,7 @@ void InsermLibrary::LOCA::pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *
 			{
 				for (int l = 0; l < mainEventsCode.size(); l++)
 				{
-					if (downsampledEegTriggers->triggers[dd].trigger.code == respEventsCode[l] && 
+					if (downsampledEegTriggers->triggers[dd].trigger.code == respEventsCode[l][0] && 
 						downsampledEegTriggers->triggers[idMain].trigger.code == mainEventsCode[l])
 					{
 						idSec = dd;

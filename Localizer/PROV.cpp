@@ -60,18 +60,39 @@ vector<int> InsermLibrary::PROV::getMainCodes()
 	return mainEventsCode;
 }
 
-vector<int> InsermLibrary::PROV::getSecondaryCodes()
+//vector<int> InsermLibrary::PROV::getSecondaryCodes()
+//{
+//	vector<int> respEventsCode;
+//	for (int m = 0; m < visuBlocs.size(); m++)
+//	{
+//		for (int j = 0; j < visuBlocs[m].secondaryEvents.size(); j++)
+//		{
+//			if (find(respEventsCode.begin(), respEventsCode.end(), visuBlocs[m].secondaryEvents[j].eventCode[0]) == respEventsCode.end())
+//			{
+//				respEventsCode.push_back(visuBlocs[m].secondaryEvents[j].eventCode[0]); //If multiple secondary code, just use the first one of the list
+//			}
+//		}
+//	}
+//	return respEventsCode;
+//}
+
+vector<vector<int>> InsermLibrary::PROV::getSecondaryCodes()
 {
-	vector<int> respEventsCode;
+	vector<vector<int>> respEventsCode;
 	for (int m = 0; m < visuBlocs.size(); m++)
 	{
+		vector<int> blocCodes;
 		for (int j = 0; j < visuBlocs[m].secondaryEvents.size(); j++)
 		{
-			if (find(respEventsCode.begin(), respEventsCode.end(), visuBlocs[m].secondaryEvents[j].eventCode[0]) == respEventsCode.end())
+			for (int n = 0; n < visuBlocs[m].secondaryEvents[j].eventCode.size(); n++)
 			{
-				respEventsCode.push_back(visuBlocs[m].secondaryEvents[j].eventCode[0]); //If multiple secondary code, just use the first one of the list
+				if (find(blocCodes.begin(), blocCodes.end(), visuBlocs[m].secondaryEvents[j].eventCode[n]) == blocCodes.end())
+				{
+					blocCodes.push_back(visuBlocs[m].secondaryEvents[j].eventCode[n]); //If multiple secondary code, just use the first one of the list
+				}
 			}
 		}
+		respEventsCode.push_back(blocCodes);
 	}
 	return respEventsCode;
 }

@@ -20,7 +20,8 @@ namespace InsermLibrary
 		int nbCol();
 		int nbRow();
 		vector<int> getMainCodes();
-		vector<int> getSecondaryCodes();
+		//vector<int> getSecondaryCodes();
+		vector<vector<int>> getSecondaryCodes();
 		int *getBiggestWindowMs();
 		int *getBiggestWindowSam(int samplingFreq);
 		int *getWindowMs(int idBloc);

@@ -71,8 +71,12 @@ void Worker::processToELAN()
 	TRCFunctions::readTRCDataAllChanels(myTRC);
 	ELANFile *myELAN = ELANFunctions::micromedToElan(myTRC);
 	string posPath = myELAN->filePath();
-	posPath.replace(posPath.end() - 4, posPath.end(), ".pos");
+	posPath.replace(posPath.end() - 4, posPath.end(), "_raw.pos");
 	ELANFunctions::writePosFile(myELAN, posPath);
+	string notePath = myELAN->filePath();
+	notePath.replace(notePath.end() - 4, notePath.end(), ".notes.txt");
+	ELANFunctions::writeNotesFile(myELAN, notePath);
+
 	ELANFunctions::writeFile(myELAN, myELAN->filePath());
 
 	deleteAndNullify1D(myELAN);
@@ -142,6 +146,25 @@ void Worker::analyseSingleFiles(vector<singleFile> currentFiles)
 		{
 			if(optionUser->anaOption[i].anaOpt[j].eeg2env)
 				myContainer->ToHilbert(myContainer->elanFrequencyBand[j], optionUser->freqOption.frequencyBands[j].freqBandValue);
+
+			//HOTFIX TRES SALE
+			//LES POS DOIVENT ETRE SORTI DANS UN CAS DANALYSE SIMPLE AUSSI (EX BTV)
+			if (myContainer->triggEeg != nullptr)
+			{
+				ofstream posFile(myContainer->originalFilePath + ".pos", ios::out);
+				ofstream posFileX(myContainer->originalFilePath + "_ds" + to_string(myContainer->sampInfo.downsampFactor) + ".pos", ios::out);
+
+				for (int k = 0; k < myContainer->triggEeg->triggers.size(); k++)
+				{
+					posFile << myContainer->triggEeg->triggers[k].trigger.sample << setw(10)
+						<< myContainer->triggEeg->triggers[k].trigger.code << setw(10) << "0" << endl;
+					posFileX << myContainer->triggEegDownsampled->triggers[k].trigger.sample << setw(10)
+						<< myContainer->triggEegDownsampled->triggers[k].trigger.code << setw(10) << "0" << endl;
+				}
+
+				posFile.close();
+				posFileX.close();
+			}
 		}
 		//==
 		stringstream().swap(TimeDisp);

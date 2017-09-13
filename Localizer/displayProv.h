@@ -18,11 +18,11 @@ class displayProv : public QDialog
 	Q_OBJECT
 
 public:
-	displayProv(QWidget *parent = 0);
+	displayProv(vector<QString> currentList, QWidget *parent = 0);
 	~displayProv();
 private:
 	void getProvList();
-	void displayProvList();
+	void displayProvList(vector<QString> currentList);
 	void connectSignals();
 
 private slots:
@@ -31,7 +31,6 @@ private slots:
 	void sendListAndClose();
 signals:
 	void sendProvList(vector<QString> truc);
-
 
 private:
 	vector<QString> prov;

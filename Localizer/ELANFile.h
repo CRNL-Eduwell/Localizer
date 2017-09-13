@@ -35,6 +35,18 @@ namespace InsermLibrary
 		int code = -1;
 	};
 
+	struct noteElanFile
+	{
+		noteElanFile(int sample, char note[40])
+		{
+			this->sample = sample;
+			strcpy_s(this->note, note);
+		}
+
+		int sample = -1;
+		char note[40];
+	};
+
 	class ELANFile
 	{
 		friend class ELANFunctions;
@@ -54,6 +66,7 @@ namespace InsermLibrary
 		void getElectrodes();
 	public :
 		vector<eventElanFile> triggers;
+		vector<noteElanFile> notes;
 		vector<elecElanFile> electrodes;
 	private :
 		elan_struct_t *elanStruct = nullptr;

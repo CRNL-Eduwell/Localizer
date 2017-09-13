@@ -28,6 +28,7 @@ namespace InsermLibrary
 
 		//=== Data Extract
 		static void readPosFile(ELANFile *elan, string pathPosFile);
+		static void readNotesFile(ELANFile *elan, string pathNoteFile);
 		static void readFile(ELANFile *elan, string filePath);
 		static void readHeader(ELANFile *elan, string filePath);
 		static void readDataAllChannels(ELANFile *elan, string filePath);
@@ -36,6 +37,7 @@ namespace InsermLibrary
 
 		//=== Data Write
 		static void writePosFile(ELANFile *elan, string pathPosFile);
+		static void writeNotesFile(ELANFile *elan, string pathNoteFile);
 		static void writeFile(ELANFile *elan, string filePath);
 		static void writeHeader(ELANFile *elan, string filePath);
 		static void writeDataAllChannels(ELANFile *elan, string filePath);

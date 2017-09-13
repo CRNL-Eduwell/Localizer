@@ -58,6 +58,9 @@ ELANFile *InsermLibrary::ELANFunctions::micromedToElan(TRCFile *trc)
 	for (int i = 0; i < trc->triggers().size(); i++)
 		newElanFile->triggers.push_back(eventElanFile(trc->triggers()[i].triggerSample, trc->triggers()[i].triggerValue));
 
+	for (int i = 0; i < trc->notes().size(); i++)
+		newElanFile->notes.push_back(noteElanFile(trc->notes()[i].sample, trc->notes()[i].comment));
+
 	return newElanFile;
 }
 
@@ -146,6 +149,16 @@ void InsermLibrary::ELANFunctions::readPosFile(ELANFile *elan, string pathPosFil
 	}
 }
 
+void InsermLibrary::ELANFunctions::readNotesFile(ELANFile *elan, string pathNoteFile)
+{
+	vector<string> noteData = readTxtFile(pathNoteFile);
+	for (int i = 0; i < noteData.size(); i++)
+	{
+		vector<string> currentNoteData = split<string>(noteData[i], "\t ");
+		elan->notes.push_back(noteElanFile(atoi(currentNoteData[0].c_str()), (char *)currentNoteData[1].c_str()));
+	}
+}
+
 void InsermLibrary::ELANFunctions::readFile(ELANFile *elan, std::string filePath)
 {
 	ef_read_elan_file((char*)filePath.c_str(), elan->elanStruct);
@@ -208,6 +221,14 @@ void InsermLibrary::ELANFunctions::writePosFile(ELANFile *elan, string pathPosFi
 	for (int i = 0; i < elan->triggers.size(); i++)
 		posFile << elan->triggers[i].sample << setw(10) << elan->triggers[i].code << setw(10) << "0" << endl;
 	posFile.close();
+}
+
+void InsermLibrary::ELANFunctions::writeNotesFile(ELANFile *elan, string pathNoteFile)
+{
+	ofstream noteFile(pathNoteFile, ios::out);
+	for (int i = 0; i < elan->notes.size(); i++)
+		noteFile << elan->notes[i].sample << setw(10) << elan->notes[i].note << endl;
+	noteFile.close();
 }
 
 void InsermLibrary::ELANFunctions::writeFile(ELANFile *elan, std::string filePath)
@@ -466,7 +487,7 @@ void InsermLibrary::ELANFunctions::createNewElanStructForCopy(ELANFile *elan, ve
 	for (int i = 0; i < elan->nbChannels() - 1; i++)
 	{
 		int pos = (int)(find(indexToDelete.begin(), indexToDelete.end(), i) - indexToDelete.begin());
-		if (!(pos < indexToDelete.size() - 1))
+		if (!(pos < indexToDelete.size() /*- 1*/))
 		{
 			sprintf_s(newElanStruct->chan_list[count].lab, elan->elanStruct->chan_list[i].lab);
 			sprintf_s(newElanStruct->chan_list[count].type, elan->elanStruct->chan_list[i].type);

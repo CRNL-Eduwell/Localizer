@@ -4,6 +4,10 @@
 #include <iostream>
 #include "Utility.h"
 
+#include <QDir>
+#include <QString>
+#include <QObject>
+
 using namespace std;
 using namespace InsermLibrary;
 
