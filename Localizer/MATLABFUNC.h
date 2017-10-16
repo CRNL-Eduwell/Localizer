@@ -58,6 +58,7 @@ namespace InsermLibrary															    																																					 
 		static void Convolution2(float *p_source_tab, int p_source_tab_length, float *p_out_tab, int p_coeff);																														  /*||*/
 		static void Convolution(float *p_source_tab, int p_source_tab_length, float *p_out_tab, int p_coeff);																															  /*||*/
 		static void bandPassHilbertFreq(float *SignIn, float *SignOut, FIRINFO *fir, FFTINFO* fftForward, FFTINFO* fftBackward);																										 /*||*/
+		static void bandPassHilbertFreq(vector<float> & SignIn, vector<float> & SignOut, FIRINFO *fir, FFTINFO* fftForward, FFTINFO* fftBackward);																										 /*||*/
 		static void hilbertEnvellope(float* xr, int xrLength, float *SignOut, FFTINFO* fftForward, FFTINFO* fftBackward);																												  /*||*/
 		static void bandPassFilter(float *SignIn, int SignInLength, float *FirCoeff, float * SignOut, FFTINFO* fftForward, FFTINFO* fftBackward);																						/*||*/
 		static void FFTWForward(FFTINFO* fftForward);																																													 /*||*/

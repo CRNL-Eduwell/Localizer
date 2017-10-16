@@ -109,7 +109,7 @@ void Localizer::loadSingleFile()
 {
 	QFileDialog *fileDial = new QFileDialog(this);
 	fileDial->setFileMode(QFileDialog::FileMode::ExistingFile);
-	QStringList fileNames = fileDial->getOpenFileNames(this, tr("Choose File to analyse : "), tr("C:\\"), QString("*.trc *.eeg"));
+	QStringList fileNames = fileDial->getOpenFileNames(this, tr("Choose File to analyse : "), tr("C:\\"), QString("*.trc *.eeg *.edf"));
 	if (fileNames.count() > 0)
 	{
 		if (currentFiles.size() > 0)
@@ -131,10 +131,10 @@ void Localizer::loadWidgetListTRC(patientFolder *pat)
 	disconnect(ui.processButton, 0, 0, 0);
 	ui.TRCListWidget->clear();
 
-	for (int i = 0; i < pat->localizerFolder.size(); i++)
+	for (int i = 0; i < pat->localizerFolder().size(); i++)
 	{
 		QListWidgetItem *currentTRC = new QListWidgetItem(ui.TRCListWidget);
-		currentTRC->setText(QString::fromStdString(pat->localizerFolder[i].locaName));
+		currentTRC->setText(QString::fromStdString(pat->localizerFolder()[i].localizerName()));
 		currentTRC->setFlags(currentTRC->flags() | Qt::ItemIsUserCheckable); // set checkable flag
 		currentTRC->setCheckState(Qt::Unchecked); // AND initialize check state
 	}
@@ -147,7 +147,7 @@ void Localizer::loadWidgetListTRC(patientFolder *pat)
 	connect(ui.TRCListWidget, SIGNAL(itemActivated(QListWidgetItem *)), this, SLOT(checkOnEnter(QListWidgetItem *)));
 	connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processFolderAnalysis()));
 
-	updateGUIFrame(pat->localizerFolder[0]);
+	updateGUIFrame(pat->localizerFolder()[0]);
 }
 
 void Localizer::loadWidgetListTRC(vector<singleFile> currentFiles)
@@ -162,7 +162,7 @@ void Localizer::loadWidgetListTRC(vector<singleFile> currentFiles)
 	for (int i = 0; i < currentFiles.size(); i++)
 	{
 		QListWidgetItem *currentTRC = new QListWidgetItem(ui.TRCListWidget);
-		currentTRC->setText(currentFiles[i].shortName.c_str());
+		currentTRC->setText(currentFiles[i].patientName().c_str());
 		currentTRC->setFlags(currentTRC->flags() | Qt::ItemIsUserCheckable); // set checkable flag
 		currentTRC->setCheckState(Qt::Unchecked); // AND initialize check state
 	}
@@ -180,14 +180,14 @@ void Localizer::loadWidgetListTRC(vector<singleFile> currentFiles)
 
 void Localizer::updateGUIFrame(locaFolder currentLoca)
 {
-	updateQFrame(currentLoca.trcFile, ui.TRCFrame);
-	updateQFrame(currentLoca.eegFile, ui.EEGFrame);
-	updateQFrame(currentLoca.eegEntFile, ui.ENTFrame);
-	updateQFrame(currentLoca.posFile, ui.POSFrame);
+	updateQFrame(currentLoca.filePath(TRC), ui.TRCFrame);
+	updateQFrame(currentLoca.filePath(EEG_ELAN), ui.EEGFrame);
+	updateQFrame(currentLoca.filePath(ENT_ELAN), ui.ENTFrame);
+	updateQFrame(currentLoca.filePath(POS_ELAN), ui.POSFrame);
 
 	for (int i = 0; i < ui.freqTabWidget->count(); i++)
 	{
-		if (currentLoca.freqFolder.size() == 0)
+		if (currentLoca.frequencyFolders().size() == 0)
 		{
 			updateQFrame("", uiElement->sm0Frame[i]);
 			updateQFrame("", uiElement->sm250Frame[i]);
@@ -203,25 +203,25 @@ void Localizer::updateGUIFrame(locaFolder currentLoca)
 		}
 		else
 		{
-			for (int j = 0; j < currentLoca.freqFolder.size(); j++)
+			for (int j = 0; j < currentLoca.frequencyFolders().size(); j++)
 			{
-				if (currentLoca.freqFolder[j].frequencyName == userOpt.freqOption.frequencyBands[i].freqFolderName)
+				if (currentLoca.frequencyFolders()[j].frequencyName() == userOpt.freqOption.frequencyBands[i].freqFolderName)
 				{
-					updateQFrame(currentLoca.freqFolder[j].sm0eeg, uiElement->sm0Frame[i]);
-					updateQFrame(currentLoca.freqFolder[j].sm250eeg, uiElement->sm250Frame[i]);
-					updateQFrame(currentLoca.freqFolder[j].sm500eeg, uiElement->sm500Frame[i]);
-					updateQFrame(currentLoca.freqFolder[j].sm1000eeg, uiElement->sm1000Frame[i]);
-					updateQFrame(currentLoca.freqFolder[j].sm2500eeg, uiElement->sm2500Frame[i]);
-					updateQFrame(currentLoca.freqFolder[j].sm5000eeg, uiElement->sm5000Frame[i]);
-					updateQFrame(currentLoca.dsPosFile, uiElement->dsPOSFrame[i]);
+					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM0_ELAN), uiElement->sm0Frame[i]);
+					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM250_ELAN), uiElement->sm250Frame[i]);
+					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM500_ELAN), uiElement->sm500Frame[i]);
+					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM1000_ELAN), uiElement->sm1000Frame[i]);
+					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM2500_ELAN), uiElement->sm2500Frame[i]);
+					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM5000_ELAN), uiElement->sm5000Frame[i]);
+					updateQFrame(currentLoca.filePath(POS_DS_ELAN), uiElement->dsPOSFrame[i]);
 					
 					//===
-					if (currentLoca.freqFolder[j].hasTrialMap())
+					if (currentLoca.frequencyFolders()[j].hasTrialMap())
 					{
 						updateQFrame("trigg", uiElement->trialmapFrame[i]);
 					}
 					//===
-					if (currentLoca.freqFolder[j].hasEnvBar())
+					if (currentLoca.frequencyFolders()[j].hasEnvBar())
 					{
 						updateQFrame("trigg", uiElement->env2plotFrame[i]);
 					}
@@ -233,19 +233,19 @@ void Localizer::updateGUIFrame(locaFolder currentLoca)
 
 void Localizer::updateGUIFrame(singleFile currentFiles)
 {
-	updateQFrame(currentFiles.trcFile, ui.TRCFrame);
-	updateQFrame(currentFiles.eegFile, ui.EEGFrame);
-	updateQFrame(currentFiles.eegEntFile, ui.ENTFrame);
-	updateQFrame(currentFiles.posFile, ui.POSFrame);
+	updateQFrame(currentFiles.filePath(TRC), ui.TRCFrame);
+	updateQFrame(currentFiles.filePath(EEG_ELAN), ui.EEGFrame);
+	updateQFrame(currentFiles.filePath(ENT_ELAN), ui.ENTFrame);
+	updateQFrame(currentFiles.filePath(POS_ELAN), ui.POSFrame);
 
-	for (int i = 0; i < currentFiles.freqFiles.size(); i++)
+	for (int i = 0; i < currentFiles.frequencyFolders().size(); i++)
 	{
-		updateQFrame(currentFiles.freqFiles[i].sm0eeg, uiElement->sm0Frame[i]);
-		updateQFrame(currentFiles.freqFiles[i].sm250eeg, uiElement->sm250Frame[i]);
-		updateQFrame(currentFiles.freqFiles[i].sm500eeg, uiElement->sm500Frame[i]);
-		updateQFrame(currentFiles.freqFiles[i].sm1000eeg, uiElement->sm1000Frame[i]);
-		updateQFrame(currentFiles.freqFiles[i].sm2500eeg, uiElement->sm2500Frame[i]);
-		updateQFrame(currentFiles.freqFiles[i].sm5000eeg, uiElement->sm5000Frame[i]);
+		updateQFrame(currentFiles.frequencyFolders()[i].sm0eeg, uiElement->sm0Frame[i]);
+		updateQFrame(currentFiles.frequencyFolders()[i].sm250eeg, uiElement->sm250Frame[i]);
+		updateQFrame(currentFiles.frequencyFolders()[i].sm500eeg, uiElement->sm500Frame[i]);
+		updateQFrame(currentFiles.frequencyFolders()[i].sm1000eeg, uiElement->sm1000Frame[i]);
+		updateQFrame(currentFiles.frequencyFolders()[i].sm2500eeg, uiElement->sm2500Frame[i]);
+		updateQFrame(currentFiles.frequencyFolders()[i].sm5000eeg, uiElement->sm5000Frame[i]);
 	}
 }
 
@@ -266,11 +266,11 @@ void Localizer::updateGUIClick(QListWidgetItem *clickedItem)
 
 	if (currentPat != nullptr)
 	{
-		for (int i = 0; i < currentPat->localizerFolder.size(); i++)
+		for (int i = 0; i < currentPat->localizerFolder().size(); i++)
 		{
-			if (currentPat->localizerFolder[i].locaName == locaClicked.toStdString())
+			if (currentPat->localizerFolder()[i].localizerName() == locaClicked.toStdString())
 			{
-				updateGUIFrame(currentPat->localizerFolder[i]);
+				updateGUIFrame(currentPat->localizerFolder()[i]);
 			}
 		}
 	}
@@ -278,9 +278,9 @@ void Localizer::updateGUIClick(QListWidgetItem *clickedItem)
 	{
 		for (int i = 0; i < currentFiles.size(); i++)
 		{
-			QString fullPathClicked = QString::fromStdString(currentFiles[i].rootFolder) + locaClicked;
-			if ((currentFiles[i].trcFile == fullPathClicked.toStdString()) ||
-				(currentFiles[i].eegFile == fullPathClicked.toStdString()))
+			QString fullPathClicked = QString::fromStdString(currentFiles[i].rootFolder()) + locaClicked;
+			if ((currentFiles[i].filePath(TRC) == fullPathClicked.toStdString()) ||
+				(currentFiles[i].filePath(EEG_ELAN) == fullPathClicked.toStdString()))
 			{
 				updateGUIFrame(currentFiles[i]);
 			}
@@ -459,7 +459,7 @@ void Localizer::processERPAnalysis()
 			{
 				picOpt->getPicOption(&userOpt.picOption);
 				thread = new QThread;
-				worker = new Worker(&currentPat->localizerFolder[index.row()], &userOpt);
+				worker = new Worker(&currentPat->localizerFolder()[index.row()], &userOpt);
 
 				//=== Event update displayer
 				connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
@@ -510,7 +510,7 @@ void Localizer::processConvertToElan()
 				thread = new QThread;
 
 				if (currentPat != nullptr)
-					worker = new Worker(&currentPat->localizerFolder[index.row()], &userOpt);
+					worker = new Worker(&currentPat->localizerFolder()[index.row()], &userOpt);
 				else if (currentFiles.size() > 0)
 					worker = new Worker(currentFiles, &userOpt, index.row());
 
@@ -576,7 +576,7 @@ void Localizer::reInitStructFolder()
 	if (savePat == nullptr)
 		savePat = new patientFolder(currentPat);
 
-	if (userOpt.anaOption.size() == currentPat->localizerFolder.size())
+	if (userOpt.anaOption.size() == currentPat->localizerFolder().size())
 	{
 		deleteAndNullify1D(currentPat);
 		currentPat = new patientFolder(savePat);
@@ -597,7 +597,7 @@ void Localizer::reInitStructFiles()
 
 void Localizer::getUIAnalysisOption(patientFolder *pat)
 {
-	uiElement->analysis(userOpt.anaOption, pat->localizerFolder.size());
+	uiElement->analysis(userOpt.anaOption, pat->localizerFolder().size());
 	getAnalysisCheckBox(userOpt.anaOption);
 	deleteUncheckedFiles(userOpt.anaOption, pat);
 	optStat->getStatOption(&userOpt.statOption);
@@ -631,7 +631,7 @@ void Localizer::deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, pati
 	{
 		if (!anaOption[i].localizer)
 		{
-			pat->localizerFolder.erase(pat->localizerFolder.begin() + i);
+			pat->localizerFolder().erase(pat->localizerFolder().begin() + i);
 			anaOption.erase(anaOption.begin() + i);
 		}
 	}
@@ -654,7 +654,7 @@ void Localizer::receiveContainerPointer(eegContainer *eegCont)
 {
 	chooseElec *elecWin = new chooseElec(eegCont, 0);
 	int res = elecWin->exec();
-	eegCont->bipolarizeData();
+	//eegCont->bipolarizeData();
 	emit bipDone(res);
 	delete elecWin;
 }
@@ -662,9 +662,9 @@ void Localizer::receiveContainerPointer(eegContainer *eegCont)
 void Localizer::UpdateFolderPostAna()
 {
 	deleteAndNullify1D(savePat);
-	currentPat = new patientFolder(currentPat->pathToFolder);
+	currentPat = new patientFolder(currentPat->rootFolder());
 
-	updateGUIFrame(currentPat->localizerFolder[0]);
+	updateGUIFrame(currentPat->localizerFolder()[0]);
 	if (savePat != nullptr)
 	{
 		deleteAndNullify1D(savePat);
@@ -676,7 +676,7 @@ void Localizer::UpdateSinglePostAna()
 {
 	vector<string> analyzedPath;
 	for (int i = 0; i < currentFiles.size(); i++)
-		analyzedPath.push_back(currentFiles[i].filePath());
+		analyzedPath.push_back(currentFiles[i].filePath(currentFiles[i].fileExtention()));
 
 	if (currentFiles.size() > 0)
 		currentFiles.clear();

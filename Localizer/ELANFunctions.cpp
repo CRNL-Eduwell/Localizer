@@ -191,7 +191,11 @@ void InsermLibrary::ELANFunctions::readBlocDataAllChannels(elan_struct_t *elan, 
 
 			for (int k = 0; k < (winSam[1] - winSam[0]); k++)
 			{
-				eegData[i][j][k] = (elan->eeg.data_float[0][i][beginTime + k] - 1000) / 10;
+				//to prevent issue in case the first event has been recorded realy quick
+				if (beginTime + k < 0)
+					eegData[i][j][k] = 0;
+				else
+					eegData[i][j][k] = (elan->eeg.data_float[0][i][beginTime + k] - 1000) / 10;
 			}
 		}
 	}
@@ -208,8 +212,12 @@ void InsermLibrary::ELANFunctions::readBlocDataEventsAllChannels(elan_struct_t *
 			int beginTime = trigTime + winSam[0];
 
 			for (int k = 0; k < elan->chan_nb; k++)
-			{
-				eegData[i][k][j] = (elan->eeg.data_float[0][k][beginTime + j] - 1000) / 10;
+			{				
+				//to prevent issue in case the first event has been recorded realy quick
+				if (beginTime + j < 0)
+					eegData[i][k][j] = 0;
+				else
+					eegData[i][k][j] = (elan->eeg.data_float[0][k][beginTime + j] - 1000) / 10;
 			}
 		}
 	}

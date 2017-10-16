@@ -2,43 +2,50 @@
 #define SINGLEFILE_H
 
 #include <iostream>
+#include <vector>
 #include "Utility.h"
 
 #include <QDir>
 #include <QString>
 #include <QObject>
 
-using namespace std;
 using namespace InsermLibrary;
 
 struct singleFileFreq
 {
-	string sm0eeg;
-	string sm250eeg;
-	string sm500eeg;
-	string sm1000eeg;
-	string sm2500eeg;
-	string sm5000eeg;
+	std::string sm0eeg;
+	std::string sm250eeg;
+	std::string sm500eeg;
+	std::string sm1000eeg;
+	std::string sm2500eeg;
+	std::string sm5000eeg;
 };
 
 class singleFile
 {
 public:
-	singleFile(string path, int numFreq);
+	singleFile(std::string path, int nbFreqBands);
 	~singleFile();
-	string filePath();
+	inline std::vector<singleFileFreq> frequencyFolders() const { return m_freqFiles; };
+	inline std::string patientName() const { return m_patientName; };
+	std::string filePath(FileExt wantedFile);
+	inline std::string rootFolder() const { return m_rootFolder; };
+	FileExt fileExtention();
+
 private :
-	void getFileData(string path);
-public :
-	string trcFile = "";
-	string eegFile = "";
-	string eegEntFile = "";
-	string posFile = "";
-	string dsPosFile = "";
-	vector<singleFileFreq> freqFiles;
-	string rootFolder = "";
-	string shortName = "";
-	string fileExtention = "";
+	void getFileData(std::string path);
+
+private :
+	std::string m_trcFile = "";
+	std::string m_eegFile = "";
+	std::string m_eegEntFile = "";
+	std::string m_posFile = "";
+	std::string m_dsPosFile = "";
+	std::string m_edfFile = "";
+	std::vector<singleFileFreq> m_freqFiles;
+	std::string m_rootFolder = "";
+	std::string m_patientName = "";
+	std::string m_fileExtention = "";
 };
 
 #endif

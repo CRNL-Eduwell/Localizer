@@ -5,6 +5,7 @@
 #include <vector>
 #include "TRCFunctions.h"
 #include "ELANFile.h"
+#include "EDFFile.h"
 
 using namespace std;
 using namespace MicromedLibrary;
@@ -96,6 +97,14 @@ namespace InsermLibrary
 		}
 
 		TRIGGINFO(eventElanFile *p_triggers, int nbTriggers, int downFactor = 1)
+		{
+			for (int i = 0; i < nbTriggers; i++)
+			{
+				triggers.push_back(TRIGG(eventEeg(p_triggers[i].code, p_triggers[i].sample / downFactor)));
+			}
+		}
+
+		TRIGGINFO(Edf_event *p_triggers, int nbTriggers, int downFactor = 1)
 		{
 			for (int i = 0; i < nbTriggers; i++)
 			{

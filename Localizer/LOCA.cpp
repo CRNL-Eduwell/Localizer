@@ -85,16 +85,16 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 		}
 		else 
 		{
-			if (i < currentLoca->freqFolder.size())
+			if (i < currentLoca->frequencyFolders().size())
 			{
 				int sizeFreq = userOpt->freqOption.frequencyBands[i].freqBandValue.size() - 1;
 				string fMin = to_string(userOpt->freqOption.frequencyBands[i].freqBandValue[0]);
 				string fMax = to_string(userOpt->freqOption.frequencyBands[i].freqBandValue[sizeFreq]);
 
-				if ((currentLoca->freqFolder[i].frequencyName == "f" + fMin + "f" + fMax) &&
-					(currentLoca->freqFolder[i].sm0eeg != ""))
+				if ((currentLoca->frequencyFolders()[i].frequencyName() == "f" + fMin + "f" + fMax) &&
+					(currentLoca->frequencyFolders()[i].filePath(SM0_ELAN) != ""))
 				{
-					int loadFile = ef_read_elan_file((char*)currentLoca->freqFolder[i].sm0eeg.c_str(), myeegContainer->elanFrequencyBand[i]);
+					int loadFile = ef_read_elan_file((char*)currentLoca->frequencyFolders()[i].filePath(SM0_ELAN).c_str(), myeegContainer->elanFrequencyBand[i]);
 					if (loadFile == 0)
 					{
 						ELANFunctions::convertELANAnalogDataToDigital(myeegContainer->elanFrequencyBand[i]);
@@ -135,7 +135,7 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 		
 		if (a.env2plot)//env2plot
 		{
-			if (shouldPerformBarPlot(currentLoca->locaName) || isBarPlot(provFiles[i].filePath))
+			if (shouldPerformBarPlot(currentLoca->localizerName()) || isBarPlot(provFiles[i].filePath))
 			{
 				barplot(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
 			}
@@ -301,9 +301,9 @@ void InsermLibrary::LOCA::renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *down
 
 				bool isInWindow = (downsampledEegTriggers->triggers[idSec].trigger.sample < winMax) && 
 								  (downsampledEegTriggers->triggers[idSec].trigger.sample > winMin);
-				bool specialLoca = (currentLoca->locaName == "MARA" ||
-									currentLoca->locaName == "MARM" ||
-									currentLoca->locaName == "MARD");
+				bool specialLoca = (currentLoca->localizerName() == "MARA" ||
+									currentLoca->localizerName() == "MARM" ||
+									currentLoca->localizerName() == "MARD");
 				if (isInWindow || specialLoca)
 				{
 					eegTriggers->triggers[idMain].trigger.code = newMainCode[idcode];
@@ -401,16 +401,19 @@ void InsermLibrary::LOCA::pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *
 			{
 				for (int l = 0; l < mainEventsCode.size(); l++)
 				{
-					if (downsampledEegTriggers->triggers[dd].trigger.code == respEventsCode[l][0] && 
-						downsampledEegTriggers->triggers[idMain].trigger.code == mainEventsCode[l])
+					for (int m = 0; m < respEventsCode[l].size(); m++)
 					{
-						idSec = dd;
-						idcode = l;
-					}
-					else if (downsampledEegTriggers->triggers[dd].trigger.code == mainEventsCode[l] && idSec == -1)
-					{
-						idMain = dd;
-						idcode = l;
+						if (downsampledEegTriggers->triggers[dd].trigger.code == respEventsCode[l][m] &&
+							downsampledEegTriggers->triggers[idMain].trigger.code == mainEventsCode[l])
+						{
+							idSec = dd;
+							idcode = l;
+						}
+						else if (downsampledEegTriggers->triggers[dd].trigger.code == mainEventsCode[l] && idSec == -1)
+						{
+							idMain = dd;
+							idcode = l;
+						}
 					}
 				}
 				dd++;
@@ -424,9 +427,9 @@ void InsermLibrary::LOCA::pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *
 
 				bool isInWindow = (downsampledEegTriggers->triggers[idSec].trigger.sample < winMax) &&
 								  (downsampledEegTriggers->triggers[idSec].trigger.sample > winMin);
-				bool specialLoca = (currentLoca->locaName == "MARA" ||
-									currentLoca->locaName == "MARM" ||
-									currentLoca->locaName == "MARD");
+				bool specialLoca = (currentLoca->localizerName() == "MARA" ||
+									currentLoca->localizerName() == "MARM" ||
+									currentLoca->localizerName() == "MARD");
 				if (isInWindow || specialLoca)
 				{
 					downsampledEegTriggers->triggers[idMain].response.code = downsampledEegTriggers->triggers[idSec].trigger.code;
@@ -588,7 +591,7 @@ vector<PROV> InsermLibrary::LOCA::loadProvCurrentLoca()
 	vector<PROV> provFiles;
 	for (int i = 0; i < userOpt->statOption.locaWilcoxon.size(); i++)
 	{
-		if (userOpt->statOption.locaWilcoxon[i].contains(QString::fromStdString(currentLoca->locaName)))
+		if (userOpt->statOption.locaWilcoxon[i].contains(QString::fromStdString(currentLoca->localizerName())))
 		{
 			provFiles.push_back(PROV("./Resources/Config/Prov/" + userOpt->statOption.locaWilcoxon[i].toStdString() + ".prov"));
 		}
@@ -596,7 +599,7 @@ vector<PROV> InsermLibrary::LOCA::loadProvCurrentLoca()
 
 	for (int i = 0; i < userOpt->statOption.locaKruskall.size(); i++)
 	{
-		if (userOpt->statOption.locaKruskall[i].contains(QString::fromStdString(currentLoca->locaName)))
+		if (userOpt->statOption.locaKruskall[i].contains(QString::fromStdString(currentLoca->localizerName())))
 		{
 			provFiles.push_back(PROV("./Resources/Config/Prov/" + userOpt->statOption.locaKruskall[i].toStdString() + ".prov"));
 		}
@@ -604,7 +607,7 @@ vector<PROV> InsermLibrary::LOCA::loadProvCurrentLoca()
 
 	if (provFiles.size() == 0) //We search if .prov with the loca name and no stat requierement
 	{
-		provFiles.push_back(PROV("./Resources/Config/Prov/" + currentLoca->locaName + ".prov"));
+		provFiles.push_back(PROV("./Resources/Config/Prov/" + currentLoca->localizerName() + ".prov"));
 	}
 
 	return provFiles;
@@ -614,7 +617,7 @@ bool InsermLibrary::LOCA::shouldPerformBarPlot(string locaName)
 {
 	for (int i = 0; i < userOpt->statOption.locaKruskall.size(); i++)
 	{
-		if (userOpt->statOption.locaKruskall[i].contains(QString::fromStdString(currentLoca->locaName)))
+		if (userOpt->statOption.locaKruskall[i].contains(QString::fromStdString(currentLoca->localizerName())))
 		{
 			return true;
 		}
@@ -782,7 +785,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 	ELANFunctions::readBlocDataAllChannels(myeegContainer->elanFrequencyBand[idCurrentFreqfrequency], triggCatEla, bigData, windowSam);
 
 	//== calculate stat
-	if (shouldPerformStatTrial(currentLoca->locaName))
+	if (shouldPerformStatTrial(currentLoca->localizerName()))
 		significantValue = calculateStatisticWilcoxon(bigData, myeegContainer, myprovFile, mapsFolder);
 
 	//== Draw for each plot and according to a template to reduce drawing time
@@ -955,7 +958,7 @@ bool InsermLibrary::LOCA::shouldPerformStatTrial(string locaName)
 {
 	for (int i = 0; i < userOpt->statOption.locaWilcoxon.size(); i++)
 	{
-		if (userOpt->statOption.locaWilcoxon[i].contains(QString::fromStdString(currentLoca->locaName)))
+		if (userOpt->statOption.locaWilcoxon[i].contains(QString::fromStdString(currentLoca->localizerName())))
 		{
 			return true;
 		}

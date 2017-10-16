@@ -1,9 +1,9 @@
 #ifndef _EEGCONTAINER_H
 #define _EEGCONTAINER_H
 
-
 #include "TRCFunctions.h"
 #include "ELANFunctions.h"
+#include "EDFFunctions.h"
 #include "eegContainerParameters.h"
 #include "MATLABFUNC.h"	
 
@@ -54,6 +54,7 @@ namespace InsermLibrary
 	public:
 		eegContainer(ELANFile* elan, int downsampFrequency, int nbFreqBand);
 		eegContainer(TRCFile* trc, int downsampFrequency, int nbFreqBand);
+		eegContainer(EDFFile* edf, int downsampFrequency, int nbFreqBand);
 		~eegContainer();
 		void deleteElectrodes(vector<int> elecToDelete);
 		void bipolarizeData();
@@ -62,10 +63,12 @@ namespace InsermLibrary
 	private:
 		void getElectrodeFromElanFile(ELANFile* elan);
 		void getElectrodeFromTRCFile(TRCFile* trc);
+		void getElectrodeFromEDFFile(EDFFile* edf);
 		int idSplitDigiAndNum(string myString);
 		void calculateSmoothing();
 		vector<int> findIndexes(vector<digitalTriggers> tab, int value2find);
 		vector<int> findIndexes(vector<eventElanFile> trigg, int value2find);
+		vector<int> findIndexes(vector<Edf_event> trigg, int value2find);
 		void initElanFreqStruct(elan_struct_t *structToInit);
 		void hilbertDownSampSumData(dataContainer *dataCont, int threadId, int freqId);
 		void meanConvolveData(dataContainer *dataCont, int threadId);
@@ -86,6 +89,7 @@ namespace InsermLibrary
 		float smoothingMilliSec[6] = { 0, 250, 500, 1000, 2500, 5000 };
 		ELANFile* elanFile = nullptr;
 		TRCFile* trcFile = nullptr;
+		EDFFile* edfFile = nullptr;
 		std::mutex mtx;
 	};
 }

@@ -2,19 +2,21 @@
 
 patientFolder::patientFolder(patientFolder *pat)
 {
-	this->pathToFolder = pat->pathToFolder;
-	this->hospital = pat->hospital;
-	this->year = pat->year;
-	this->patientName = pat->patientName;
+	this->m_rootFolder = pat->m_rootFolder;
+	this->m_hospital = pat->m_hospital;
+	this->m_year = pat->m_year;
+	this->m_patientName = pat->m_patientName;
 
-	localizerFolder = vector<locaFolder>(pat->localizerFolder);
+	m_localizerFolder = vector<locaFolder>(pat->m_localizerFolder);
 }
 
 patientFolder::patientFolder(string rootPath)
 {
-	pathToFolder = rootPath;
-	getPatientInfo(pathToFolder);
-	findLocaFolders(pathToFolder);
+	vector<string> splitExt = split<string>(rootPath, "\\/");
+	for (int i = 0; i < splitExt.size(); i++)
+		m_rootFolder += splitExt[i] + "/";
+	getPatientInfo(m_rootFolder);
+	findLocaFolders(m_rootFolder);
 }
 
 patientFolder::~patientFolder()
@@ -22,24 +24,23 @@ patientFolder::~patientFolder()
 	
 }
 
-QString patientFolder::patientFullName()
+std::string patientFolder::patientName()
 {
-	return QString((hospital + "_" + year + "_" + patientName).c_str());
+	return (m_hospital + "_" + m_year + "_" + m_patientName);
 }
 
-void patientFolder::getPatientInfo(string path)
+void patientFolder::getPatientInfo(string rootPath)
 {
-	vector<string> splitPath = split<string>(path, "/");
-	vector<string> splitInfo = split<string>(splitPath[splitPath.size() - 1], "_\\/");
-	hospital = splitInfo[splitInfo.size() - 3];
-	year = splitInfo[splitInfo.size() - 2];
-	patientName = splitInfo[splitInfo.size() - 1];
+	vector<string> splitPath = split<string>(rootPath, "_\\/");
+	m_hospital = splitPath[splitPath.size() - 3];
+	m_year = splitPath[splitPath.size() - 2];
+	m_patientName = splitPath[splitPath.size() - 1];
 }
 
-void patientFolder::findLocaFolders(string pathToBrowse)
+void patientFolder::findLocaFolders(string rootPath)
 {
 	//Get every folder corresponding to one LOCALIZER exam
-	QDir currentDir(pathToBrowse.c_str());
+	QDir currentDir(rootPath.c_str());
 	currentDir.setFilter(QDir::Dirs);
 
 	QStringList entries = currentDir.entryList();
@@ -48,20 +49,20 @@ void patientFolder::findLocaFolders(string pathToBrowse)
 		QString dirname = *entry;
 		if (dirname != QObject::tr(".") && dirname != QObject::tr(".."))
 		{
-			localizerFolder.push_back(locaFolder(this, pathToBrowse + "/" + dirname.toStdString()));
+			m_localizerFolder.push_back(locaFolder(this, rootPath + dirname.toStdString() + "/"));
 		}
 	}
 }
 
 //===
 
-locaFolder::locaFolder(patientFolder *pat, string rootPath)
+locaFolder::locaFolder(patientFolder *pat, string rootLocaFolder)
 {
 	parent = pat;
-	pathToFolder = rootPath;
-	getLocaName(pathToFolder);
-	retrieveFiles(pathToFolder);
-	retrieveFrequencyFolders(pathToFolder);
+	m_rootLocaFolder = rootLocaFolder;
+	getLocaName(m_rootLocaFolder);
+	retrieveFiles(m_rootLocaFolder);
+	retrieveFrequencyFolders(m_rootLocaFolder);
 }
 
 locaFolder::~locaFolder()
@@ -69,54 +70,102 @@ locaFolder::~locaFolder()
 
 }
 
-QString locaFolder::locaFullName()
+string locaFolder::fullLocalizerName()
 {
-	return QString(parent->patientFullName() + "_" + locaName.c_str());
+	return parent->patientName() + "_" + m_locaName;
 }
 
-void locaFolder::getLocaName(string path)
+FileExt locaFolder::fileExtention()
 {
-	vector<string> splitPath = split<string>(path, "\\_");
-	locaName = splitPath[splitPath.size() - 1];
+	if (m_trcFile != "")
+		return TRC;
+	else if (m_eegFile != "")
+		return EEG_ELAN;
+	else if (m_edfFile != "")
+		return EDF;
+	else
+		return NO_EXT;
 }
 
-void locaFolder::retrieveFiles(string path)
+string locaFolder::filePath(FileExt wantedFile)
 {
-	QDir currentDir(path.c_str());
-	currentDir.setNameFilters(QStringList() << "*.TRC" << "*.eeg" << "*.eeg.ent" << "*.pos");
+	switch (wantedFile)
+	{
+	case TRC:
+		return m_trcFile;
+		break;
+	case EEG_ELAN:
+		return m_eegFile;
+		break;
+	case ENT_ELAN:
+		return m_eegEntFile;
+		break;
+	case POS_ELAN:
+		return m_posFile;
+		break;
+	case POS_DS_ELAN:
+		return m_dsPosFile;
+		break;
+	case EDF:
+		return m_edfFile;
+		break;
+	case NO_EXT:
+		return "";
+		break;
+	default:
+		return "";
+		break;
+	}
+	//return "";
+}
 
-	QRegExp rxTRC(locaFullName() + ".TRC");
-	QRegExp rxEeg(locaFullName() + ".eeg");
-	QRegExp rxEnt(locaFullName() + ".eeg.ent");
-	QRegExp rxPos(locaFullName() + "_raw.pos");
-	QRegExp rxDsPos(locaFullName() + "_ds" + "(\\d+)" + ".pos");
+void locaFolder::getLocaName(string rootLocaFolder)
+{
+	vector<string> splitPath = split<string>(rootLocaFolder, "\\/_");
+	m_locaName = splitPath[splitPath.size() - 1];
+}
+
+void locaFolder::retrieveFiles(string rootLocaFolder)
+{
+	QDir currentDir(rootLocaFolder.c_str());
+	currentDir.setNameFilters(QStringList() << "*.trc" << "*.eeg" << "*.eeg.ent" << "*.pos" << "*.edf");
+
+	QRegExp rxTRC((fullLocalizerName() + ".trc").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+	QRegExp rxEeg((fullLocalizerName() + ".eeg").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+	QRegExp rxEnt((fullLocalizerName() + ".eeg.ent").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+	QRegExp rxPos((fullLocalizerName() + "_raw.pos").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+	QRegExp rxDsPos((fullLocalizerName() + "_ds" + "(\\d+)" + ".pos").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+	QRegExp rxEdf((fullLocalizerName() + ".edf").c_str(), Qt::CaseSensitivity::CaseInsensitive);
 
 	QStringList fileFound = currentDir.entryList();
 	for (int i = 0; i < fileFound.size(); i++)
 	{	
 		if (rxTRC.exactMatch(fileFound[i]))
-			trcFile = path + "/" + fileFound[i].toStdString();
+			m_trcFile = rootLocaFolder + fileFound[i].toStdString();
 
 		if (rxEeg.exactMatch(fileFound[i]))
-			eegFile = path + "/" + fileFound[i].toStdString();
+			m_eegFile = rootLocaFolder + fileFound[i].toStdString();
 
 		if (rxEnt.exactMatch(fileFound[i]))
-			eegEntFile = path + "/" + fileFound[i].toStdString();
+			m_eegEntFile = rootLocaFolder + fileFound[i].toStdString();
 
 		if (rxPos.exactMatch(fileFound[i]))
-			posFile = path + "/" + fileFound[i].toStdString();
+			m_posFile = rootLocaFolder + fileFound[i].toStdString();
 
 		if (rxDsPos.exactMatch(fileFound[i]))
-			dsPosFile = path + "/" + fileFound[i].toStdString();
+			m_dsPosFile = rootLocaFolder + fileFound[i].toStdString();
+
+		if (rxEdf.exactMatch(fileFound[i]))
+			m_edfFile = rootLocaFolder + fileFound[i].toStdString();
 	}
 }
 
-void locaFolder::retrieveFrequencyFolders(string path)
+void locaFolder::retrieveFrequencyFolders(string rootLocaFolder)
 {
-	QRegExp rxFreqFold(locaFullName() + "_f(\\d+)f(\\d+)");
+	QRegExp rxFreqFold((fullLocalizerName() + "_f(\\d+)f(\\d+)").c_str());
 
 	//Get every folder corresponding to one LOCALIZER exam
-	QDir currentDir(path.c_str());
+	QDir currentDir(rootLocaFolder.c_str());
 	currentDir.setFilter(QDir::Dirs);
 
 	QStringList entries = currentDir.entryList();
@@ -125,20 +174,20 @@ void locaFolder::retrieveFrequencyFolders(string path)
 		QString dirname = *entry;
 		if (dirname != QObject::tr(".") && dirname != QObject::tr("..") && rxFreqFold.exactMatch(dirname))
 		{
-			freqFolder.push_back(frequencyFolder(this, path + "/" + dirname.toStdString()));
+			m_freqFolder.push_back(frequencyFolder(this, rootLocaFolder + dirname.toStdString() + "/"));
 		}
 	}
 }
 
 //===
 
-frequencyFolder::frequencyFolder(locaFolder *loca, string rootPath)
+frequencyFolder::frequencyFolder(locaFolder *loca, string rootFrequencyPath)
 {
 	parent = loca;
-	pathToFolder = rootPath;
-	getFreqBandName(pathToFolder);
-	retrieveSMFile(pathToFolder);
-	retrieveDataFolders(pathToFolder);
+	m_rootFrequencyFolder = rootFrequencyPath;
+	getFreqBandName(m_rootFrequencyFolder);
+	retrieveSMFile(m_rootFrequencyFolder);
+	retrieveDataFolders(m_rootFrequencyFolder);
 }
 
 frequencyFolder::~frequencyFolder()
@@ -146,17 +195,45 @@ frequencyFolder::~frequencyFolder()
 
 }
 
-QString frequencyFolder::freqFullName()
+string frequencyFolder::fullFrequencyName()
 {
-	return QString(parent->locaFullName() + "_" + frequencyName.c_str());
+	return parent->fullLocalizerName() + "_" + m_frequencyName;
+}
+
+string frequencyFolder::filePath(FileExt wantedFile)
+{
+	switch (wantedFile)
+	{
+	case SM0_ELAN:
+		return m_sm0eeg;
+		break;
+	case SM250_ELAN:
+		return m_sm250eeg;
+		break;	
+	case SM500_ELAN:
+		return m_sm500eeg;
+		break;
+	case SM1000_ELAN:
+		return m_sm1000eeg;
+		break;
+	case SM2500_ELAN:
+		return m_sm2500eeg;
+		break;
+	case SM5000_ELAN:
+		return m_sm5000eeg;
+		break;
+	default:
+		return "";
+		break;
+	}
 }
 
 bool frequencyFolder::hasTrialMap()
 {
-	for (int k = 0; k < dataFolders.size(); k++)
+	for (int k = 0; k < m_dataFolders.size(); k++)
 	{
-		if (dataFolders[k].typeDrawing == "trials_stim" || 
-			dataFolders[k].typeDrawing == "trials_resp")
+		if (m_dataFolders[k].typeDrawing() == "trials_stim" ||
+			m_dataFolders[k].typeDrawing() == "trials_resp")
 		{
 			return true;
 		}
@@ -167,9 +244,9 @@ bool frequencyFolder::hasTrialMap()
 
 bool frequencyFolder::hasEnvBar()
 {
-	for (int k = 0; k < dataFolders.size(); k++)
+	for (int k = 0; k < m_dataFolders.size(); k++)
 	{
-		if (dataFolders[k].typeDrawing == "bar" || dataFolders[k].typeDrawing == "plots")
+		if (m_dataFolders[k].typeDrawing() == "bar" || m_dataFolders[k].typeDrawing() == "plots")
 		{
 			return true;
 		}
@@ -178,50 +255,50 @@ bool frequencyFolder::hasEnvBar()
 	return false;
 }
 
-void frequencyFolder::getFreqBandName(string path)
+void frequencyFolder::getFreqBandName(string rootFreqFolder)
 {
-	vector<string> splitPath = split<string>(path, "\\_");
-	frequencyName = splitPath[splitPath.size() - 1];
+	vector<string> splitPath = split<string>(rootFreqFolder, "\\/_");
+	m_frequencyName = splitPath[splitPath.size() - 1];
 }
 
-void frequencyFolder::retrieveSMFile(string path)
+void frequencyFolder::retrieveSMFile(string rootFreqFolder)
 {
-	QDir currentDir(path.c_str());
+	QDir currentDir(rootFreqFolder.c_str());
 	currentDir.setNameFilters(QStringList() << "*.eeg" << "*.eeg.ent");
 
-	QRegExp rxEeg0(freqFullName() + "_ds" + "(\\d+)" + "_sm0.eeg");
-	QRegExp rxEeg250(freqFullName() + "_ds" + "(\\d+)" + "_sm250.eeg");
-	QRegExp rxEeg500(freqFullName() + "_ds" + "(\\d+)" + "_sm500.eeg");
-	QRegExp rxEeg1000(freqFullName() + "_ds" + "(\\d+)" + "_sm1000.eeg");
-	QRegExp rxEeg2500(freqFullName() + "_ds" + "(\\d+)" + "_sm2500.eeg");
-	QRegExp rxEeg5000(freqFullName() + "_ds" + "(\\d+)" + "_sm5000.eeg");
+	QRegExp rxEeg0((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm0.eeg").c_str());
+	QRegExp rxEeg250((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm250.eeg").c_str());
+	QRegExp rxEeg500((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm500.eeg").c_str());
+	QRegExp rxEeg1000((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm1000.eeg").c_str());
+	QRegExp rxEeg2500((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm2500.eeg").c_str());
+	QRegExp rxEeg5000((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm5000.eeg").c_str());
 
 	QStringList fileFound = currentDir.entryList();
 	for (int i = 0; i < fileFound.size(); i++)
 	{
 		if (rxEeg0.exactMatch(fileFound[i]))
-			sm0eeg = path + "/" + fileFound[i].toStdString();
+			m_sm0eeg = rootFreqFolder + fileFound[i].toStdString();
 
 		if (rxEeg250.exactMatch(fileFound[i]))
-			sm250eeg = path + "/" + fileFound[i].toStdString();
+			m_sm250eeg = rootFreqFolder + fileFound[i].toStdString();
 
 		if (rxEeg500.exactMatch(fileFound[i]))
-			sm500eeg = path + "/" + fileFound[i].toStdString();
+			m_sm500eeg = rootFreqFolder + fileFound[i].toStdString();
 
 		if (rxEeg1000.exactMatch(fileFound[i]))
-			sm1000eeg = path + "/" + fileFound[i].toStdString();
+			m_sm1000eeg = rootFreqFolder + fileFound[i].toStdString();
 
 		if (rxEeg2500.exactMatch(fileFound[i]))
-			sm2500eeg = path + "/" + fileFound[i].toStdString();
+			m_sm2500eeg = rootFreqFolder + fileFound[i].toStdString();
 
 		if (rxEeg5000.exactMatch(fileFound[i]))
-			sm5000eeg = path + "/" + fileFound[i].toStdString();
+			m_sm5000eeg = rootFreqFolder + fileFound[i].toStdString();
 	}
 }
 
-void frequencyFolder::retrieveDataFolders(string path)
+void frequencyFolder::retrieveDataFolders(string rootFreqFolder)
 {
-	QDir currentDir(path.c_str());
+	QDir currentDir(rootFreqFolder.c_str());
 	currentDir.setFilter(QDir::Dirs);
 
 	QStringList entries = currentDir.entryList();
@@ -230,7 +307,7 @@ void frequencyFolder::retrieveDataFolders(string path)
 		QString dirname = *entry;
 		if (dirname != QObject::tr(".") && dirname != QObject::tr(".."))
 		{
-			dataFolders.push_back(analyzedDataFolder(this, path + "/" + dirname.toStdString()));
+			m_dataFolders.push_back(analyzedDataFolder(this, rootFreqFolder + dirname.toStdString() + "/"));
 		}
 	}
 }
@@ -240,9 +317,9 @@ void frequencyFolder::retrieveDataFolders(string path)
 analyzedDataFolder::analyzedDataFolder(frequencyFolder *freq, string rootPath)
 {
 	parent = freq;
-	pathToFolder = rootPath;
-	getStatsInfo(pathToFolder);
-	getPicturesFolder(pathToFolder);
+	m_rootDataFolder = rootPath;
+	getStatsInfo(m_rootDataFolder);
+	getPicturesFolder(m_rootDataFolder);
 }
 
 analyzedDataFolder::~analyzedDataFolder()
@@ -250,48 +327,48 @@ analyzedDataFolder::~analyzedDataFolder()
 
 }
 
-void analyzedDataFolder::getStatsInfo(string path)
+void analyzedDataFolder::getStatsInfo(string rootDataFolder)
 {
-	vector<string> splitPath = split<string>(path, "/");
+	vector<string> splitPath = split<string>(rootDataFolder, "/");
 	vector<string> splitFolder = split<string>(splitPath[splitPath.size() - 1], "_");
 
 	if (splitFolder[5] == "trials")
 	{
-		typeDrawing = splitFolder[5];
+		m_typeDrawing = splitFolder[5];
 
 		if (splitFolder.size() - 1 == 6)
 		{
-			typeDrawing = splitFolder[5] + "_" + splitFolder[6];
+			m_typeDrawing = splitFolder[5] + "_" + splitFolder[6];
 		}
 
 		if (splitFolder.size() - 1 == 7)
 		{
-			typeDrawing = splitFolder[5] + "_" + splitFolder[6];
+			m_typeDrawing = splitFolder[5] + "_" + splitFolder[6];
 			if (splitFolder[7] != "")
-				StatAnalysis = splitFolder[7];
+				m_StatAnalysis = splitFolder[7];
 		}
 	}
 	else if (splitFolder[5] == "bar")
 	{
-		typeDrawing = splitFolder[5];
+		m_typeDrawing = splitFolder[5];
 
 		if (splitFolder.size() - 1 == 6)
 		{
 			if (splitFolder[6] != "")
 			{
-				StatAnalysis = splitFolder[6];
+				m_StatAnalysis = splitFolder[6];
 			}
 		}
 	}
 	else if (splitFolder[5] == "plots")
 	{
-		typeDrawing = splitFolder[5];
+		m_typeDrawing = splitFolder[5];
 	}
 }
 
-void analyzedDataFolder::getPicturesFolder(string path)
+void analyzedDataFolder::getPicturesFolder(string rootDataFolder)
 {
-	QDir currentDir(path.c_str());
+	QDir currentDir(rootDataFolder.c_str());
 	currentDir.setFilter(QDir::Files);
 	QStringList entries = currentDir.entryList();
 	for (QStringList::ConstIterator entry = entries.begin(); entry != entries.end(); ++entry)
@@ -302,12 +379,12 @@ void analyzedDataFolder::getPicturesFolder(string path)
 			vector<string> splitVal = split<string>(dirname.toStdString(), "_.");
 			picData currentPic;
 			currentPic.sortingWeight = strToWeightInt(splitVal[splitVal.size() - 2]);
-			currentPic.pathToPic = path + "/" + dirname.toStdString();
-			pictures.push_back(currentPic);
+			currentPic.pathToPic = rootDataFolder + "/" + dirname.toStdString();
+			m_pictures.push_back(currentPic);
 		}
 	}
 
-	std::sort(pictures.begin(), pictures.end(),
+	std::sort(m_pictures.begin(), m_pictures.end(),
 		[](picData firstValue, picData secondValue) {
 		return (firstValue.sortingWeight < secondValue.sortingWeight);
 	});

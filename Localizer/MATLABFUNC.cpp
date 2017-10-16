@@ -480,6 +480,32 @@ void InsermLibrary::MATLABFUNC::bandPassHilbertFreq(float *SignIn, float *SignOu
 		SignOut[i] = sqrt((fftBackward->outputArray[i][0] * fftBackward->outputArray[i][0]) + (fftBackward->outputArray[i][1] * fftBackward->outputArray[i][1]));
 	}
 }
+
+void InsermLibrary::MATLABFUNC::bandPassHilbertFreq(vector<float> & SignIn, vector<float> & SignOut, FIRINFO *fir, FFTINFO* fftForward, FFTINFO* fftBackward)
+{
+	for (int i = 0; i < fftForward->lengthArray; i++)
+	{
+		fftForward->inputArray[i][0] = SignIn[i];
+		fftForward->inputArray[i][1] = 0;
+	}
+
+	FFTWForward(fftForward);
+
+	//============ Band Pass + Hilbert
+	for (int i = 0; i < fftForward->lengthArray; i++)
+	{
+		fftBackward->inputArray[i][0] = fftForward->outputArray[i][0] * fir->firCoeffFreq[i] * fir->hilbertCoeff[i];
+		fftBackward->inputArray[i][1] = fftForward->outputArray[i][1] * fir->firCoeffFreq[i] * fir->hilbertCoeff[i];
+	}
+	//============
+
+	FFTWBackward(fftBackward);
+
+	for (int i = 0; i < fftBackward->lengthArray; i++)
+	{
+		SignOut[i] = sqrt((fftBackward->outputArray[i][0] * fftBackward->outputArray[i][0]) + (fftBackward->outputArray[i][1] * fftBackward->outputArray[i][1]));
+	}
+}
 /**********************************************************************************************************************************************************************************************************************************************/
 
 void InsermLibrary::MATLABFUNC::hilbertEnvellope(float* xr, int xrLength, float *SignOut, FFTINFO* fftForward, FFTINFO* fftBackward)																										  //

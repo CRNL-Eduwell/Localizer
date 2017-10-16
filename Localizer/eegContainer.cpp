@@ -53,9 +53,7 @@ InsermLibrary::eegContainer::eegContainer(ELANFile* elan, int downsampFrequency,
 	int beginValue = 0;
 	vector<int> indexBegin = findIndexes(elanFile->triggers, 99);
 	if (indexBegin.size() > 0)
-	{
 		beginValue = indexBegin[indexBegin.size() - 1] + 1;
-	}
 
 	if (elanFile->triggers.size() > 0)
 	{
@@ -70,7 +68,7 @@ InsermLibrary::eegContainer::eegContainer(TRCFile* trc, int downsampFrequency, i
 {
 	fftwf_init_threads();
 	fftwf_plan_with_nthreads(5);
-	
+
 	for (int i = 0; i < nbFreqBand; i++) 
 		elanFrequencyBand.push_back(new elan_struct_t());
 
@@ -90,9 +88,7 @@ InsermLibrary::eegContainer::eegContainer(TRCFile* trc, int downsampFrequency, i
 	int beginValue = 0;
 	vector<int> indexBegin = findIndexes(trcFile->triggers(), 99);
 	if (indexBegin.size() > 0)
-	{
 		beginValue = indexBegin[indexBegin.size() - 1] + 1;
-	}
 
 	if (trcFile->triggers().size() > 0)
 	{
@@ -103,10 +99,46 @@ InsermLibrary::eegContainer::eegContainer(TRCFile* trc, int downsampFrequency, i
 	}
 }
 
+InsermLibrary::eegContainer::eegContainer(EDFFile* edf, int downsampFrequency, int nbFreqBand)
+{
+	fftwf_init_threads();
+	fftwf_plan_with_nthreads(5);
+
+	for (int i = 0; i < nbFreqBand; i++)
+		elanFrequencyBand.push_back(new elan_struct_t());
+
+	edfFile = edf;
+	getElectrodeFromEDFFile(edfFile);
+	//==
+	sampInfo.samplingFrequency = (int)edf->SamplingFrequency();
+	sampInfo.downsampledFrequency = downsampFrequency;
+	sampInfo.downsampFactor = sampInfo.samplingFrequency / sampInfo.downsampledFrequency; //verifier si bonne fréquence d'échantillonage ( non 2^n factor)
+	sampInfo.nbSample = edf->Header().recordsNumber * edf->SamplingFrequency();
+	//==
+	originalFilePath = edf->filePath();
+	originalFilePath.replace(originalFilePath.end() - 4, originalFilePath.end(), "");
+	//==
+	calculateSmoothing();
+	//== get triggers after last beginningCode that indicates beginning of expe
+	int beginValue = 0;
+	vector<int> indexBegin = findIndexes(edf->Events(), 99);
+	if (indexBegin.size() > 0)
+		beginValue = indexBegin[indexBegin.size() - 1] + 1;
+
+	if (edf->Events().size() > 0)
+	{
+		deleteAndNullify1D(triggEeg);
+		triggEeg = new TRIGGINFO(&edf->Events()[beginValue], edf->Events().size() - beginValue);
+		deleteAndNullify1D(triggEegDownsampled);
+		triggEegDownsampled = new TRIGGINFO(&edf->Events()[beginValue], edf->Events().size() - beginValue, sampInfo.downsampFactor);
+	}
+}
+
 InsermLibrary::eegContainer::~eegContainer()
 {
 	deleteAndNullify1D(trcFile);
 	deleteAndNullify1D(elanFile);
+	deleteAndNullify1D(edfFile);
 
 	fftwf_cleanup_threads();
 }
@@ -116,11 +148,9 @@ void InsermLibrary::eegContainer::deleteElectrodes(vector<int> elecToDelete)
 	if (trcFile != nullptr)
 	{
 		TRCFunctions::deleteOneOrSeveralElectrodesAndData(trcFile, elecToDelete);
-		//TRCFunctions::convertAnalogDataToDigital(trcFile);
+		TRCFunctions::convertAnalogDataToDigital(trcFile);
 		for (int i = 0; i < trcFile->eegDataAllChanels().size(); i++)
-		{
 			eegData.push_back(move(trcFile->eegDataAllChanels()[i]));
-		}
 	}
 	else if (elanFile != nullptr)
 	{
@@ -130,10 +160,14 @@ void InsermLibrary::eegContainer::deleteElectrodes(vector<int> elecToDelete)
 		for (int i = 0; i < elanFile->nbChannels(); i++)
 		{
 			for (int j = 0; j < sampInfo.nbSample; j++)
-			{
 				eegData[i][j] = elanFile->EEGData()[0][i][j];
-			}
 		}
+	}
+	else if (edfFile != nullptr)
+	{
+		EDFFunctions::deleteOneOrSeveralElectrodesAndData(edfFile, elecToDelete);
+		for (int i = 0; i < edfFile->eegData().size(); i++)
+			eegData.push_back(move(edfFile->eegData()[i]));
 	}
 }
 
@@ -169,6 +203,10 @@ void InsermLibrary::eegContainer::getElectrodes()
 	{
 		getElectrodeFromElanFile(elanFile);
 	}
+	else if (edfFile != nullptr)
+	{
+		getElectrodeFromEDFFile(edfFile);
+	}
 }
 
 void InsermLibrary::eegContainer::getElectrodeFromElanFile(ELANFile* elan)
@@ -180,7 +218,7 @@ void InsermLibrary::eegContainer::getElectrodeFromElanFile(ELANFile* elan)
 		flatElectrodes.clear();
 
 	string elecNameStringTemp = "%#";
-	for (int i = 0; i < elan->nbChannels() - 1; i++)
+	for (int i = 0; i < elan->nbChannels(); i++)
 	{
 		string result = "";
 		int resId = -1;
@@ -265,6 +303,53 @@ void InsermLibrary::eegContainer::getElectrodeFromTRCFile(TRCFile* trc)
 	}
 }
 
+void InsermLibrary::eegContainer::getElectrodeFromEDFFile(EDFFile* edf)
+{
+	if (electrodes.size() > 0)
+		electrodes.clear();
+
+	if (flatElectrodes.size() > 0)
+		flatElectrodes.clear();
+
+	string elecNameStringTemp = "%#";
+	for (int i = 0; i < edf->Electrodes().size(); i++)
+	{
+		string result = "";
+		int resId = -1;
+
+		int goodId = idSplitDigiAndNum(edf->Electrodes()[i].label);
+
+		if (goodId != -1)
+		{
+			result = edf->Electrodes()[i].label.substr(0, goodId);
+			resId = stoi(edf->Electrodes()[i].label.substr(goodId, edf->Electrodes()[i].label.size()));
+		}
+		else
+		{
+			result = edf->Electrodes()[i].label;
+		}
+
+		if (result.find(elecNameStringTemp) != std::string::npos && (result.length() == elecNameStringTemp.length()))
+		{
+			/*cout << result << " et " << resId << endl;*/
+			electrodes[electrodes.size() - 1].id.push_back(resId);
+			electrodes[electrodes.size() - 1].idOrigFile.push_back(i);
+			flatElectrodes.push_back(result + to_string(resId));
+		}
+		else
+		{
+			//cout << "[=====]"<< endl;
+			//cout << result << " et " << resId << endl;
+			elecNameStringTemp = result;
+			electrodes.push_back(elecContainer());
+			electrodes[electrodes.size() - 1].label = result;
+			electrodes[electrodes.size() - 1].id.push_back(resId);
+			electrodes[electrodes.size() - 1].idOrigFile.push_back(i);
+			flatElectrodes.push_back(result + to_string(resId));
+		}
+	}
+}
+
 int InsermLibrary::eegContainer::idSplitDigiAndNum(string myString)
 {
 	for (int j = 0; j < myString.size(); j++)
@@ -313,31 +398,45 @@ vector<int> InsermLibrary::eegContainer::findIndexes(vector<eventElanFile> trigg
 	return indexesFound;
 }
 
+vector<int> InsermLibrary::eegContainer::findIndexes(vector<Edf_event> trigg, int value2find)
+{
+	vector<int> indexesFound;
+	for (int i = 0; i < trigg.size(); i++)
+	{
+		if (trigg[i].code == value2find)
+		{
+			indexesFound.push_back(i);
+		}
+	}
+
+	return indexesFound;
+}
+
 void InsermLibrary::eegContainer::ToHilbert(elan_struct_t* elanStruct, vector<int> frequencyBand)
 {
 	thread thr[5];
 	initElanFreqStruct(elanStruct);
-	dataContainer *dataCont = new dataContainer(frequencyBand, sampInfo);
+	dataContainer dataCont = dataContainer(frequencyBand, sampInfo);
 
 	for (int i = 0; i < bipoles.size() / 5; i++)
 	{
 		for (int j = 0; j < 5; j++)
 		{
 			int idCurrentBip = (i * 5) + j;
-			for (int k = 0; k < dataCont->arrayLength; k++)
+			for (int k = 0; k < dataCont.arrayLength; k++)
 			{
-				dataCont->bipData[j][k] = eegData[bipoles[idCurrentBip].positivElecId][k] -
+				dataCont.bipData[j][k] = eegData[bipoles[idCurrentBip].positivElecId][k] -
 										  eegData[bipoles[idCurrentBip].negativElecId][k];
 			}
 		}
 
 		for (int j = 0; j < frequencyBand.size() - 1; j++)
 		{
-			thr[0] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, dataCont, 0, j);
-			thr[1] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, dataCont, 1, j);
-			thr[2] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, dataCont, 2, j);
-			thr[3] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, dataCont, 3, j);
-			thr[4] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, dataCont, 4, j);
+			thr[0] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 0, j);
+			thr[1] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 1, j);
+			thr[2] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 2, j);
+			thr[3] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 3, j);
+			thr[4] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 4, j);
 
 			thr[0].join(); 
 			thr[1].join(); 
@@ -346,14 +445,17 @@ void InsermLibrary::eegContainer::ToHilbert(elan_struct_t* elanStruct, vector<in
 			thr[4].join();
 		}
 
-		thr[0] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, dataCont, 0);
-		thr[1] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, dataCont, 1);
-		thr[2] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, dataCont, 2);
-		thr[3] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, dataCont, 3);
-		thr[4] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, dataCont, 4);
+		thr[0] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 0);
+		thr[1] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 1);
+		thr[2] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 2);
+		thr[3] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 3);
+		thr[4] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 4);
 
-		thr[0].join(); thr[1].join(); thr[2].join();
-		thr[3].join(); thr[4].join();
+		thr[0].join(); 
+		thr[1].join(); 
+		thr[2].join();
+		thr[3].join();
+		thr[4].join();
 
 		for (int j = 0; j < elanStruct->measure_channel_nb; j++)
 		{
@@ -361,7 +463,7 @@ void InsermLibrary::eegContainer::ToHilbert(elan_struct_t* elanStruct, vector<in
 			{
 				for (int l = 0; l < elanStruct->eeg.samp_nb; l++)
 				{
-					elanStruct->eeg.data_float[j][(i * 5) + k][l] = dataCont->convoData[j][k][l];
+					elanStruct->eeg.data_float[j][(i * 5) + k][l] = dataCont.convoData[j][k][l];
 				}
 			}
 		}
@@ -371,10 +473,10 @@ void InsermLibrary::eegContainer::ToHilbert(elan_struct_t* elanStruct, vector<in
 	{
 		for (int i = 0; i < bipoles.size() % 5; i++)
 		{
-			for (int j = 0; j < dataCont->arrayLength; j++)
+			for (int j = 0; j < dataCont.arrayLength; j++)
 			{
 				int idCurrentBip = (bipoles.size() / 5) * 5;
-				dataCont->bipData[i][j] = eegData[bipoles[idCurrentBip + i].positivElecId][j] -
+				dataCont.bipData[i][j] = eegData[bipoles[idCurrentBip + i].positivElecId][j] -
 										  eegData[bipoles[idCurrentBip + i].negativElecId][j];
 			}
 		}
@@ -383,14 +485,14 @@ void InsermLibrary::eegContainer::ToHilbert(elan_struct_t* elanStruct, vector<in
 		{
 			for (int j = 0; j < bipoles.size() % 5; j++)
 			{
-				thr[j] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, dataCont, j, i);
+				thr[j] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, j, i);
 				thr[j].join();
 			}
 		}
 
 		for (int i = 0; i < bipoles.size() % 5; i++)
 		{
-			thr[i] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, dataCont, i);
+			thr[i] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, i);
 			thr[i].join();
 		}
 
@@ -401,7 +503,7 @@ void InsermLibrary::eegContainer::ToHilbert(elan_struct_t* elanStruct, vector<in
 				int currentId = (bipoles.size() - (bipoles.size() % 5)) + j;
 				for (int k = 0; k < elanStruct->eeg.samp_nb; k++)
 				{
-					elanStruct->eeg.data_float[i][currentId][k] = dataCont->convoData[i][j][k];
+					elanStruct->eeg.data_float[i][currentId][k] = dataCont.convoData[i][j][k];
 				}
 			}
 		}
@@ -425,6 +527,8 @@ void InsermLibrary::eegContainer::ToHilbert(elan_struct_t* elanStruct, vector<in
 		ELANFunctions::writeOldElanHeader(elanStruct, nameOuputFile);
 		ELANFunctions::writeOldElanData(elanStruct, nameOuputFile, i);
 	}
+
+	//deleteAndNullify1D(dataCont);
 }
 
 void InsermLibrary::eegContainer::initElanFreqStruct(elan_struct_t *structToInit)
@@ -465,15 +569,16 @@ void InsermLibrary::eegContainer::hilbertDownSampSumData(dataContainer *dataCont
 	{
 		for (int i = 0; i < dataCont->arrayDownLength; i++)
 		{
-			dataCont->meanData[threadId][i] = 0;
+			dataCont->meanData[threadId][i] = 0.0f;
 		}
 	}
 
 	mtx.lock();
-	MATLABFUNC::bandPassHilbertFreq(&dataCont->bipData[threadId][0], &dataCont->hilData[threadId][0],
+	MATLABFUNC::bandPassHilbertFreq(dataCont->bipData[threadId], dataCont->hilData[threadId],
 									 dataCont->firData[freqId], dataCont->fftFront[threadId],
 									 dataCont->fftBack[threadId]);
 	mtx.unlock();
+
 	//Downsamp
 	for (int i = 0; i < dataCont->arrayDownLength; i++)
 	{

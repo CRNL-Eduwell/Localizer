@@ -49,9 +49,9 @@ void MicromedLibrary::TRCFunctions::deleteOneOrSeveralElectrodesAndData(TRCFile 
 
 void MicromedLibrary::TRCFunctions::convertAnalogDataToDigital(TRCFile *myTRCFile)
 {
-	for (int i = 0; i < myTRCFile->electrodes().size(); i++)
+	for (int i = 0; i < myTRCFile->eegAllChanels.size(); i++)
 	{
-		for (int j = 0; j < myTRCFile->nbSample(); j++)
+		for (int j = 0; j < myTRCFile->eegAllChanels[i].size(); j++)
 		{
 			long mul = (myTRCFile->electrodes()[i].logicMaximum - myTRCFile->electrodes()[i].logicMinimum) + 1;
 			long div = (myTRCFile->electrodes()[i].physicMaximum - myTRCFile->electrodes()[i].physicMinimum);
