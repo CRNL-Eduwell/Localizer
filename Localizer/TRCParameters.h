@@ -36,7 +36,7 @@ namespace MicromedLibrary
 
 	struct eventsMarker
 	{													//Offset
-		char description[64];							//0
+		std::string description;						//0
 		vector<MarkerPair> selection;					//64
 	};
 

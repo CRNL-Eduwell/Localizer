@@ -29,15 +29,12 @@ class Worker : public QObject
 public:
 	Worker(patientFolder *currentPatient, userOption *userOpt);
 	Worker(locaFolder *loca, userOption *userOpt);
-	Worker(vector<singleFile> currentFiles, userOption *userOpt, int idFile);
+	Worker(vector<singleFile> currentFiles, userOption *userOpt, int idFile = -1);
 	~Worker();
 	LOCA* getLoca();
 private:
 	void analysePatientFolder(patientFolder *currentPatient);
 	void analyseSingleFiles(vector<singleFile> currentFiles);
-
-	//===================       en dessous ok
-
 	eegContainer *extractEEGData(locaFolder currentLoca, int idFile, int nbFreqBand);
 	eegContainer *extractEEGData(locaFolder currentLoca);
 	eegContainer *createFromTRC(locaFolder currentLoca, bool extractOrigData, int nbFreqBand = 0);

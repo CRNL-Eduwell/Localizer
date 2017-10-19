@@ -9,6 +9,7 @@
 #include"eegContainerParameters.h"
 #include <QPixmap>
 #include <QPainter>
+#include "optionsParameters.h"
 
 using namespace std;
 using namespace InsermLibrary;

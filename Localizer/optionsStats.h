@@ -8,6 +8,7 @@
 #include "Utility.h"
 #include "ui_optionsStats.h"
 #include <QMouseEvent>
+#include "optionsParameters.h"
 
 using namespace std;
 using namespace InsermLibrary;

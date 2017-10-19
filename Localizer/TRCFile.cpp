@@ -517,7 +517,7 @@ void MicromedLibrary::TRCFile::getEventA(ifstream &fileStream, descriptorArea *d
 {
 	MarkerPair markSelec;
 
-	strcpy_s(eventA.description, 64, binaryStringExtraction(descriptorEventA->startOffset, 64, fileStream).c_str());
+	eventA.description = binaryStringExtraction(descriptorEventA->startOffset, 64, fileStream);
 	for (int i = 0; i < MAX_EVENT; i++)
 	{
 		markSelec.begin = binaryBytesExtraction(descriptorEventA->startOffset + 64 + (i * 8), 4, fileStream);
@@ -530,7 +530,7 @@ void MicromedLibrary::TRCFile::getEventB(ifstream &fileStream, descriptorArea *d
 {
 	MarkerPair markSelec;
 
-	strcpy_s(eventB.description, 64, binaryStringExtraction(descriptorEventB->startOffset, 64, fileStream).c_str());
+	eventB.description = binaryStringExtraction(descriptorEventB->startOffset, 64, fileStream);
 	for (int i = 0; i < MAX_EVENT; i++)
 	{
 		markSelec.begin = binaryBytesExtraction(descriptorEventB->startOffset + 64 + (i * 8), 4, fileStream);

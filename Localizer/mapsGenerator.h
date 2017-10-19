@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Utility.h"
 #include "PROV.h"
+#include "optionsParameters.h"
 
 #include <QPainter>
 #include <QFileInfo>

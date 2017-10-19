@@ -14,7 +14,7 @@ Worker::Worker(locaFolder *locaFold, userOption *userOpt)
 	loca = new LOCA(optionUser);
 }
 
-Worker::Worker(vector<singleFile> currentFiles, userOption *userOpt, int idFile = -1)
+Worker::Worker(vector<singleFile> currentFiles, userOption *userOpt, int idFile)
 {
 	files = vector<singleFile>(currentFiles);
 	this->idFile = idFile;
@@ -35,13 +35,9 @@ LOCA* Worker::getLoca()
 void Worker::processAnalysis()
 {
 	if (patient != nullptr)
-	{
 		analysePatientFolder(patient);
-	}
 	else if (files.size() > 0)
-	{
 		analyseSingleFiles(files);
-	}
 
 	emit finished();
 }
@@ -144,8 +140,10 @@ void Worker::analyseSingleFiles(vector<singleFile> currentFiles)
 		//==
 		for (int j = 0; j < optionUser->freqOption.frequencyBands.size(); j++)
 		{
+			frequency currentFrequencyBand = frequency(optionUser->freqOption.frequencyBands[j]);
+			LOCA::checkShannonCompliance(myContainer->sampInfo.samplingFrequency, currentFrequencyBand);
 			if(optionUser->anaOption[i].anaOpt[j].eeg2env)
-				myContainer->ToHilbert(myContainer->elanFrequencyBand[j], optionUser->freqOption.frequencyBands[j].freqBandValue);
+				myContainer->ToHilbert(myContainer->elanFrequencyBand[j], currentFrequencyBand.freqBandValue);
 
 			//HOTFIX TRES SALE
 			//LES POS DOIVENT ETRE SORTI DANS UN CAS DANALYSE SIMPLE AUSSI (EX BTV)
@@ -177,8 +175,6 @@ void Worker::analyseSingleFiles(vector<singleFile> currentFiles)
 		deleteAndNullify1D(myContainer);
 	}
 }
-
-//===================       en dessous ok
 
 eegContainer *Worker::extractEEGData(locaFolder currentLoca, int idFile, int nbFreqBand)
 {

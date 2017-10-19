@@ -12,6 +12,7 @@
 #include <QUiLoader>
 
 #include "Utility.h"
+#include "optionsParameters.h"
 #include "patientFolder.h"
 #include "singleFile.h"
 #include "optionsPerf.h"

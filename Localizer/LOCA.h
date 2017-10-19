@@ -14,6 +14,7 @@
 #include "Stats.h"
 #include "mapsGenerator.h"
 #include "barsPlotsGenerator.h"
+#include "optionsParameters.h"
 
 using namespace std;
 using namespace InsermLibrary;
@@ -31,6 +32,7 @@ namespace InsermLibrary
 		~LOCA();
 		void eeg2erp(eegContainer *myeegContainer, PROV *myprovFile);
 		void LocaSauron(eegContainer *myeegContainer, int idCurrentLoca, locaFolder *currentLoca);
+		static void checkShannonCompliance(int p_samplingFrequency, frequency & p_freq);
 	private:
 		void toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreq, string freqFolder, analysisOption a);
 		//==

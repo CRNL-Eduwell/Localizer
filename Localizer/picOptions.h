@@ -4,6 +4,7 @@
 #include <QtWidgets/QDialog>
 #include "ui_picOptions.h"
 #include "Utility.h"
+#include "optionsParameters.h"
 
 using namespace std;
 using namespace InsermLibrary;

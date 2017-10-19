@@ -74,11 +74,12 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 
 	for (int i = 0; i < userOpt->freqOption.frequencyBands.size(); i++)
 	{
+		frequency currentFrequencyBand = frequency(userOpt->freqOption.frequencyBands[i]);
+		checkShannonCompliance(myeegContainer->sampInfo.samplingFrequency, currentFrequencyBand);
 		if (userOpt->anaOption[idCurrentLoca].anaOpt[i].eeg2env)
 		{
-			string freqFolder = createIfFreqFolderExistNot(myeegContainer, userOpt->freqOption.frequencyBands[i]);
-			myeegContainer->ToHilbert(myeegContainer->elanFrequencyBand[i], 
-									  userOpt->freqOption.frequencyBands[i].freqBandValue);
+			string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
+			myeegContainer->ToHilbert(myeegContainer->elanFrequencyBand[i], currentFrequencyBand.freqBandValue);
 
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 			toBeNamedCorrectlyFunction(myeegContainer, i, freqFolder, userOpt->anaOption[idCurrentLoca].anaOpt[i]);
@@ -87,9 +88,9 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 		{
 			if (i < currentLoca->frequencyFolders().size())
 			{
-				int sizeFreq = userOpt->freqOption.frequencyBands[i].freqBandValue.size() - 1;
-				string fMin = to_string(userOpt->freqOption.frequencyBands[i].freqBandValue[0]);
-				string fMax = to_string(userOpt->freqOption.frequencyBands[i].freqBandValue[sizeFreq]);
+				int sizeFreq = currentFrequencyBand.freqBandValue.size() - 1;
+				string fMin = to_string(currentFrequencyBand.freqBandValue[0]);
+				string fMax = to_string(currentFrequencyBand.freqBandValue[sizeFreq]);
 
 				if ((currentLoca->frequencyFolders()[i].frequencyName() == "f" + fMin + "f" + fMax) &&
 					(currentLoca->frequencyFolders()[i].filePath(SM0_ELAN) != ""))
@@ -98,7 +99,7 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 					if (loadFile == 0)
 					{
 						ELANFunctions::convertELANAnalogDataToDigital(myeegContainer->elanFrequencyBand[i]);
-						string freqFolder = createIfFreqFolderExistNot(myeegContainer, userOpt->freqOption.frequencyBands[i]);
+						string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
 						emit sendLogInfo("Envelloppe File Loaded");
 						toBeNamedCorrectlyFunction(myeegContainer, i, freqFolder, userOpt->anaOption[idCurrentLoca].anaOpt[i]);
 					}
@@ -117,6 +118,25 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 				emit sendLogInfo("No Folder for this frequency, end of analyse for this frequency");
 			}
 		}
+	}
+}
+
+void InsermLibrary::LOCA::checkShannonCompliance(int p_samplingFrequency, frequency & p_freq)
+{
+	cout << p_samplingFrequency << endl;
+	if (p_freq.freqBandValue[p_freq.freqBandValue.size() - 1] > (p_samplingFrequency / 2))
+	{
+		int step = p_freq.freqBandValue[1] - p_freq.freqBandValue[0];
+		int oldfMax = p_freq.freqBandValue[p_freq.freqBandValue.size() - 1];
+		int fMin = p_freq.freqBandValue[0];
+		int fMax = ((p_samplingFrequency / 2) / step) * step;
+
+		p_freq.freqBandValue.clear();
+		for (int i = 0; i <= ((fMax - fMin) / step); i++)
+			p_freq.freqBandValue.push_back(fMin + (i * step));
+
+		p_freq.freqFolderName = "";
+		p_freq.freqFolderName.append("f").append(to_string(fMin)).append("f").append(to_string(fMax));
 	}
 }
 

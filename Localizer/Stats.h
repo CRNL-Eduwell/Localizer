@@ -11,6 +11,7 @@
 #include "wilcox.h"
 #include "kruskall.h"
 #include "Utility.h"
+#include "optionsParameters.h"
 
 using namespace std;
 using namespace InsermLibrary;
