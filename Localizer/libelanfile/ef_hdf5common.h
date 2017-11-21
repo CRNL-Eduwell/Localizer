@@ -4,7 +4,7 @@
 #ifndef _ef_hdf5common_h
 #define _ef_hdf5common_h
 
-#include <C:\Program Files\HDF_Group\HDF5\1.10.0\include\hdf5.h>
+#include <C:\Program Files\HDF_Group\HDF5\1.10.1\include\hdf5.h>
 
 
 /* Macro for determine endian of attributes in file. */

@@ -56,6 +56,16 @@ FileExt singleFile::fileExtention()
 void singleFile::getFileData(string path)
 {
 	vector<string> splitExt = split<string>(path, "\\/.");
+	if (path[0] == '/' && path[1] == '/') //In case this is a newtork ressource
+	{
+		m_rootFolder = "//";
+	}
+	else
+	{
+		if (path[0] == '/') //In case this is a linux path
+			m_rootFolder = "/";
+	}
+
 	for (int i = 0; i < splitExt.size() - 2; i++)
 		m_rootFolder += splitExt[i] + "/";
 	m_patientName = splitExt[splitExt.size() - 2];

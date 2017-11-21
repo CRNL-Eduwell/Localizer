@@ -47,7 +47,7 @@ void InsermLibrary::EDFFile::readEvents()
 
 		for (int i_r = 0; i_r < events.size(); ++i_r)
 		{
-			if (events[i_r].find("MARQUEUR") != std::string::npos)
+			if (events[i_r].find("MARQUEUR") != std::string::npos || events[i_r].find("Appel") != std::string::npos || events[i_r].find("EXT") != std::string::npos)
 			{
 				string delimiter = ".";
 				delimiter = delimiter.append(string(1, (char)(20)));
@@ -62,6 +62,23 @@ void InsermLibrary::EDFFile::readEvents()
 						int sample = (int)(i_r * m_samplingFreq + (std::atof(string("0.").append(splitdata[i_rr - 1].c_str()).c_str()) * m_samplingFreq));
 
 						m_events.push_back(Edf_event(splitdata[i_rr], code, sample));
+					}
+					else if (splitdata[i_rr].find("Appel") != std::string::npos)
+					{
+						vector<string> splitCode = split<string>(splitdata[i_rr], "Appel patient");
+						int code = 1;
+						int sample = (int)(i_r * m_samplingFreq + (std::atof(string("0.").append(splitdata[i_rr - 1].c_str()).c_str()) * m_samplingFreq));
+
+						m_events.push_back(Edf_event(splitdata[i_rr], code, sample));
+					}
+					else if (splitdata[i_rr].find("EXT") != std::string::npos)
+					{
+						vector<string> splitCode = split<string>(splitdata[i_rr], "EXT");
+						int code = stoi(splitCode[0]);
+						int sample = (int)(i_r * m_samplingFreq + (std::atof(string("0.").append(splitdata[i_rr - 1].c_str()).c_str()) * m_samplingFreq));
+
+						m_events.push_back(Edf_event(splitdata[i_rr], code, sample));
+
 					}
 				}
 			}

@@ -13,6 +13,16 @@ patientFolder::patientFolder(patientFolder *pat)
 patientFolder::patientFolder(string rootPath)
 {
 	vector<string> splitExt = split<string>(rootPath, "\\/");
+	if (rootPath[0] == '/' && rootPath[1] == '/') //In case this is a newtork ressource
+	{
+		m_rootFolder = "//";
+	}
+	else
+	{
+		if (rootPath[0] == '/') //In case this is a linux path
+			m_rootFolder = "/";
+	}
+
 	for (int i = 0; i < splitExt.size(); i++)
 		m_rootFolder += splitExt[i] + "/";
 	getPatientInfo(m_rootFolder);
