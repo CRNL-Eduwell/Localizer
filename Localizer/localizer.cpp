@@ -21,6 +21,7 @@ void Localizer::reSetupGUI()
 	optPerf = new optionsPerf();
 	optStat = new optionsStats();
 	picOpt = new picOptions();
+	optLoca = new form();
 	getUIelement();
 }
 
@@ -84,6 +85,8 @@ void Localizer::connectMenuBar()
 	connect(openStatMenu, &QAction::triggered, this, [&] { optStat->exec(); });
 	QAction* openPicMenu = ui.menuConfiguration->actions().at(2);
 	connect(openPicMenu, &QAction::triggered, this, [&] { picOpt->exec(); });
+	QAction* openLocaMenu = ui.menuConfiguration->actions().at(3);
+	connect(openLocaMenu, &QAction::triggered, this, [&] { optLoca->exec(); });
 	//===Aide
 	QAction* openAbout = ui.menuAide->actions().at(0);
 	connect(openAbout, &QAction::triggered, this, [&] { QMessageBox::information(this, "About", "Something"); });

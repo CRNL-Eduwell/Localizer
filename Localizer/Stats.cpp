@@ -197,10 +197,10 @@ vec1<float> InsermLibrary::Stats::getBaselineBlocWilcoxon(int currentChanel, int
 	for (int k = 0; k < numberSubTrial; k++)
 	{
 		float sum = 0.0;
-		int begBaseline = round((samplingFreq * (dispBloc.baseLineWindow[0] -
-												 dispBloc.epochWindow[0])) / 1000);
-		int endBaseline = round((samplingFreq * (dispBloc.baseLineWindow[1] -
-												 dispBloc.epochWindow[0])) / 1000);
+		int begBaseline = round((samplingFreq * (dispBloc.baseLineMin() -
+												 dispBloc.windowMax())) / 1000);
+		int endBaseline = round((samplingFreq * (dispBloc.baseLineMax() -
+												 dispBloc.windowMin())) / 1000);
 
 		for (int l = 0; l < (endBaseline - begBaseline); l++)
 		{
@@ -220,12 +220,12 @@ vec2<float> InsermLibrary::Stats::getEegDataBlocWilcoxon(int currentChanel, int 
 	int numberWindows = 0;
 	if (myprovFile->invertmapsinfo != "")
 	{	//100 because 200ms window with overlap 50%
-		numberWindows = (myprovFile->visuBlocs[idBloc].dispBloc.epochWindow[1] -
-			myprovFile->visuBlocs[idBloc].dispBloc.epochWindow[0]) / 100;
+		numberWindows = (myprovFile->visuBlocs[idBloc].dispBloc.windowMax() -
+			myprovFile->visuBlocs[idBloc].dispBloc.windowMin()) / 100;
 	}
 	else
 	{
-		numberWindows = myprovFile->visuBlocs[idBloc].dispBloc.epochWindow[1] / 100;
+		numberWindows = myprovFile->visuBlocs[idBloc].dispBloc.windowMax() / 100;
 	}
 
 	int *windowMs = myprovFile->getBiggestWindowMs();
@@ -235,8 +235,8 @@ vec2<float> InsermLibrary::Stats::getEegDataBlocWilcoxon(int currentChanel, int 
 		for (int l = 0; l < numberSubTrial; l++)
 		{
 			float sum = 0.0;
-			int begWindow = round((samplingFreq * (0 + (100 * k) + (myprovFile->visuBlocs[idBloc].dispBloc.epochWindow[0] - windowMs[0]))) / 1000);
-			int endWindow = round((samplingFreq * (200 + (100 * k) + (myprovFile->visuBlocs[idBloc].dispBloc.epochWindow[0] - windowMs[0]))) / 1000);
+			int begWindow = round((samplingFreq * (0 + (100 * k) + (myprovFile->visuBlocs[idBloc].dispBloc.windowMin() - windowMs[0]))) / 1000);
+			int endWindow = round((samplingFreq * (200 + (100 * k) + (myprovFile->visuBlocs[idBloc].dispBloc.windowMin() - windowMs[0]))) / 1000);
 
 			for (int m = 0; m < (endWindow - begWindow); m++)
 			{

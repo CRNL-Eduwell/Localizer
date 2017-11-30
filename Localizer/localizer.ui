@@ -491,6 +491,7 @@
     <addaction name="actionPerformance"/>
     <addaction name="actionStats"/>
     <addaction name="actionPictures"/>
+    <addaction name="actionLocalizers"/>
    </widget>
    <widget class="QMenu" name="menuAide">
     <property name="title">
@@ -550,6 +551,11 @@
   <action name="actionPictures">
    <property name="text">
     <string>Pictures</string>
+   </property>
+  </action>
+  <action name="actionLocalizers">
+   <property name="text">
+    <string>Localizers</string>
    </property>
   </action>
  </widget>

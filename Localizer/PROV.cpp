@@ -1,12 +1,17 @@
 #include "PROV.h"
 
+InsermLibrary::PROV::PROV()
+{
+
+}
+
 InsermLibrary::PROV::PROV(string provFilePath)
 {
-	filePath = provFilePath;
-	extractProvBloc(filePath);
-	sort(visuBlocs.begin(), visuBlocs.end(),
+	m_filePath = provFilePath;
+	extractProvBloc(m_filePath);
+	std::sort(visuBlocs.begin(), visuBlocs.end(),
 		[](BLOC a, BLOC b) {
-		return ((a.dispBloc.row < b.dispBloc.row) && (a.dispBloc.col == b.dispBloc.col));
+		return ((a.dispBloc.row() < b.dispBloc.row()) && (a.dispBloc.column() == b.dispBloc.column()));
 	});
 
 	getRightOrderBloc();
@@ -23,9 +28,9 @@ int InsermLibrary::PROV::nbCol()
 
 	for (int i = 0; i < visuBlocs.size(); i++)
 	{
-		if (visuBlocs[i].dispBloc.col > max)
+		if (visuBlocs[i].dispBloc.column() > max)
 		{
-			max = visuBlocs[i].dispBloc.col;
+			max = visuBlocs[i].dispBloc.column();
 		}
 	}
 
@@ -38,9 +43,9 @@ int InsermLibrary::PROV::nbRow()
 
 	for (int i = 0; i < visuBlocs.size(); i++)
 	{
-		if (visuBlocs[i].dispBloc.row > max)
+		if (visuBlocs[i].dispBloc.row() > max)
 		{
-			max = visuBlocs[i].dispBloc.row;
+			max = visuBlocs[i].dispBloc.row();
 		}
 	}
 
@@ -59,22 +64,6 @@ vector<int> InsermLibrary::PROV::getMainCodes()
 	}
 	return mainEventsCode;
 }
-
-//vector<int> InsermLibrary::PROV::getSecondaryCodes()
-//{
-//	vector<int> respEventsCode;
-//	for (int m = 0; m < visuBlocs.size(); m++)
-//	{
-//		for (int j = 0; j < visuBlocs[m].secondaryEvents.size(); j++)
-//		{
-//			if (find(respEventsCode.begin(), respEventsCode.end(), visuBlocs[m].secondaryEvents[j].eventCode[0]) == respEventsCode.end())
-//			{
-//				respEventsCode.push_back(visuBlocs[m].secondaryEvents[j].eventCode[0]); //If multiple secondary code, just use the first one of the list
-//			}
-//		}
-//	}
-//	return respEventsCode;
-//}
 
 vector<vector<int>> InsermLibrary::PROV::getSecondaryCodes()
 {
@@ -102,8 +91,8 @@ int *InsermLibrary::PROV::getBiggestWindowMs()
 	int window_ms[2]{ 0,0 }; 
 	for (int i = 0; i < visuBlocs.size(); i++)
 	{
-		window_ms[0] = min(window_ms[0], visuBlocs[i].dispBloc.epochWindow[0]);
-		window_ms[1] = max(window_ms[1], visuBlocs[i].dispBloc.epochWindow[1]);
+		window_ms[0] = min(window_ms[0], visuBlocs[i].dispBloc.windowMin());
+		window_ms[1] = max(window_ms[1], visuBlocs[i].dispBloc.windowMax());
 	}
 
 	return new int[2]{ window_ms[0], window_ms[1] };
@@ -122,7 +111,7 @@ int *InsermLibrary::PROV::getBiggestWindowSam(int samplingFreq)
 
 int *InsermLibrary::PROV::getWindowMs(int idBloc)
 {
-	return new int[2]{ visuBlocs[idBloc].dispBloc.epochWindow[0], visuBlocs[idBloc].dispBloc.epochWindow[1] };
+	return new int[2]{ visuBlocs[idBloc].dispBloc.windowMin(), visuBlocs[idBloc].dispBloc.windowMax() };
 }
 
 int *InsermLibrary::PROV::getWindowSam(int samplingFreq, int idBloc)
@@ -135,6 +124,133 @@ int *InsermLibrary::PROV::getWindowSam(int samplingFreq, int idBloc)
 
 	return new int[2]{ window_sam[0], window_sam[1] };
 }
+
+//=== SETTER
+
+void InsermLibrary::PROV::row(int idBloc, std::string rowValue)
+{
+	try
+	{
+		int value = stoi(rowValue);
+		visuBlocs[idBloc].dispBloc.row(value);
+	}
+	catch (const std::exception&)
+	{
+		visuBlocs[idBloc].dispBloc.row(-1);
+	}
+}
+
+void InsermLibrary::PROV::column(int idBloc, std::string columnValue)
+{
+	try
+	{
+		int value = stoi(columnValue);
+		visuBlocs[idBloc].dispBloc.column(value);
+	}
+	catch (const std::exception&)
+	{
+		visuBlocs[idBloc].dispBloc.column(-1);
+	}
+}
+
+void InsermLibrary::PROV::name(int idBloc, std::string nameValue)
+{
+	try
+	{
+		visuBlocs[idBloc].dispBloc.name(nameValue);
+	}
+	catch (const std::exception&)
+	{
+		visuBlocs[idBloc].dispBloc.name("");
+	}
+}
+
+void InsermLibrary::PROV::path(int idBloc, std::string pathValue)
+{
+	try
+	{
+		visuBlocs[idBloc].dispBloc.path(pathValue);
+	}
+	catch (const std::exception&)
+	{
+		visuBlocs[idBloc].dispBloc.path("");
+	}
+}
+
+void InsermLibrary::PROV::sort(int idBloc, std::string sortValue)
+{
+	try
+	{
+		visuBlocs[idBloc].dispBloc.sort(sortValue);
+	}
+	catch (const std::exception&)
+	{
+		visuBlocs[idBloc].dispBloc.sort("C0");
+	}
+}
+
+//===
+
+void InsermLibrary::PROV::saveFile()
+{
+	if (m_filePath != "")
+	{
+		ofstream provStream(m_filePath, ios::out);
+
+		provStream << "ROW " << ";" << "COL " << ";" << "Name " << ";" << "Path " << ";" << "Window " << ";"
+				   << "Baseline " << ";" << "Main Event " << ";" << "Main Event Label " << ";"
+				   << "Secondary Events" << ";" << "Secondary Events Label" << "Sort" << endl;
+		for (int i = 0; i < visuBlocs.size(); i++)
+		{
+			provStream << visuBlocs[i].dispBloc.row() << ";"
+				<< visuBlocs[i].dispBloc.column() << ";"
+				<< visuBlocs[i].dispBloc.name() << ";"
+				<< visuBlocs[i].dispBloc.path() << ";"
+				<< visuBlocs[i].dispBloc.windowMin() << ":" << visuBlocs[i].dispBloc.windowMax() << ";"
+				<< visuBlocs[i].dispBloc.baseLineMin() << ":" << visuBlocs[i].dispBloc.baseLineMax() << ";"
+				<< visuBlocs[i].mainEventBloc.eventCode[0] << ";"
+				<< visuBlocs[i].mainEventBloc.eventLabel << ";"
+				<< visuBlocs[i].secondaryEvents[0].eventCode[0] << ";"
+				<< visuBlocs[i].secondaryEvents[0].eventLabel << ";"
+				<< visuBlocs[i].dispBloc.sort() << endl;
+		}
+		provStream << "NO_CHANGE_CODE" << endl;
+		provStream << "NO_INVERT" << endl;
+		provStream.close();
+	}
+}
+
+void InsermLibrary::PROV::saveFile(std::string rootFolder, std::string fileName)
+{
+	std::string filePath = rootFolder + "/" + fileName + ".prov";
+	if (filePath != "")
+	{
+		ofstream provStream(filePath, ios::out);
+
+		provStream << "ROW" << ";" << "COL" << ";" << "Name" << ";" << "Path" << ";" << "Window" << ";"
+			<< "Baseline" << ";" << "Main Event" << ";" << "Main Event Label" << ";"
+			<< "Secondary Events" << ";" << "Secondary Events Label" << ";" << "Sort" << endl;
+		for (int i = 0; i < visuBlocs.size(); i++)
+		{
+			provStream << visuBlocs[i].dispBloc.row() << ";"
+				<< visuBlocs[i].dispBloc.column() << ";"
+				<< visuBlocs[i].dispBloc.name() << ";"
+				<< visuBlocs[i].dispBloc.relativPath(rootFolder) << ";"
+				<< visuBlocs[i].dispBloc.windowMin() << ":" << visuBlocs[i].dispBloc.windowMax() << ";"
+				<< visuBlocs[i].dispBloc.baseLineMin() << ":" << visuBlocs[i].dispBloc.baseLineMax() << ";"
+				<< visuBlocs[i].mainEventBloc.eventCode[0] << ";"
+				<< visuBlocs[i].mainEventBloc.eventLabel << ";"
+				<< visuBlocs[i].secondaryEvents[0].eventCode[0] << ";"
+				<< visuBlocs[i].secondaryEvents[0].eventLabel << ";"
+				<< visuBlocs[i].dispBloc.sort() << endl;
+		}
+		provStream << "NO_CHANGE_CODE" << endl;
+		provStream << "NO_INVERT" << endl;
+		provStream.close();
+	}
+}
+
+//=== PRIVATE
 
 void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 {
@@ -152,29 +268,27 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 			switch (j)
 			{
 			case 0:
-				currentBloc.dispBloc.row = atoi(&(currentAsciiBloc[0])[0]);
+				currentBloc.dispBloc.row(atoi(&(currentAsciiBloc[0])[0]));
 				break;
 			case 1:
-				currentBloc.dispBloc.col = atoi(&(currentAsciiBloc[1])[0]);
+				currentBloc.dispBloc.column(atoi(&(currentAsciiBloc[1])[0]));
 				break;
 			case 2:
-				currentBloc.dispBloc.name = currentAsciiBloc[2];
+				currentBloc.dispBloc.name(currentAsciiBloc[2]);
 				break;
 			case 3:
-				currentBloc.dispBloc.path = string(rootFolder + currentAsciiBloc[3]);
+				currentBloc.dispBloc.path(string(rootFolder + currentAsciiBloc[3]));
 				break;
 			case 4:
 			{
 				vector<string> currentEpochWin = split<string>(currentAsciiBloc[4], ":");
 				if (currentEpochWin.size() == 2)
 				{
-					currentBloc.dispBloc.epochWindow[0] = atoi(&(currentEpochWin[0])[0]);
-					currentBloc.dispBloc.epochWindow[1] = atoi(&(currentEpochWin[1])[0]);
+					currentBloc.dispBloc.window(atoi(&(currentEpochWin[0])[0]), atoi(&(currentEpochWin[1])[0]));
 				}
 				else
 				{
-					currentBloc.dispBloc.epochWindow[0] = 0;
-					currentBloc.dispBloc.epochWindow[1] = 0;
+					currentBloc.dispBloc.window(0, 0);
 					cout << "Attention, probleme de fenetre" << endl;
 				}
 				break;
@@ -184,13 +298,11 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 				vector<string> currentBaseLineWin = split<string>(currentAsciiBloc[5], ":");
 				if (currentBaseLineWin.size() == 2)
 				{
-					currentBloc.dispBloc.baseLineWindow[0] = atoi(&(currentBaseLineWin[0])[0]);
-					currentBloc.dispBloc.baseLineWindow[1] = atoi(&(currentBaseLineWin[1])[0]);
+					currentBloc.dispBloc.baseLine(atoi(&(currentBaseLineWin[0])[0]), atoi(&(currentBaseLineWin[1])[0]));
 				}
 				else
 				{
-					currentBloc.dispBloc.baseLineWindow[0] = 0;
-					currentBloc.dispBloc.baseLineWindow[1] = 0;
+					currentBloc.dispBloc.baseLine(0, 0);
 					cout << "Attention, probleme de fenetre baseline" << endl;
 				}
 				break;
@@ -228,7 +340,7 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 				break;
 			}
 			case 10:
-				currentBloc.dispBloc.sort = currentAsciiBloc[10];
+				currentBloc.dispBloc.sort(currentAsciiBloc[10]);
 				break;
 			default:
 				cout << "Attention, probleme" << endl;
@@ -295,7 +407,7 @@ void InsermLibrary::PROV::getRightOrderBloc()
 		{
 			for (int k = 0; k < visuBlocs.size(); k++)
 			{
-				if ((visuBlocs[k].dispBloc.col == z + 1) && (visuBlocs[k].dispBloc.row == y + 1))
+				if ((visuBlocs[k].dispBloc.column() == z + 1) && (visuBlocs[k].dispBloc.row() == y + 1))
 				{
 					rightOrderBlocs.push_back(y);
 				}

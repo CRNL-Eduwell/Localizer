@@ -177,7 +177,7 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 		
 		if (a.env2plot)//env2plot
 		{
-			if (shouldPerformBarPlot(currentLoca->localizerName()) || isBarPlot(provFiles[i].filePath))
+			if (shouldPerformBarPlot(currentLoca->localizerName()) || isBarPlot(provFiles[i].filePath()))
 			{
 				barplot(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
 			}
@@ -188,7 +188,7 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 			}
 		}
 
-		if (a.trialmat && (isBarPlot(provFiles[i].filePath) == false || provFiles.size() == 1))
+		if (a.trialmat && (isBarPlot(provFiles[i].filePath()) == false || provFiles.size() == 1))
 		{
 			timeTrialmatrices(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
 		}
@@ -311,8 +311,8 @@ void InsermLibrary::LOCA::renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *down
 
 		if (idMain != -1)
 		{
-			int winSamMin = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[0]) / 1000);
-			int winSamMax = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[1]) / 1000);
+			int winSamMin = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMin()) / 1000);
+			int winSamMax = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMax()) / 1000);
 
 			dd = k + 1;
 
@@ -434,8 +434,8 @@ void InsermLibrary::LOCA::pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *
 		if (idMain != -1)
 		{
 	
-			int winSamMin = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[0]) / 1000);
-			int winSamMax = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.epochWindow[1]) / 1000);
+			int winSamMin = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMin()) / 1000);
+			int winSamMax = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMax()) / 1000);
 
 			dd = k + 1;
 
@@ -559,7 +559,7 @@ void InsermLibrary::LOCA::sortTrials(TRIGGINFO *eegTriggersTemp, PROV *myprovFil
 	int beg = 0, end = 0;
 	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
 	{
-		string currentSort = myprovFile->visuBlocs[i].dispBloc.sort;
+		string currentSort = myprovFile->visuBlocs[i].dispBloc.sort();
 		vector<string> sortSplited = split<string>(currentSort, "_");
 		for (int j = 1; j < sortSplited.size(); j++)
 		{
@@ -602,11 +602,8 @@ void InsermLibrary::LOCA::swapStimResp(TRIGGINFO *eegTriggers, PROV *myprovFile)
 	//This is the new window to visualize data
 	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
 	{
-		myprovFile->visuBlocs[i].dispBloc.epochWindow[0] = myprovFile->invertmaps.epochWindow[0];
-		myprovFile->visuBlocs[i].dispBloc.epochWindow[1] = myprovFile->invertmaps.epochWindow[1];
-
-		myprovFile->visuBlocs[i].dispBloc.baseLineWindow[0] = myprovFile->invertmaps.baseLineWindow[0];
-		myprovFile->visuBlocs[i].dispBloc.baseLineWindow[1] = myprovFile->invertmaps.baseLineWindow[1];
+		myprovFile->visuBlocs[i].dispBloc.window(myprovFile->invertmaps.epochWindow[0], myprovFile->invertmaps.epochWindow[1]);
+		myprovFile->visuBlocs[i].dispBloc.baseLine(myprovFile->invertmaps.baseLineWindow[0], myprovFile->invertmaps.baseLineWindow[1]);
 	}
 }
 
@@ -726,7 +723,7 @@ string InsermLibrary::LOCA::getMapsFolderBar(string freqFolder, PROV *myprovFile
 			mapsFolder.append("_P" + streamPValue.str());
 	}
 
-	vector<string> myProv = split<string>(myprovFile->filePath, "/");
+	vector<string> myProv = split<string>(myprovFile->filePath(), "/");
 	mapsFolder.append(" - " + myProv[myProv.size() - 1]);
 
 	return mapsFolder;
@@ -793,7 +790,7 @@ string InsermLibrary::LOCA::getMapsFolderPlot(string freqFolder, PROV *myprovFil
 	vec1<string> dd = split<string>(mapsFolder, "/");
 	mapsFolder.append(dd[dd.size() - 1]);
 
-	vector<string> myProv = split<string>(myprovFile->filePath, "/");
+	vector<string> myProv = split<string>(myprovFile->filePath(), "/");
 	return mapsFolder.append("_plots").append(" - " + myProv[myProv.size() - 1]);
 }
 
@@ -980,7 +977,7 @@ string InsermLibrary::LOCA::getMapsFolderTrial(PROV *myprovFile, string freqFold
 			mapsFolder.append("_P" + streamPValue.str());
 	}
 
-	vector<string> myProv = split<string>(myprovFile->filePath, "/");
+	vector<string> myProv = split<string>(myprovFile->filePath(), "/");
 	mapsFolder.append(" - " + myProv[myProv.size() - 1]);
 
 	return mapsFolder;

@@ -24,6 +24,8 @@
 #include "LOCA.h"
 #include "ui_localizer.h"
 
+#include "form.h"
+
 using namespace std;
 
 class Localizer : public QMainWindow
@@ -90,6 +92,7 @@ private:
 	picOptions *picOpt = nullptr;
 	optionsStats *optStat = nullptr;
 	optionsPerf *optPerf = nullptr;
+	form *optLoca = nullptr;
 	uiUserElement* uiElement = nullptr;
 	Ui::LocalizerClass ui;
 };
