@@ -63,6 +63,7 @@ void InsermLibrary::LOCA::eeg2erp(eegContainer *myeegContainer, PROV *myprovFile
 	emit sendLogInfo("Mono Maps Generated");
 	b.drawDataOnTemplate(bigDataBipo, triggCatEla, myeegContainer, 1);
 	emit sendLogInfo("Bipo Maps Generated");
+	emit incrementAdavnce(1);
 
 	delete windowSam;
 }

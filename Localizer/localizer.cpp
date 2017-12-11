@@ -466,6 +466,10 @@ void Localizer::processERPAnalysis()
 			QModelIndex index = ui.TRCListWidget->currentIndex();
 			if (index.isValid())
 			{
+				nbTaskToDo = 1;
+				nbDoneTask = 0;
+				ui.progressBar->reset();
+
 				picOpt->getPicOption(&userOpt.picOption);
 				thread = new QThread;
 				worker = new Worker(&currentPat->localizerFolder()[index.row()], &userOpt);
@@ -473,6 +477,7 @@ void Localizer::processERPAnalysis()
 				//=== Event update displayer
 				connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
 				connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
+				connect(worker->getLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(updateProgressBar(int)));
 
 				//=== 
 				connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
@@ -516,6 +521,10 @@ void Localizer::processConvertToElan()
 			QModelIndex index = ui.TRCListWidget->currentIndex();
 			if (index.isValid())
 			{
+				nbTaskToDo = 1;
+				nbDoneTask = 0;
+				ui.progressBar->reset();
+
 				thread = new QThread;
 
 				if (currentPat != nullptr)
@@ -537,6 +546,7 @@ void Localizer::processConvertToElan()
 				connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
 				connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
 				connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+				connect(worker, &Worker::finished, this, [&] { ui.progressBar->setValue(100); });
 				connect(worker, &Worker::finished, this, [&] { isAlreadyRunning = false; });
 
 				//=== Launch Thread and lock possible second launch
