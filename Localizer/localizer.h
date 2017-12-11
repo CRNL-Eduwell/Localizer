@@ -69,7 +69,7 @@ private slots:
 	void processERPAnalysis();
 	void processConvertToElan();
 	void displayLog(QString info);
-	void updateProgressBar();
+	void updateProgressBar(int divider);
 	void cancelAnalysis();
 	void receiveContainerPointer(eegContainer *eegCont);
 	void UpdateFolderPostAna();
@@ -91,7 +91,7 @@ private:
 	Worker* worker = nullptr;
 	bool isAlreadyRunning = false;
 	//==UI
-	int nbDoneTask = 0;
+	float nbDoneTask = 0;
 	int nbTaskToDo = 0;
 	picOptions *picOpt = nullptr;
 	optionsStats *optStat = nullptr;

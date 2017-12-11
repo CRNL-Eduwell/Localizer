@@ -131,48 +131,26 @@ void Worker::analyseSingleFiles(vector<singleFile> currentFiles)
 	{
 		emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + currentFiles[i].rootFolder() + " ==="));
 		myContainer = extractEEGData(currentFiles[i], i, optionUser->freqOption.frequencyBands.size());
-		emit sendLogInfo("Number of Bip : " + QString::number(myContainer->bipoles.size()));
-		//==
-		stringstream().swap(TimeDisp);
-		GetLocalTime(&LocalTime);
-		TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
-		emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
-		//==
-		for (int j = 0; j < optionUser->freqOption.frequencyBands.size(); j++)
-		{
-			frequency currentFrequencyBand = frequency(optionUser->freqOption.frequencyBands[j]);
-			LOCA::checkShannonCompliance(myContainer->sampInfo.samplingFrequency, currentFrequencyBand);
-			if(optionUser->anaOption[i].anaOpt[j].eeg2env)
-				myContainer->ToHilbert(myContainer->elanFrequencyBand[j], currentFrequencyBand.freqBandValue);
-
-			//HOTFIX TRES SALE
-			//LES POS DOIVENT ETRE SORTI DANS UN CAS DANALYSE SIMPLE AUSSI (EX BTV)
-			if (myContainer->triggEeg != nullptr)
-			{
-				ofstream posFile(myContainer->originalFilePath + ".pos", ios::out);
-				ofstream posFileX(myContainer->originalFilePath + "_ds" + to_string(myContainer->sampInfo.downsampFactor) + ".pos", ios::out);
-
-				for (int k = 0; k < myContainer->triggEeg->triggers.size(); k++)
-				{
-					posFile << myContainer->triggEeg->triggers[k].trigger.sample << setw(10)
-						<< myContainer->triggEeg->triggers[k].trigger.code << setw(10) << "0" << endl;
-					posFileX << myContainer->triggEegDownsampled->triggers[k].trigger.sample << setw(10)
-						<< myContainer->triggEegDownsampled->triggers[k].trigger.code << setw(10) << "0" << endl;
-				}
-
-				posFile.close();
-				posFileX.close();
-			}
-		}
-		//==
-		stringstream().swap(TimeDisp);
-		GetLocalTime(&LocalTime);
-		TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
-		emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
-		//==
-		sendLogInfo("End of Loca number " + QString::number(i) + "\n");
 		
-		deleteAndNullify1D(myContainer);
+		if (myContainer != nullptr)
+		{
+			emit sendLogInfo("Number of Bip : " + QString::number(myContainer->bipoles.size()));
+			//==
+			stringstream().swap(TimeDisp);
+			GetLocalTime(&LocalTime);
+			TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
+			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
+			//==
+			loca->LocaFrequency(myContainer, i);
+			//==
+			stringstream().swap(TimeDisp);
+			GetLocalTime(&LocalTime);
+			TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
+			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
+			//==
+			sendLogInfo("End of Loca number " + QString::number(i) + "\n");
+			deleteAndNullify1D(myContainer);
+		}
 	}
 }
 

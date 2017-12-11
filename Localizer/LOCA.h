@@ -32,11 +32,12 @@ namespace InsermLibrary
 		~LOCA();
 		void eeg2erp(eegContainer *myeegContainer, PROV *myprovFile);
 		void LocaSauron(eegContainer *myeegContainer, int idCurrentLoca, locaFolder *currentLoca);
+		void LocaFrequency(eegContainer *myeegContainer, int idCurrentLoca);
 		static void checkShannonCompliance(int p_samplingFrequency, frequency & p_freq);
 	private:
 		void toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreq, string freqFolder, analysisOption a);
 		//==
-		void createPosFile(eegContainer *myeegContainer, PROV *myprovFile);
+		void createPosFile(eegContainer *myeegContainer);
 		void createConfFile(eegContainer *myeegContainer);
 		void renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
 		//==
@@ -70,7 +71,7 @@ namespace InsermLibrary
 
 	signals:
 		void sendLogInfo(QString);
-		void incrementAdavnce();
+		void incrementAdavnce(int divider);
 
 	private:
 		TRIGGINFO *triggCatEla = nullptr, *triggCatEla2 = nullptr;

@@ -379,7 +379,7 @@ void Localizer::processFolderAnalysis()
 			//=== Event update displayer
 			connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
 			connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
-			connect(worker->getLoca(), SIGNAL(incrementAdavnce()), this, SLOT(updateProgressBar()));
+			connect(worker->getLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(updateProgressBar(int)));
 
 			//=== 
 			connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
@@ -426,6 +426,7 @@ void Localizer::processSingleAnalysis()
 			//=== Event update displayer
 			connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
 			connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
+			connect(worker->getLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(updateProgressBar(int)));
 
 			//=== 
 			connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
@@ -564,10 +565,10 @@ void Localizer::displayLog(QString messageToDisplay)
 	ui.messageDisplayer->append(messageToDisplay);
 }
 
-void Localizer::updateProgressBar()
+void Localizer::updateProgressBar(int divider)
 {
-	nbDoneTask++;
-	ui.progressBar->setValue(((float)nbDoneTask / nbTaskToDo) * 100);
+	nbDoneTask = nbDoneTask + ((float)1 / divider);
+	ui.progressBar->setValue((nbDoneTask / nbTaskToDo) * 100);
 }
 
 void Localizer::cancelAnalysis()
@@ -611,7 +612,7 @@ void Localizer::reInitStructFiles()
 
 void Localizer::reInitProgressBar(userOption *optionUser)
 {
-	nbTaskToDo = -1;
+	nbTaskToDo = 0;
 	for (int i = 0; i < optionUser->anaOption.size(); i++)
 	{
 		if (optionUser->anaOption[i].localizer)

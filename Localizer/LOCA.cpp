@@ -100,11 +100,11 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 		checkShannonCompliance(myeegContainer->sampInfo.samplingFrequency, currentFrequencyBand);
 		if (userOpt->anaOption[idCurrentLoca].anaOpt[i].eeg2env)
 		{
-			string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
 			myeegContainer->ToHilbert(myeegContainer->elanFrequencyBand[i], currentFrequencyBand.freqBandValue);
-			emit incrementAdavnce();
-
+			emit incrementAdavnce(1);
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
+
+			string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
 			toBeNamedCorrectlyFunction(myeegContainer, i, freqFolder, userOpt->anaOption[idCurrentLoca].anaOpt[i]);
 		}
 		else 
@@ -121,10 +121,11 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 					int loadFile = ef_read_elan_file((char*)currentLoca->frequencyFolders()[j].filePath(SM0_ELAN).c_str(), myeegContainer->elanFrequencyBand[i]);
 					if (loadFile == 0)
 					{
-						emit incrementAdavnce();
 						ELANFunctions::convertELANAnalogDataToDigital(myeegContainer->elanFrequencyBand[i]);
-						string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
+						emit incrementAdavnce(1);
 						emit sendLogInfo("Envelloppe File Loaded");
+
+						string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
 						toBeNamedCorrectlyFunction(myeegContainer, i, freqFolder, userOpt->anaOption[idCurrentLoca].anaOpt[i]);
 					}
 					else
@@ -133,6 +134,27 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 					}
 				}
 			}
+		}
+	}
+}
+
+void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurrentLoca)
+{
+	this->idCurrentLoca = idCurrentLoca;
+	this->currentLoca = nullptr;
+
+	for (int i = 0; i < userOpt->freqOption.frequencyBands.size(); i++)
+	{
+		frequency currentFrequencyBand = frequency(userOpt->freqOption.frequencyBands[i]);
+		LOCA::checkShannonCompliance(myeegContainer->sampInfo.samplingFrequency, currentFrequencyBand);
+		if (userOpt->anaOption[idCurrentLoca].anaOpt[i].eeg2env)
+		{
+			myeegContainer->ToHilbert(myeegContainer->elanFrequencyBand[i], currentFrequencyBand.freqBandValue);
+			emit incrementAdavnce(1);
+			emit sendLogInfo("Hilbert Envelloppe Calculated");
+
+			if (myeegContainer->triggEeg != nullptr)
+				createPosFile(myeegContainer);
 		}
 	}
 }
@@ -159,10 +181,14 @@ void InsermLibrary::LOCA::checkShannonCompliance(int p_samplingFrequency, freque
 void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreqfrequency, 
 													 string freqFolder, analysisOption a)
 {
+	bool env = false, bar = false, trial = false;
+
 	vector<PROV> provFiles = loadProvCurrentLoca();
 	for (int i = 0; i < provFiles.size(); i++)
 	{
-		createPosFile(myeegContainer, &provFiles[i]); 
+		if (provFiles[i].changeCodeFilePath != "")
+			renameTriggers(myeegContainer->triggEeg, myeegContainer->triggEegDownsampled, &provFiles[i]);
+		createPosFile(myeegContainer); 
 		createConfFile(myeegContainer);
 		processEventsDown(myeegContainer, &provFiles[i]);
 
@@ -174,14 +200,14 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 			if (shouldPerformBarPlot(currentLoca->localizerName()) || isBarPlot(provFiles[i].filePath()))
 			{
 				barplot(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
-				emit incrementAdavnce();
+				emit incrementAdavnce(provFiles.size());
 			}
 			else
 			{
 				if (provFiles[i].invertmapsinfo == "")
 				{
 					env2plot(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
-					emit incrementAdavnce();
+					emit incrementAdavnce(provFiles.size());
 				}
 			}
 		}
@@ -189,7 +215,7 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 		if (a.trialmat && (isBarPlot(provFiles[i].filePath()) == false || provFiles.size() == 1))
 		{
 			timeTrialmatrices(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
-			emit incrementAdavnce();
+			emit incrementAdavnce(provFiles.size());
 		}
 	}
 }
@@ -200,13 +226,8 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 /*	 - Conf File								  */
 /*	 - Rename Trigger : For visualisation purpose */
 /**************************************************/
-void InsermLibrary::LOCA::createPosFile(eegContainer *myeegContainer, PROV *myprovFile)
+void InsermLibrary::LOCA::createPosFile(eegContainer *myeegContainer)
 {
-	if (myprovFile->changeCodeFilePath != "")
-	{
-		renameTriggers(myeegContainer->triggEeg, myeegContainer->triggEegDownsampled, myprovFile);
-	}
-
 	ofstream posFile(myeegContainer->originalFilePath + ".pos", ios::out);
 	ofstream posFileX(myeegContainer->originalFilePath + "_ds" + to_string(myeegContainer->sampInfo.downsampFactor) + ".pos", ios::out);
 
