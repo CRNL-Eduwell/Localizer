@@ -198,9 +198,9 @@ vec1<float> InsermLibrary::Stats::getBaselineBlocWilcoxon(int currentChanel, int
 	{
 		float sum = 0.0;
 		int begBaseline = round((samplingFreq * (dispBloc.baseLineMin() -
-												 dispBloc.windowMax())) / 1000);
+								 dispBloc.windowMin())) / 1000);
 		int endBaseline = round((samplingFreq * (dispBloc.baseLineMax() -
-												 dispBloc.windowMin())) / 1000);
+								 dispBloc.windowMin())) / 1000);
 
 		for (int l = 0; l < (endBaseline - begBaseline); l++)
 		{
