@@ -418,6 +418,7 @@ void Localizer::processSingleAnalysis()
 		{
 			reInitStructFiles();
 			getUIAnalysisOption(currentFiles);
+			reInitProgressBar(&userOpt);
 
 			thread = new QThread;
 			worker = new Worker(currentFiles, &userOpt, -1);
@@ -617,9 +618,16 @@ void Localizer::reInitProgressBar(userOption *optionUser)
 		{
 			for (int j = 0; j < optionUser->anaOption[i].anaOpt.size(); j++)
 			{
-				nbTaskToDo++; //eeg2env, wheter we need to compute or load
-				if (optionUser->anaOption[i].anaOpt[j].env2plot) { nbTaskToDo++; }
-				if (optionUser->anaOption[i].anaOpt[j].trialmat) { nbTaskToDo++; }
+				bool processFreq = optionUser->anaOption[i].anaOpt[j].eeg2env;
+				bool processEnv = optionUser->anaOption[i].anaOpt[j].env2plot;
+				bool processMap = optionUser->anaOption[i].anaOpt[j].trialmat;
+
+				if (processFreq || processEnv || processMap)
+				{
+					nbTaskToDo++; //eeg2env, wheter we need to compute or load
+					if (processEnv) { nbTaskToDo++; }
+					if (processMap) { nbTaskToDo++; }
+				}
 			}
 		}
 	}

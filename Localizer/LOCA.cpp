@@ -109,16 +109,16 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 		}
 		else 
 		{
-			if (i < currentLoca->frequencyFolders().size())
+			for (int j = 0; j < currentLoca->frequencyFolders().size(); j++)
 			{
 				int sizeFreq = currentFrequencyBand.freqBandValue.size() - 1;
 				string fMin = to_string(currentFrequencyBand.freqBandValue[0]);
 				string fMax = to_string(currentFrequencyBand.freqBandValue[sizeFreq]);
 
-				if ((currentLoca->frequencyFolders()[i].frequencyName() == "f" + fMin + "f" + fMax) &&
-					(currentLoca->frequencyFolders()[i].filePath(SM0_ELAN) != ""))
+				if ((currentLoca->frequencyFolders()[j].frequencyName() == "f" + fMin + "f" + fMax) &&
+					(currentLoca->frequencyFolders()[j].filePath(SM0_ELAN) != ""))
 				{
-					int loadFile = ef_read_elan_file((char*)currentLoca->frequencyFolders()[i].filePath(SM0_ELAN).c_str(), myeegContainer->elanFrequencyBand[i]);
+					int loadFile = ef_read_elan_file((char*)currentLoca->frequencyFolders()[j].filePath(SM0_ELAN).c_str(), myeegContainer->elanFrequencyBand[i]);
 					if (loadFile == 0)
 					{
 						emit incrementAdavnce();
@@ -132,14 +132,6 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 						emit sendLogInfo("Problem loading file, end of analyse for this frequency");
 					}
 				}
-				else
-				{
-					emit sendLogInfo("No Envellope File found, end of analyse for this frequency");
-				}
-			}
-			else
-			{
-				emit sendLogInfo("No Folder for this frequency, end of analyse for this frequency");
 			}
 		}
 	}
