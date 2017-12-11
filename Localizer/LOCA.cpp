@@ -102,6 +102,7 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 		{
 			string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
 			myeegContainer->ToHilbert(myeegContainer->elanFrequencyBand[i], currentFrequencyBand.freqBandValue);
+			emit incrementAdavnce();
 
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 			toBeNamedCorrectlyFunction(myeegContainer, i, freqFolder, userOpt->anaOption[idCurrentLoca].anaOpt[i]);
@@ -120,6 +121,7 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 					int loadFile = ef_read_elan_file((char*)currentLoca->frequencyFolders()[i].filePath(SM0_ELAN).c_str(), myeegContainer->elanFrequencyBand[i]);
 					if (loadFile == 0)
 					{
+						emit incrementAdavnce();
 						ELANFunctions::convertELANAnalogDataToDigital(myeegContainer->elanFrequencyBand[i]);
 						string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
 						emit sendLogInfo("Envelloppe File Loaded");
@@ -180,17 +182,22 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 			if (shouldPerformBarPlot(currentLoca->localizerName()) || isBarPlot(provFiles[i].filePath()))
 			{
 				barplot(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
+				emit incrementAdavnce();
 			}
 			else
 			{
 				if (provFiles[i].invertmapsinfo == "")
+				{
 					env2plot(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
+					emit incrementAdavnce();
+				}
 			}
 		}
 
 		if (a.trialmat && (isBarPlot(provFiles[i].filePath()) == false || provFiles.size() == 1))
 		{
 			timeTrialmatrices(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
+			emit incrementAdavnce();
 		}
 	}
 }

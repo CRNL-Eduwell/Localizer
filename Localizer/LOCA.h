@@ -70,6 +70,8 @@ namespace InsermLibrary
 
 	signals:
 		void sendLogInfo(QString);
+		void incrementAdavnce();
+
 	private:
 		TRIGGINFO *triggCatEla = nullptr, *triggCatEla2 = nullptr;
 		locaFolder *currentLoca = nullptr;

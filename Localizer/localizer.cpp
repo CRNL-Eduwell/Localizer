@@ -23,6 +23,7 @@ void Localizer::reSetupGUI()
 	picOpt = new picOptions();
 	optLoca = new form();
 	getUIelement();
+	ui.progressBar->reset();
 }
 
 void Localizer::getUIelement()
@@ -367,8 +368,10 @@ void Localizer::processFolderAnalysis()
 	{
 		if (!isAlreadyRunning)
 		{
+			ui.progressBar->reset();
 			reInitStructFolder();
 			getUIAnalysisOption(currentPat);
+			reInitProgressBar(&userOpt);
 
 			thread = new QThread;
 			worker = new Worker(currentPat, &userOpt);
@@ -376,6 +379,7 @@ void Localizer::processFolderAnalysis()
 			//=== Event update displayer
 			connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
 			connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
+			connect(worker->getLoca(), SIGNAL(incrementAdavnce()), this, SLOT(updateProgressBar()));
 
 			//=== 
 			connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
@@ -559,6 +563,12 @@ void Localizer::displayLog(QString messageToDisplay)
 	ui.messageDisplayer->append(messageToDisplay);
 }
 
+void Localizer::updateProgressBar()
+{
+	nbDoneTask++;
+	ui.progressBar->setValue(((float)nbDoneTask / nbTaskToDo) * 100);
+}
+
 void Localizer::cancelAnalysis()
 {
 	if (isAlreadyRunning)
@@ -596,6 +606,29 @@ void Localizer::reInitStructFiles()
 		saveFiles.clear();
 		saveFiles = vector<singleFile>(currentFiles);
 	}
+}
+
+void Localizer::reInitProgressBar(userOption *optionUser)
+{
+	nbTaskToDo = -1;
+	for (int i = 0; i < optionUser->anaOption.size(); i++)
+	{
+		if (optionUser->anaOption[i].localizer)
+		{
+			for (int j = 0; j < optionUser->anaOption[i].anaOpt.size(); j++)
+			{
+				nbTaskToDo++; //eeg2env, wheter we need to compute or load
+				if (optionUser->anaOption[i].anaOpt[j].env2plot) { nbTaskToDo++; }
+				if (optionUser->anaOption[i].anaOpt[j].trialmat) { nbTaskToDo++; }
+			}
+		}
+	}
+	//cout << "[==============]" << endl;
+	//cout << "Number of Loca : " << nbLoca << endl;
+	//cout << "Number of tasks : " << nbTaskToDo << endl;
+
+	ui.progressBar->reset();
+	nbDoneTask = 0;
 }
 
 void Localizer::getUIAnalysisOption(patientFolder *pat)

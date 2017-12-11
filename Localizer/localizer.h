@@ -51,6 +51,7 @@ private:
 	void updateQFrame(string fileLooked, QFrame *frameFile);
 	void reInitStructFolder();
 	void reInitStructFiles();
+	void reInitProgressBar(userOption *optionUser);
 	void getUIAnalysisOption(patientFolder *pat);
 	void getUIAnalysisOption(vec1<singleFile> &files);
 	void getAnalysisCheckBox(vector<locaAnalysisOption> &anaOption);
@@ -68,6 +69,7 @@ private slots:
 	void processERPAnalysis();
 	void processConvertToElan();
 	void displayLog(QString info);
+	void updateProgressBar();
 	void cancelAnalysis();
 	void receiveContainerPointer(eegContainer *eegCont);
 	void UpdateFolderPostAna();
@@ -89,6 +91,8 @@ private:
 	Worker* worker = nullptr;
 	bool isAlreadyRunning = false;
 	//==UI
+	int nbDoneTask = 0;
+	int nbTaskToDo = 0;
 	picOptions *picOpt = nullptr;
 	optionsStats *optStat = nullptr;
 	optionsPerf *optPerf = nullptr;
