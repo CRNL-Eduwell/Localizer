@@ -30,6 +30,7 @@ public:
 	Worker(patientFolder *currentPatient, userOption *userOpt);
 	Worker(locaFolder *loca, userOption *userOpt);
 	Worker(vector<singleFile> currentFiles, userOption *userOpt, int idFile = -1);
+	Worker(std::string myFirstTRC, std::string mySecondTRC, std::string myOutputTRC);
 	~Worker();
 	LOCA* getLoca();
 private:
@@ -51,6 +52,7 @@ public slots:
 	void processAnalysis();
 	void processERP();
 	void processToELAN();
+	void processConcatenation();
 
 signals:
 	void sendLogInfo(QString);
@@ -66,6 +68,7 @@ private:
 	patientFolder *patient = nullptr;
 	locaFolder *locaFold = nullptr;
 	vector<singleFile> files;
+	vector<std::string> trcFiles;
 	int idFile = -1;
 	userOption *optionUser = nullptr;
 };

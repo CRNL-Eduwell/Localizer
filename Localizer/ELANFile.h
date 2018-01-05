@@ -37,14 +37,14 @@ namespace InsermLibrary
 
 	struct noteElanFile
 	{
-		noteElanFile(int sample, char note[40])
+		noteElanFile(int sample, std::string note)
 		{
 			this->sample = sample;
-			strcpy_s(this->note, note);
+			this->note = note;
 		}
 
 		int sample = -1;
-		char note[40];
+		std::string note;
 	};
 
 	class ELANFile

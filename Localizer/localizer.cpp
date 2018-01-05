@@ -78,7 +78,7 @@ void Localizer::connectMenuBar()
 	QAction* openTRCSecator = ui.menuOutils->actions().at(0);
 	connect(openTRCSecator, &QAction::triggered, this, [&] { QMessageBox::information(this, "Secator", "Something"); });
 	QAction* openConcatenator = ui.menuOutils->actions().at(1);
-	connect(openConcatenator, &QAction::triggered, this, [&] { QMessageBox::information(this, "Concatenator", "Something"); });
+	connect(openConcatenator, &QAction::triggered, this, &Localizer::loadConcat);
 	//===Configuration
 	QAction* openPerfMenu = ui.menuConfiguration->actions().at(0);
 	connect(openPerfMenu, &QAction::triggered, this, [&] { optPerf->exec(); });
@@ -744,4 +744,21 @@ void Localizer::UpdateSinglePostAna()
 
 	for(int i = 0; i < saveFiles.size(); i++)
 		updateGUIFrame(saveFiles[i]);
+}
+
+void Localizer::loadConcat()
+{
+	QModelIndexList list = ui.TRCListWidget->selectionModel()->selectedIndexes();
+	if (list.count() > 1 || list.count() == 0)
+	{
+		QMessageBox::information(this, "Error", "You Need To Select One Folder");
+	}
+	else
+	{
+		concatFiles = new concatenator(currentPat->localizerFolder()[list[0].row()].rootLocaFolder());
+		connect(concatFiles, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
+		concatFiles->exec();
+		deleteAndNullify1D(concatFiles);
+		UpdateFolderPostAna();
+	}
 }

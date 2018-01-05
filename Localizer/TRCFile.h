@@ -19,12 +19,15 @@ namespace MicromedLibrary
 
 	public:
 		//Constructor
+		TRCFile();
 		TRCFile(string pathTRCFile);
 		~TRCFile();
 
 		// getters
 		string filePath();
 		headerType4 & header();									//return ref
+		unsigned long DataSize();
+		void setDataSize(unsigned long size);
 		vector<electrode> & electrodes();						//return ref
 		vector<operatorNote> & notes();							//return ref
 		vector<digitalTriggers> & triggers();					//return ref
@@ -59,7 +62,7 @@ namespace MicromedLibrary
 		void getMontages(ifstream &fileStream, descriptorArea *descriptorMontages, vector<montagesOfTrace> &montageList);
 		void getCompressionInfo(ifstream &fileStream, descriptorArea *descriptorCompression, compressionDescription &compression);
 		void getAverageInfo(ifstream &fileStream, descriptorArea *descriptorAverage, offlineAverageProcess &averageParameters);
-		void getHistoryInfo(ifstream &fileStream, descriptorArea *descriptorHistory, unsigned long int *historySam, vector<montagesOfTrace> &montagesHistoryList);
+		void getHistoryInfo(ifstream &fileStream, descriptorArea *descriptorHistory, vector<unsigned long int> & historySam, vector<montagesOfTrace> &montagesHistoryList);
 		void getDVideoInfo(ifstream &fileStream, descriptorArea *descriptorDvideo, vector<dVideoFiles> &dvidTRC);
 		void getEventA(ifstream &fileStream, descriptorArea *descriptorEventA, eventsMarker &eventA);
 		void getEventB(ifstream &fileStream, descriptorArea *descriptorEventB, eventsMarker &eventB);
@@ -78,7 +81,7 @@ namespace MicromedLibrary
 		vector<montagesOfTrace> montagesList;
 		compressionDescription compression;
 		offlineAverageProcess averageParameters;
-		unsigned long int historySample[MAX_SAMPLE];
+		std::vector<unsigned long int> historySample; // [MAX_SAMPLE];
 		vector<montagesOfTrace> montagesHistoryList;
 		vector<dVideoFiles> digitalVideos;
 		eventsMarker eventA;

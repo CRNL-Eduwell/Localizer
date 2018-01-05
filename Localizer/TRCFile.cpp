@@ -1,6 +1,11 @@
 #include "TRCFile.h"
 
 //===
+MicromedLibrary::TRCFile::TRCFile()
+{
+
+}
+
 MicromedLibrary::TRCFile::TRCFile(string pathTRCFile)
 {
 	myFilePath = pathTRCFile;
@@ -68,6 +73,16 @@ string MicromedLibrary::TRCFile::filePath()
 MicromedLibrary::headerType4 & MicromedLibrary::TRCFile::header()
 {
 	return header4;
+}
+
+unsigned long MicromedLibrary::TRCFile::DataSize()
+{
+	return dataSize;
+}
+
+void MicromedLibrary::TRCFile::setDataSize(unsigned long size)
+{
+	dataSize = size;
 }
 
 vector<MicromedLibrary::electrode> & MicromedLibrary::TRCFile::electrodes()
@@ -199,7 +214,7 @@ void MicromedLibrary::TRCFile::getOrderStorageElec(ifstream &fileStream, descrip
 	unsigned short int currentOrderStorageValue = 0;
 	for (int i = 0; i < int(descriptorCode->length / 2); i++)
 	{
-		currentOrderStorageValue = (unsigned short int)binaryBytesExtraction(descriptorCode->length + (2 * i), 2, fileStream);
+		currentOrderStorageValue = (unsigned short int)binaryBytesExtraction(descriptorCode->startOffset + (2 * i), 2, fileStream);
 		if (currentOrderStorageValue != 0)
 		{
 			orderStorageElec.push_back(currentOrderStorageValue);
@@ -209,10 +224,9 @@ void MicromedLibrary::TRCFile::getOrderStorageElec(ifstream &fileStream, descrip
 
 void MicromedLibrary::TRCFile::getUsedElectrodes(ifstream &fileStream, descriptorArea *descriptorElec, vector<electrode> &electrodesList)
 {
-	electrode currentElectrode;
-
 	for (int i = 0; i < int(descriptorElec->length / 128); i++)
 	{
+		electrode currentElectrode;
 		currentElectrode.status = binaryCharExtraction(descriptorElec->startOffset + (i * 128), fileStream);
 		if (currentElectrode.status == 1)
 		{
@@ -233,7 +247,21 @@ void MicromedLibrary::TRCFile::getUsedElectrodes(ifstream &fileStream, descripto
 			currentElectrode.prefilteringLowPassType = (unsigned short)binaryBytesExtraction(descriptorElec->startOffset + 42 + (i * 128), 2, fileStream);
 			currentElectrode.rateCoefficient = (unsigned short)binaryBytesExtraction(descriptorElec->startOffset + 44 + (i * 128), 2, fileStream);
 			currentElectrode.position = (unsigned short)binaryBytesExtraction(descriptorElec->startOffset + 46 + (i * 128), 2, fileStream);
+			fileStream.seekg(descriptorElec->startOffset + 48 + (i * 128));
+			fileStream.read((char *)&currentElectrode.lattitude, sizeof(float));
+			fileStream.seekg(descriptorElec->startOffset + 52 + (i * 128));
+			fileStream.read((char *)&currentElectrode.longitude, sizeof(float));
+			currentElectrode.presentInMap = binaryCharExtraction(descriptorElec->startOffset + 56 + (i * 128), fileStream);
+			currentElectrode.isInAvg = binaryCharExtraction(descriptorElec->startOffset + 57 + (i * 128), fileStream);
 			currentElectrode.description = binaryStringExtraction(descriptorElec->startOffset + 58 + (i * 128), 32, fileStream);
+			fileStream.seekg(descriptorElec->startOffset + 90 + (i * 128));
+			fileStream.read((char *)&currentElectrode.coordinate3DX, sizeof(float));
+			fileStream.seekg(descriptorElec->startOffset + 94 + (i * 128));
+			fileStream.read((char *)&currentElectrode.coordinate3DY, sizeof(float));
+			fileStream.seekg(descriptorElec->startOffset + 98 + (i * 128));
+			fileStream.read((char *)&currentElectrode.coordinate3DZ, sizeof(float));
+			currentElectrode.corrdinateType = (unsigned short)binaryBytesExtraction(descriptorElec->startOffset + 102 + (i * 128), 2, fileStream);
+			currentElectrode.freeFurtherUse = binaryStringExtraction(descriptorElec->startOffset + 104 + (i * 128), 24, fileStream);
 			electrodesList.push_back(currentElectrode);
 		}
 	}
@@ -261,7 +289,7 @@ void MicromedLibrary::TRCFile::getNotes(ifstream &fileStream, descriptorArea *de
 		currentNote.sample = binaryBytesExtraction(descriptorNote->startOffset + (i * 44), 4, fileStream);
 		if (currentNote.sample != 0)
 		{
-			strcpy_s(currentNote.comment, 40, binaryStringExtraction(descriptorNote->startOffset + (i * 44), 40, fileStream).c_str());
+			currentNote.comment = binaryStringExtraction(descriptorNote->startOffset + 4 + (i * 44), 40, fileStream);
 			notesList.push_back(currentNote);
 		}
 	}
@@ -360,14 +388,8 @@ void MicromedLibrary::TRCFile::getBeginImpedance(ifstream &fileStream, descripto
 	{
 		impedance.positive = binaryCharExtraction(descriptorBeginImp->startOffset + (2 * i), fileStream);
 		impedance.negative = binaryCharExtraction(descriptorBeginImp->startOffset + 1 + (2 * i), fileStream);
-		if (impedance.positive == 255)
-		{
-			break;
-		}
-		else
-		{
+		if (impedance.positive != 255)
 			startingImpedance.push_back(impedance);
-		}
 	}
 }
 
@@ -378,14 +400,8 @@ void MicromedLibrary::TRCFile::getEndImpedance(ifstream &fileStream, descriptorA
 	{
 		impedance.positive = binaryCharExtraction(descriptorEndImp->startOffset + (2 * i), fileStream);
 		impedance.negative = binaryCharExtraction(descriptorEndImp->startOffset + 1 + (2 * i), fileStream);
-		if (impedance.positive == 255)
-		{
-			break;
-		}
-		else
-		{
+		if (impedance.positive != 255)
 			endingImpedance.push_back(impedance);
-		}
 	}
 }
 
@@ -399,36 +415,26 @@ void MicromedLibrary::TRCFile::getMontages(ifstream &fileStream, descriptorArea 
 		montage.sectors = (unsigned short)binaryBytesExtraction(descriptorMontages->startOffset + 2 + (i * 4096), 2, fileStream);
 		montage.baseTime = (unsigned short)binaryBytesExtraction(descriptorMontages->startOffset + 4 + (i * 4096), 2, fileStream);
 		montage.notch = (unsigned short)binaryBytesExtraction(descriptorMontages->startOffset + 6 + (i * 4096), 2, fileStream);
-		for (int j = 0; j < MAX_CAN_VIEW; j++)
-		{
-			montage.colour[i] = binaryCharExtraction(descriptorMontages->startOffset + 8 + j + (i * 4096), fileStream);
-		}
-		for (int j = 0; j < MAX_CAN_VIEW; j++)
-		{
-			montage.selection[i] = binaryCharExtraction(descriptorMontages->startOffset + 136 + j + (i * 4096), fileStream);
-		}
-		strcpy_s(montage.description, 64, binaryStringExtraction(descriptorMontages->startOffset + 264 + (i * 4096), 64, fileStream).c_str());
+
+		fileStream.seekg(descriptorMontages->startOffset + 8 + (i * 4096));
+		fileStream.read((char *)&montage.colour, sizeof(unsigned char[128]));
+		fileStream.seekg(descriptorMontages->startOffset + 136 + (i * 4096));
+		fileStream.read((char *)&montage.selection, sizeof(unsigned char[128]));
+		fileStream.read((char *)&montage.description, sizeof(char[64]));
 		for (int j = 0; j < MAX_CAN_VIEW; j++)
 		{
 			montage.inputs[j].nonInverting = (unsigned short)binaryBytesExtraction(descriptorMontages->startOffset + 328 + (4 * j) + (i * 4096), 2, fileStream);
 			montage.inputs[j].inverting = (unsigned short)binaryBytesExtraction(descriptorMontages->startOffset + 330 + (4 * j) + (i * 4096), 2, fileStream);
 		}
-		for (int j = 0; j < MAX_CAN_VIEW; j++)
-		{
-			montage.highPassFilter[j] = binaryBytesExtraction(descriptorMontages->startOffset + 840 + (4 * j) + (i * 4096), 4, fileStream);
-		}
-		for (int j = 0; j < MAX_CAN_VIEW; j++)
-		{
-			montage.lowPassFilter[j] = binaryBytesExtraction(descriptorMontages->startOffset + 1352 + (4 * j) + (i * 4096), 4, fileStream);
-		}
-		for (int j = 0; j < MAX_CAN_VIEW; j++)
-		{
-			montage.reference[j] = binaryBytesExtraction(descriptorMontages->startOffset + 1864 + (4 * j) + (i * 4096), 4, fileStream);
-		}
+		fileStream.seekg(descriptorMontages->startOffset + 840 + (i * 4096));
+		fileStream.read((char *)&montage.highPassFilter, sizeof(unsigned long[128]));
+		fileStream.seekg(descriptorMontages->startOffset + 1352 + (i * 4096));
+		fileStream.read((char *)&montage.lowPassFilter, sizeof(unsigned long[128]));
+		fileStream.seekg(descriptorMontages->startOffset + 1864 + (i * 4096));
+		fileStream.read((char *)&montage.reference, sizeof(unsigned long[128]));
+
 		for (int j = 0; j < 1720; j++)
-		{
-			montage.selection[j] = binaryCharExtraction(descriptorMontages->startOffset + 2376 + j + (i * 4096), fileStream);
-		}
+			montage.free[j] = binaryCharExtraction(descriptorMontages->startOffset + 2376 + j + (i * 4096), fileStream);
 
 		montageList.push_back(montage);
 	}
@@ -436,7 +442,8 @@ void MicromedLibrary::TRCFile::getMontages(ifstream &fileStream, descriptorArea 
 
 void MicromedLibrary::TRCFile::getCompressionInfo(ifstream &fileStream, descriptorArea *descriptorCompression, compressionDescription &compression)
 {
-	strcpy_s(compression.compressionStuff, 10, binaryStringExtraction(descriptorCompression->startOffset, 10, fileStream).c_str());
+	fileStream.seekg(descriptorCompression->startOffset);
+	fileStream.read((char *)&compression.compressionStuff, sizeof(char[10]));
 }
 
 void MicromedLibrary::TRCFile::getAverageInfo(ifstream &fileStream, descriptorArea *descriptorAverage, offlineAverageProcess &averageParameters)
@@ -446,58 +453,48 @@ void MicromedLibrary::TRCFile::getAverageInfo(ifstream &fileStream, descriptorAr
 	averageParameters.meanPrestim = binaryBytesExtraction(descriptorAverage->startOffset + 8, 4, fileStream);
 	averageParameters.meanPoststim = binaryBytesExtraction(descriptorAverage->startOffset + 12, 4, fileStream);
 	averageParameters.meanType = binaryBytesExtraction(descriptorAverage->startOffset + 16, 4, fileStream);
-	for (int i = 0; i < MAX_CAN_VIEW; i++)
-	{
-		averageParameters.freeFurtherUse[i] = binaryCharExtraction(descriptorAverage->startOffset + 20 + i, fileStream);
-	}
+	fileStream.seekg(descriptorAverage->startOffset + 20);
+	fileStream.read((char *)&averageParameters.freeFurtherUse, sizeof(unsigned char[108]));
 }
 
-void MicromedLibrary::TRCFile::getHistoryInfo(ifstream &fileStream, descriptorArea *descriptorHistory, unsigned long int *historySam, vector<montagesOfTrace> &montagesHistoryList)
+void MicromedLibrary::TRCFile::getHistoryInfo(ifstream &fileStream, descriptorArea *descriptorHistory, vector<unsigned long int> & historySam, vector<montagesOfTrace> &montagesHistoryList)
 {
 	for (int i = 0; i < MAX_SAMPLE; i++)
 	{
-		historySam[i] = binaryBytesExtraction(descriptorHistory->startOffset + (4 * i), 4, fileStream);
+		unsigned long int value = binaryBytesExtraction(descriptorHistory->startOffset + (4 * i), 4, fileStream);
+		if (value < 4294967295)
+			historySam.push_back(value);
 	}
 
-	montagesOfTrace montageHist;
 	int beginValue = descriptorHistory->startOffset + (4 * MAX_SAMPLE);
 
 	for (int i = 0; i < MAX_HISTORY; i++)
 	{
+		montagesOfTrace montageHist;
+
 		montageHist.lines = (unsigned short)binaryBytesExtraction(beginValue + (i * 4096), 2, fileStream);
 		montageHist.sectors = (unsigned short)binaryBytesExtraction(beginValue + 2 + (i * 4096), 2, fileStream);
 		montageHist.baseTime = (unsigned short)binaryBytesExtraction(beginValue + 4 + (i * 4096), 2, fileStream);
 		montageHist.notch = (unsigned short)binaryBytesExtraction(beginValue + 6 + (i * 4096), 2, fileStream);
-		for (int j = 0; j < MAX_CAN_VIEW; j++)
-		{
-			montageHist.colour[i] = binaryCharExtraction(beginValue + 8 + j + (i * 4096), fileStream);
-		}
-		for (int j = 0; j < MAX_CAN_VIEW; j++)
-		{
-			montageHist.selection[i] = binaryCharExtraction(beginValue + 136 + j + (i * 4096), fileStream);
-		}
-		strcpy_s(montageHist.description, 64, binaryStringExtraction(beginValue + 264 + (i * 4096), 64, fileStream).c_str());
+
+		fileStream.seekg(beginValue + 8 + (i * 4096));
+		fileStream.read((char *)&montageHist.colour, sizeof(unsigned char[128]));
+		fileStream.seekg(beginValue + 136 + (i * 4096));
+		fileStream.read((char *)&montageHist.selection, sizeof(unsigned char[128]));
+		fileStream.read((char *)&montageHist.description, sizeof(char[64]));
 		for (int j = 0; j < MAX_CAN_VIEW; j++)
 		{
 			montageHist.inputs[j].nonInverting = (unsigned short)binaryBytesExtraction(beginValue + 328 + (4 * j) + (i * 4096), 2, fileStream);
 			montageHist.inputs[j].inverting = (unsigned short)binaryBytesExtraction(beginValue + 330 + (4 * j) + (i * 4096), 2, fileStream);
 		}
-		for (int j = 0; j < MAX_CAN_VIEW; j++)
-		{
-			montageHist.highPassFilter[j] = binaryBytesExtraction(beginValue + 840 + (4 * j) + (i * 4096), 4, fileStream);
-		}
-		for (int j = 0; j < MAX_CAN_VIEW; j++)
-		{
-			montageHist.lowPassFilter[j] = binaryBytesExtraction(beginValue + 1352 + (4 * j) + (i * 4096), 4, fileStream);
-		}
-		for (int j = 0; j < MAX_CAN_VIEW; j++)
-		{
-			montageHist.reference[j] = binaryBytesExtraction(beginValue + 1864 + (4 * j) + (i * 4096), 4, fileStream);
-		}
-		for (int j = 0; j < 1720; j++)
-		{
-			montageHist.selection[j] = binaryCharExtraction(beginValue + 2376 + j + (i * 4096), fileStream);
-		}
+		fileStream.seekg(beginValue + 840 + (i * 4096));
+		fileStream.read((char *)&montageHist.highPassFilter, sizeof(unsigned long[128]));
+		fileStream.seekg(beginValue + 1352 + (i * 4096));
+		fileStream.read((char *)&montageHist.lowPassFilter, sizeof(unsigned long[128]));
+		fileStream.seekg(beginValue + 1864 + (i * 4096));
+		fileStream.read((char *)&montageHist.reference, sizeof(unsigned long[128]));
+		fileStream.seekg(beginValue + 2376 + (i * 4096));
+		fileStream.read((char *)&montageHist.free, sizeof(unsigned char[1720]));
 
 		montagesHistoryList.push_back(montageHist);
 	}
@@ -517,7 +514,8 @@ void MicromedLibrary::TRCFile::getEventA(ifstream &fileStream, descriptorArea *d
 {
 	MarkerPair markSelec;
 
-	eventA.description = binaryStringExtraction(descriptorEventA->startOffset, 64, fileStream);
+	fileStream.seekg(descriptorEventA->startOffset);
+	fileStream.read((char *)&eventA.description, sizeof(char[64]));
 	for (int i = 0; i < MAX_EVENT; i++)
 	{
 		markSelec.begin = binaryBytesExtraction(descriptorEventA->startOffset + 64 + (i * 8), 4, fileStream);
@@ -530,7 +528,7 @@ void MicromedLibrary::TRCFile::getEventB(ifstream &fileStream, descriptorArea *d
 {
 	MarkerPair markSelec;
 
-	eventB.description = binaryStringExtraction(descriptorEventB->startOffset, 64, fileStream);
+	strcpy_s(eventB.description, 64, binaryStringExtraction(descriptorEventB->startOffset, 64, fileStream).c_str());
 	for (int i = 0; i < MAX_EVENT; i++)
 	{
 		markSelec.begin = binaryBytesExtraction(descriptorEventB->startOffset + 64 + (i * 8), 4, fileStream);

@@ -20,11 +20,11 @@
 #include "freqwidget.h"
 #include "chooseElec.h"
 #include "picOptions.h"
+#include "form.h"
+#include "concatenator.h"
 #include "Worker.h"
 #include "LOCA.h"
 #include "ui_localizer.h"
-
-#include "form.h"
 
 using namespace std;
 
@@ -75,6 +75,8 @@ private slots:
 	void UpdateFolderPostAna();
 	void UpdateSinglePostAna();
 
+	void loadConcat();
+
 signals:
 	void bipDone(int);
 
@@ -97,6 +99,7 @@ private:
 	optionsStats *optStat = nullptr;
 	optionsPerf *optPerf = nullptr;
 	form *optLoca = nullptr;
+	concatenator *concatFiles = nullptr;
 	uiUserElement* uiElement = nullptr;
 	Ui::LocalizerClass ui;
 };

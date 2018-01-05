@@ -36,7 +36,7 @@ namespace MicromedLibrary
 
 	struct eventsMarker
 	{													//Offset
-		std::string description;						//0
+		char description[64];							//0
 		vector<MarkerPair> selection;					//64
 	};
 
@@ -101,13 +101,13 @@ namespace MicromedLibrary
 	};
 
 	struct operatorNote
-	{													//Offset
+	{													//Offset -- Size
 		unsigned long int sample;						//0
-		char comment[40];								//4
+		string comment;									//4      -- 40
 	};
 
 	struct electrode
-	{													//Offset
+	{													//Offset -- Size
 		unsigned char status;							//0
 		unsigned char type;								//1
 		string positiveInputLabel;						//2
@@ -125,8 +125,8 @@ namespace MicromedLibrary
 		unsigned short int rateCoefficient;				//44
 		unsigned short int position;					//46
 		unsigned short int idExtractFile;
-		double lattitude;								//48
-		double longitude;								//52
+		float lattitude;								//48
+		float longitude;								//52
 		unsigned char presentInMap;						//56
 		unsigned char isInAvg;							//57
 		string description;								//58
@@ -134,7 +134,7 @@ namespace MicromedLibrary
 		float coordinate3DY;							//94
 		float coordinate3DZ;							//98
 		unsigned short int corrdinateType;				//102
-		unsigned char freeFurtherUse[24];				//104
+		string freeFurtherUse;							//104    -- 24
 	};
 
 	struct descriptorArea
@@ -169,7 +169,7 @@ namespace MicromedLibrary
 	};
 
 	struct headerType4
-	{													//Offset in File -- Size
+	{													//Offset in File -- Size -- Default Values
 		string title;									//		0		 -- 32
 		string laboratory;							    //		32		 -- 32
 		patientData patient;							//		64		 -- 64
@@ -178,7 +178,7 @@ namespace MicromedLibrary
 		recordingTime endTime;
 		unsigned short int acquisitionUnit;				//		134		 -- 2
 		unsigned short int fileType;					//		136		 -- 2
-		unsigned long int adressFirstData;				//		138		 -- 4
+		unsigned long int adressFirstData;				//		138		 -- 4    -- 648170
 		unsigned short int numberStoredChannels;		//		142		 -- 2
 		unsigned short int multiplexer;					//		144		 -- 2
 		unsigned short int samplingRate;				//		146		 -- 2
@@ -189,21 +189,21 @@ namespace MicromedLibrary
 		unsigned short int mpegDelay;					//		158		 -- 2
 		unsigned char reservedFurtherDEV[15];			//		160		 -- 15
 		unsigned char headerType;						//		175		 -- 1
-		descriptorArea descriptorCode;					//		176		 -- 16
-		descriptorArea descriptorElectrode;				//		192		 -- 16
-		descriptorArea descriptorNote;					//		208		 -- 16
-		descriptorArea descriptorFlag;					//		224		 -- 16
-		descriptorArea descriptorReduction;				//		240		 -- 16
-		descriptorArea descriptorBeginImpedance;		//		256		 -- 16
-		descriptorArea descriptorEndImpedance;			//		272		 -- 16
-		descriptorArea descriptorMontages;				//		288		 -- 16
-		descriptorArea descriptorCompression;			//		304		 -- 16
-		descriptorArea descriptorAverage;				//		320		 -- 16
-		descriptorArea descriptorHistory;				//		336		 -- 16
-		descriptorArea descriptorDVideo;				//		352		 -- 16
-		descriptorArea descriptorEventA;				//		368		 -- 16
-		descriptorArea descriptorEventB;				//		384		 -- 16
-		descriptorArea descriptorTrigger;				//		400		 -- 16
+		descriptorArea descriptorCode;					//		176		 -- 16   -- Name : "ORDER   " | StartOffset = 640    | length 512
+		descriptorArea descriptorElectrode;				//		192		 -- 16   -- Name : "LABCOD  " | StartOffset = 1152   | length 81920
+		descriptorArea descriptorNote;					//		208		 -- 16   -- Name : "NOTE    " | StartOffset = 83072  | length 44000
+		descriptorArea descriptorFlag;					//		224		 -- 16   -- Name : "FLAGS   " | StartOffset = 127072 | length 800
+		descriptorArea descriptorReduction;				//		240		 -- 16   -- Name : "TRONCA  " | StartOffset = 127872 | length 800
+		descriptorArea descriptorBeginImpedance;		//		256		 -- 16   -- Name : "IMPED_B " | StartOffset = 128672 | length 512
+		descriptorArea descriptorEndImpedance;			//		272		 -- 16   -- Name : "IMPED_E " | StartOffset = 129184 | length 512
+		descriptorArea descriptorMontages;				//		288		 -- 16   -- Name : "MONTAGE " | StartOffset = 129696 | length 122880
+		descriptorArea descriptorCompression;			//		304		 -- 16   -- Name : "COMPRESS" | StartOffset = 252576 | length 10
+		descriptorArea descriptorAverage;				//		320		 -- 16   -- Name : "AVERAGE " | StartOffset = 252586 | length 128
+		descriptorArea descriptorHistory;				//		336		 -- 16   -- Name : "HISTORY " | StartOffset = 252714 | length 123392
+		descriptorArea descriptorDVideo;				//		352		 -- 16   -- Name : "DVIDEO  " | StartOffset = 376106 | length 16384
+		descriptorArea descriptorEventA;				//		368		 -- 16   -- Name : "EVENT A " | StartOffset = 392490 | length 864
+		descriptorArea descriptorEventB;				//		384		 -- 16   -- Name : "EVENT B " | StartOffset = 393354 | length 864
+		descriptorArea descriptorTrigger;				//		400		 -- 16   -- Name : "TRIGGER " | StartOffset = 394218 | length 49152
 		unsigned char reservedFurtherDEV2[224];			//		416		 -- 16
 	};
 }

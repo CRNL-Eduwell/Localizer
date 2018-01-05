@@ -22,6 +22,16 @@ Worker::Worker(vector<singleFile> currentFiles, userOption *userOpt, int idFile)
 	loca = new LOCA(optionUser);
 }
 
+Worker::Worker(string myFirstTRC, string mySecondTRC, string myOutputTRC)
+{
+	if (trcFiles.size() > 0)
+		trcFiles.clear();
+
+	trcFiles.push_back(myFirstTRC);
+	trcFiles.push_back(mySecondTRC);
+	trcFiles.push_back(myOutputTRC);
+}
+
 Worker::~Worker()
 {
 	deleteAndNullify1D(loca);
@@ -57,6 +67,8 @@ void Worker::processERP()
 
 void Worker::processToELAN()
 {
+	emit sendLogInfo("Starting conversion to ELAN file format");
+
 	TRCFile *myTRC = nullptr;
 	
 	if (idFile == -1)
@@ -78,6 +90,16 @@ void Worker::processToELAN()
 	deleteAndNullify1D(myELAN);
 	deleteAndNullify1D(myTRC);
 	emit sendLogInfo("End of conversion to ELAN file format");
+	emit finished();
+}
+
+void Worker::processConcatenation()
+{
+	emit sendLogInfo("Starting concatenation");
+	TRCFile *myTRC = new TRCFile(trcFiles[0]);
+	TRCFile *myTRC2 = new TRCFile(trcFiles[1]);
+	TRCFunctions::concatenateTRCFile(myTRC, myTRC2, trcFiles[2]);
+	emit sendLogInfo("End of concatenation");
 	emit finished();
 }
 
