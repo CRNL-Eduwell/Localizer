@@ -21,6 +21,10 @@ namespace InsermLibrary
 	{
 		string name = "";
 		string unit = "";
+		int logicMinimum = 0;
+		int logicMaximum = 0;
+		int physicMinimum = 0;
+		int physicMaximum = 0;
 	};
 
 	struct eventElanFile
@@ -64,6 +68,7 @@ namespace InsermLibrary
 	private:
 		void delElanStruct();
 		void getElectrodes();
+		void getElectrodes(std::vector<MicromedLibrary::electrode> & trcElectrodes);
 	public :
 		vector<eventElanFile> triggers;
 		vector<noteElanFile> notes;

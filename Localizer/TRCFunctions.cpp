@@ -234,7 +234,6 @@ void MicromedLibrary::TRCFunctions::readBinaryDataOneChanel(TRCFile *myTRCFile, 
 
 void MicromedLibrary::TRCFunctions::binaryToDigitalDataOneChanel(TRCFile *myTRCFile, int posInVector, char *binaryEEGData)
 {
-	unsigned char MSB, LSB;
 	float numerator, denominator, multiplicator;
 	int numberSample = myTRCFile->dataSize / (myTRCFile->header4.numberStoredChannels *  myTRCFile->header4.numberBytes);
 	myTRCFile->eegOneChanel.resize(numberSample);
@@ -244,9 +243,11 @@ void MicromedLibrary::TRCFunctions::binaryToDigitalDataOneChanel(TRCFile *myTRCF
 
 	for (int i = 0; i < numberSample; i += myTRCFile->header4.numberBytes)  //taille des données/nombre canal
 	{
-		MSB = (unsigned char)binaryEEGData[i + 1]; //<< 8;
-		LSB = (unsigned char)binaryEEGData[i];
-		myTRCFile->eegOneChanel[i / myTRCFile->header4.numberBytes] = (float)(LSB | MSB << 8);
+		float val = (unsigned char)binaryEEGData[i];
+		for (int j = 1; j < myTRCFile->header4.numberBytes; j++)
+			val += (float)((unsigned char)binaryEEGData[i + j] << (8 * j));
+
+		myTRCFile->eegOneChanel[i / myTRCFile->header4.numberBytes] = val;
 		numerator = myTRCFile->eegOneChanel[i / myTRCFile->header4.numberBytes] - myTRCFile->electrodesList[posInVector].logicGround;
 		myTRCFile->eegOneChanel[i / myTRCFile->header4.numberBytes] = (numerator / denominator) * multiplicator;
 	}
@@ -267,9 +268,12 @@ void MicromedLibrary::TRCFunctions::binaryToDigitalDataMultipleChanels(TRCFile *
 			if ((j / myTRCFile->header4.numberBytes) < (myTRCFile->electrodesList.size()))
 			{
 				int currentPos = myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].idExtractFile * myTRCFile->header4.numberBytes;
-				MSB = (unsigned char)binaryEEGData[currentPos + 1 + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];//<< 8;
-				LSB = (unsigned char)binaryEEGData[currentPos + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];
-				myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = (float)(LSB | MSB << 8);
+
+				float val = (unsigned char)binaryEEGData[i];
+				for (int k = 1; k < myTRCFile->header4.numberBytes; k++)
+					val += (float)((unsigned char)binaryEEGData[currentPos + k + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)] << (8 * k));
+
+				myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = val;
 				numerator = myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i]
 					- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicGround;
 				denominator = (float)(myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMaximum
@@ -300,7 +304,6 @@ void MicromedLibrary::TRCFunctions::readBinaryDataAllChanels(TRCFile *myTRCFile,
 
 void MicromedLibrary::TRCFunctions::binaryToDigitalDataAllChanels(TRCFile *myTRCFile, char *binaryEEGData)
 {
-	unsigned char MSB, LSB;
 	float numerator, denominator, multiplicator;
 	int numberSample = (myTRCFile->dataSize / (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes));
 
@@ -310,9 +313,11 @@ void MicromedLibrary::TRCFunctions::binaryToDigitalDataAllChanels(TRCFile *myTRC
 	{
 		for (int j = 0; j < (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes); j += myTRCFile->header4.numberBytes)
 		{
-			MSB = (unsigned char)binaryEEGData[j + 1 + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];//<< 8;
-			LSB = (unsigned char)binaryEEGData[j + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];
-			myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = (float)(LSB | MSB << 8);
+			float val = (unsigned char)binaryEEGData[i];
+			for (int k = 1; k < myTRCFile->header4.numberBytes; k++)
+				val += (float)((unsigned char)binaryEEGData[j + k + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)] << (8 * k));
+
+			myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = val;
 			numerator = myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i]
 				- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicGround;
 			denominator = (float)(myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMaximum

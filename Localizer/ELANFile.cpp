@@ -91,3 +91,25 @@ void InsermLibrary::ELANFile::getElectrodes()
 		electrodes.push_back(currentElec);
 	}
 }
+
+void InsermLibrary::ELANFile::getElectrodes(std::vector<MicromedLibrary::electrode> & trcElectrodes)
+{
+	if (electrodes.size() > 0)
+		electrodes.clear();
+
+	for (int i = 0; i < elanStruct->chan_nb; i++)
+	{
+		elecElanFile currentElec;
+		currentElec.name = elanStruct->chan_list[i].lab;
+		currentElec.unit = elanStruct->chan_list[i].unit;
+		//currentElec.gain = (double)elanStruct->orig_info->eeg_info.eeg_convADC[i];
+		//currentElec.offset = (double)elanStruct->orig_info->eeg_info.eeg_offsetADC[i];
+		currentElec.logicMaximum = trcElectrodes[i].logicMaximum -trcElectrodes[i].logicGround;
+		currentElec.logicMinimum = trcElectrodes[i].logicMinimum -trcElectrodes[i].logicGround;
+		currentElec.physicMaximum = trcElectrodes[i].physicMaximum;
+		currentElec.physicMinimum = trcElectrodes[i].physicMinimum;
+		deblankString(currentElec.name);
+		deblankString(currentElec.unit);
+		electrodes.push_back(currentElec);
+	}
+}

@@ -14,10 +14,31 @@ ELANFile *InsermLibrary::ELANFunctions::micromedToElan(TRCFile *trc)
 
 	newElanFile->elanStruct->chan_nb = trc->header().numberStoredChannels;
 	ef_alloc_channel_list(newElanFile->elanStruct);
+
+	string versionBytes = "";
+	initOrigStructElanStruct(newElanFile->elanStruct);
+	switch (trc->header().numberBytes)
+	{
+	case 2:
+		versionBytes = "V2";
+		newElanFile->elanStruct->orig_info->has_eeg_info = EF_YES;
+		newElanFile->elanStruct->orig_info->eeg_info.orig_datatype = ORIG_EEG_DATATYPE_16BITS;
+		break;
+	case 4:
+		versionBytes = "V3";
+		newElanFile->elanStruct->orig_info->has_eeg_info = EF_YES;
+		newElanFile->elanStruct->orig_info->eeg_info.orig_datatype = ORIG_EEG_DATATYPE_32BITS;
+		break;
+	default:
+		deleteAndNullify1D(newElanFile);
+		return nullptr;
+		break;
+	}
+
 	for (int i = 0; i < newElanFile->nbChannels(); i++)
 	{
 		strcpy_s(newElanFile->elanStruct->chan_list[i].lab, trc->electrodes()[i].positiveInputLabel.c_str());
-		strcpy_s(newElanFile->elanStruct->chan_list[i].type, "V2");
+		strcpy_s(newElanFile->elanStruct->chan_list[i].type, versionBytes.c_str());
 		strcpy_s(newElanFile->elanStruct->chan_list[i].unit,  TRCFunctions::signalMeasurementUnitText(trc->electrodes()[i].measurementUnit).c_str());
 	}
 
@@ -26,20 +47,15 @@ ELANFile *InsermLibrary::ELANFunctions::micromedToElan(TRCFile *trc)
 	newElanFile->elanStruct->eeg.samp_nb = trc->nbSample();
 	newElanFile->elanStruct->eeg.sampling_freq = trc->header().samplingRate;
 
-	initOrigStructElanStruct(newElanFile->elanStruct);
-
-	newElanFile->elanStruct->orig_info->has_eeg_info = EF_YES;
-	newElanFile->elanStruct->orig_info->eeg_info.orig_datatype = ORIG_EEG_DATATYPE_16BITS;
-
-	int physicalMaximum = 3200;
-	int physicalMinimum = -3200;
-	int digitalMaximum = 32767;
-	int digitalMinimum = -32768;
-
 	newElanFile->elanStruct->orig_info->eeg_info.eeg_convADC = new double[newElanFile->nbChannels()];
 	newElanFile->elanStruct->orig_info->eeg_info.eeg_offsetADC = new double[newElanFile->nbChannels()];
 	for (int i = 0; i < newElanFile->nbChannels(); i++)
 	{
+		int physicalMaximum = trc->electrodes()[i].physicMaximum;
+		int physicalMinimum = trc->electrodes()[i].physicMinimum;
+		int digitalMaximum = trc->electrodes()[i].logicMaximum;
+		int digitalMinimum = trc->electrodes()[i].logicMinimum;
+
 		newElanFile->elanStruct->orig_info->eeg_info.eeg_convADC[i] = ((double)physicalMaximum - physicalMinimum) / (digitalMaximum - digitalMinimum);
 		newElanFile->elanStruct->orig_info->eeg_info.eeg_offsetADC[i] = ((double)(physicalMinimum * digitalMaximum) - (physicalMaximum * digitalMinimum)) / (digitalMaximum - digitalMinimum);
 	}
@@ -53,7 +69,7 @@ ELANFile *InsermLibrary::ELANFunctions::micromedToElan(TRCFile *trc)
 		}
 	}
 
-	newElanFile->getElectrodes();
+	newElanFile->getElectrodes(trc->electrodes());
 
 	for (int i = 0; i < trc->triggers().size(); i++)
 		newElanFile->triggers.push_back(eventElanFile(trc->triggers()[i].triggerSample, trc->triggers()[i].triggerValue));
@@ -295,7 +311,7 @@ void InsermLibrary::ELANFunctions::writeOldElanHeader(elan_struct_t *elan, std::
 	std::ofstream eegFile(eegFileName, std::ios::binary);   // on ouvre le fichier en écriture	
 	if (eegFile)
 	{
-		eegFile << "V2\n";
+		eegFile << elan->chan_list[0].type << "\n";
 		eegFile << "Conversion from Micromed file\n";
 		eegFile << "by eeg2env C++\n";
 		eegFile << "XX:XX:XX" << "\n";
@@ -555,7 +571,7 @@ void InsermLibrary::ELANFunctions::writeOldElanHeader(ELANFile *elan, std::strin
 	std::ofstream eegFile(eegFileName, std::ios::binary);   // on ouvre le fichier en écriture	
 	if (eegFile)
 	{
-		eegFile << "V2\n";
+		eegFile << elan->elanStruct->chan_list[0].type << "\n";
 		eegFile << "Conversion from Micromed file\n";
 		eegFile << "by eeg2env C++\n";
 		eegFile << "XX:XX:XX" << "\n";
@@ -591,28 +607,28 @@ void InsermLibrary::ELANFunctions::writeOldElanHeader(ELANFile *elan, std::strin
 
 		for (int i = 0; i < elan->elanStruct->chan_nb; i++)
 		{
-			eegFile << -3200 << "\n";
+			eegFile << elan->electrodes[i].physicMinimum << "\n";
 		}
 		eegFile << "-1\n";
 		eegFile << "-1\n";
 
 		for (int i = 0; i < elan->elanStruct->chan_nb; i++)
 		{
-			eegFile << "+" << 3200 << "\n";
+			eegFile << "+" << elan->electrodes[i].physicMaximum << "\n";
 		}
 		eegFile << "+1\n";
 		eegFile << "+1\n";
 
 		for (int i = 0; i < elan->elanStruct->chan_nb; i++)
 		{
-			eegFile << -32768 << "\n";						//logic min 
+			eegFile << elan->electrodes[i].logicMinimum << "\n";						//logic min 
 		}
 		eegFile << -32768 << "\n";
 		eegFile << -32768 << "\n";
 
 		for (int i = 0; i < elan->elanStruct->chan_nb; i++)
 		{
-			eegFile << 32767 << "\n";;						//logic max 										
+			eegFile << elan->electrodes[i].logicMaximum << "\n";;						//logic max 										
 		}
 		eegFile << 32767 << "\n";
 		eegFile << 32767 << "\n";
@@ -643,23 +659,47 @@ void InsermLibrary::ELANFunctions::writeOldElanHeader(ELANFile *elan, std::strin
 void InsermLibrary::ELANFunctions::writeOldElanData(ELANFile *elan, std::string filePath)
 {
 	vector<char> dataBuffer;
-	int16 tempValue = 0;
 
-	for (int j = 0; j < elan->elanStruct->eeg.samp_nb; j++)
+	if (strcmp(elan->elanStruct->chan_list[0].type, "V2") == 0)
 	{
-		for (int k = 0; k < elan->elanStruct->chan_nb; k++) //nb de canaux totaux restant																							                                                      
+		int16 tempValue = 0;
+		for (int j = 0; j < elan->elanStruct->eeg.samp_nb; j++)
 		{
-			tempValue = (int16)elan->elanStruct->eeg.data_float[0][k][j];
-			char *c = (char*)&tempValue;
-			std::swap(c[0], c[1]);
+			for (int k = 0; k < elan->elanStruct->chan_nb; k++) //nb de canaux totaux restant																							                                                      
+			{
+				tempValue = (int16)elan->elanStruct->eeg.data_float[0][k][j];
+				char *c = (char*)&tempValue;
+				std::swap(c[0], c[1]);
 
-			dataBuffer.push_back((char)c[0]);
-			dataBuffer.push_back((char)c[1]);
+				dataBuffer.push_back((char)c[0]);
+				dataBuffer.push_back((char)c[1]);
+			}
+
+			for (int k = 0; k < 4; k++)
+				dataBuffer.push_back((char)0);
 		}
-		dataBuffer.push_back((char)0);
-		dataBuffer.push_back((char)0);
-		dataBuffer.push_back((char)0);
-		dataBuffer.push_back((char)0);
+	}
+	else if (strcmp(elan->elanStruct->chan_list[0].type, "V3") == 0)
+	{
+		int32 tempValue = 0;
+		for (int j = 0; j < elan->elanStruct->eeg.samp_nb; j++)
+		{
+			for (int k = 0; k < elan->elanStruct->chan_nb; k++) //nb de canaux totaux restant																							                                                      
+			{
+				tempValue = (int32)elan->elanStruct->eeg.data_float[0][k][j];
+				char *c = (char*)&tempValue;
+				std::swap(c[0], c[3]);
+				std::swap(c[1], c[2]);
+
+				dataBuffer.push_back((char)c[0]);
+				dataBuffer.push_back((char)c[1]);
+				dataBuffer.push_back((char)c[2]);
+				dataBuffer.push_back((char)c[3]);
+			}
+
+			for (int k = 0; k < 8; k++)
+				dataBuffer.push_back((char)0);
+		}
 	}
 
 	std::string eegFileName = filePath;
