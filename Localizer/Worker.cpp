@@ -99,6 +99,7 @@ void Worker::processConcatenation()
 	TRCFile *myTRC = new TRCFile(trcFiles[0]);
 	TRCFile *myTRC2 = new TRCFile(trcFiles[1]);
 	TRCFunctions::concatenateTRCFile(myTRC, myTRC2, trcFiles[2]);
+	//TRCFunctions::stapleTRCFile(myTRC, myTRC2, trcFiles[2]);
 	emit sendLogInfo("End of concatenation");
 	emit finished();
 }

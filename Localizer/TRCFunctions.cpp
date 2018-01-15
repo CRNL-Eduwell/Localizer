@@ -116,8 +116,8 @@ void MicromedLibrary::TRCFunctions::writeTRCFileFromOriginal(ofstream &outputFil
 	infile.open(myTRCFile->myFilePath.c_str(), std::ios::binary | std::ios::in);
 
 	copyBinaryHeader(outputFileStream, infile, myTRCFile->header4.adressFirstData);
-	modifyBinaryHeaderValue(outputFileStream, infile, myTRCFile);
 	readAndWriteBinaryDataMultiChanels(outputFileStream, infile, myTRCFile);
+	modifyBinaryHeaderValue(outputFileStream, infile, myTRCFile);
 	//===========
 	outputFileStream.close();
 	infile.close();
@@ -167,8 +167,86 @@ void MicromedLibrary::TRCFunctions::writeTRCFileFromData(std::string outputPath,
 	outputFileStream.close();
 }
 
-//===[ Debug / Tools ]===
+void MicromedLibrary::TRCFunctions::concatenateTRCFile(TRCFile *myTRCFile, TRCFile *myOtherTRCFile, string outputFilePath)
+{
+	if (myTRCFile->header4.samplingRate != myOtherTRCFile->header4.samplingRate)
+	{
+		cerr << "Error : Not the same Sampling Frequency" << endl;
+		return;
+	}
 
+	if (myTRCFile->header4.numberStoredChannels != myOtherTRCFile->header4.numberStoredChannels)
+	{
+		cerr << "Error : Not the same number of channels" << endl;
+		return;
+	}
+
+	if (myTRCFile->reductionLists.size() > 0 || myOtherTRCFile->reductionLists.size() > 0)
+	{
+		cerr << "Error : One of the file is a reduced one" << endl;
+		return;
+	}
+
+	if (myTRCFile->eegAllChanels.size() == 0)
+		TRCFunctions::readTRCDataAllChanels(myTRCFile);
+
+	if (myOtherTRCFile->eegAllChanels.size() == 0)
+		TRCFunctions::readTRCDataAllChanels(myOtherTRCFile);
+
+	TRCFile *concatenateFile = new TRCFile(*myTRCFile);
+	concatenateFile->myFilePath = outputFilePath;
+
+	concatNotes(myOtherTRCFile, concatenateFile);
+	concatFlags(myOtherTRCFile, concatenateFile);
+	concatEventA(myOtherTRCFile, concatenateFile);
+	concatEventB(myOtherTRCFile, concatenateFile);
+	concatTriggers(myOtherTRCFile, concatenateFile);
+	concatDataChanels(myOtherTRCFile, concatenateFile);
+
+	TRCFunctions::writeTRCFileFromData(outputFilePath, concatenateFile);
+	deleteAndNullify1D(concatenateFile);
+}
+
+void MicromedLibrary::TRCFunctions::stapleTRCFile(TRCFile *myTRCFile, TRCFile *myOtherTRCFile, string outputFilePath)
+{
+	if (myTRCFile->header4.samplingRate != myOtherTRCFile->header4.samplingRate)
+	{
+		cerr << "Error : Not the same Sampling Frequency" << endl;
+		return;
+	}
+
+	if (myTRCFile->reductionLists.size() > 0 || myOtherTRCFile->reductionLists.size() > 0)
+	{
+		cerr << "Error : One of the file is a reduced one" << endl;
+		return;
+	}
+
+	if (myTRCFile->eegAllChanels.size() == 0)
+		TRCFunctions::readTRCDataAllChanels(myTRCFile);
+
+	if (myOtherTRCFile->eegAllChanels.size() == 0)
+		TRCFunctions::readTRCDataAllChanels(myOtherTRCFile);
+
+	TRCFile *concatenateFile = new TRCFile(*myTRCFile);
+	concatenateFile->myFilePath = outputFilePath;
+
+	for (int i = 0; i < myOtherTRCFile->electrodesList.size(); i++)
+	{
+		concatenateFile->orderStorageElec.push_back(myOtherTRCFile->orderStorageElec[i]);
+		concatenateFile->electrodesList.push_back(myOtherTRCFile->electrodesList[i]);
+		concatenateFile->eegAllChanels.push_back(move(myOtherTRCFile->eegAllChanels[i]));
+	}
+	concatenateFile->header4.numberStoredChannels = concatenateFile->electrodesList.size();
+	concatenateFile->header4.multiplexer = concatenateFile->header4.numberBytes * concatenateFile->header4.numberStoredChannels;
+	concatenateFile->setDataSize(concatenateFile->eegAllChanels.size() * concatenateFile->eegAllChanels[0].size() * concatenateFile->header4.numberBytes);
+	for (int i = 0; i < concatenateFile->electrodesList.size(); i++)
+		concatenateFile->electrodesList[i].position = i;
+
+	TRCFunctions::writeTRCFileFromData(outputFilePath, concatenateFile);
+	deleteAndNullify1D(concatenateFile);
+}
+
+//===[ Debug / Tools ]===
 void MicromedLibrary::TRCFunctions::exportTRCDataCSV(string csvFilePath, TRCFile *myTRCFile)
 {
 	ofstream fichierCsv(csvFilePath, ios::out);
@@ -241,46 +319,94 @@ void MicromedLibrary::TRCFunctions::binaryToDigitalDataOneChanel(TRCFile *myTRCF
 	denominator = (float)(myTRCFile->electrodesList[posInVector].logicMaximum - myTRCFile->electrodesList[posInVector].logicMinimum) + 1;
 	multiplicator = (float)myTRCFile->electrodesList[posInVector].physicMaximum - myTRCFile->electrodesList[posInVector].physicMinimum;
 
-	for (int i = 0; i < numberSample; i += myTRCFile->header4.numberBytes)  //taille des données/nombre canal
+	if (myTRCFile->header4.numberBytes == 2)
 	{
-		float val = (unsigned char)binaryEEGData[i];
-		for (int j = 1; j < myTRCFile->header4.numberBytes; j++)
-			val += (float)((unsigned char)binaryEEGData[i + j] << (8 * j));
+		unsigned char LSB, MSB;
+		for (int i = 0; i < numberSample; i += myTRCFile->header4.numberBytes)  //taille des données/nombre canal
+		{
+			MSB = (unsigned char)binaryEEGData[i + 1]; //<< 8;
+			LSB = (unsigned char)binaryEEGData[i];
 
-		myTRCFile->eegOneChanel[i / myTRCFile->header4.numberBytes] = val;
-		numerator = myTRCFile->eegOneChanel[i / myTRCFile->header4.numberBytes] - myTRCFile->electrodesList[posInVector].logicGround;
-		myTRCFile->eegOneChanel[i / myTRCFile->header4.numberBytes] = (numerator / denominator) * multiplicator;
+			myTRCFile->eegOneChanel[i / myTRCFile->header4.numberBytes] = float(LSB | MSB << 8);
+			numerator = myTRCFile->eegOneChanel[i / myTRCFile->header4.numberBytes] - myTRCFile->electrodesList[posInVector].logicGround;
+			myTRCFile->eegOneChanel[i / myTRCFile->header4.numberBytes] = (numerator / denominator) * multiplicator;
+		}
+	}
+	else if (myTRCFile->header4.numberBytes == 4)
+	{
+		unsigned char LSB, lsb, msb, MSB;
+		for (int i = 0; i < numberSample; i += myTRCFile->header4.numberBytes)  //taille des données/nombre canal
+		{
+			MSB = (unsigned char)binaryEEGData[i + 3];
+			msb = (unsigned char)binaryEEGData[i + 2];
+			lsb = (unsigned char)binaryEEGData[i + 1];
+			LSB = (unsigned char)binaryEEGData[i];
+
+			myTRCFile->eegOneChanel[i / myTRCFile->header4.numberBytes] = float(LSB | lsb << 8 | msb << 16 | MSB << 24);
+			numerator = myTRCFile->eegOneChanel[i / myTRCFile->header4.numberBytes] - myTRCFile->electrodesList[posInVector].logicGround;
+			myTRCFile->eegOneChanel[i / myTRCFile->header4.numberBytes] = (numerator / denominator) * multiplicator;
+		}
 	}
 }
 
 void MicromedLibrary::TRCFunctions::binaryToDigitalDataMultipleChanels(TRCFile *myTRCFile, char *binaryEEGData)
 {
-	unsigned char MSB, LSB;
 	float numerator, denominator, multiplicator;
 	int numberSample = (myTRCFile->dataSize / (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes));
 
 	myTRCFile->eegAllChanels.resize(myTRCFile->electrodesList.size(), std::vector<float>(numberSample));
 
-	for (int i = 0; i < numberSample; i++)
+	if (myTRCFile->header4.numberBytes == 2)
 	{
-		for (int j = 0; j < (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes); j += myTRCFile->header4.numberBytes)
+		unsigned char LSB, MSB;
+		for (int i = 0; i < numberSample; i++)
 		{
-			if ((j / myTRCFile->header4.numberBytes) < (myTRCFile->electrodesList.size()))
+			for (int j = 0; j < (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes); j += myTRCFile->header4.numberBytes)
 			{
-				int currentPos = myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].idExtractFile * myTRCFile->header4.numberBytes;
+				if ((j / myTRCFile->header4.numberBytes) < (myTRCFile->electrodesList.size()))
+				{
+					int currentPos = myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].idExtractFile * myTRCFile->header4.numberBytes;
 
-				float val = (unsigned char)binaryEEGData[i];
-				for (int k = 1; k < myTRCFile->header4.numberBytes; k++)
-					val += (float)((unsigned char)binaryEEGData[currentPos + k + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)] << (8 * k));
+					LSB = (unsigned char)binaryEEGData[currentPos + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];
+					MSB = (unsigned char)binaryEEGData[currentPos + 1 + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];//<< 8;
 
-				myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = val;
-				numerator = myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i]
-					- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicGround;
-				denominator = (float)(myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMaximum
-					- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMinimum) + 1;
-				multiplicator = (float)myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].physicMaximum
-					- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].physicMinimum;
-				myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = (numerator / denominator) * multiplicator;
+					myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = float(LSB | MSB << 8);
+					numerator = myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i]
+						- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicGround;
+					denominator = (float)(myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMaximum
+						- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMinimum) + 1;
+					multiplicator = (float)myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].physicMaximum
+						- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].physicMinimum;
+					myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = (numerator / denominator) * multiplicator;
+				}
+			}
+		}
+	}
+	else if (myTRCFile->header4.numberBytes == 4)
+	{
+		unsigned char LSB, lsb, msb, MSB;
+		for (int i = 0; i < numberSample; i++)
+		{
+			for (int j = 0; j < (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes); j += myTRCFile->header4.numberBytes)
+			{
+				if ((j / myTRCFile->header4.numberBytes) < (myTRCFile->electrodesList.size()))
+				{
+					int currentPos = myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].idExtractFile * myTRCFile->header4.numberBytes;
+
+					LSB = (unsigned char)binaryEEGData[currentPos + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];
+					lsb = (unsigned char)binaryEEGData[currentPos + 1 + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];
+					msb = (unsigned char)binaryEEGData[currentPos + 2 + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];
+					MSB = (unsigned char)binaryEEGData[currentPos + 3 + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];
+
+					myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = float(LSB | lsb << 8 | msb << 16 | MSB << 24);
+					numerator = myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i]
+						- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicGround;
+					denominator = (float)(myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMaximum
+						- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMinimum) + 1;
+					multiplicator = (float)myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].physicMaximum
+						- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].physicMinimum;
+					myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = (numerator / denominator) * multiplicator;
+				}
 			}
 		}
 	}
@@ -309,22 +435,48 @@ void MicromedLibrary::TRCFunctions::binaryToDigitalDataAllChanels(TRCFile *myTRC
 
 	myTRCFile->eegAllChanels.resize(myTRCFile->header4.numberStoredChannels, std::vector<float>(numberSample));
 
-	for (int i = 0; i < numberSample; i++)
+	if (myTRCFile->header4.numberBytes == 2)
 	{
-		for (int j = 0; j < (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes); j += myTRCFile->header4.numberBytes)
+		unsigned char LSB, MSB;
+		for (int i = 0; i < numberSample; i++)
 		{
-			float val = (unsigned char)binaryEEGData[i];
-			for (int k = 1; k < myTRCFile->header4.numberBytes; k++)
-				val += (float)((unsigned char)binaryEEGData[j + k + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)] << (8 * k));
+			for (int j = 0; j < (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes); j += myTRCFile->header4.numberBytes)
+			{
+				LSB = (unsigned char)binaryEEGData[j + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];
+				MSB = (unsigned char)binaryEEGData[j + 1 + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];
 
-			myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = val;
-			numerator = myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i]
-				- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicGround;
-			denominator = (float)(myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMaximum
-				- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMinimum) + 1;
-			multiplicator = (float)myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].physicMaximum
-				- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].physicMinimum;
-			myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = (numerator / denominator) * multiplicator;
+				myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = float(LSB | MSB << 8);
+				numerator = myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i]
+					- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicGround;
+				denominator = (float)(myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMaximum
+					- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMinimum) + 1;
+				multiplicator = (float)myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].physicMaximum
+					- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].physicMinimum;
+				myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = (numerator / denominator) * multiplicator;
+			}
+		}
+	}
+	else if(myTRCFile->header4.numberBytes == 4)
+	{
+		unsigned char LSB, lsb, msb, MSB;
+		for (int i = 0; i < numberSample; i++)
+		{
+			for (int j = 0; j < (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes); j += myTRCFile->header4.numberBytes)
+			{
+				LSB = (unsigned char)binaryEEGData[j + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];
+				lsb = (unsigned char)binaryEEGData[j + 1 + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];
+				msb = (unsigned char)binaryEEGData[j + 2 + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];
+				MSB = (unsigned char)binaryEEGData[j + 3 + (myTRCFile->header4.numberStoredChannels * myTRCFile->header4.numberBytes * i)];
+
+				myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = float(LSB | lsb << 8 | msb << 16 | MSB << 24);
+				numerator = myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i]
+					- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicGround;
+				denominator = (float)(myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMaximum
+					- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].logicMinimum) + 1;
+				multiplicator = (float)myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].physicMaximum
+					- myTRCFile->electrodesList[j / myTRCFile->header4.numberBytes].physicMinimum;
+				myTRCFile->eegAllChanels[j / myTRCFile->header4.numberBytes][i] = (numerator / denominator) * multiplicator;
+			}
 		}
 	}
 }
@@ -346,6 +498,7 @@ void MicromedLibrary::TRCFunctions::modifyBinaryHeaderValue(ofstream &outputFile
 	unsigned char zero = 0, one = 1;
 	int count = 0, found = false;
 
+	myTRCFile->header4.numberStoredChannels = myTRCFile->electrodesList.size();
 	outputFileStream.seekp(142, std::ios::beg);
 	outputFileStream << (char *)&myTRCFile->header4.numberStoredChannels;
 
@@ -402,10 +555,11 @@ void MicromedLibrary::TRCFunctions::readAndWriteBinaryDataMultiChanels(ofstream 
 	{
 		for (int j = 0; j < myTRCFile->electrodes().size(); j++)
 		{
-			outputFileStream << (char)buffer[(myTRCFile->electrodes()[j].position * myTRCFile->header4.numberBytes) +
-				(i * myTRCFile->header4.numberBytes * myTRCFile->header4.numberStoredChannels)];
-			outputFileStream << (char)buffer[((myTRCFile->electrodes()[j].position * myTRCFile->header4.numberBytes) + 1) +
-				(i * myTRCFile->header4.numberBytes * myTRCFile->header4.numberStoredChannels)];
+			for (int k = 0; k < myTRCFile->header4.numberBytes; k++)
+			{
+				outputFileStream << (char)buffer[((myTRCFile->electrodes()[j].idExtractFile * myTRCFile->header4.numberBytes) + k) +
+					(i * myTRCFile->header4.numberBytes * myTRCFile->header4.numberStoredChannels)];
+			}
 		}
 	}
 
@@ -857,60 +1011,37 @@ void MicromedLibrary::TRCFunctions::writeDataChanels(ofstream &outputFileStream,
 	convertAnalogDataToDigital(myTRCFile);
 
 	char *buffer = new char[myTRCFile->dataSize];
-	for (int i = 0; i < myTRCFile->eegAllChanels[0].size(); i++)
+
+	if (myTRCFile->header4.numberBytes == 2)
 	{
-		for (int j = 0; j < myTRCFile->eegAllChanels.size(); j++)
+		for (int i = 0; i < myTRCFile->eegAllChanels[0].size(); i++)
 		{
-			unsigned short int val = (unsigned short)myTRCFile->eegAllChanels[j][i];
-			char *valBuff = (char *)&val;
-			buffer[(2 * j) + (i * myTRCFile->eegAllChanels.size() * 2)] = valBuff[0];
-			buffer[(2 * j) + 1 + (i * myTRCFile->eegAllChanels.size() * 2)] = valBuff[1];
+			for (int j = 0; j < myTRCFile->eegAllChanels.size(); j++)
+			{
+				unsigned short int val = (unsigned short)myTRCFile->eegAllChanels[j][i];
+				char *valBuff = (char *)&val;
+				for (int k = 0; k < myTRCFile->header4.numberBytes; k++)
+					buffer[(myTRCFile->header4.numberBytes * j) + k + (i * myTRCFile->eegAllChanels.size() * myTRCFile->header4.numberBytes)] = valBuff[k];
+			}
+		}
+	}
+	else if (myTRCFile->header4.numberBytes == 4)
+	{
+		for (int i = 0; i < myTRCFile->eegAllChanels[0].size(); i++)
+		{
+			for (int j = 0; j < myTRCFile->eegAllChanels.size(); j++)
+			{
+				unsigned int val = (unsigned int)myTRCFile->eegAllChanels[j][i];
+				char *valBuff = (char *)&val;
+				for (int k = 0; k < myTRCFile->header4.numberBytes; k++)
+					buffer[(myTRCFile->header4.numberBytes * j) + k + (i * myTRCFile->eegAllChanels.size() * myTRCFile->header4.numberBytes)] = valBuff[k];
+			}
 		}
 	}
 
 	outputFileStream.seekp(myTRCFile->header4.adressFirstData, std::ios::beg);
 	outputFileStream.write(buffer, myTRCFile->dataSize);
 	delete buffer;
-}
-
-void MicromedLibrary::TRCFunctions::concatenateTRCFile(TRCFile *myTRCFile, TRCFile *myOtherTRCFile, string outputFilePath)
-{
-	if (myTRCFile->header4.samplingRate != myOtherTRCFile->header4.samplingRate)
-	{
-		cerr << "Error : Not the same Sampling Frequency" << endl;
-		return;
-	}
-
-	if (myTRCFile->header4.numberStoredChannels != myOtherTRCFile->header4.numberStoredChannels)
-	{
-		cerr << "Error : Not the same number of channels" << endl;
-		return;
-	}
-
-	if (myTRCFile->reductionLists.size() > 0 || myOtherTRCFile->reductionLists.size() > 0)
-	{
-		cerr << "Error : One of the file is a reduced one" << endl;
-		return;
-	}
-
-	if (myTRCFile->eegAllChanels.size() == 0)
-		TRCFunctions::readTRCDataAllChanels(myTRCFile);
-
-	if (myOtherTRCFile->eegAllChanels.size() == 0)
-		TRCFunctions::readTRCDataAllChanels(myOtherTRCFile);
-
-	TRCFile *concatenateFile = new TRCFile(*myTRCFile);
-	concatenateFile->myFilePath = outputFilePath;
-
-	concatNotes(myOtherTRCFile, concatenateFile);
-	concatFlags(myOtherTRCFile, concatenateFile);
-	concatEventA(myOtherTRCFile, concatenateFile);
-	concatEventB(myOtherTRCFile, concatenateFile);
-	concatTriggers(myOtherTRCFile, concatenateFile);
-	concatDataChanels(myOtherTRCFile, concatenateFile);
-
-	TRCFunctions::writeTRCFileFromData(outputFilePath, concatenateFile);
-	deleteAndNullify1D(concatenateFile);
 }
 
 void MicromedLibrary::TRCFunctions::concatNotes(TRCFile *myOtherTRCFile, TRCFile *concatFile)

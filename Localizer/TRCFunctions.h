@@ -25,6 +25,7 @@ namespace MicromedLibrary
 		static void writeTRCFileFromOriginal(ofstream &outputFileStream, TRCFile *myTRCFile);
 		static void writeTRCFileFromData(std::string outputPath, TRCFile *myTRCFile);
 		static void concatenateTRCFile(TRCFile *myTRCFile, TRCFile *myOtherTRCFile, string outputFilePath);
+		static void stapleTRCFile(TRCFile *myTRCFile, TRCFile *myOtherTRCFile, string outputFilePath);
 
 		//===[ Debug / Tools ]===
 		static void exportTRCDataCSV(string csvFilePath, TRCFile *myTRCFile);
