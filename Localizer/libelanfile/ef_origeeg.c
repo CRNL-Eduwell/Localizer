@@ -13,7 +13,7 @@
 
 #include "elanfile.h"
 #include "ef_origcommon.h"
-
+#include <math.h>
 
 #define VERSION_POS 2
 
@@ -234,7 +234,7 @@ int ef_readeegent(char *header_filename, char *data_filename, elan_struct_t *ela
 		
 	/* Sampling frequency. */
 	/*---------------------*/
-	elan_struct->eeg.sampling_freq = 1.0/strtod(main_header.duree_record, NULL);
+	elan_struct->eeg.sampling_freq = ceil(1.0/strtod(main_header.duree_record, NULL));
 
 	/* total number of channels  */
 	memset(main_header.nb_signaux, 0, 256);

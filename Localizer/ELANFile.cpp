@@ -8,19 +8,6 @@ InsermLibrary::ELANFile::ELANFile(std::string currentFilePath)
 
 InsermLibrary::ELANFile::~ELANFile()
 {
-	//if (elanStruct->chan_nb > 0 && flatEEGData() != nullptr)
-	//{
-	//	ef_free_data_array(elanStruct);
-	//	ef_free_struct(elanStruct);
-	//	delete elanStruct;
-	//	elanStruct = nullptr;
-	//}
-	//else if (elanStruct->measure_channel_nb == 0)
-	//{
-	//	ef_free_struct(elanStruct);
-	//	delete elanStruct;
-	//	elanStruct = nullptr;
-	//}
 	delElanStruct();
 }
 
