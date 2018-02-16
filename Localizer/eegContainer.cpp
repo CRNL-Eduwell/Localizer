@@ -560,6 +560,24 @@ void InsermLibrary::eegContainer::initElanFreqStruct(elan_struct_t *structToInit
 	structToInit->eeg.samp_nb = sampInfo.nbSample / sampInfo.downsampFactor;
 	structToInit->eeg.sampling_freq = (float)sampInfo.downsampledFrequency;
 
+	structToInit->orig_info = (orig_info_t *)calloc(1, sizeof(orig_info_t));
+	ELAN_CHECK_ERROR_ALLOC(structToInit->orig_info, "for storing original file format informations.");
+
+	structToInit->orig_info->has_eeg_info = EF_NO;
+	structToInit->orig_info->eeg_info.bufReadPtr = NULL;
+	structToInit->orig_info->eeg_info.bufReadSize = 0;
+
+	structToInit->orig_info->has_ep_info = EF_NO;
+	structToInit->orig_info->ep_info.bufReadPtr = NULL;
+	structToInit->orig_info->ep_info.bufReadSize = 0;
+
+	structToInit->orig_info->has_tf_info = EF_NO;
+	structToInit->orig_info->tf_info.offset_data = 0;
+	structToInit->orig_info->tf_info.bufReadPtr = NULL;
+	structToInit->orig_info->tf_info.bufReadSize = 0;
+
+	structToInit->orig_info->eeg_info.orig_datatype = ORIG_EEG_DATATYPE_16BITS;
+
 	ef_alloc_data_array(structToInit);
 }
 

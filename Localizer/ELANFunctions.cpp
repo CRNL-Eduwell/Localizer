@@ -311,7 +311,11 @@ void InsermLibrary::ELANFunctions::writeOldElanHeader(elan_struct_t *elan, std::
 	std::ofstream eegFile(eegFileName, std::ios::binary);   // on ouvre le fichier en écriture	
 	if (eegFile)
 	{
-		eegFile << elan->chan_list[0].type << "\n";
+		if (elan->orig_info->eeg_info.orig_datatype == ORIG_EEG_DATATYPE_16BITS)
+			eegFile << "V2" << "\n";
+		else if (elan->orig_info->eeg_info.orig_datatype == ORIG_EEG_DATATYPE_32BITS)
+			eegFile << "V3" << "\n";
+		
 		eegFile << "Conversion from Micromed file\n";
 		eegFile << "by eeg2env C++\n";
 		eegFile << "XX:XX:XX" << "\n";
@@ -571,7 +575,11 @@ void InsermLibrary::ELANFunctions::writeOldElanHeader(ELANFile *elan, std::strin
 	std::ofstream eegFile(eegFileName, std::ios::binary);   // on ouvre le fichier en écriture	
 	if (eegFile)
 	{
-		eegFile << elan->elanStruct->chan_list[0].type << "\n";
+		if (elan->elanStruct->orig_info->eeg_info.orig_datatype == ORIG_EEG_DATATYPE_16BITS)
+			eegFile << "V2" << "\n";
+		else if (elan->elanStruct->orig_info->eeg_info.orig_datatype == ORIG_EEG_DATATYPE_32BITS)
+			eegFile << "V3" << "\n";
+
 		eegFile << "Conversion from Micromed file\n";
 		eegFile << "by eeg2env C++\n";
 		eegFile << "XX:XX:XX" << "\n";
@@ -660,8 +668,9 @@ void InsermLibrary::ELANFunctions::writeOldElanData(ELANFile *elan, std::string 
 {
 	vector<char> dataBuffer;
 
-	if (strcmp(elan->elanStruct->chan_list[0].type, "V2") == 0)
+	if (elan->elanStruct->orig_info->eeg_info.orig_datatype == ORIG_EEG_DATATYPE_16BITS)
 	{
+		ELANFunctions::convertELANAnalogDataToDigital(elan);
 		int16 tempValue = 0;
 		for (int j = 0; j < elan->elanStruct->eeg.samp_nb; j++)
 		{
@@ -679,8 +688,9 @@ void InsermLibrary::ELANFunctions::writeOldElanData(ELANFile *elan, std::string 
 				dataBuffer.push_back((char)0);
 		}
 	}
-	else if (strcmp(elan->elanStruct->chan_list[0].type, "V3") == 0)
+	else if (elan->elanStruct->orig_info->eeg_info.orig_datatype == ORIG_EEG_DATATYPE_32BITS)
 	{
+		ELANFunctions::convertELANAnalogDataToDigital(elan);
 		int32 tempValue = 0;
 		for (int j = 0; j < elan->elanStruct->eeg.samp_nb; j++)
 		{
@@ -695,6 +705,7 @@ void InsermLibrary::ELANFunctions::writeOldElanData(ELANFile *elan, std::string 
 				dataBuffer.push_back((char)c[1]);
 				dataBuffer.push_back((char)c[2]);
 				dataBuffer.push_back((char)c[3]);
+
 			}
 
 			for (int k = 0; k < 8; k++)
