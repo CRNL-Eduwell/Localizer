@@ -38,7 +38,7 @@ ELANFile *InsermLibrary::ELANFunctions::micromedToElan(TRCFile *trc)
 	for (int i = 0; i < newElanFile->nbChannels(); i++)
 	{
 		strcpy_s(newElanFile->elanStruct->chan_list[i].lab, trc->electrodes()[i].positiveInputLabel.c_str());
-		strcpy_s(newElanFile->elanStruct->chan_list[i].type, versionBytes.c_str());
+		strcpy_s(newElanFile->elanStruct->chan_list[i].type, "EEG");
 		strcpy_s(newElanFile->elanStruct->chan_list[i].unit,  TRCFunctions::signalMeasurementUnitText(trc->electrodes()[i].measurementUnit).c_str());
 	}
 
