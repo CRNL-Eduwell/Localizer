@@ -203,9 +203,18 @@ int MicromedLibrary::TRCFile::getFileSize(ifstream &sr)
 //===
 void MicromedLibrary::TRCFile::getDescriptorInfo(ifstream &fileStream, descriptorArea *descriptor, int positionFile)
 {
-	descriptor->name = binaryStringExtraction(positionFile, 8, fileStream);
-	descriptor->startOffset = (unsigned long int)binaryBytesExtraction(positionFile + 8, 4, fileStream);
-	descriptor->length = (unsigned long int)binaryBytesExtraction(positionFile + 12, 4, fileStream);
+	std::string nameRead = binaryStringExtraction(positionFile, 8, fileStream);
+	deblankString(nameRead);
+	if (nameRead == descriptor->name)
+	{
+		fileStream.read((char *)&descriptor->startOffset, sizeof(unsigned long int));
+		fileStream.read((char *)&descriptor->length, sizeof(unsigned long int));
+	}
+	else
+	{
+		descriptor->startOffset = 0;
+		descriptor->length = 0;
+	}
 }
 
 //===
@@ -528,7 +537,8 @@ void MicromedLibrary::TRCFile::getEventB(ifstream &fileStream, descriptorArea *d
 {
 	MarkerPair markSelec;
 
-	strcpy_s(eventB.description, 64, binaryStringExtraction(descriptorEventB->startOffset, 64, fileStream).c_str());
+	fileStream.seekg(descriptorEventB->startOffset);
+	fileStream.read((char *)&eventB.description, sizeof(char[64]));
 	for (int i = 0; i < MAX_EVENT; i++)
 	{
 		markSelec.begin = binaryBytesExtraction(descriptorEventB->startOffset + 64 + (i * 8), 4, fileStream);

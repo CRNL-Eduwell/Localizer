@@ -148,9 +148,12 @@ void InsermLibrary::eegContainer::deleteElectrodes(vector<int> elecToDelete)
 	if (trcFile != nullptr)
 	{
 		TRCFunctions::deleteOneOrSeveralElectrodesAndData(trcFile, elecToDelete);
-		TRCFunctions::convertAnalogDataToDigital(trcFile);
-		for (int i = 0; i < trcFile->eegDataAllChanels().size(); i++)
-			eegData.push_back(move(trcFile->eegDataAllChanels()[i]));
+		if (trcFile->eegDataAllChanels().size() > 0)
+		{
+			TRCFunctions::convertAnalogDataToDigital(trcFile);
+			for (int i = 0; i < trcFile->eegDataAllChanels().size(); i++)
+				eegData.push_back(move(trcFile->eegDataAllChanels()[i]));
+		}
 	}
 	else if (elanFile != nullptr)
 	{

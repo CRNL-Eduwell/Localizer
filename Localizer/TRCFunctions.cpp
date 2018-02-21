@@ -322,7 +322,7 @@ void MicromedLibrary::TRCFunctions::binaryToDigitalDataOneChanel(TRCFile *myTRCF
 	if (myTRCFile->header4.numberBytes == 2)
 	{
 		unsigned char LSB, MSB;
-		for (int i = 0; i < numberSample; i += myTRCFile->header4.numberBytes)  //taille des données/nombre canal
+		for (int i = 0; i < myTRCFile->header4.numberBytes * numberSample; i += myTRCFile->header4.numberBytes)  //taille des données/nombre canal
 		{
 			MSB = (unsigned char)binaryEEGData[i + 1]; //<< 8;
 			LSB = (unsigned char)binaryEEGData[i];
@@ -335,7 +335,7 @@ void MicromedLibrary::TRCFunctions::binaryToDigitalDataOneChanel(TRCFile *myTRCF
 	else if (myTRCFile->header4.numberBytes == 4)
 	{
 		unsigned char LSB, lsb, msb, MSB;
-		for (int i = 0; i < numberSample; i += myTRCFile->header4.numberBytes)  //taille des données/nombre canal
+		for (int i = 0; i < myTRCFile->header4.numberBytes * numberSample; i += myTRCFile->header4.numberBytes)  //taille des données/nombre canal
 		{
 			MSB = (unsigned char)binaryEEGData[i + 3];
 			msb = (unsigned char)binaryEEGData[i + 2];

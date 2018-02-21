@@ -493,10 +493,18 @@ void InsermLibrary::LOCA::pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *
 				bool specialLoca = (currentLoca->localizerName() == "MARA" ||
 									currentLoca->localizerName() == "MARM" ||
 									currentLoca->localizerName() == "MARD");
-				if (isInWindow || specialLoca)
+				if (isInWindow)// || specialLoca)
 				{
 					downsampledEegTriggers->triggers[idMain].response.code = downsampledEegTriggers->triggers[idSec].trigger.code;
 					downsampledEegTriggers->triggers[idMain].response.sample = downsampledEegTriggers->triggers[idSec].trigger.sample;
+				}
+				else
+				{
+					if (specialLoca)
+					{
+						downsampledEegTriggers->triggers[idMain].response.code = downsampledEegTriggers->triggers[idSec].trigger.code;
+						downsampledEegTriggers->triggers[idMain].response.sample = winMax;
+					}
 				}
 			}
 		}

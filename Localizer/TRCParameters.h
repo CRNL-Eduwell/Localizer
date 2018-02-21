@@ -135,10 +135,24 @@ namespace MicromedLibrary
 		float coordinate3DZ;							//98
 		unsigned short int corrdinateType;				//102
 		string freeFurtherUse;							//104    -- 24
+
+		inline bool operator==(std::string name)
+		{
+			return strcmp(positiveInputLabel.c_str(), name.c_str()) == 0;
+		}
 	};
 
+
+
 	struct descriptorArea
-	{													//Offset
+	{
+		descriptorArea(std::string wantedName)
+		{
+			name = wantedName;
+			startOffset = 0;
+			length = 0;
+		}
+		//Offset
 		string name;									//0
 		unsigned long int startOffset;					//8
 		unsigned long int length;						//12
@@ -189,21 +203,21 @@ namespace MicromedLibrary
 		unsigned short int mpegDelay;					//		158		 -- 2
 		unsigned char reservedFurtherDEV[15];			//		160		 -- 15
 		unsigned char headerType;						//		175		 -- 1
-		descriptorArea descriptorCode;					//		176		 -- 16   -- Name : "ORDER   " | StartOffset = 640    | length 512
-		descriptorArea descriptorElectrode;				//		192		 -- 16   -- Name : "LABCOD  " | StartOffset = 1152   | length 81920
-		descriptorArea descriptorNote;					//		208		 -- 16   -- Name : "NOTE    " | StartOffset = 83072  | length 44000
-		descriptorArea descriptorFlag;					//		224		 -- 16   -- Name : "FLAGS   " | StartOffset = 127072 | length 800
-		descriptorArea descriptorReduction;				//		240		 -- 16   -- Name : "TRONCA  " | StartOffset = 127872 | length 800
-		descriptorArea descriptorBeginImpedance;		//		256		 -- 16   -- Name : "IMPED_B " | StartOffset = 128672 | length 512
-		descriptorArea descriptorEndImpedance;			//		272		 -- 16   -- Name : "IMPED_E " | StartOffset = 129184 | length 512
-		descriptorArea descriptorMontages;				//		288		 -- 16   -- Name : "MONTAGE " | StartOffset = 129696 | length 122880
-		descriptorArea descriptorCompression;			//		304		 -- 16   -- Name : "COMPRESS" | StartOffset = 252576 | length 10
-		descriptorArea descriptorAverage;				//		320		 -- 16   -- Name : "AVERAGE " | StartOffset = 252586 | length 128
-		descriptorArea descriptorHistory;				//		336		 -- 16   -- Name : "HISTORY " | StartOffset = 252714 | length 123392
-		descriptorArea descriptorDVideo;				//		352		 -- 16   -- Name : "DVIDEO  " | StartOffset = 376106 | length 16384
-		descriptorArea descriptorEventA;				//		368		 -- 16   -- Name : "EVENT A " | StartOffset = 392490 | length 864
-		descriptorArea descriptorEventB;				//		384		 -- 16   -- Name : "EVENT B " | StartOffset = 393354 | length 864
-		descriptorArea descriptorTrigger;				//		400		 -- 16   -- Name : "TRIGGER " | StartOffset = 394218 | length 49152
+		descriptorArea descriptorCode = descriptorArea("ORDER");				//		176		 -- 16   -- Name : "ORDER   " | StartOffset = 640    | length 512
+		descriptorArea descriptorElectrode = descriptorArea("LABCOD");			//		192		 -- 16   -- Name : "LABCOD  " | StartOffset = 1152   | length 81920
+		descriptorArea descriptorNote = descriptorArea("NOTE");					//		208		 -- 16   -- Name : "NOTE    " | StartOffset = 83072  | length 44000
+		descriptorArea descriptorFlag = descriptorArea("FLAGS");				//		224		 -- 16   -- Name : "FLAGS   " | StartOffset = 127072 | length 800
+		descriptorArea descriptorReduction = descriptorArea("TRONCA");			//		240		 -- 16   -- Name : "TRONCA  " | StartOffset = 127872 | length 800
+		descriptorArea descriptorBeginImpedance = descriptorArea("IMPED_B");	//		256		 -- 16   -- Name : "IMPED_B " | StartOffset = 128672 | length 512
+		descriptorArea descriptorEndImpedance = descriptorArea("IMPED_E");		//		272		 -- 16   -- Name : "IMPED_E " | StartOffset = 129184 | length 512
+		descriptorArea descriptorMontages = descriptorArea("MONTAGE");			//		288		 -- 16   -- Name : "MONTAGE " | StartOffset = 129696 | length 122880
+		descriptorArea descriptorCompression = descriptorArea("COMPRESS");		//		304		 -- 16   -- Name : "COMPRESS" | StartOffset = 252576 | length 10
+		descriptorArea descriptorAverage = descriptorArea("AVERAGE");			//		320		 -- 16   -- Name : "AVERAGE " | StartOffset = 252586 | length 128
+		descriptorArea descriptorHistory = descriptorArea("HISTORY");			//		336		 -- 16   -- Name : "HISTORY " | StartOffset = 252714 | length 123392
+		descriptorArea descriptorDVideo = descriptorArea("DVIDEO");				//		352		 -- 16   -- Name : "DVIDEO  " | StartOffset = 376106 | length 16384
+		descriptorArea descriptorEventA = descriptorArea("EVENT A");			//		368		 -- 16   -- Name : "EVENT A " | StartOffset = 392490 | length 864
+		descriptorArea descriptorEventB = descriptorArea("EVENT B");			//		384		 -- 16   -- Name : "EVENT B " | StartOffset = 393354 | length 864
+		descriptorArea descriptorTrigger = descriptorArea("TRIGGER");			//		400		 -- 16   -- Name : "TRIGGER " | StartOffset = 394218 | length 49152
 		unsigned char reservedFurtherDEV2[224];			//		416		 -- 16
 	};
 }
