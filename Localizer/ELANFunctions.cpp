@@ -61,13 +61,15 @@ ELANFile *InsermLibrary::ELANFunctions::micromedToElan(TRCFile *trc)
 	}
 
 	ef_alloc_data_array(newElanFile->elanStruct);
-	for (int i = 0; i < newElanFile->nbChannels(); i++)
-	{
-		for (int j = 0; j < newElanFile->elanStruct->eeg.samp_nb; j++)
-		{
-			newElanFile->elanStruct->eeg.data_float[0][i][j] = trc->eegDataAllChanels()[i][j] * 10; // mul by 10 why ?
-		}
-	}
+	//for (int i = 0; i < newElanFile->nbChannels(); i++)
+	//{
+	//	for (int j = 0; j < newElanFile->elanStruct->eeg.samp_nb; j++)
+	//	{
+	//		newElanFile->elanStruct->eeg.data_float[0][i][j] = trc->eegDataAllChanels()[i][j] * 10; // mul by 10 why ?
+	//	}
+	//}
+	convertMicromedAnalogDataToDigital(newElanFile, trc);
+	//convertELANDigitalToAnalog(newElanFile);
 
 	newElanFile->getElectrodes(trc->electrodes());
 
@@ -108,7 +110,7 @@ void InsermLibrary::ELANFunctions::convertMicromedAnalogDataToDigital(ELANFile *
 		{
 			long mul = (trc->electrodes()[i].logicMaximum - trc->electrodes()[i].logicMinimum) + 1;
 			long div = (trc->electrodes()[i].physicMaximum - trc->electrodes()[i].physicMinimum);
-			elan->elanStruct->eeg.data_double[0][i][j] = (((double)trc->eegDataAllChanels()[i][j] * mul) / div);
+			elan->elanStruct->eeg.data_float[0][i][j] = (((double)trc->eegDataAllChanels()[i][j] * mul) / div);// +trc->electrodes()[i].logicGround;
 		}
 	}
 }
@@ -150,7 +152,7 @@ void InsermLibrary::ELANFunctions::convertELANDigitalToAnalog(ELANFile *elan)
 	{
 		for (int j = 0; j < elan->elanStruct->eeg.samp_nb; j++)
 		{
-			elan->elanStruct->eeg.data_double[0][i][j] = (elan->elanStruct->eeg.data_double[0][i][j] * (double)elan->elanStruct->orig_info->eeg_info.eeg_convADC[i]) + (double)elan->elanStruct->orig_info->eeg_info.eeg_offsetADC[i];
+			elan->elanStruct->eeg.data_float[0][i][j] = (elan->elanStruct->eeg.data_float[0][i][j] * (double)elan->elanStruct->orig_info->eeg_info.eeg_convADC[i]) + (double)elan->elanStruct->orig_info->eeg_info.eeg_offsetADC[i];
 		}
 	}
 }
@@ -670,7 +672,7 @@ void InsermLibrary::ELANFunctions::writeOldElanData(ELANFile *elan, std::string 
 
 	if (elan->elanStruct->orig_info->eeg_info.orig_datatype == ORIG_EEG_DATATYPE_16BITS)
 	{
-		ELANFunctions::convertELANAnalogDataToDigital(elan);
+		//ELANFunctions::convertELANAnalogDataToDigital(elan);
 		int16 tempValue = 0;
 		for (int j = 0; j < elan->elanStruct->eeg.samp_nb; j++)
 		{
@@ -690,7 +692,7 @@ void InsermLibrary::ELANFunctions::writeOldElanData(ELANFile *elan, std::string 
 	}
 	else if (elan->elanStruct->orig_info->eeg_info.orig_datatype == ORIG_EEG_DATATYPE_32BITS)
 	{
-		ELANFunctions::convertELANAnalogDataToDigital(elan);
+		//ELANFunctions::convertELANAnalogDataToDigital(elan);
 		int32 tempValue = 0;
 		for (int j = 0; j < elan->elanStruct->eeg.samp_nb; j++)
 		{
