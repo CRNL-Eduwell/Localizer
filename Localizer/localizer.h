@@ -25,6 +25,7 @@
 #include "Worker.h"
 #include "LOCA.h"
 #include "ui_localizer.h"
+#include <QCoreApplication>
 
 using namespace std;
 
@@ -102,6 +103,8 @@ private:
 	concatenator *concatFiles = nullptr;
 	uiUserElement* uiElement = nullptr;
 	Ui::LocalizerClass ui;
+
+	QStringList inputArguments;
 };
 
 #endif // LOCALIZER_H

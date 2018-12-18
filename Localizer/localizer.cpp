@@ -5,6 +5,24 @@ Localizer::Localizer(QWidget *parent) : QMainWindow(parent)
 	ui.setupUi(this);
 	reSetupGUI();
 	connectSignals();
+
+	inputArguments = QCoreApplication::arguments();
+	if (inputArguments.count() > 1 )
+	{
+		if (inputArguments[1].compare("MicromedExternalCall") == 0)
+		{
+			QString fileName = inputArguments[2];
+			if (fileName != "")
+			{
+				if (currentFiles.size() > 0)
+					currentFiles.clear();
+
+				deleteAndNullify1D(currentPat);
+				currentPat = new patientFolder(fileName.toStdString());
+				loadWidgetListTRC(currentPat);
+			}
+		}
+	}
 }
 
 Localizer::~Localizer()
