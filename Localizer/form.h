@@ -12,6 +12,13 @@
 #include "Utility.h"
 #include "PROV.h"
 
+#include <QMenu>
+#include <QList>
+#include <QModelIndex>
+
+#include <QInputDialog>
+#include <QDebug>
+
 class form : public QDialog
 {
 	Q_OBJECT
@@ -20,28 +27,25 @@ public:
 	form(QWidget *parent = 0);
 	~form();
 
-	void load();
-
 private:
-	void defineHorizontalHeader(QTableWidget *modele);
-	QStringList getFilesFromRootFolder(QString fileExt);
-	void loadProvListUI(QStringList provList);
+	void ConnectSignals();
+	void InitUiParameters();
+	void InitProvListUi(QStringList provList);
+	void DefineHorizontalHeader(QTableWidget *modele);
+	QStringList GetFilesFromRootFolder(QString fileExt);
+	void LoadProvTabUi(QString provName);
 
 private slots:
-	void displaySelectedProv(QListWidgetItem* item);
-	void manageChangeItem(QTableWidgetItem* item);
-	void addLoca();
-	void removeLoca();
-	void addBloc();
-	void removeBloc();
+	void ShowLocaListContextMenu(QPoint);
+	void ManageChangeItem(QTableWidgetItem* item);
+	void ShowProvTabContextMenu(QPoint);
 	void save();
 
 private:
-	QStringList listeHeaderLoca;
-	vector<InsermLibrary::PROV> listprov;
-	QString provFolder = QDir::currentPath() + "/Resources/Config/Prov";
+	InsermLibrary::PROV *m_currentProv = nullptr;
+	QStringList m_listHeaderProv;
+	QString m_provFolder = QDir::currentPath() + "/Resources/Config/Prov";
 	Ui::FormLoca ui;
-	int initsize = 0;
 };
 
 
