@@ -199,7 +199,7 @@ void InsermLibrary::PROV::saveFile()
 
 		provStream << "ROW " << ";" << "COL " << ";" << "Name " << ";" << "Path " << ";" << "Window " << ";"
 				   << "Baseline " << ";" << "Main Event " << ";" << "Main Event Label " << ";"
-				   << "Secondary Events" << ";" << "Secondary Events Label" << "Sort" << endl;
+				   << "Secondary Events" << ";" << "Secondary Events Label" << ";" << "Sort" << endl;
 		for (int i = 0; i < visuBlocs.size(); i++)
 		{
 			provStream << visuBlocs[i].dispBloc.row() << ";"

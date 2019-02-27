@@ -34,14 +34,17 @@ private:
 	void DefineHorizontalHeader(QTableWidget *modele);
 	QStringList GetFilesFromRootFolder(QString fileExt);
 	void LoadProvTabUi(QString provName);
+	InsermLibrary::PROV* GetProvTabUi();
 
 private slots:
 	void ShowLocaListContextMenu(QPoint);
 	void ManageChangeItem(QTableWidgetItem* item);
 	void ShowProvTabContextMenu(QPoint);
-	void save();
+	void Save();
 
 private:
+	bool m_dataChanged = false;
+	bool m_isLoadingView = false;
 	InsermLibrary::PROV *m_currentProv = nullptr;
 	QStringList m_listHeaderProv;
 	QString m_provFolder = QDir::currentPath() + "/Resources/Config/Prov";

@@ -17,6 +17,36 @@ form::~form()
 	deleteAndNullify1D(m_currentProv);
 }
 
+void form::ConnectSignals()
+{
+	connect(ui.listWidget_loca, &QHeaderView::customContextMenuRequested, this, &form::ShowLocaListContextMenu);
+	connect(ui.listWidget_loca->selectionModel(), &QItemSelectionModel::currentRowChanged, this, [&](const QModelIndex current, const QModelIndex previous)
+	{
+		if (m_dataChanged)
+		{
+			QMessageBox::StandardButton reply = QMessageBox::question(this, "Data was modified", "Do you want to save the modifications to this experiment parameters ? ", QMessageBox::Yes | QMessageBox::No);
+			if (reply == QMessageBox::Yes)
+			{
+				InsermLibrary::PROV *prov = GetProvTabUi();
+				prov->saveFile();
+				deleteAndNullify1D(prov);
+			}
+			m_dataChanged = false;
+		}
+		
+		QMap<int, QVariant> currentItem = ui.listWidget_loca->model()->itemData(current);
+		if (currentItem.count() == 1)
+		{
+			LoadProvTabUi(currentItem[0].value<QString>());
+		}
+	});
+	connect(ui.tableWidget, &QHeaderView::customContextMenuRequested, this, &form::ShowProvTabContextMenu);
+	connect(ui.tableWidget->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &form::ShowProvTabContextMenu);
+	connect(ui.tableWidget->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &form::ShowProvTabContextMenu);
+	connect(ui.buttonBox_save, &QDialogButtonBox::accepted, this, &form::Save);
+	connect(ui.buttonBox_save, &QDialogButtonBox::rejected, this, [&] { close(); });
+}
+
 void form::InitUiParameters()
 {
 	ui.tableWidget->setColumnCount(11);
@@ -32,31 +62,25 @@ void form::InitUiParameters()
 	ui.tableWidget->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
-void form::ConnectSignals()
+void form::InitProvListUi(QStringList provList)
 {
-	connect(ui.listWidget_loca, &QHeaderView::customContextMenuRequested, this, &form::ShowLocaListContextMenu);
-	connect(ui.listWidget_loca->selectionModel(), &QItemSelectionModel::currentRowChanged, this, [&](const QModelIndex current, const QModelIndex previous)
+	ui.listWidget_loca->clear();
+	for (int i = 0; i < provList.size(); i++)
 	{
-		QMap<int, QVariant> currentItem = ui.listWidget_loca->model()->itemData(current);
-		if (currentItem.count() == 1)
-		{
-			LoadProvTabUi(currentItem[0].value<QString>());
-		}
-	});
-	connect(ui.tableWidget, &QHeaderView::customContextMenuRequested, this, &form::ShowProvTabContextMenu);
-	connect(ui.tableWidget->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &form::ShowProvTabContextMenu);
-	connect(ui.tableWidget->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &form::ShowProvTabContextMenu);
-	connect(ui.buttonBox_save, &QDialogButtonBox::accepted, this, &form::save);
-	connect(ui.buttonBox_save, &QDialogButtonBox::rejected, this, [&] { close(); });
+		QListWidgetItem *currentPROV = new QListWidgetItem(ui.listWidget_loca);
+		currentPROV->setText(provList[i].split(".prov", QString::SplitBehavior::SkipEmptyParts)[0]);
+		currentPROV->setFlags(currentPROV->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable);
+	}
+	connect(ui.tableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(ManageChangeItem(QTableWidgetItem*)));
 }
 
 void form::DefineHorizontalHeader(QTableWidget *tabWidget)
 {
 	QStringList listeHeader;
 	listeHeader << QString("Row") << QString("Col") << QString("Name") << QString("Path") <<
-				   QString("Window") << QString("BaseLine") << QString("Main Event") <<
-				   QString("Main Event Label") << QString("Secondary Events") <<
-				   QString("Secondary Events Label") << QString("Sort");
+		QString("Window") << QString("BaseLine") << QString("Main Event") <<
+		QString("Main Event Label") << QString("Secondary Events") <<
+		QString("Secondary Events Label") << QString("Sort");
 
 	tabWidget->setHorizontalHeaderLabels(listeHeader);
 }
@@ -70,10 +94,12 @@ QStringList form::GetFilesFromRootFolder(QString fileExt)
 }
 
 void form::LoadProvTabUi(QString provName)
-{		
+{
 	QString currentPath = m_provFolder + "/" + provName + ".prov";
 	deleteAndNullify1D(m_currentProv);
 	m_currentProv = new PROV(currentPath.toStdString());
+
+	m_isLoadingView = true;
 
 	ui.tableWidget->setRowCount(m_currentProv->nbRow());
 	m_listHeaderProv.clear();
@@ -106,61 +132,48 @@ void form::LoadProvTabUi(QString provName)
 		ui.tableWidget->setItem(i, 9, new QTableWidgetItem(m_currentProv->visuBlocs[i].secondaryEvents[0].eventLabel.c_str()));
 		ui.tableWidget->setItem(i, 10, new QTableWidgetItem(m_currentProv->visuBlocs[i].dispBloc.sort().c_str()));
 	}
+
+	m_isLoadingView = false;
 }
 
-void form::InitProvListUi(QStringList provList)
+InsermLibrary::PROV* form::GetProvTabUi()
 {
-	ui.listWidget_loca->clear();
-	for (int i = 0; i < provList.size(); i++)
+	PROV* newProv = new PROV();
+	newProv->filePath(m_currentProv->filePath());
+
+	for (int i = 0; i < ui.tableWidget->rowCount(); i++)
 	{
-		QListWidgetItem *currentPROV = new QListWidgetItem(ui.listWidget_loca);
-		currentPROV->setText(provList[i].split(".prov", QString::SplitBehavior::SkipEmptyParts)[0]);
-		currentPROV->setFlags(currentPROV->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable);
-	}
-	connect(ui.tableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(ManageChangeItem(QTableWidgetItem*)));
-}
-
-//use to keep elements well formated by the user
-void form::ManageChangeItem(QTableWidgetItem* index)
-{
-	int idLoca = ui.listWidget_loca->currentRow();
-	int row = index->row();
-	int col = index->column();
-
-	switch (col)
-	{
-		case 4:
+		BLOC currentBloc;
+		//=========
+		currentBloc.dispBloc.row(ui.tableWidget->item(i, 0)->text().toInt());
+		currentBloc.dispBloc.column(ui.tableWidget->item(i, 1)->text().toInt());
+		currentBloc.dispBloc.name(ui.tableWidget->item(i, 2)->text().toStdString());
+		currentBloc.dispBloc.path(ui.tableWidget->item(i, 3)->text().toStdString());
+		//== Window
+		QStringList splitItem = ui.tableWidget->item(i, 4)->text().split(":");
+		currentBloc.dispBloc.window(splitItem[0].toInt(), splitItem[1].toInt());
+		//== Baseline Window
+		splitItem = ui.tableWidget->item(i, 5)->text().split(":");
+		currentBloc.dispBloc.baseLine(splitItem[0].toInt(), splitItem[1].toInt());
+		//== MainEvent
+		currentBloc.mainEventBloc.eventCode.push_back(ui.tableWidget->item(i, 6)->text().toInt());
+		currentBloc.mainEventBloc.eventLabel = ui.tableWidget->item(i, 7)->text().toStdString();
+		//== SecondaryEvents
+		splitItem = ui.tableWidget->item(i, 8)->text().split(":");
+		currentBloc.secondaryEvents.push_back(EventBLOC());
+		for (int j = 0; j < splitItem.count(); ++j)
 		{
-			QStringList splitData = ui.tableWidget->item(row, col)->text().split(":");
-			if (splitData.count() != 2)
-			{
-				QMessageBox *error = new QMessageBox(QMessageBox::Warning, "ERROR", "The epoch window should be put as such : 0:500", QMessageBox::Ok);
-				error->exec();
-				ui.tableWidget->setItem(row, 4, new QTableWidgetItem(QString::number(m_currentProv->visuBlocs[row].dispBloc.windowMin()) + ":" + QString::number(m_currentProv->visuBlocs[row].dispBloc.windowMax())));
-			}
-			break;
+			currentBloc.secondaryEvents[0].eventCode.push_back(splitItem[j].toInt());
 		}
-		case 5:
-		{
-			QStringList splitData = ui.tableWidget->item(row, col)->text().split(":");
-			if (splitData.count() != 2)
-			{
-				QMessageBox *error = new QMessageBox(QMessageBox::Warning, "ERROR", "The baseline window should be put as such : 0:500", QMessageBox::Ok);
-				error->exec();
-				ui.tableWidget->setItem(row, 5, new QTableWidgetItem(QString::number(m_currentProv->visuBlocs[row].dispBloc.baseLineMin()) + ":" + QString::number(m_currentProv->visuBlocs[row].dispBloc.baseLineMax())));
-			}
-			break;
-		}
+		currentBloc.secondaryEvents[0].eventLabel = ui.tableWidget->item(i, 9)->text().toStdString();
+		//Sort
+		currentBloc.dispBloc.sort(ui.tableWidget->item(i, 10)->text().toStdString());
+		//=========
+		newProv->visuBlocs.push_back(currentBloc);
 	}
-}
 
-void form::save()
-{
-	qDebug() << "Save File(s) , need to be reimplemented" << endl;
-	//for (int i = 0; i < listprov.size(); i++)
-	//	listprov[i].saveFile(provFolder.toStdString(), ui.listWidget_loca->item(i)->text().toStdString());
+	return newProv;
 }
-
 
 void form::ShowLocaListContextMenu(QPoint point)
 {
@@ -193,6 +206,43 @@ void form::ShowLocaListContextMenu(QPoint point)
 	// Position
 	if (senderObject == ui.listWidget_loca)
 		contextMenu->exec(ui.listWidget_loca->viewport()->mapToGlobal(point));
+}
+
+//use to keep elements well formated by the user
+void form::ManageChangeItem(QTableWidgetItem* index)
+{
+	int idLoca = ui.listWidget_loca->currentRow();
+	int row = index->row();
+	int col = index->column();
+
+	if (!m_isLoadingView)
+		m_dataChanged = true;
+
+	switch (col)
+	{
+		case 4:
+		{
+			QStringList splitData = ui.tableWidget->item(row, col)->text().split(":");
+			if (splitData.count() != 2)
+			{
+				QMessageBox *error = new QMessageBox(QMessageBox::Warning, "ERROR", "The epoch window should be put as such : 0:500", QMessageBox::Ok);
+				error->exec();
+				ui.tableWidget->setItem(row, 4, new QTableWidgetItem(QString::number(m_currentProv->visuBlocs[row].dispBloc.windowMin()) + ":" + QString::number(m_currentProv->visuBlocs[row].dispBloc.windowMax())));
+			}
+			break;
+		}
+		case 5:
+		{
+			QStringList splitData = ui.tableWidget->item(row, col)->text().split(":");
+			if (splitData.count() != 2)
+			{
+				QMessageBox *error = new QMessageBox(QMessageBox::Warning, "ERROR", "The baseline window should be put as such : 0:500", QMessageBox::Ok);
+				error->exec();
+				ui.tableWidget->setItem(row, 5, new QTableWidgetItem(QString::number(m_currentProv->visuBlocs[row].dispBloc.baseLineMin()) + ":" + QString::number(m_currentProv->visuBlocs[row].dispBloc.baseLineMax())));
+			}
+			break;
+		}
+	}
 }
 
 void form::ShowProvTabContextMenu(QPoint point)
@@ -237,4 +287,12 @@ void form::ShowProvTabContextMenu(QPoint point)
 	{
 		contextMenu->exec(ui.tableWidget->horizontalHeader()->viewport()->mapToGlobal(point));
 	}
+}
+
+void form::Save()
+{
+	InsermLibrary::PROV *prov = GetProvTabUi();
+	prov->saveFile();
+	deleteAndNullify1D(prov);
+	m_dataChanged = false;
 }
