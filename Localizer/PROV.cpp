@@ -197,15 +197,15 @@ void InsermLibrary::PROV::saveFile()
 	{
 		ofstream provStream(m_filePath, ios::out);
 
-		provStream << "ROW " << ";" << "COL " << ";" << "Name " << ";" << "Path " << ";" << "Window " << ";"
-				   << "Baseline " << ";" << "Main Event " << ";" << "Main Event Label " << ";"
+		provStream << "ROW" << ";" << "COL" << ";" << "Name" << ";" << "Path" << ";" << "Window" << ";"
+				   << "Baseline" << ";" << "Main Event" << ";" << "Main Event Label" << ";"
 				   << "Secondary Events" << ";" << "Secondary Events Label" << ";" << "Sort" << endl;
 		for (int i = 0; i < visuBlocs.size(); i++)
 		{
 			provStream << visuBlocs[i].dispBloc.row() << ";"
 				<< visuBlocs[i].dispBloc.column() << ";"
 				<< visuBlocs[i].dispBloc.name() << ";"
-				<< visuBlocs[i].dispBloc.path() << ";"
+				<< visuBlocs[i].dispBloc.relativPath(GetCurrentWorkingDir()) << ";"
 				<< visuBlocs[i].dispBloc.windowMin() << ":" << visuBlocs[i].dispBloc.windowMax() << ";"
 				<< visuBlocs[i].dispBloc.baseLineMin() << ":" << visuBlocs[i].dispBloc.baseLineMax() << ";"
 				<< visuBlocs[i].mainEventBloc.eventCode[0] << ";"

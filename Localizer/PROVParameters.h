@@ -24,8 +24,12 @@ namespace InsermLibrary
 		inline std::string path() const { return m_path; };
 		inline std::string relativPath(std::string root) const 
 		{ 
-			std::vector<std::string> relativSplit = split<std::string>(m_path, root);
-			return relativSplit[0];
+			std::string::size_type n;
+			n = m_path.find_first_not_of(root);
+			if (n != std::string::npos)
+				return "/" + m_path.substr(n);
+			else
+				return "";
 		};
 		inline void path(std::string pathValue) { m_path = pathValue; };
 		inline std::string sort() const { return m_sort; };
