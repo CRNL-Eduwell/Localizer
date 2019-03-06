@@ -27,11 +27,9 @@ void form::ConnectSignals()
 			QMessageBox::StandardButton reply = QMessageBox::question(this, "Data was modified", "Do you want to save the modifications to this experiment parameters ? ", QMessageBox::Yes | QMessageBox::No);
 			if (reply == QMessageBox::Yes)
 			{
-				InsermLibrary::PROV *prov = GetProvTabUi();
-				prov->saveFile();
-				deleteAndNullify1D(prov);
+				Save();
+				m_dataChanged = false;
 			}
-			m_dataChanged = false;
 		}
 		
 		QMap<int, QVariant> currentItem = ui.listWidget_loca->model()->itemData(current);
@@ -43,7 +41,7 @@ void form::ConnectSignals()
 	connect(ui.tableWidget, &QHeaderView::customContextMenuRequested, this, &form::ShowProvTabContextMenu);
 	connect(ui.tableWidget->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &form::ShowProvTabContextMenu);
 	connect(ui.tableWidget->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &form::ShowProvTabContextMenu);
-	connect(ui.buttonBox_save, &QDialogButtonBox::accepted, this, &form::Save);
+	connect(ui.buttonBox_save, &QDialogButtonBox::accepted, this, [&] { Save(); m_dataChanged = false; });
 	connect(ui.buttonBox_save, &QDialogButtonBox::rejected, this, [&] { close(); });
 }
 
@@ -292,7 +290,24 @@ void form::ShowProvTabContextMenu(QPoint point)
 void form::Save()
 {
 	InsermLibrary::PROV *prov = GetProvTabUi();
+	//== we cheat until there is some ui to manage that
+	prov->changeCodeFilePath = "";
+	std::vector<std::string> rootSplit = split<std::string>(GetCurrentWorkingDir(), "\\/");
+	std::vector<std::string> chgCodeSplit = split<std::string>(m_currentProv->changeCodeFilePath, "\\/");
+
+	if (rootSplit[rootSplit.size() - 1] == chgCodeSplit[rootSplit.size() - 1])
+	{
+		chgCodeSplit.erase(chgCodeSplit.begin(), chgCodeSplit.begin() + rootSplit.size());
+		for each (std::string var in chgCodeSplit)
+			prov->changeCodeFilePath += ("/" + var);
+	}
+
+	prov->invertmapsinfo = m_currentProv->invertmapsinfo;
+	prov->invertmaps.baseLineWindow[0] = m_currentProv->invertmaps.baseLineWindow[0];
+	prov->invertmaps.baseLineWindow[1] = m_currentProv->invertmaps.baseLineWindow[1];
+	prov->invertmaps.epochWindow[0] = m_currentProv->invertmaps.epochWindow[0];
+	prov->invertmaps.epochWindow[1] = m_currentProv->invertmaps.epochWindow[1];
+	//===========================================================================
 	prov->saveFile();
 	deleteAndNullify1D(prov);
-	m_dataChanged = false;
 }

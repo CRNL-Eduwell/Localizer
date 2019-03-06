@@ -9,8 +9,8 @@ namespace InsermLibrary
 {
 	struct invertMap
 	{
-		int epochWindow[2];
-		int baseLineWindow[2];
+		int epochWindow[2]{ 0, 0 };
+		int baseLineWindow[2]{ 0, 0 };
 	};
 
 	struct displayBLOC

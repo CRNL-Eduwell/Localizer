@@ -214,8 +214,25 @@ void InsermLibrary::PROV::saveFile()
 				<< visuBlocs[i].secondaryEvents[0].eventLabel << ";"
 				<< visuBlocs[i].dispBloc.sort() << endl;
 		}
-		provStream << "NO_CHANGE_CODE" << endl;
-		provStream << "NO_INVERT" << endl;
+
+		if (changeCodeFilePath == "")
+		{
+			provStream << "NO_CHANGE_CODE" << endl;
+		}
+		else
+		{
+			provStream << changeCodeFilePath << endl;
+		}
+
+		if (invertmaps.epochWindow[0] == invertmaps.epochWindow[1] == invertmaps.baseLineWindow[0] == invertmaps.baseLineWindow[1] == 0)
+		{
+			provStream << "NO_INVERT" << endl;
+		}
+		else
+		{
+			provStream << invertmaps.epochWindow[0] << ":" << invertmaps.epochWindow[1] << "|" << invertmaps.baseLineWindow[0] << ":" << invertmaps.baseLineWindow[1] << endl;
+		}
+
 		provStream.close();
 	}
 }
@@ -244,8 +261,25 @@ void InsermLibrary::PROV::saveFile(std::string rootFolder, std::string fileName)
 				<< visuBlocs[i].secondaryEvents[0].eventLabel << ";"
 				<< visuBlocs[i].dispBloc.sort() << endl;
 		}
-		provStream << "NO_CHANGE_CODE" << endl;
-		provStream << "NO_INVERT" << endl;
+
+		if (changeCodeFilePath == "")
+		{
+			provStream << "NO_CHANGE_CODE" << endl;
+		}
+		else
+		{
+			provStream << changeCodeFilePath << endl;
+		}
+
+		if (invertmaps.epochWindow[0] == invertmaps.epochWindow[1] == invertmaps.baseLineWindow[0] == invertmaps.baseLineWindow[1] == 0)
+		{
+			provStream << "NO_INVERT" << endl;
+		}
+		else
+		{
+			provStream << invertmaps.epochWindow[0] << ":" << invertmaps.epochWindow[1] << "|" << invertmaps.baseLineWindow[0] << ":" << invertmaps.baseLineWindow[1] << endl;
+		}
+
 		provStream.close();
 	}
 }
