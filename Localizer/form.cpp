@@ -218,6 +218,14 @@ void form::ManageChangeItem(QTableWidgetItem* index)
 
 	switch (col)
 	{
+		case 2 :
+		{
+			m_listHeaderProv[row] = ui.tableWidget->item(row, col)->text();	
+			ui.tableWidget->verticalHeader()->hide();
+			ui.tableWidget->setVerticalHeaderLabels(m_listHeaderProv);
+			ui.tableWidget->verticalHeader()->show();
+			break;
+		}
 		case 4:
 		{
 			QStringList splitData = ui.tableWidget->item(row, col)->text().split(":");
