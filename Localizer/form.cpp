@@ -26,10 +26,9 @@ void form::ConnectSignals()
 		{
 			QMessageBox::StandardButton reply = QMessageBox::question(this, "Data was modified", "Do you want to save the modifications to this experiment parameters ? ", QMessageBox::Yes | QMessageBox::No);
 			if (reply == QMessageBox::Yes)
-			{
 				Save();
-				m_dataChanged = false;
-			}
+
+			m_dataChanged = false;
 		}
 		
 		QMap<int, QVariant> currentItem = ui.listWidget_loca->model()->itemData(current);
@@ -275,6 +274,8 @@ void form::ShowProvTabContextMenu(QPoint point)
 
 				m_listHeaderProv.append(conditionName);						//Add to vertical list behind
 				ui.tableWidget->setVerticalHeaderLabels(m_listHeaderProv);
+
+				m_dataChanged = true;
 			}
 		});
 		QAction* removeBlocAction = contextMenu->addAction("Remove selected conditions from this experiment", [this]
@@ -286,6 +287,7 @@ void form::ShowProvTabContextMenu(QPoint point)
 				m_listHeaderProv.removeAt(indexes.last().row());				  //remove from vertical list behind
 				indexes.removeLast();
 			}
+			m_dataChanged = true;
 		});
 		contextMenu->exec(ui.tableWidget->verticalHeader()->viewport()->mapToGlobal(point));
 	}
