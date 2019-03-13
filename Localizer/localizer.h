@@ -21,6 +21,7 @@
 #include "chooseElec.h"
 #include "picOptions.h"
 #include "form.h"
+#include "AboutDycog.h"
 #include "concatenator.h"
 #include "Worker.h"
 #include "LOCA.h"

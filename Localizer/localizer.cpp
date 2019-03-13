@@ -108,7 +108,11 @@ void Localizer::connectMenuBar()
 	connect(openLocaMenu, &QAction::triggered, this, [&] { optLoca->exec(); });
 	//===Aide
 	QAction* openAbout = ui.menuAide->actions().at(0);
-	connect(openAbout, &QAction::triggered, this, [&] { QMessageBox::information(this, "About", "Something"); });
+	connect(openAbout, &QAction::triggered, this, [&] 
+	{ 
+		AboutDycog about;
+		about.exec();
+	});
 }
 
 void Localizer::loadPatientFolder()
