@@ -6,7 +6,6 @@
 #include <QTableWidget>
 #include <QMessageBox>
 #include <iostream>
-#include "TRCFunctions.h"
 #include "Worker.h"
 #include <QThread>
 #include "ui_concatenator.h"

@@ -40,7 +40,7 @@ void InsermLibrary::LOCA::eeg2erp(eegContainer *myeegContainer, PROV *myprovFile
 			for (int k = 0; k < myeegContainer->flatElectrodes.size(); k++)
 			{
 				int beginPos = triggCatEla->triggers[i].trigger.sample + windowSam[0];
-				bigDataMono[i][k][j] = myeegContainer->eegData[k][beginPos + j];
+				bigDataMono[i][k][j] = myeegContainer->Data()[k][beginPos + j];
 			}
 		}
 	}
@@ -101,7 +101,7 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 		checkShannonCompliance(myeegContainer->sampInfo.samplingFrequency, currentFrequencyBand);
 		if (userOpt->anaOption[idCurrentLoca].anaOpt[i].eeg2env)
 		{
-			myeegContainer->ToHilbert(myeegContainer->elanFrequencyBand[i], currentFrequencyBand.freqBandValue);
+			myeegContainer->ToHilbert(i, currentFrequencyBand.freqBandValue);
 			emit incrementAdavnce(1);
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 
@@ -119,10 +119,14 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 				if ((currentLoca->frequencyFolders()[j].frequencyName() == "f" + fMin + "f" + fMax) &&
 					(currentLoca->frequencyFolders()[j].filePath(SM0_ELAN) != ""))
 				{
-					int loadFile = ef_read_elan_file((char*)currentLoca->frequencyFolders()[j].filePath(SM0_ELAN).c_str(), myeegContainer->elanFrequencyBand[i]);
-					if (loadFile == 0)
-					{
-						ELANFunctions::convertELANAnalogDataToDigital(myeegContainer->elanFrequencyBand[i]);
+					std::string frequencyDataFilePath = currentLoca->frequencyFolders()[j].filePath(SM0_ELAN);
+					std::string frequencyHeaderFilePath = frequencyDataFilePath + ".ent";
+
+					if (EEGFormat::Utility::IsValidFile(frequencyHeaderFilePath) && EEGFormat::Utility::IsValidFile(frequencyDataFilePath))
+					{					
+						myeegContainer->elanFrequencyBand[i][0] = new EEGFormat::ElanFile(frequencyHeaderFilePath, frequencyDataFilePath);
+						myeegContainer->elanFrequencyBand[i][0]->Load();
+
 						emit incrementAdavnce(1);
 						emit sendLogInfo("Envelloppe File Loaded");
 
@@ -150,7 +154,7 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 		LOCA::checkShannonCompliance(myeegContainer->sampInfo.samplingFrequency, currentFrequencyBand);
 		if (userOpt->anaOption[idCurrentLoca].anaOpt[i].eeg2env)
 		{
-			myeegContainer->ToHilbert(myeegContainer->elanFrequencyBand[i], currentFrequencyBand.freqBandValue);
+			myeegContainer->ToHilbert(i, currentFrequencyBand.freqBandValue);
 			emit incrementAdavnce(1);
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 
@@ -177,25 +181,31 @@ void InsermLibrary::LOCA::checkShannonCompliance(int p_samplingFrequency, freque
 		p_freq.freqFolderName = "";
 		p_freq.freqFolderName.append("f").append(to_string(fMin)).append("f").append(to_string(fMax));
 	}
+	cout << "enculeé" << endl;
 }
 
 void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreqfrequency, 
 													 string freqFolder, analysisOption a)
 {
 	bool env = false, bar = false, trial = false;
+	cout << "MOFO" << endl;
 
 	vector<PROV> provFiles = loadProvCurrentLoca();
 	for (int i = 0; i < provFiles.size(); i++)
 	{
+		cout << "MOFO" << endl;
+
 		if (provFiles[i].changeCodeFilePath != "")
 			renameTriggers(myeegContainer->triggEeg, myeegContainer->triggEegDownsampled, &provFiles[i]);
 		createPosFile(myeegContainer); 
 		createConfFile(myeegContainer);
 		processEventsDown(myeegContainer, &provFiles[i]);
+		cout << "MOFO" << endl;
 
 		if (provFiles[i].invertmapsinfo != "")
 			swapStimResp(triggCatEla, &provFiles[i]);
-		
+		cout << "MOFO" << endl;
+
 		if (a.env2plot)//env2plot
 		{
 			if (shouldPerformBarPlot(currentLoca->localizerName()) || isBarPlot(provFiles[i].filePath()))
@@ -212,9 +222,12 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 				}
 			}
 		}
+		cout << "MOFO" << endl;
 
 		if (a.trialmat && (isBarPlot(provFiles[i].filePath()) == false || provFiles.size() == 1))
 		{
+			cout << "enculeé trial" << endl;
+
 			timeTrialmatrices(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
 			emit incrementAdavnce(provFiles.size());
 		}
@@ -722,7 +735,7 @@ void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, int idCurrentFre
 	//== get Bloc of eeg data we want to display center around events
 	vec3<float> bigData;
 	bigData.resize(triggCatEla->triggers.size(), vec2<float>(myeegContainer->bipoles.size(), vec1<float>(windowSam[1] - windowSam[0])));
-	ELANFunctions::readBlocDataEventsAllChannels(myeegContainer->elanFrequencyBand[idCurrentFreqfrequency], triggCatEla, bigData, windowSam);
+	InsermLibrary::eegContainer::readBlocDataEventsAllChannels(myeegContainer->elanFrequencyBand[idCurrentFreqfrequency][0], triggCatEla, bigData, windowSam);
 
 	//== calculate stat
 	vec1<PVALUECOORD> significantValue = calculateStatisticKruskall(bigData, myeegContainer, myprovFile, mapsFolder);
@@ -804,7 +817,7 @@ void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, int idCurrentFr
 	//== get Bloc of eeg data we want to display center around events
 	vec3<float> bigData;
 	bigData.resize(triggCatEla->triggers.size(), vec2<float>(myeegContainer->bipoles.size(), vec1<float>(windowSam[1] - windowSam[0])));
-	ELANFunctions::readBlocDataEventsAllChannels(myeegContainer->elanFrequencyBand[idCurrentFreqfrequency], triggCatEla, bigData, windowSam);
+	InsermLibrary::eegContainer::readBlocDataEventsAllChannels(myeegContainer->elanFrequencyBand[idCurrentFreqfrequency][0], triggCatEla, bigData, windowSam);
 
 	//==
 	drawPlots b = drawPlots(myprovFile, mapPath, userOpt->picOption.sizePlotmap);
@@ -850,7 +863,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 	//== get Bloc of eeg data we want to display center around events
 	vec3<float> bigData;
 	bigData.resize(myeegContainer->bipoles.size(), vec2<float>(triggCatEla->triggers.size(), vec1<float>(windowSam[1] - windowSam[0])));
-	ELANFunctions::readBlocDataAllChannels(myeegContainer->elanFrequencyBand[idCurrentFreqfrequency], triggCatEla, bigData, windowSam);
+	InsermLibrary::eegContainer::readBlocDataAllChannels(myeegContainer->elanFrequencyBand[idCurrentFreqfrequency][0], triggCatEla, bigData, windowSam);
 
 	//== calculate stat
 	if (shouldPerformStatTrial(currentLoca->localizerName()))
@@ -862,7 +875,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 
 	QPixmap *pixmapChanel = nullptr, *pixmapSubSubMatrix = nullptr;
 	QPainter *painterChanel = nullptr, *painterSubSubMatrix = nullptr;
-	for (int i = 0; i < myeegContainer->elanFrequencyBand[idCurrentFreqfrequency]->chan_nb; i++)
+	for (int i = 0; i < myeegContainer->elanFrequencyBand[idCurrentFreqfrequency][0]->ElectrodeCount(); i++)
 	{
 		deleteAndNullify1D(painterChanel);
 		deleteAndNullify1D(pixmapChanel);

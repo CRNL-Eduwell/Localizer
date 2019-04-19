@@ -1,7 +1,6 @@
 #include "concatenator.h"
 
 using namespace std;
-using namespace MicromedLibrary;
 
 concatenator::concatenator(string rootFolder, QWidget *parent) : QDialog(parent)
 {

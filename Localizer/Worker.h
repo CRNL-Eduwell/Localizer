@@ -6,12 +6,15 @@
 #include <QDir>
 #include <QThread>
 
+#include "Utility.h"
 #include "patientFolder.h"
 #include "singleFile.h"
-#include "Utility.h"
 #include "optionsStats.h"
 #include "optionsPerf.h"
 
+#include "MicromedFile.h"
+#include "ElanFile.h"
+#include "EdfFile.h"
 #include "eegContainer.h"
 
 #include"LOCA.h"
@@ -19,7 +22,6 @@
 
 
 using namespace std;
-using namespace MicromedLibrary;
 using namespace InsermLibrary;
 
 class Worker : public QObject
@@ -38,14 +40,8 @@ private:
 	void analyseSingleFiles(vector<singleFile> currentFiles);
 	eegContainer *extractEEGData(locaFolder currentLoca, int idFile, int nbFreqBand);
 	eegContainer *extractEEGData(locaFolder currentLoca);
-	eegContainer *createFromTRC(locaFolder currentLoca, bool extractOrigData, int nbFreqBand = 0);
-	eegContainer *createFromELAN(locaFolder currentLoca, bool extractOrigData, int nbFreqBand = 0);
-	eegContainer *createFromEDF(locaFolder currentLoca, bool extractOrigData, int nbFreqBand = 0);
 	eegContainer *extractEEGData(singleFile currentFile, int idFile, int nbFreqBand);
 	eegContainer *extractEEGData(singleFile currentFile);
-	eegContainer *createFromTRC(singleFile currentFile, bool extractOrigData, int nbFreqBand = 0);
-	eegContainer *createFromELAN(singleFile currentFile, bool extractOrigData, int nbFreqBand = 0);
-	eegContainer *createFromEDF(singleFile currentFile, bool extractOrigData, int nbFreqBand = 0);
 	bool extractOriginalData(locaAnalysisOption anaOpt);
 
 public slots:

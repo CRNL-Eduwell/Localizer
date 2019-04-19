@@ -1,9 +1,8 @@
 #ifndef _EEGCONTAINER_H
 #define _EEGCONTAINER_H
 
-#include "TRCFunctions.h"
-#include "ELANFunctions.h"
-#include "EDFFunctions.h"
+#include "IFile.h"
+#include "ElanFile.h"
 #include "eegContainerParameters.h"
 #include "MATLABFUNC.h"	
 
@@ -15,7 +14,6 @@
 #include <direct.h>
 
 using namespace std;
-using namespace MicromedLibrary;
 using namespace InsermLibrary;
 
 namespace InsermLibrary
@@ -52,44 +50,47 @@ namespace InsermLibrary
 	class eegContainer
 	{
 	public:
-		eegContainer(ELANFile* elan, int downsampFrequency, int nbFreqBand);
-		eegContainer(TRCFile* trc, int downsampFrequency, int nbFreqBand);
-		eegContainer(EDFFile* edf, int downsampFrequency, int nbFreqBand);
-		~eegContainer();
+		eegContainer(EEGFormat::IFile* file, int downsampFrequency, int nbFreqBand);
+		~eegContainer();		
+
+		//===[ Getter / Setter ]===
+		inline std::vector<std::vector<float>>& Data() { return m_file->Data(EEGFormat::DataConverterType::Digital); }
+		inline const std::vector<std::vector<float>>& Data() const { return m_file->Data(EEGFormat::DataConverterType::Digital); }
+
+		//===[ Data Modification ]===
 		void deleteElectrodes(vector<int> elecToDelete);
+		void GetElectrodes();
 		void bipolarizeData();
-		void getElectrodes();
-		void ToHilbert(elan_struct_t* elanStruct, vector<int> frequencyBand);
+		void ToHilbert(int IdFrequency, vector<int> frequencyBand);
+
+		//===[ Tools ]===
+		static void readBlocDataAllChannels(EEGFormat::ElanFile* file, TRIGGINFO *triggEeg, vector<vector<vector<float>>> &eegData, int winSam[2]);
+		static void readBlocDataEventsAllChannels(EEGFormat::ElanFile* file, TRIGGINFO *triggEeg, vector<vector<vector<float>>> &eegData, int winSam[2]);
+	
 	private:
-		void getElectrodeFromElanFile(ELANFile* elan);
-		void getElectrodeFromTRCFile(TRCFile* trc);
-		void getElectrodeFromEDFFile(EDFFile* edf);
+		void GetElectrodes(EEGFormat::IFile* edf);
 		int idSplitDigiAndNum(string myString);
 		void calculateSmoothing();
-		vector<int> findIndexes(vector<digitalTriggers> tab, int value2find);
-		vector<int> findIndexes(vector<eventElanFile> trigg, int value2find);
-		vector<int> findIndexes(vector<Edf_event> trigg, int value2find);
-		void initElanFreqStruct(elan_struct_t *structToInit);
+		std::vector<int> findIndexes(std::vector<EEGFormat::ITrigger> & trigg, int value2find);
+		void initElanFreqStruct();
 		void hilbertDownSampSumData(dataContainer *dataCont, int threadId, int freqId);
 		void meanConvolveData(dataContainer *dataCont, int threadId);
 
 	public :
-		vector<elan_struct_t*> elanFrequencyBand;
+		//[IdNbFrequency][sm0-sm5000][channels][sample]
+		std::vector<std::vector<EEGFormat::ElanFile*>> elanFrequencyBand;
 		TRIGGINFO *triggEeg = nullptr;
 		TRIGGINFO *triggEegDownsampled = nullptr;
 		vector<elecContainer> electrodes;
 		vector<string> flatElectrodes;
 		vector<bipole> bipoles;
-		vector<vector<float>> eegData;
 		vector<int> idElecToDelete;
 		string originalFilePath = "";
 		samplingInformation sampInfo;
 	private:
 		float smoothingSample[6];
 		float smoothingMilliSec[6] = { 0, 250, 500, 1000, 2500, 5000 };
-		ELANFile* elanFile = nullptr;
-		TRCFile* trcFile = nullptr;
-		EDFFile* edfFile = nullptr;
+		EEGFormat::IFile* m_file = nullptr;
 		std::mutex mtx;
 	};
 }

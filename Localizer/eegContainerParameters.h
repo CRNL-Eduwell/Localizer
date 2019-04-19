@@ -3,12 +3,10 @@
 
 #include <iostream>
 #include <vector>
-#include "TRCFunctions.h"
-#include "ELANFile.h"
-#include "EDFFile.h"
+#include "Utility.h"
+#include "ITrigger.h"
 
 using namespace std;
-using namespace MicromedLibrary;
 
 namespace InsermLibrary
 {
@@ -88,27 +86,11 @@ namespace InsermLibrary
 			}
 		}
 
-		TRIGGINFO(digitalTriggers *p_triggers, int nbTriggers, int downFactor = 1)
+		TRIGGINFO(EEGFormat::ITrigger *p_triggers, int nbTriggers, int downFactor = 1)
 		{
 			for (int i = 0; i < nbTriggers; i++)
 			{
-				triggers.push_back(TRIGG(eventEeg(p_triggers[i].triggerValue, p_triggers[i].triggerSample / downFactor)));
-			}
-		}
-
-		TRIGGINFO(eventElanFile *p_triggers, int nbTriggers, int downFactor = 1)
-		{
-			for (int i = 0; i < nbTriggers; i++)
-			{
-				triggers.push_back(TRIGG(eventEeg(p_triggers[i].code, p_triggers[i].sample / downFactor)));
-			}
-		}
-
-		TRIGGINFO(Edf_event *p_triggers, int nbTriggers, int downFactor = 1)
-		{
-			for (int i = 0; i < nbTriggers; i++)
-			{
-				triggers.push_back(TRIGG(eventEeg(p_triggers[i].code, p_triggers[i].sample / downFactor)));
+				triggers.push_back(TRIGG(eventEeg(p_triggers[i].Code(), p_triggers[i].Sample() / downFactor)));
 			}
 		}
 
