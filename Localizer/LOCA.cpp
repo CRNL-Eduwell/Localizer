@@ -724,16 +724,15 @@ void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, int idCurrentFre
 	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency);
 
 	//== get Bloc of eeg data we want to display center around events
-	vec3<float> bigData;
-	bigData.resize(triggCatEla->triggers.size(), vec2<float>(myeegContainer->bipoles.size(), vec1<float>(windowSam[1] - windowSam[0])));
-	InsermLibrary::eegContainer::readBlocDataEventsAllChannels(myeegContainer->elanFrequencyBand[idCurrentFreqfrequency][0], triggCatEla, bigData, windowSam);
+	vec3<float> eegData3D = vec3<float>(triggCatEla->triggers.size(), vec2<float>(myeegContainer->bipoles.size(), vec1<float>(windowSam[1] - windowSam[0])));
+	myeegContainer->GetFrequencyBlocDataEvents(eegData3D, idCurrentFreqfrequency, 0, triggCatEla, windowSam);
 
 	//== calculate stat
-	vec1<PVALUECOORD> significantValue = calculateStatisticKruskall(bigData, myeegContainer, myprovFile, mapsFolder);
+	vec1<PVALUECOORD> significantValue = calculateStatisticKruskall(eegData3D, myeegContainer, myprovFile, mapsFolder);
 
 	//==
 	drawBars b = drawBars(myprovFile, mapPath, userOpt->picOption.sizePlotmap);
-	b.drawDataOnTemplate(bigData, triggCatEla, significantValue, myeegContainer);
+	b.drawDataOnTemplate(eegData3D, triggCatEla, significantValue, myeegContainer);
 
 	delete windowSam;
 }
@@ -806,13 +805,12 @@ void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, int idCurrentFr
 	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency);
 
 	//== get Bloc of eeg data we want to display center around events
-	vec3<float> bigData;
-	bigData.resize(triggCatEla->triggers.size(), vec2<float>(myeegContainer->bipoles.size(), vec1<float>(windowSam[1] - windowSam[0])));
-	InsermLibrary::eegContainer::readBlocDataEventsAllChannels(myeegContainer->elanFrequencyBand[idCurrentFreqfrequency][0], triggCatEla, bigData, windowSam);
+	vec3<float> eegData3D = vec3<float>(triggCatEla->triggers.size(), vec2<float>(myeegContainer->bipoles.size(), vec1<float>(windowSam[1] - windowSam[0])));
+	myeegContainer->GetFrequencyBlocDataEvents(eegData3D, idCurrentFreqfrequency, 0, triggCatEla, windowSam);
 
 	//==
 	drawPlots b = drawPlots(myprovFile, mapPath, userOpt->picOption.sizePlotmap);
-	b.drawDataOnTemplate(bigData, triggCatEla, myeegContainer, 2);
+	b.drawDataOnTemplate(eegData3D, triggCatEla, myeegContainer, 2);
 
 	delete windowSam;
 }
@@ -854,7 +852,9 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 	//== get Bloc of eeg data we want to display center around events
 	vec3<float> bigData;
 	bigData.resize(myeegContainer->bipoles.size(), vec2<float>(triggCatEla->triggers.size(), vec1<float>(windowSam[1] - windowSam[0])));
-	InsermLibrary::eegContainer::readBlocDataAllChannels(myeegContainer->elanFrequencyBand[idCurrentFreqfrequency][0], triggCatEla, bigData, windowSam);
+
+
+	myeegContainer->GetFrequencyBlocData(bigData, idCurrentFreqfrequency, 0, triggCatEla, windowSam);
 
 	//== calculate stat
 	if (shouldPerformStatTrial(currentLoca->localizerName()))

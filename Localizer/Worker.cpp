@@ -235,9 +235,9 @@ eegContainer *Worker::extractEEGData(locaFolder currentLoca, int idFile, int nbF
 		elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
 	}
 
-	myContainer->deleteElectrodes(elecToDeleteMem);
+	myContainer->DeleteElectrodes(elecToDeleteMem);
 	myContainer->GetElectrodes();
-	myContainer->bipolarizeData();
+	myContainer->BipolarizeElectrodes();
 
 	emit sendLogInfo(QString::fromStdString("Bipole created !"));
 	return myContainer;
@@ -291,9 +291,9 @@ eegContainer *Worker::extractEEGData(locaFolder currentLoca)
 
 	elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
 
-	myContainer->deleteElectrodes(elecToDeleteMem);
+	myContainer->DeleteElectrodes(elecToDeleteMem);
 	myContainer->GetElectrodes();
-	myContainer->bipolarizeData();
+	myContainer->BipolarizeElectrodes();
 
 	emit sendLogInfo(QString::fromStdString("Bipole created !"));
 	return myContainer;
@@ -353,9 +353,9 @@ eegContainer *Worker::extractEEGData(singleFile currentFile, int idFile, int nbF
 
 	elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
 
-	myContainer->deleteElectrodes(elecToDeleteMem);
+	myContainer->DeleteElectrodes(elecToDeleteMem);
 	myContainer->GetElectrodes();
-	myContainer->bipolarizeData();
+	myContainer->BipolarizeElectrodes();
 
 	emit sendLogInfo(QString::fromStdString("Bipole created !"));
 	return myContainer;
@@ -409,9 +409,9 @@ eegContainer *Worker::extractEEGData(singleFile currentFile)
 
 	elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
 
-	myContainer->deleteElectrodes(elecToDeleteMem);
+	myContainer->DeleteElectrodes(elecToDeleteMem);
 	myContainer->GetElectrodes();
-	myContainer->bipolarizeData();
+	myContainer->BipolarizeElectrodes();
 
 	emit sendLogInfo(QString::fromStdString("Bipole created !"));
 	return myContainer;

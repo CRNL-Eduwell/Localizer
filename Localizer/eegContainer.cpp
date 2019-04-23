@@ -70,7 +70,7 @@ InsermLibrary::eegContainer::~eegContainer()
 	fftwf_cleanup_threads();
 }
 
-void InsermLibrary::eegContainer::deleteElectrodes(vector<int> elecToDelete)
+void InsermLibrary::eegContainer::DeleteElectrodes(vector<int> elecToDelete)
 {
 	if (m_file != nullptr)
 	{
@@ -89,7 +89,7 @@ void InsermLibrary::eegContainer::GetElectrodes()
 	}
 }
 
-void InsermLibrary::eegContainer::bipolarizeData()
+void InsermLibrary::eegContainer::BipolarizeElectrodes()
 {
 	if (bipoles.size() > 0)
 		bipoles.clear();
@@ -238,10 +238,9 @@ void InsermLibrary::eegContainer::LoadFrequencyData(std::vector<std::string>& fi
 	}
 }
 
-//file is sm0 file usually
-void InsermLibrary::eegContainer::readBlocDataAllChannels(EEGFormat::ElanFile* file, TRIGGINFO *triggEeg, vector<vector<vector<float>>> &eegData, int winSam[2])
+void InsermLibrary::eegContainer::GetFrequencyBlocData(vec3<float>& outputEegData, int frequencyId, int smoothingId, TRIGGINFO *triggEeg, int winSam[2])
 {
-	for (int i = 0; i < file->ElectrodeCount(); i++)
+	for (int i = 0; i < elanFrequencyBand[frequencyId][smoothingId]->ElectrodeCount(); i++)
 	{
 		for (int j = 0; j < triggEeg->triggers.size(); j++)
 		{
@@ -252,16 +251,15 @@ void InsermLibrary::eegContainer::readBlocDataAllChannels(EEGFormat::ElanFile* f
 			{
 				//to prevent issue in case the first event has been recorded realy quick
 				if (beginTime + k < 0)
-					eegData[i][j][k] = 0;
+					outputEegData[i][j][k] = 0;
 				else
-					eegData[i][j][k] = (file->Data(EEGFormat::DataConverterType::Analog)[i][beginTime + k] - 1000) / 10;
+					outputEegData[i][j][k] = (elanFrequencyBand[frequencyId][smoothingId]->Data(EEGFormat::DataConverterType::Analog)[i][beginTime + k] - 1000) / 10;
 			}
 		}
 	}
 }
 
-//file is sm0 file usually
-void InsermLibrary::eegContainer::readBlocDataEventsAllChannels(EEGFormat::ElanFile* file, TRIGGINFO *triggEeg, vector<vector<vector<float>>> &eegData, int winSam[2])
+void InsermLibrary::eegContainer::GetFrequencyBlocDataEvents(vec3<float>& outputEegData, int frequencyId, int smoothingId, TRIGGINFO *triggEeg, int winSam[2])
 {
 	for (int i = 0; i < triggEeg->triggers.size(); i++)
 	{
@@ -270,13 +268,13 @@ void InsermLibrary::eegContainer::readBlocDataEventsAllChannels(EEGFormat::ElanF
 			int trigTime = triggEeg->triggers[i].trigger.sample;
 			int beginTime = trigTime + winSam[0];
 
-			for (int k = 0; k < file->ElectrodeCount(); k++)
+			for (int k = 0; k < elanFrequencyBand[frequencyId][smoothingId]->ElectrodeCount(); k++)
 			{
 				//to prevent issue in case the first event has been recorded realy quick
 				if (beginTime + j < 0)
-					eegData[i][k][j] = 0;
+					outputEegData[i][k][j] = 0;
 				else
-					eegData[i][k][j] = (file->Data(EEGFormat::DataConverterType::Analog)[k][beginTime + j] - 1000) / 10;
+					outputEegData[i][k][j] = (elanFrequencyBand[frequencyId][smoothingId]->Data(EEGFormat::DataConverterType::Analog)[k][beginTime + j] - 1000) / 10;
 			}
 		}
 	}
