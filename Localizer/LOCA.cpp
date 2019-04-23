@@ -119,14 +119,15 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 				if ((currentLoca->frequencyFolders()[j].frequencyName() == "f" + fMin + "f" + fMax) &&
 					(currentLoca->frequencyFolders()[j].filePath(SM0_ELAN) != ""))
 				{
-					std::string frequencyDataFilePath = currentLoca->frequencyFolders()[j].filePath(SM0_ELAN);
-					std::string frequencyHeaderFilePath = frequencyDataFilePath + ".ent";
+					std::string dataFile = currentLoca->frequencyFolders()[j].filePath(SM0_ELAN);
 
-					if (EEGFormat::Utility::IsValidFile(frequencyHeaderFilePath) && EEGFormat::Utility::IsValidFile(frequencyDataFilePath))
-					{					
-						myeegContainer->elanFrequencyBand[i][0] = new EEGFormat::ElanFile(frequencyHeaderFilePath, frequencyDataFilePath);
-						myeegContainer->elanFrequencyBand[i][0]->Load();
+					std::vector<std::string> filesPath;
+					filesPath.push_back(dataFile + ".ent");
+					filesPath.push_back(dataFile);
 
+					if (EEGFormat::Utility::IsValidFile(filesPath[0]) && EEGFormat::Utility::IsValidFile(filesPath[1]))
+					{				
+						myeegContainer->LoadFrequencyData(filesPath, i, 0);
 						emit incrementAdavnce(1);
 						emit sendLogInfo("Envelloppe File Loaded");
 
@@ -166,7 +167,6 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 
 void InsermLibrary::LOCA::checkShannonCompliance(int p_samplingFrequency, frequency & p_freq)
 {
-	cout << p_samplingFrequency << endl;
 	if (p_freq.freqBandValue[p_freq.freqBandValue.size() - 1] > (p_samplingFrequency / 2))
 	{
 		int step = p_freq.freqBandValue[1] - p_freq.freqBandValue[0];
@@ -181,30 +181,24 @@ void InsermLibrary::LOCA::checkShannonCompliance(int p_samplingFrequency, freque
 		p_freq.freqFolderName = "";
 		p_freq.freqFolderName.append("f").append(to_string(fMin)).append("f").append(to_string(fMax));
 	}
-	cout << "enculeé" << endl;
 }
 
 void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreqfrequency, 
 													 string freqFolder, analysisOption a)
 {
 	bool env = false, bar = false, trial = false;
-	cout << "MOFO" << endl;
 
 	vector<PROV> provFiles = loadProvCurrentLoca();
 	for (int i = 0; i < provFiles.size(); i++)
 	{
-		cout << "MOFO" << endl;
-
 		if (provFiles[i].changeCodeFilePath != "")
 			renameTriggers(myeegContainer->triggEeg, myeegContainer->triggEegDownsampled, &provFiles[i]);
 		createPosFile(myeegContainer); 
 		createConfFile(myeegContainer);
 		processEventsDown(myeegContainer, &provFiles[i]);
-		cout << "MOFO" << endl;
 
 		if (provFiles[i].invertmapsinfo != "")
 			swapStimResp(triggCatEla, &provFiles[i]);
-		cout << "MOFO" << endl;
 
 		if (a.env2plot)//env2plot
 		{
@@ -222,12 +216,9 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 				}
 			}
 		}
-		cout << "MOFO" << endl;
 
 		if (a.trialmat && (isBarPlot(provFiles[i].filePath()) == false || provFiles.size() == 1))
 		{
-			cout << "enculeé trial" << endl;
-
 			timeTrialmatrices(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
 			emit incrementAdavnce(provFiles.size());
 		}

@@ -62,6 +62,7 @@ namespace InsermLibrary
 		void GetElectrodes();
 		void bipolarizeData();
 		void ToHilbert(int IdFrequency, vector<int> frequencyBand);
+		void LoadFrequencyData(std::vector<std::string>& filesPath, int frequencyId, int smoothingId);
 
 		//===[ Tools ]===
 		static void readBlocDataAllChannels(EEGFormat::ElanFile* file, TRIGGINFO *triggEeg, vector<vector<vector<float>>> &eegData, int winSam[2]);

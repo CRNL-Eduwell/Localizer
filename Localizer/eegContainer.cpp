@@ -44,7 +44,6 @@ InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFr
 	sampInfo.downsampFactor = sampInfo.samplingFrequency / sampInfo.downsampledFrequency; //verifier si bonne fréquence d'échantillonage ( non 2^n factor)
 	sampInfo.nbSample = Data().size() > 0 ? Data()[0].size() : 0;
 
-	std::cout << "nbSample" << sampInfo.nbSample << std::endl;
 	//==
 	originalFilePath = m_file->DefaultFilePath();
 	originalFilePath.replace(originalFilePath.end() - 4, originalFilePath.end(), "");
@@ -112,6 +111,178 @@ void InsermLibrary::eegContainer::bipolarizeData()
 	}
 }
 
+void InsermLibrary::eegContainer::ToHilbert(int IdFrequency, vector<int> frequencyBand)
+{
+	thread thr[5];
+	initElanFreqStruct();
+	dataContainer dataCont = dataContainer(frequencyBand, sampInfo);
+
+	for (int i = 0; i < bipoles.size() / 5; i++)
+	{
+		for (int j = 0; j < 5; j++)
+		{
+			int idCurrentBip = (i * 5) + j;
+			for (int k = 0; k < dataCont.arrayLength; k++)
+			{
+				dataCont.bipData[j][k] = Data()[bipoles[idCurrentBip].positivElecId][k] - Data()[bipoles[idCurrentBip].negativElecId][k];
+			}
+		}
+
+		for (int j = 0; j < frequencyBand.size() - 1; j++)
+		{
+			thr[0] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 0, j);
+			thr[1] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 1, j);
+			thr[2] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 2, j);
+			thr[3] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 3, j);
+			thr[4] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 4, j);
+
+			thr[0].join();
+			thr[1].join();
+			thr[2].join();
+			thr[3].join();
+			thr[4].join();
+		}
+
+		thr[0] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 0);
+		thr[1] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 1);
+		thr[2] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 2);
+		thr[3] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 3);
+		thr[4] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 4);
+
+		thr[0].join();
+		thr[1].join();
+		thr[2].join();
+		thr[3].join();
+		thr[4].join();
+
+		for (int j = 0; j < elanFrequencyBand[IdFrequency].size(); j++)
+		{
+			for (int k = 0; k < 5; k++)
+			{
+				for (int l = 0; l < elanFrequencyBand[IdFrequency][j]->Data(EEGFormat::DataConverterType::Digital)[(i * 5) + k].size(); l++)
+				{
+					elanFrequencyBand[IdFrequency][j]->Data(EEGFormat::DataConverterType::Digital)[(i * 5) + k][l] = dataCont.convoData[j][k][l];
+				}
+			}
+		}
+	}
+
+	if (bipoles.size() % 5 != 0)
+	{
+		for (int i = 0; i < bipoles.size() % 5; i++)
+		{
+			for (int j = 0; j < dataCont.arrayLength; j++)
+			{
+				int idCurrentBip = (bipoles.size() / 5) * 5;
+				dataCont.bipData[i][j] = Data()[bipoles[idCurrentBip + i].positivElecId][j] - Data()[bipoles[idCurrentBip + i].negativElecId][j];
+			}
+		}
+
+		for (int i = 0; i < frequencyBand.size() - 1; i++)
+		{
+			for (int j = 0; j < bipoles.size() % 5; j++)
+			{
+				thr[j] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, j, i);
+				thr[j].join();
+			}
+		}
+
+		for (int i = 0; i < bipoles.size() % 5; i++)
+		{
+			thr[i] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, i);
+			thr[i].join();
+		}
+
+		for (int i = 0; i < elanFrequencyBand[IdFrequency].size(); i++)
+		{
+			for (int j = 0; j < bipoles.size() % 5; j++)
+			{
+				int currentId = (bipoles.size() - (bipoles.size() % 5)) + j;
+				for (int k = 0; k < elanFrequencyBand[IdFrequency][i]->Data(EEGFormat::DataConverterType::Digital)[currentId].size(); k++)
+				{
+					elanFrequencyBand[IdFrequency][i]->Data(EEGFormat::DataConverterType::Digital)[currentId][k] = dataCont.convoData[i][j][k];
+				}
+			}
+		}
+	}
+
+	std::vector<std::string> splitOrigFilePath = split<std::string>(originalFilePath, "/\\");
+	std::string patientName = splitOrigFilePath[splitOrigFilePath.size() - 1];
+	std::string frequencyFolder = "_f" + to_string(frequencyBand[0]) + "f" + to_string(frequencyBand[frequencyBand.size() - 1]);
+	std::string rootFolder = originalFilePath + frequencyFolder + "/";
+
+	struct stat info;
+	if (stat(rootFolder.c_str(), &info) != 0)
+	{
+		cout << "Creating freQ FOLDER" << endl;
+		_mkdir(rootFolder.c_str());
+	}
+
+	for (int i = 0; i < 6; i++)
+	{
+		std::string nameOuputFile = rootFolder + patientName + frequencyFolder + "_ds" + to_string(sampInfo.downsampFactor) + "_sm" + to_string((int)smoothingMilliSec[i]);
+		elanFrequencyBand[IdFrequency][i]->SaveAs(nameOuputFile + ".eeg.ent", nameOuputFile + ".eeg", "", "");
+	}
+}
+
+//Advised order for filePaths : header-data-events-notes
+void InsermLibrary::eegContainer::LoadFrequencyData(std::vector<std::string>& filesPath, int frequencyId, int smoothingId)
+{
+	if (filesPath.size() > 0)
+	{
+		elanFrequencyBand[frequencyId][smoothingId] = new EEGFormat::ElanFile(filesPath[0], filesPath[1]);
+		elanFrequencyBand[frequencyId][smoothingId]->Load();
+		int nbElectrodes = elanFrequencyBand[frequencyId][smoothingId]->ElectrodeCount();
+		std::vector<int> dummyIds = std::vector<int>{ nbElectrodes - 2, nbElectrodes - 1 };
+		elanFrequencyBand[frequencyId][smoothingId]->DeleteElectrodesAndData(dummyIds);
+	}
+}
+
+//file is sm0 file usually
+void InsermLibrary::eegContainer::readBlocDataAllChannels(EEGFormat::ElanFile* file, TRIGGINFO *triggEeg, vector<vector<vector<float>>> &eegData, int winSam[2])
+{
+	for (int i = 0; i < file->ElectrodeCount(); i++)
+	{
+		for (int j = 0; j < triggEeg->triggers.size(); j++)
+		{
+			int trigTime = triggEeg->triggers[j].trigger.sample;
+			int beginTime = trigTime + winSam[0];
+
+			for (int k = 0; k < (winSam[1] - winSam[0]); k++)
+			{
+				//to prevent issue in case the first event has been recorded realy quick
+				if (beginTime + k < 0)
+					eegData[i][j][k] = 0;
+				else
+					eegData[i][j][k] = (file->Data(EEGFormat::DataConverterType::Analog)[i][beginTime + k] - 1000) / 10;
+			}
+		}
+	}
+}
+
+//file is sm0 file usually
+void InsermLibrary::eegContainer::readBlocDataEventsAllChannels(EEGFormat::ElanFile* file, TRIGGINFO *triggEeg, vector<vector<vector<float>>> &eegData, int winSam[2])
+{
+	for (int i = 0; i < triggEeg->triggers.size(); i++)
+	{
+		for (int j = 0; j < winSam[1] - winSam[0]; j++)
+		{
+			int trigTime = triggEeg->triggers[i].trigger.sample;
+			int beginTime = trigTime + winSam[0];
+
+			for (int k = 0; k < file->ElectrodeCount(); k++)
+			{
+				//to prevent issue in case the first event has been recorded realy quick
+				if (beginTime + j < 0)
+					eegData[i][k][j] = 0;
+				else
+					eegData[i][k][j] = (file->Data(EEGFormat::DataConverterType::Analog)[k][beginTime + j] - 1000) / 10;
+			}
+		}
+	}
+}
+
+//=== Private :
 void InsermLibrary::eegContainer::GetElectrodes(EEGFormat::IFile* edf)
 {
 	if (electrodes.size() > 0)
@@ -193,182 +364,14 @@ std::vector<int> InsermLibrary::eegContainer::findIndexes(std::vector<EEGFormat:
 	return indexesFound;
 }
 
-void InsermLibrary::eegContainer::ToHilbert(int IdFrequency, vector<int> frequencyBand)
-{
-	thread thr[5];
-	initElanFreqStruct();
-	dataContainer dataCont = dataContainer(frequencyBand, sampInfo);
-
-	std::cout << bipoles.size() / 5 << std::endl;
-	for (int i = 0; i < bipoles.size() / 5; i++)
-	{
-		std::cout << "bip " << i << std::endl;
-
-		for (int j = 0; j < 5; j++)
-		{
-			int idCurrentBip = (i * 5) + j;
-			for (int k = 0; k < dataCont.arrayLength; k++)
-			{
-				dataCont.bipData[j][k] = Data()[bipoles[idCurrentBip].positivElecId][k] - Data()[bipoles[idCurrentBip].negativElecId][k];
-			}
-		}
-
-		for (int j = 0; j < frequencyBand.size() - 1; j++)
-		{
-			thr[0] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 0, j);
-			thr[1] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 1, j);
-			thr[2] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 2, j);
-			thr[3] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 3, j);
-			thr[4] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 4, j);
-
-			thr[0].join(); 
-			thr[1].join(); 
-			thr[2].join();
-			thr[3].join(); 
-			thr[4].join();
-		}
-
-		thr[0] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 0);
-		thr[1] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 1);
-		thr[2] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 2);
-		thr[3] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 3);
-		thr[4] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 4);
-
-		thr[0].join(); 
-		thr[1].join(); 
-		thr[2].join();
-		thr[3].join();
-		thr[4].join();
-
-		for (int j = 0; j < elanFrequencyBand[IdFrequency].size(); j++)
-		{
-			for (int k = 0; k < 5; k++)
-			{
-				for (int l = 0; l < elanFrequencyBand[IdFrequency][j]->Data(EEGFormat::DataConverterType::Digital)[(i * 5) + k].size(); l++)
-				{
-					elanFrequencyBand[IdFrequency][j]->Data(EEGFormat::DataConverterType::Digital)[(i * 5) + k][l] = dataCont.convoData[j][k][l];
-				}
-			}
-		}
-	}
-
-	std::cout << "end debut" << std::endl;
-
-	if (bipoles.size() % 5 != 0)
-	{
-		for (int i = 0; i < bipoles.size() % 5; i++)
-		{
-			std::cout << "bip " << i << std::endl;
-
-			for (int j = 0; j < dataCont.arrayLength; j++)
-			{
-				int idCurrentBip = (bipoles.size() / 5) * 5;
-				dataCont.bipData[i][j] = Data()[bipoles[idCurrentBip + i].positivElecId][j] - Data()[bipoles[idCurrentBip + i].negativElecId][j];
-			}
-		}
-
-		for (int i = 0; i < frequencyBand.size() - 1; i++)
-		{
-			for (int j = 0; j < bipoles.size() % 5; j++)
-			{
-				thr[j] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, j, i);
-				thr[j].join();
-			}
-		}
-
-		for (int i = 0; i < bipoles.size() % 5; i++)
-		{
-			thr[i] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, i);
-			thr[i].join();
-		}
-
-		for (int i = 0; i < elanFrequencyBand[IdFrequency].size(); i++)
-		{
-			for (int j = 0; j < bipoles.size() % 5; j++)
-			{
-				int currentId = (bipoles.size() - (bipoles.size() % 5)) + j;
-				for (int k = 0; k < elanFrequencyBand[IdFrequency][i]->Data(EEGFormat::DataConverterType::Digital)[currentId].size(); k++)
-				{
-					elanFrequencyBand[IdFrequency][i]->Data(EEGFormat::DataConverterType::Digital)[currentId][k] = dataCont.convoData[i][j][k];
-				}
-			}
-		}
-	}
-
-	std::cout << "end calc" << std::endl;
-	vector<string> splitOrigFilePath = split<string>(originalFilePath, "/\\");
-	string patientName = splitOrigFilePath[splitOrigFilePath.size() - 1];
-	string frequencyFolder = "_f" + to_string(frequencyBand[0]) + "f" + to_string(frequencyBand[frequencyBand.size() - 1]);
-	string rootFolder = originalFilePath + frequencyFolder + "/";
-
-	struct stat info;
-	if (stat(rootFolder.c_str(), &info) != 0)
-	{
-		cout << "Creating freQ FOLDER" << endl;
-		_mkdir(rootFolder.c_str());
-	}
-
-	for (int i = 0; i < 6; i++)
-	{
-		string nameOuputFile = rootFolder + patientName + frequencyFolder + "_ds" + to_string(sampInfo.downsampFactor) + "_sm" + to_string((int)smoothingMilliSec[i]);// +".eeg";
-		elanFrequencyBand[IdFrequency][i]->SaveAs(nameOuputFile + ".eeg.ent", nameOuputFile + ".eeg", "", "");
-		//ELANFunctions::writeOldElanHeader(elanStruct, nameOuputFile);
-		//ELANFunctions::writeOldElanData(elanStruct, nameOuputFile, i);
-	}
-
-	//deleteAndNullify1D(dataCont);
-}
-
-//file is sm0 file usually
-void InsermLibrary::eegContainer::readBlocDataAllChannels(EEGFormat::ElanFile* file, TRIGGINFO *triggEeg, vector<vector<vector<float>>> &eegData, int winSam[2])
-{
-	cout << "Extracting Data" << endl;
-	for (int i = 0; i < file->ElectrodeCount(); i++)
-	{
-		for (int j = 0; j < triggEeg->triggers.size(); j++)
-		{
-			int trigTime = triggEeg->triggers[j].trigger.sample;
-			int beginTime = trigTime + winSam[0];
-
-			for (int k = 0; k < (winSam[1] - winSam[0]); k++)
-			{
-				//to prevent issue in case the first event has been recorded realy quick
-				if (beginTime + k < 0)
-					eegData[i][j][k] = 0;
-				else
-					eegData[i][j][k] = (file->Data(EEGFormat::DataConverterType::Digital)[i][beginTime + k] - 1000) / 10;
-			}
-		}
-	}
-}
-
-//file is sm0 file usually
-void InsermLibrary::eegContainer::readBlocDataEventsAllChannels(EEGFormat::ElanFile* file, TRIGGINFO *triggEeg, vector<vector<vector<float>>> &eegData, int winSam[2])
-{
-	cout << "Extracting Data" << endl;
-	for (int i = 0; i < triggEeg->triggers.size(); i++)
-	{
-		for (int j = 0; j < winSam[1] - winSam[0]; j++)
-		{
-			int trigTime = triggEeg->triggers[i].trigger.sample;
-			int beginTime = trigTime + winSam[0];
-
-			for (int k = 0; k < file->ElectrodeCount(); k++)
-			{
-				//to prevent issue in case the first event has been recorded realy quick
-				if (beginTime + j < 0)
-					eegData[i][k][j] = 0;
-				else
-					eegData[i][k][j] = (file->Data(EEGFormat::DataConverterType::Digital)[k][beginTime + j] - 1000) / 10;
-			}
-		}
-	}
-}
-
-
 void InsermLibrary::eegContainer::initElanFreqStruct()
 {
-	std::vector<EEGFormat::IElectrode> electrodes = m_file->Electrodes();
+	std::vector<EEGFormat::IElectrode> bipolesList;
+	for (int i = 0; i < bipoles.size(); i++)
+	{
+		bipolesList.push_back(m_file->Electrodes()[bipoles[i].positivElecId]);
+	}
+
 	for (int i = 0; i < elanFrequencyBand.size(); i++)
 	{
 		for (int j = 0; j < elanFrequencyBand[i].size(); j++)
@@ -376,7 +379,7 @@ void InsermLibrary::eegContainer::initElanFreqStruct()
 			elanFrequencyBand[i][j] = new EEGFormat::ElanFile();
 			elanFrequencyBand[i][j]->ElectrodeCount((int)bipoles.size());
 			elanFrequencyBand[i][j]->SamplingFrequency(sampInfo.downsampledFrequency);
-			elanFrequencyBand[i][j]->Electrodes(electrodes);
+			elanFrequencyBand[i][j]->Electrodes(bipolesList);
 			//Define type of elec : label + "EEG" + "uV"
 			elanFrequencyBand[i][j]->Data(EEGFormat::DataConverterType::Digital).resize((int)bipoles.size(), std::vector<float>(sampInfo.nbSample / sampInfo.downsampFactor));
 		}
