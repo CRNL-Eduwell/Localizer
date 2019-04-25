@@ -4,7 +4,8 @@
 #include "IFile.h"
 #include "ElanFile.h"
 #include "eegContainerParameters.h"
-#include "MATLABFUNC.h"	
+#include "FirBandPass.h"	
+#include "Convolution.h"
 
 #include <iostream>
 #include <vector>
@@ -34,12 +35,10 @@ namespace InsermLibrary
 		vector<vector<float>> bipData;
 		vector<vector<float>> hilData;
 
-		vector<FFTINFO*> fftFront;
-		vector<FFTINFO*> fftBack;
+		vector<vector<Framework::Filtering::Linear::FirBandPass*>> Filters;
 		vector<vector<float>>downData;
 		vector<vector<float>>meanData;
 		vector<vector<vector<float>>> convoData;
-		vector<FIRINFO*> firData;
 
 		samplingInformation sampInfo;
 		int arrayLength;

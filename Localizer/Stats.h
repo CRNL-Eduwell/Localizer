@@ -8,8 +8,8 @@
 #include "eegContainerParameters.h"
 #include "eegContainer.h"
 
-#include "wilcox.h"
-#include "kruskall.h"
+#include "Wilcox.h"
+#include "Kruskall.h"
 #include "Utility.h"
 #include "optionsParameters.h"
 

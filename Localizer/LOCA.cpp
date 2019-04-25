@@ -852,8 +852,6 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 	//== get Bloc of eeg data we want to display center around events
 	vec3<float> bigData;
 	bigData.resize(myeegContainer->bipoles.size(), vec2<float>(triggCatEla->triggers.size(), vec1<float>(windowSam[1] - windowSam[0])));
-
-
 	myeegContainer->GetFrequencyBlocData(bigData, idCurrentFreqfrequency, 0, triggCatEla, windowSam);
 
 	//== calculate stat
@@ -873,7 +871,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 		pixmapChanel = new QPixmap(mGen.pixmapTemplate);
 		painterChanel = new QPainter(pixmapChanel);
 
-		float stdRes = MATLABFUNC::stdMean(bigData[i], windowSam);
+		float stdRes = stdMean(bigData[i], windowSam);
 		float Maxi = 2.0 * abs(stdRes);
 		float Mini = -2.0 * abs(stdRes);
 		mGen.graduateColorBar(painterChanel, Maxi);
@@ -1060,4 +1058,45 @@ vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticWilcoxon(vec3<float> &b
 	}
 
 	return significantValue;
+}
+
+
+/****************************************************************/
+/*	Standard Derivation => mean then sqrt(sum((data-mean)²))	*/
+/****************************************************************/
+float InsermLibrary::LOCA::stdMean(vec2<float> eegDataChanel, int windowSam[2])
+{
+	int nbTrigg = eegDataChanel.size();
+	int nbSampleWin = windowSam[1] - windowSam[0];
+	vec1<float> erp = vec1<float>(nbTrigg);
+	vec1<float> stdDeviation = vec1<float>(nbTrigg);
+
+	for (int i = 0; i < nbTrigg; i++)
+	{
+		double tempErp = 0;
+		for (int m = 0; m < nbSampleWin; m++)
+		{
+			tempErp += eegDataChanel[i][m];
+		}
+		erp[i] = tempErp / nbSampleWin;
+	}
+
+	for (int i = 0; i < nbTrigg; i++)
+	{
+		double tempStd = 0;
+		for (int m = 0; m < nbSampleWin; m++)
+		{
+			tempStd += (eegDataChanel[i][m] - erp[i]) * (eegDataChanel[i][m] - erp[i]);
+		}
+		stdDeviation[i] = sqrt(tempStd / (nbSampleWin - 1));
+	}
+
+	double tempstd = 0;
+	for (int k = 0; k < nbTrigg; k++)
+	{
+		tempstd += stdDeviation[k];
+	}
+	tempstd /= nbTrigg;
+
+	return tempstd;
 }

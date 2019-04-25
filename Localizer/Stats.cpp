@@ -20,7 +20,7 @@ void InsermLibrary::Stats::pValuesWilcoxon(vec3<float> &pValue3D, vec3<int> &pSi
 			vec1<float> p_value;
 			for (int l = 0; l < eegDataBig.size(); l++)
 			{
-				p_value.push_back(wilcoxon(baseLine, eegDataBig[l]));
+				p_value.push_back(Framework::Calculations::Stats::wilcoxon(baseLine, eegDataBig[l]));
 			}
 			p_valueBig.push_back(p_value);
 
@@ -347,7 +347,7 @@ vec2<float> InsermLibrary::Stats::getPValuesKruskall(vec1<float> &baseLineData, 
 		nbSamplePerGroup[0] = eegData[j].size();
 		nbSamplePerGroup[1] = eegData[j].size();
 
-		kruskal_wallis(dataArray, 2, nbSamplePerGroup, &H, &p, 1);
+		Framework::Calculations::Stats::kruskal_wallis(dataArray, 2, nbSamplePerGroup, &H, &p, 1);
 		pValue.push_back(p);
 	}
 	pValueBig.push_back(pValue);

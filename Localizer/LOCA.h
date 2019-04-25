@@ -68,6 +68,7 @@ namespace InsermLibrary
 		string prepareFolderAndPathsTrial(string freqFolder, int dsSampFreq);
 		bool shouldPerformStatTrial(string locaName);
 		vector<PVALUECOORD> calculateStatisticWilcoxon(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, string freqFolder);
+		float stdMean(vec2<float> eegDataChanel, int windowSam[2]);
 
 	signals:
 		void sendLogInfo(QString);

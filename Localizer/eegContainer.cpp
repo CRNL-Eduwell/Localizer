@@ -1,5 +1,8 @@
 #include "eegContainer.h"
 
+using Framework::Filtering::Linear::FirBandPass;
+using Framework::Filtering::Linear::Convolution;
+
 InsermLibrary::dataContainer::dataContainer(vector<int> frequencyBand, samplingInformation samplingInfo)
 {
 	sampInfo.samplingFrequency = samplingInfo.samplingFrequency;
@@ -14,14 +17,15 @@ InsermLibrary::dataContainer::dataContainer(vector<int> frequencyBand, samplingI
 	bipData.resize(5, vector<float>(arrayLength));
 	hilData.resize(5, vector<float>(arrayLength));
 
-	fftFront.resize(5, new FFTINFO(-1, arrayLength));
-	fftBack.resize(5, new FFTINFO(1, arrayLength));
 	downData.resize(5, vector<float>(arrayDownLength));
 	meanData.resize(5, vector<float>(arrayDownLength));
 	convoData.resize(6, vector<vector<float>>(5, vector<float>(arrayDownLength)));
 
+	vector<FirBandPass*> bandPass;
 	for (int i = 0; i < frequencyBand.size() - 1; i++)
-		firData.push_back(new FIRINFO(frequencyBand[i], frequencyBand[i + 1], sampInfo.samplingFrequency, sampInfo.nbSample));
+		bandPass.push_back(new FirBandPass(frequencyBand[i], frequencyBand[i + 1], sampInfo.samplingFrequency, sampInfo.nbSample));
+
+	Filters.resize(5, vector<FirBandPass*>(bandPass));
 }
 
 InsermLibrary::dataContainer::~dataContainer()
@@ -253,7 +257,7 @@ void InsermLibrary::eegContainer::GetFrequencyBlocData(vec3<float>& outputEegDat
 				if (beginTime + k < 0)
 					outputEegData[i][j][k] = 0;
 				else
-					outputEegData[i][j][k] = (elanFrequencyBand[frequencyId][smoothingId]->Data(EEGFormat::DataConverterType::Analog)[i][beginTime + k] - 1000) / 10;
+					outputEegData[i][j][k] = (elanFrequencyBand[frequencyId][smoothingId]->Data(EEGFormat::DataConverterType::Digital)[i][beginTime + k] - 1000) / 10;
 			}
 		}
 	}
@@ -395,9 +399,10 @@ void InsermLibrary::eegContainer::hilbertDownSampSumData(dataContainer *dataCont
 	}
 
 	mtx.lock();
-	MATLABFUNC::bandPassHilbertFreq(dataCont->bipData[threadId], dataCont->hilData[threadId],
-									 dataCont->firData[freqId], dataCont->fftFront[threadId],
-									 dataCont->fftBack[threadId]);
+	//MATLABFUNC::bandPassHilbertFreq(dataCont->bipData[threadId], dataCont->hilData[threadId],
+	//								 dataCont->firData[freqId], dataCont->fftFront[threadId],
+	//								 dataCont->fftBack[threadId]);
+	dataCont->Filters[threadId][freqId]->BandPassHilbert(&dataCont->hilData[threadId][0], &dataCont->bipData[threadId][0], dataCont->arrayLength);
 	mtx.unlock();
 
 	//Downsamp
@@ -430,21 +435,13 @@ void InsermLibrary::eegContainer::meanConvolveData(dataContainer *dataCont, int 
 	for (int i = 0; i < dataCont->arrayDownLength; i++)
 	{
 		dataCont->meanData[threadId][i] = (10 * dataCont->meanData[threadId][i]) / (dataCont->frequencyLength - 1);
-	}
-
-	for (int i = 0; i < dataCont->arrayDownLength; i++)
-	{
 		dataCont->convoData[0][threadId][i] = dataCont->meanData[threadId][i];
 	}
 
-	MATLABFUNC::Convolution2(&dataCont->meanData[threadId][0], dataCont->arrayDownLength,
-							 &dataCont->convoData[1][threadId][0], smoothingSample[1]);
-	MATLABFUNC::Convolution2(&dataCont->meanData[threadId][0], dataCont->arrayDownLength,
-							 &dataCont->convoData[2][threadId][0], smoothingSample[2]);
-	MATLABFUNC::Convolution2(&dataCont->meanData[threadId][0], dataCont->arrayDownLength,
-							 &dataCont->convoData[3][threadId][0], smoothingSample[3]);
-	MATLABFUNC::Convolution2(&dataCont->meanData[threadId][0], dataCont->arrayDownLength,
-							 &dataCont->convoData[4][threadId][0], smoothingSample[4]);
-	MATLABFUNC::Convolution2(&dataCont->meanData[threadId][0], dataCont->arrayDownLength,
-							 &dataCont->convoData[5][threadId][0], smoothingSample[5]);
+	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[1][threadId][0], dataCont->arrayDownLength, smoothingSample[1]);
+	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[2][threadId][0], dataCont->arrayDownLength, smoothingSample[2]);
+	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[3][threadId][0], dataCont->arrayDownLength, smoothingSample[3]);
+	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[4][threadId][0], dataCont->arrayDownLength, smoothingSample[4]);
+	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[5][threadId][0], dataCont->arrayDownLength, smoothingSample[5]);
+
 }
