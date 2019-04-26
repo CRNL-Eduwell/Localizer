@@ -86,11 +86,11 @@ namespace InsermLibrary
 			}
 		}
 
-		TRIGGINFO(EEGFormat::ITrigger *p_triggers, int nbTriggers, int downFactor = 1)
+		TRIGGINFO(std::vector<EEGFormat::ITrigger*> & triggersList, int beginIndex, int endIndex, int downFactor = 1)
 		{
-			for (int i = 0; i < nbTriggers; i++)
+			for (int i = beginIndex; i < endIndex; i++)
 			{
-				triggers.push_back(TRIGG(eventEeg(p_triggers[i].Code(), p_triggers[i].Sample() / downFactor)));
+				triggers.push_back(TRIGG(eventEeg(triggersList[i]->Code(), triggersList[i]->Sample() / downFactor)));
 			}
 		}
 

@@ -21,16 +21,30 @@ InsermLibrary::dataContainer::dataContainer(vector<int> frequencyBand, samplingI
 	meanData.resize(5, vector<float>(arrayDownLength));
 	convoData.resize(6, vector<vector<float>>(5, vector<float>(arrayDownLength)));
 
-	vector<FirBandPass*> bandPass;
-	for (int i = 0; i < frequencyBand.size() - 1; i++)
-		bandPass.push_back(new FirBandPass(frequencyBand[i], frequencyBand[i + 1], sampInfo.samplingFrequency, sampInfo.nbSample));
+	//vector<FirBandPass*> bandPass;
+	//for (int i = 0; i < frequencyBand.size() - 1; i++)
+	//	bandPass.push_back(new FirBandPass(frequencyBand[i], frequencyBand[i + 1], sampInfo.samplingFrequency, sampInfo.nbSample));
 
-	Filters.resize(5, vector<FirBandPass*>(bandPass));
+	//Filters.resize(5, vector<FirBandPass*>(bandPass));
+
+	Filters.resize(5, vector<FirBandPass*>());
+	for (int j = 0; j < 5; j++)
+	{
+		for (int i = 0; i < frequencyBand.size() - 1; i++)
+			Filters[j].push_back(new FirBandPass(frequencyBand[i], frequencyBand[i + 1], sampInfo.samplingFrequency, sampInfo.nbSample));
+	}
 }
 
 InsermLibrary::dataContainer::~dataContainer()
 {
-	//vector manage all destructors
+	for (int i = 0; i < Filters.size(); i++)
+	{
+		for (int j = 0; j < Filters[i].size(); j++)
+		{
+			EEGFormat::Utility::DeleteAndNullify(Filters[i][j]);
+		}
+	}
+	Filters.clear();
 }
 
 InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFrequency, int nbFreqBand)
@@ -62,9 +76,9 @@ InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFr
 	if (m_file->Triggers().size() > 0)
 	{
 		deleteAndNullify1D(triggEeg);
-		triggEeg = new TRIGGINFO(&m_file->Triggers()[beginValue], m_file->Triggers().size() - beginValue);
+		triggEeg = new TRIGGINFO(m_file->Triggers(), beginValue, m_file->Triggers().size());
 		deleteAndNullify1D(triggEegDownsampled);
-		triggEegDownsampled = new TRIGGINFO(&m_file->Triggers()[beginValue], m_file->Triggers().size() - beginValue, sampInfo.downsampFactor);
+		triggEegDownsampled = new TRIGGINFO(m_file->Triggers(),beginValue, m_file->Triggers().size(), sampInfo.downsampFactor);
 	}
 }
 
@@ -299,16 +313,16 @@ void InsermLibrary::eegContainer::GetElectrodes(EEGFormat::IFile* edf)
 		string result = "";
 		int resId = -1;
 
-		int goodId = idSplitDigiAndNum(edf->Electrodes()[i].Label());
+		int goodId = idSplitDigiAndNum(edf->Electrodes()[i]->Label());
 
 		if (goodId != -1)
 		{
-			result = edf->Electrodes()[i].Label().substr(0, goodId);
-			resId = stoi(edf->Electrodes()[i].Label().substr(goodId, edf->Electrodes()[i].Label().size()));
+			result = edf->Electrodes()[i]->Label().substr(0, goodId);
+			resId = stoi(edf->Electrodes()[i]->Label().substr(goodId, edf->Electrodes()[i]->Label().size()));
 		}
 		else
 		{
-			result = edf->Electrodes()[i].Label();
+			result = edf->Electrodes()[i]->Label();
 		}
 
 		if (result.find(elecNameStringTemp) != std::string::npos && (result.length() == elecNameStringTemp.length()))
@@ -352,12 +366,12 @@ void InsermLibrary::eegContainer::calculateSmoothing()
 	}
 }
 
-std::vector<int> InsermLibrary::eegContainer::findIndexes(std::vector<EEGFormat::ITrigger> & trigg, int value2find)
+std::vector<int> InsermLibrary::eegContainer::findIndexes(std::vector<EEGFormat::ITrigger*> & trigg, int value2find)
 {
 	std::vector<int> indexesFound;
 	for (int i = 0; i < trigg.size(); i++)
 	{
-		if (trigg[i].Code() == value2find)
+		if (trigg[i]->Code() == value2find)
 		{
 			indexesFound.push_back(i);
 		}
@@ -368,10 +382,10 @@ std::vector<int> InsermLibrary::eegContainer::findIndexes(std::vector<EEGFormat:
 
 void InsermLibrary::eegContainer::initElanFreqStruct()
 {
-	std::vector<EEGFormat::IElectrode> bipolesList;
+	std::vector<EEGFormat::IElectrode*> bipolesList;
 	for (int i = 0; i < bipoles.size(); i++)
 	{
-		bipolesList.push_back(m_file->Electrodes()[bipoles[i].positivElecId]);
+		bipolesList.push_back(m_file->Electrode(bipoles[i].positivElecId));
 	}
 
 	for (int i = 0; i < elanFrequencyBand.size(); i++)

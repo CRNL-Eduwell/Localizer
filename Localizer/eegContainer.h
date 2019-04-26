@@ -71,7 +71,7 @@ namespace InsermLibrary
 		void GetElectrodes(EEGFormat::IFile* edf);
 		int idSplitDigiAndNum(string myString);
 		void calculateSmoothing();
-		std::vector<int> findIndexes(std::vector<EEGFormat::ITrigger> & trigg, int value2find);
+		std::vector<int> findIndexes(std::vector<EEGFormat::ITrigger*> & trigg, int value2find);
 		void initElanFreqStruct();
 		void hilbertDownSampSumData(dataContainer *dataCont, int threadId, int freqId);
 		void meanConvolveData(dataContainer *dataCont, int threadId);
