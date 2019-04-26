@@ -105,6 +105,15 @@ namespace InsermLibrary
 	void deblankString(std::string &myString);
 	
 	string GetCurrentWorkingDir();
+
+	template<typename T> 
+	void OutputArrayToCsv1D(T* array, int sizeArray, std::string filePath)
+	{
+		std::ofstream fileStream(filePath, ios::out);
+		for (int i = 0; i < sizeArray; i++)
+			fileStream << array[i] << ";" << std::endl;
+		fileStream.close();
+	}
 }
 
 #endif
