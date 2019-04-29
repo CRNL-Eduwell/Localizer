@@ -53,6 +53,36 @@ namespace InsermLibrary
 		~eegContainer();		
 
 		//===[ Getter / Setter ]===
+		inline int BipoleCount()
+		{
+			return m_bipoles.size();
+		}
+		//First is positiv Electrode ID
+		//Second is negativ Electrode ID
+		inline std::pair<int,int> Bipole(const int& i)
+		{
+			if (i >= 0 && i < m_bipoles.size())
+			{
+				return m_bipoles[i];
+			}
+			return std::pair<int, int>(-1, -1);
+		}
+		inline std::string BipolePositivLabel(const int& i)
+		{
+			if (i >= 0 && i < m_bipoles.size())
+			{
+				return flatElectrodes[m_bipoles[i].first];
+			}
+			return "";
+		}
+		inline std::string BipoleNegativLabel(const int& i)
+		{
+			if (i >= 0 && i < m_bipoles.size())
+			{
+				return flatElectrodes[m_bipoles[i].second];
+			}
+			return "";
+		}
 		inline std::vector<std::vector<float>>& Data() { return m_file->Data(EEGFormat::DataConverterType::Digital); }
 		inline const std::vector<std::vector<float>>& Data() const { return m_file->Data(EEGFormat::DataConverterType::Digital); }
 
@@ -83,11 +113,11 @@ namespace InsermLibrary
 		TRIGGINFO *triggEegDownsampled = nullptr;
 		vector<elecContainer> electrodes;
 		vector<string> flatElectrodes;
-		vector<bipole> bipoles;
 		vector<int> idElecToDelete;
 		string originalFilePath = "";
 		samplingInformation sampInfo;
 	private:
+		std::vector<std::pair<int, int>> m_bipoles;
 		float smoothingSample[6];
 		float smoothingMilliSec[6] = { 0, 250, 500, 1000, 2500, 5000 };
 		EEGFormat::IFile* m_file = nullptr;

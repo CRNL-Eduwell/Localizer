@@ -114,20 +114,6 @@ namespace InsermLibrary
 		vector<int> id;
 		vector<int> idOrigFile;
 	};
-
-	struct bipole
-	{
-		bipole(int elecPosid, int elecNegId)
-		{
-			positivElecId = elecPosid;
-			negativElecId = elecNegId;
-		}
-
-		int positivElecId;
-		int negativElecId;
-		string positivLabel;
-		string negativLabel;
-	};
 }
 
 #endif

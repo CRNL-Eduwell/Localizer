@@ -145,16 +145,16 @@ void InsermLibrary::Stats::exportStatsData(eegContainer *myEegContainer, PROV *m
 {
 	ofstream fichierSt(outputFolder + "/statLoca.csv", ios::out);
 	fichierSt << " " << ";";
-	for (int i = 0; i < myEegContainer->bipoles.size(); i++)
+	for (int i = 0; i < myEegContainer->BipoleCount(); i++)
 	{
-		fichierSt << myEegContainer->flatElectrodes[myEegContainer->bipoles[i].positivElecId] << ";";
+		fichierSt << myEegContainer->flatElectrodes[myEegContainer->Bipole(i).first] << ";";
 	}
 	fichierSt << endl;
 
 	for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
 	{
 		fichierSt << myprovFile->visuBlocs[j].mainEventBloc.eventLabel << ";";
-		for (int i = 0; i < myEegContainer->bipoles.size(); i++)
+		for (int i = 0; i < myEegContainer->BipoleCount(); i++)
 		{
 			vector<int> indexes;
 			for (int z = 0; z < pValues.size(); z++)

@@ -21,12 +21,9 @@ InsermLibrary::dataContainer::dataContainer(vector<int> frequencyBand, samplingI
 	meanData.resize(5, vector<float>(arrayDownLength));
 	convoData.resize(6, vector<vector<float>>(5, vector<float>(arrayDownLength)));
 
-	//vector<FirBandPass*> bandPass;
-	//for (int i = 0; i < frequencyBand.size() - 1; i++)
-	//	bandPass.push_back(new FirBandPass(frequencyBand[i], frequencyBand[i + 1], sampInfo.samplingFrequency, sampInfo.nbSample));
-
-	//Filters.resize(5, vector<FirBandPass*>(bandPass));
-
+	//TODO : It is more efficient for memory usage to declara the 5 fftForward and 5 fftBackward 
+	//objects outside of the firBandPass for memory usage. 
+	//See if it's not possible to improve the paralellisation of the calcul (omp for vs threads) 
 	Filters.resize(5, vector<FirBandPass*>());
 	for (int j = 0; j < 5; j++)
 	{
@@ -109,8 +106,8 @@ void InsermLibrary::eegContainer::GetElectrodes()
 
 void InsermLibrary::eegContainer::BipolarizeElectrodes()
 {
-	if (bipoles.size() > 0)
-		bipoles.clear();
+	if (m_bipoles.size() > 0)
+		m_bipoles.clear();
 
 	int totalPlot = 0;
 
@@ -120,9 +117,7 @@ void InsermLibrary::eegContainer::BipolarizeElectrodes()
 		{
 			if ((electrodes[i].id[j] - electrodes[i].id[j - 1]) == 1)
 			{
-				bipoles.push_back(bipole(totalPlot + j, totalPlot + (j - 1)));
-				bipoles[bipoles.size() - 1].positivLabel = flatElectrodes[electrodes[i].idOrigFile[j]];
-				bipoles[bipoles.size() - 1].negativLabel = flatElectrodes[electrodes[i].idOrigFile[j - 1]];
+				m_bipoles.push_back(std::make_pair(totalPlot + j, totalPlot + (j - 1)));
 			}
 		}
 		totalPlot += (int)electrodes[i].id.size();
@@ -135,14 +130,14 @@ void InsermLibrary::eegContainer::ToHilbert(int IdFrequency, vector<int> frequen
 	initElanFreqStruct();
 	dataContainer dataCont = dataContainer(frequencyBand, sampInfo);
 
-	for (int i = 0; i < bipoles.size() / 5; i++)
+	for (int i = 0; i < m_bipoles.size() / 5; i++)
 	{
 		for (int j = 0; j < 5; j++)
 		{
 			int idCurrentBip = (i * 5) + j;
 			for (int k = 0; k < dataCont.arrayLength; k++)
 			{
-				dataCont.bipData[j][k] = Data()[bipoles[idCurrentBip].positivElecId][k] - Data()[bipoles[idCurrentBip].negativElecId][k];
+				dataCont.bipData[j][k] = Data()[m_bipoles[idCurrentBip].first][k] - Data()[m_bipoles[idCurrentBip].second][k];
 			}
 		}
 
@@ -185,27 +180,27 @@ void InsermLibrary::eegContainer::ToHilbert(int IdFrequency, vector<int> frequen
 		}
 	}
 
-	if (bipoles.size() % 5 != 0)
+	if (m_bipoles.size() % 5 != 0)
 	{
-		for (int i = 0; i < bipoles.size() % 5; i++)
+		for (int i = 0; i < m_bipoles.size() % 5; i++)
 		{
 			for (int j = 0; j < dataCont.arrayLength; j++)
 			{
-				int idCurrentBip = (bipoles.size() / 5) * 5;
-				dataCont.bipData[i][j] = Data()[bipoles[idCurrentBip + i].positivElecId][j] - Data()[bipoles[idCurrentBip + i].negativElecId][j];
+				int idCurrentBip = (m_bipoles.size() / 5) * 5;
+				dataCont.bipData[i][j] = Data()[m_bipoles[idCurrentBip + i].first][j] - Data()[m_bipoles[idCurrentBip + i].second][j];
 			}
 		}
 
 		for (int i = 0; i < frequencyBand.size() - 1; i++)
 		{
-			for (int j = 0; j < bipoles.size() % 5; j++)
+			for (int j = 0; j < m_bipoles.size() % 5; j++)
 			{
 				thr[j] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, j, i);
 				thr[j].join();
 			}
 		}
 
-		for (int i = 0; i < bipoles.size() % 5; i++)
+		for (int i = 0; i < m_bipoles.size() % 5; i++)
 		{
 			thr[i] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, i);
 			thr[i].join();
@@ -213,9 +208,9 @@ void InsermLibrary::eegContainer::ToHilbert(int IdFrequency, vector<int> frequen
 
 		for (int i = 0; i < elanFrequencyBand[IdFrequency].size(); i++)
 		{
-			for (int j = 0; j < bipoles.size() % 5; j++)
+			for (int j = 0; j < m_bipoles.size() % 5; j++)
 			{
-				int currentId = (bipoles.size() - (bipoles.size() % 5)) + j;
+				int currentId = (m_bipoles.size() - (m_bipoles.size() % 5)) + j;
 				for (int k = 0; k < elanFrequencyBand[IdFrequency][i]->Data(EEGFormat::DataConverterType::Digital)[currentId].size(); k++)
 				{
 					elanFrequencyBand[IdFrequency][i]->Data(EEGFormat::DataConverterType::Digital)[currentId][k] = dataCont.convoData[i][j][k];
@@ -383,9 +378,9 @@ std::vector<int> InsermLibrary::eegContainer::findIndexes(std::vector<EEGFormat:
 void InsermLibrary::eegContainer::initElanFreqStruct()
 {
 	std::vector<EEGFormat::IElectrode*> bipolesList;
-	for (int i = 0; i < bipoles.size(); i++)
+	for (int i = 0; i < m_bipoles.size(); i++)
 	{
-		bipolesList.push_back(m_file->Electrode(bipoles[i].positivElecId));
+		bipolesList.push_back(m_file->Electrode(m_bipoles[i].first));
 	}
 
 	for (int i = 0; i < elanFrequencyBand.size(); i++)
@@ -393,11 +388,11 @@ void InsermLibrary::eegContainer::initElanFreqStruct()
 		for (int j = 0; j < elanFrequencyBand[i].size(); j++)
 		{
 			elanFrequencyBand[i][j] = new EEGFormat::ElanFile();
-			elanFrequencyBand[i][j]->ElectrodeCount((int)bipoles.size());
+			elanFrequencyBand[i][j]->ElectrodeCount((int)bipolesList.size());
 			elanFrequencyBand[i][j]->SamplingFrequency(sampInfo.downsampledFrequency);
 			elanFrequencyBand[i][j]->Electrodes(bipolesList);
 			//Define type of elec : label + "EEG" + "uV"
-			elanFrequencyBand[i][j]->Data(EEGFormat::DataConverterType::Digital).resize((int)bipoles.size(), std::vector<float>(sampInfo.nbSample / sampInfo.downsampFactor));
+			elanFrequencyBand[i][j]->Data(EEGFormat::DataConverterType::Digital).resize((int)bipolesList.size(), std::vector<float>(sampInfo.nbSample / sampInfo.downsampFactor));
 		}
 	}
 }

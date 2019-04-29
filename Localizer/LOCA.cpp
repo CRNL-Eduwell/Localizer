@@ -30,7 +30,7 @@ void InsermLibrary::LOCA::eeg2erp(eegContainer *myeegContainer, PROV *myprovFile
 	processEvents(myeegContainer, myprovFile); 
 
 	vec3<float> bigDataMono = vec3<float>(triggCatEla->triggers.size(), vec2<float>(myeegContainer->flatElectrodes.size(), vec1<float>(windowSam[1] - windowSam[0])));
-	vec3<float> bigDataBipo = vec3<float>(triggCatEla->triggers.size(), vec2<float>(myeegContainer->bipoles.size(), vec1<float>(windowSam[1] - windowSam[0])));
+	vec3<float> bigDataBipo = vec3<float>(triggCatEla->triggers.size(), vec2<float>(myeegContainer->BipoleCount(), vec1<float>(windowSam[1] - windowSam[0])));
 
 	cout << "Reading Data Mono ..." << endl;
 	for (int i = 0; i < triggCatEla->triggers.size(); i++)
@@ -48,12 +48,12 @@ void InsermLibrary::LOCA::eeg2erp(eegContainer *myeegContainer, PROV *myprovFile
 	cout << "Reading Data Bipo ..." << endl;
 	for (int i = 0; i < triggCatEla->triggers.size(); i++)
 	{
-		for (int k = 0; k < myeegContainer->bipoles.size(); k++)
+		for (int k = 0; k < myeegContainer->BipoleCount(); k++)
 		{
 			for (int j = 0; j < (windowSam[1] - windowSam[0]); j++)
 			{
-				bigDataBipo[i][k][j] = bigDataMono[i][myeegContainer->bipoles[k].positivElecId][j] -
-									   bigDataMono[i][myeegContainer->bipoles[k].negativElecId][j];
+				bigDataBipo[i][k][j] = bigDataMono[i][myeegContainer->Bipole(k).first][j] -
+									   bigDataMono[i][myeegContainer->Bipole(k).second][j];
 			}
 		}
 	}
@@ -271,17 +271,17 @@ void InsermLibrary::LOCA::createConfFile(eegContainer *myeegContainer)
 	confFile << "channel_reference" << endl;
 	confFile << "-1" << endl;
 
-	for (int i = 0; i < myeegContainer->bipoles.size() - 1; i++)
+	for (int i = 0; i < myeegContainer->BipoleCount() - 1; i++)
 	{
-		if (myeegContainer->bipoles[i].negativElecId + 1 != myeegContainer->bipoles[i + 1].negativElecId)
+		if (myeegContainer->Bipole(i).second + 1 != myeegContainer->Bipole(i + 1).second)
 		{
 			//-1
-			confFile << myeegContainer->bipoles[i].negativElecId << endl;
+			confFile << myeegContainer->Bipole(i).second << endl;
 			confFile << "-1" << endl;
 		}
 		else
 		{
-			confFile << myeegContainer->bipoles[i].negativElecId << endl;
+			confFile << myeegContainer->Bipole(i).second << endl;
 		}
 	}
 	confFile.close();
@@ -724,7 +724,7 @@ void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, int idCurrentFre
 	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency);
 
 	//== get Bloc of eeg data we want to display center around events
-	vec3<float> eegData3D = vec3<float>(triggCatEla->triggers.size(), vec2<float>(myeegContainer->bipoles.size(), vec1<float>(windowSam[1] - windowSam[0])));
+	vec3<float> eegData3D = vec3<float>(triggCatEla->triggers.size(), vec2<float>(myeegContainer->BipoleCount(), vec1<float>(windowSam[1] - windowSam[0])));
 	myeegContainer->GetFrequencyBlocDataEvents(eegData3D, idCurrentFreqfrequency, 0, triggCatEla, windowSam);
 
 	//== calculate stat
@@ -805,7 +805,7 @@ void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, int idCurrentFr
 	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency);
 
 	//== get Bloc of eeg data we want to display center around events
-	vec3<float> eegData3D = vec3<float>(triggCatEla->triggers.size(), vec2<float>(myeegContainer->bipoles.size(), vec1<float>(windowSam[1] - windowSam[0])));
+	vec3<float> eegData3D = vec3<float>(triggCatEla->triggers.size(), vec2<float>(myeegContainer->BipoleCount(), vec1<float>(windowSam[1] - windowSam[0])));
 	myeegContainer->GetFrequencyBlocDataEvents(eegData3D, idCurrentFreqfrequency, 0, triggCatEla, windowSam);
 
 	//==
@@ -851,7 +851,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 
 	//== get Bloc of eeg data we want to display center around events
 	vec3<float> bigData;
-	bigData.resize(myeegContainer->bipoles.size(), vec2<float>(triggCatEla->triggers.size(), vec1<float>(windowSam[1] - windowSam[0])));
+	bigData.resize(myeegContainer->BipoleCount(), vec2<float>(triggCatEla->triggers.size(), vec1<float>(windowSam[1] - windowSam[0])));
 	myeegContainer->GetFrequencyBlocData(bigData, idCurrentFreqfrequency, 0, triggCatEla, windowSam);
 
 	//== calculate stat
@@ -972,7 +972,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 
 		//Display title on map and then Save
 		string outputPicPath = mapPath;
-		string elecName = myeegContainer->flatElectrodes[myeegContainer->bipoles[i].positivElecId];
+		string elecName = myeegContainer->flatElectrodes[myeegContainer->Bipole(i).first];
 		outputPicPath.append(elecName.c_str()).append(".jpg");
 		mGen.drawMapTitle(painterChanel, outputPicPath);
 		pixmapChanel->save(outputPicPath.c_str(), "JPG");

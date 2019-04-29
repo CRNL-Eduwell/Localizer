@@ -122,7 +122,7 @@ void Worker::analysePatientFolder(patientFolder *currentPatient)
 
 			if (myContainer != nullptr)
 			{
-				emit sendLogInfo("Number of Bip : " + QString::number(myContainer->bipoles.size()));
+				emit sendLogInfo("Number of Bip : " + QString::number(myContainer->BipoleCount()));
 				//==
 				stringstream().swap(TimeDisp);
 				GetLocalTime(&LocalTime);
@@ -160,7 +160,7 @@ void Worker::analyseSingleFiles(vector<singleFile> currentFiles)
 
 		if (myContainer != nullptr)
 		{
-			emit sendLogInfo("Number of Bip : " + QString::number(myContainer->bipoles.size()));
+			emit sendLogInfo("Number of Bip : " + QString::number(myContainer->BipoleCount()));
 			//==
 			stringstream().swap(TimeDisp);
 			GetLocalTime(&LocalTime);

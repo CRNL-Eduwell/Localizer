@@ -138,7 +138,7 @@ void drawBars::drawDataOnTemplate(vec3<float> &bigData, TRIGGINFO *triggCatEla, 
 		{
 			if (j + 1 < myeegContainer->electrodes[i].id.size())
 			{
-				if (myeegContainer->bipoles[countBipole].positivLabel ==
+				if (myeegContainer->BipolePositivLabel(countBipole) ==
 					myeegContainer->electrodes[i].label + to_string(myeegContainer->electrodes[i].id[j + 1]))
 				{
 					//Extract Data
@@ -398,8 +398,8 @@ void drawPlots::drawDataOnTemplate(vec3<float> &bigData, TRIGGINFO *triggCatEla,
 				}
 				else
 				{
-					goIn = myeegContainer->bipoles[countBipole].positivLabel ==
-		  				   myeegContainer->electrodes[i].label + to_string(myeegContainer->electrodes[i].id[j + 1]);
+					goIn = myeegContainer->BipolePositivLabel(countBipole) ==
+						myeegContainer->electrodes[i].label + to_string(myeegContainer->electrodes[i].id[j + 1]);
 				}
 
 				if (goIn)
