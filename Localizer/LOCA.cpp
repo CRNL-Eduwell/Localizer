@@ -16,17 +16,16 @@ InsermLibrary::LOCA::~LOCA()
 void InsermLibrary::LOCA::eeg2erp(eegContainer *myeegContainer, PROV *myprovFile)
 {
 	int *windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.samplingFrequency);
-	vec1<string> origFilePath = split<string>(myeegContainer->originalFilePath, "/");
-	string outputFolder = myeegContainer->originalFilePath;
-	outputFolder.append("_ERP/");
-	if (!QDir(&outputFolder.c_str()[0]).exists())
+
+	std::string outputErpFolder = myeegContainer->RootFileFolder();
+	outputErpFolder.append(myeegContainer->RootFileName());
+	outputErpFolder.append("_ERP/");
+	if (!QDir(&outputErpFolder.c_str()[0]).exists())
 	{
 		emit sendLogInfo(QString::fromStdString("Creating Output Folder for erp Maps"));
-		QDir().mkdir(&outputFolder.c_str()[0]);
+		QDir().mkdir(&outputErpFolder.c_str()[0]);
 	}
-	string picPathMono = outputFolder; 
-	picPathMono = picPathMono.append(origFilePath[origFilePath.size() - 1]);
-
+	string monoErpOutput = outputErpFolder.append(myeegContainer->RootFileName());
 	processEvents(myeegContainer, myprovFile); 
 
 	vec3<float> bigDataMono = vec3<float>(triggCatEla->triggers.size(), vec2<float>(myeegContainer->flatElectrodes.size(), vec1<float>(windowSam[1] - windowSam[0])));
@@ -58,7 +57,7 @@ void InsermLibrary::LOCA::eeg2erp(eegContainer *myeegContainer, PROV *myprovFile
 		}
 	}
 
-	drawPlots b = drawPlots(myprovFile, picPathMono, userOpt->picOption.sizePlotmap);
+	drawPlots b = drawPlots(myprovFile, monoErpOutput, userOpt->picOption.sizePlotmap);
 	b.drawDataOnTemplate(bigDataMono, triggCatEla, myeegContainer, 0);
 	emit sendLogInfo("Mono Maps Generated");
 	b.drawDataOnTemplate(bigDataBipo, triggCatEla, myeegContainer, 1);
@@ -233,8 +232,10 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 /**************************************************/
 void InsermLibrary::LOCA::createPosFile(eegContainer *myeegContainer)
 {
-	ofstream posFile(myeegContainer->originalFilePath + ".pos", ios::out);
-	ofstream posFileX(myeegContainer->originalFilePath + "_ds" + to_string(myeegContainer->sampInfo.downsampFactor) + ".pos", ios::out);
+	std::string outputPosFilePath = myeegContainer->RootFileFolder() + myeegContainer->RootFileName();
+
+	ofstream posFile(outputPosFilePath + ".pos", ios::out);
+	ofstream posFileX(outputPosFilePath + "_ds" + to_string(myeegContainer->sampInfo.downsampFactor) + ".pos", ios::out);
 
 	for (int i = 0; i < myeegContainer->triggEeg->triggers.size(); i++)
 	{
@@ -250,7 +251,9 @@ void InsermLibrary::LOCA::createPosFile(eegContainer *myeegContainer)
 
 void InsermLibrary::LOCA::createConfFile(eegContainer *myeegContainer)
 {
-	ofstream confFile(myeegContainer->originalFilePath + ".conf", ios::out);
+	std::string outputConfFilePath = myeegContainer->RootFileFolder() + myeegContainer->RootFileName();
+
+	ofstream confFile(outputConfFilePath + ".conf", ios::out);
 
 	confFile << "nb_channel" << "  " << myeegContainer->flatElectrodes.size() << endl;
 	confFile << "sec_per_page" << "  " << 4 << endl;
@@ -647,7 +650,7 @@ string InsermLibrary::LOCA::createIfFreqFolderExistNot(eegContainer *myeegContai
 {
 	string fMin = to_string(currentFreq.freqBandValue[0]);
 	string fMax = to_string(currentFreq.freqBandValue[currentFreq.freqBandValue.size() - 1]);
-	string freqFolder = myeegContainer->originalFilePath + "_f" + fMin + "f" + fMax + "/";
+	string freqFolder = myeegContainer->RootFileName() + "_f" + fMin + "f" + fMax + "/";
 
 	if (!QDir(&freqFolder.c_str()[0]).exists())
 	{

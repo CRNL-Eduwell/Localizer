@@ -53,6 +53,14 @@ namespace InsermLibrary
 		~eegContainer();		
 
 		//===[ Getter / Setter ]===
+		inline std::string RootFileFolder()
+		{
+			return EEGFormat::Utility::GetDirectoryPath(m_file->DefaultFilePath());
+		}
+		inline std::string RootFileName(bool withExtension = false)
+		{
+			return EEGFormat::Utility::GetFileName(m_file->DefaultFilePath(), withExtension);
+		}
 		inline int BipoleCount()
 		{
 			return m_bipoles.size();
@@ -114,7 +122,6 @@ namespace InsermLibrary
 		vector<elecContainer> electrodes;
 		vector<string> flatElectrodes;
 		vector<int> idElecToDelete;
-		string originalFilePath = "";
 		samplingInformation sampInfo;
 	private:
 		std::vector<std::pair<int, int>> m_bipoles;

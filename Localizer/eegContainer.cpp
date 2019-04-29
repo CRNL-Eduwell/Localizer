@@ -59,10 +59,6 @@ InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFr
 	sampInfo.downsampFactor = sampInfo.samplingFrequency / sampInfo.downsampledFrequency; //verifier si bonne fréquence d'échantillonage ( non 2^n factor)
 	sampInfo.nbSample = Data().size() > 0 ? Data()[0].size() : 0;
 
-	//==
-	originalFilePath = m_file->DefaultFilePath();
-	originalFilePath.replace(originalFilePath.end() - 4, originalFilePath.end(), "");
-	//==
 	calculateSmoothing();
 	//== get triggers after last beginningCode that indicates beginning of expe
 	int beginValue = 0;
@@ -75,7 +71,7 @@ InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFr
 		deleteAndNullify1D(triggEeg);
 		triggEeg = new TRIGGINFO(m_file->Triggers(), beginValue, m_file->Triggers().size());
 		deleteAndNullify1D(triggEegDownsampled);
-		triggEegDownsampled = new TRIGGINFO(m_file->Triggers(),beginValue, m_file->Triggers().size(), sampInfo.downsampFactor);
+		triggEegDownsampled = new TRIGGINFO(m_file->Triggers(), beginValue, m_file->Triggers().size(), sampInfo.downsampFactor);
 	}
 }
 
@@ -219,21 +215,21 @@ void InsermLibrary::eegContainer::ToHilbert(int IdFrequency, vector<int> frequen
 		}
 	}
 
-	std::vector<std::string> splitOrigFilePath = split<std::string>(originalFilePath, "/\\");
-	std::string patientName = splitOrigFilePath[splitOrigFilePath.size() - 1];
+	std::string rootFileFolder = EEGFormat::Utility::GetDirectoryPath(m_file->DefaultFilePath());
+	std::string patientName = EEGFormat::Utility::GetFileName(m_file->DefaultFilePath(), false);
 	std::string frequencyFolder = "_f" + to_string(frequencyBand[0]) + "f" + to_string(frequencyBand[frequencyBand.size() - 1]);
-	std::string rootFolder = originalFilePath + frequencyFolder + "/";
+	std::string rootFrequencyFolder = rootFileFolder + "/" + patientName + frequencyFolder + "/";
 
 	struct stat info;
-	if (stat(rootFolder.c_str(), &info) != 0)
+	if (stat(rootFrequencyFolder.c_str(), &info) != 0)
 	{
 		cout << "Creating freQ FOLDER" << endl;
-		_mkdir(rootFolder.c_str());
+		_mkdir(rootFrequencyFolder.c_str());
 	}
 
 	for (int i = 0; i < 6; i++)
 	{
-		std::string nameOuputFile = rootFolder + patientName + frequencyFolder + "_ds" + to_string(sampInfo.downsampFactor) + "_sm" + to_string((int)smoothingMilliSec[i]);
+		std::string nameOuputFile = rootFrequencyFolder + patientName + frequencyFolder + "_ds" + to_string(sampInfo.downsampFactor) + "_sm" + to_string((int)smoothingMilliSec[i]);
 		elanFrequencyBand[IdFrequency][i]->SaveAs(nameOuputFile + ".eeg.ent", nameOuputFile + ".eeg", "", "");
 	}
 }
@@ -452,5 +448,4 @@ void InsermLibrary::eegContainer::meanConvolveData(dataContainer *dataCont, int 
 	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[3][threadId][0], dataCont->arrayDownLength, smoothingSample[3]);
 	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[4][threadId][0], dataCont->arrayDownLength, smoothingSample[4]);
 	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[5][threadId][0], dataCont->arrayDownLength, smoothingSample[5]);
-
 }
