@@ -15,6 +15,7 @@
 #include "mapsGenerator.h"
 #include "barsPlotsGenerator.h"
 #include "optionsParameters.h"
+#include "TriggerContainer.h"
 
 using namespace std;
 using namespace InsermLibrary;
@@ -37,12 +38,14 @@ namespace InsermLibrary
 	private:
 		void toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreq, string freqFolder, analysisOption a);
 		//==
-		void createPosFile(eegContainer *myeegContainer);
+		void CreateEventsFile(eegContainer *myeegContainer, TriggerContainer *triggerContainer);
+		void createPosFile(std::string filePath, std::vector<Trigger> & triggers);
 		void createConfFile(eegContainer *myeegContainer);
 		void renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
 		//==
 		void processEvents(eegContainer *myeegContainer, PROV *myprovFile);
 		void processEventsDown(eegContainer *myeegContainer, PROV *myprovFile);
+		void ProcessEventsForExperiment(TriggerContainer *triggerContainer, PROV *myprovFile, int downSaplingFactor = 1);
 		void pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
 		void deleteUnsignificativEvents(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
 		void sortTrials(TRIGGINFO *eegTriggersTemp, PROV *myprovFile, int downSampFreq);
@@ -77,6 +80,7 @@ namespace InsermLibrary
 	private:
 		TRIGGINFO *triggCatEla = nullptr, *triggCatEla2 = nullptr;
 		locaFolder *currentLoca = nullptr;
+		TriggerContainer *m_triggerContainer = nullptr;
 		int idCurrentLoca = -1;
 		userOption *userOpt = nullptr;
 	};

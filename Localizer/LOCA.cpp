@@ -148,6 +148,9 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 	this->idCurrentLoca = idCurrentLoca;
 	this->currentLoca = nullptr;
 
+	deleteAndNullify1D(m_triggerContainer);
+	m_triggerContainer = new TriggerContainer(myeegContainer->Triggers(), myeegContainer->sampInfo.samplingFrequency);
+
 	for (int i = 0; i < userOpt->freqOption.frequencyBands.size(); i++)
 	{
 		frequency currentFrequencyBand = frequency(userOpt->freqOption.frequencyBands[i]);
@@ -158,8 +161,7 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 			emit incrementAdavnce(1);
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 
-			if (myeegContainer->triggEeg != nullptr)
-				createPosFile(myeegContainer);
+			CreateEventsFile(myeegContainer, m_triggerContainer);
 		}
 	}
 }
@@ -187,12 +189,18 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 {
 	bool env = false, bar = false, trial = false;
 
+	deleteAndNullify1D(m_triggerContainer);
+	m_triggerContainer = new TriggerContainer(myeegContainer->Triggers(), myeegContainer->sampInfo.samplingFrequency);
+
 	vector<PROV> provFiles = loadProvCurrentLoca();
 	for (int i = 0; i < provFiles.size(); i++)
 	{
 		if (provFiles[i].changeCodeFilePath != "")
-			renameTriggers(myeegContainer->triggEeg, myeegContainer->triggEegDownsampled, &provFiles[i]);
-		createPosFile(myeegContainer); 
+		{
+			std::cerr << "Caution : RenameTrigger function is commented, needs to be refactored" << std::endl;
+			//renameTriggers(myeegContainer->triggEeg, myeegContainer->triggEegDownsampled, &provFiles[i]);
+		}
+		CreateEventsFile(myeegContainer, m_triggerContainer);
 		createConfFile(myeegContainer);
 		processEventsDown(myeegContainer, &provFiles[i]);
 
@@ -230,23 +238,26 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 /*	 - Conf File								  */
 /*	 - Rename Trigger : For visualisation purpose */
 /**************************************************/
-void InsermLibrary::LOCA::createPosFile(eegContainer *myeegContainer)
+void InsermLibrary::LOCA::CreateEventsFile(eegContainer *myeegContainer, TriggerContainer *triggerContainer)
 {
-	std::string outputPosFilePath = myeegContainer->RootFileFolder() + myeegContainer->RootFileName();
+	std::string fileNameBase = myeegContainer->RootFileFolder() + myeegContainer->RootFileName();
 
-	ofstream posFile(outputPosFilePath + ".pos", ios::out);
-	ofstream posFileX(outputPosFilePath + "_ds" + to_string(myeegContainer->sampInfo.downsampFactor) + ".pos", ios::out);
+	std::string triggersPosFilePath = fileNameBase + ".pos";
+	std::vector<Trigger> triggers = triggerContainer->GetTriggerList(99);
+	createPosFile(triggersPosFilePath, triggers);
+	std::vector<Trigger> triggersDownsampled = triggerContainer->GetTriggerList(99, myeegContainer->sampInfo.downsampFactor);
+	std::string downsampledTriggersPosFilePath = fileNameBase + "_ds" + to_string(myeegContainer->sampInfo.downsampFactor) + ".pos";
+	createPosFile(downsampledTriggersPosFilePath, triggersDownsampled);
+}
 
-	for (int i = 0; i < myeegContainer->triggEeg->triggers.size(); i++)
+void InsermLibrary::LOCA::createPosFile(std::string filePath, std::vector<Trigger> & triggers)
+{
+	std::vector<EEGFormat::ITrigger> iTriggers(triggers.size());
+	for (int i = 0; i < iTriggers.size(); i++)
 	{
-		posFile << myeegContainer->triggEeg->triggers[i].trigger.sample << setw(10) 
-				<< myeegContainer->triggEeg->triggers[i].trigger.code << setw(10) << "0" << endl;
-		posFileX << myeegContainer->triggEegDownsampled->triggers[i].trigger.sample << setw(10)
-				 << myeegContainer->triggEegDownsampled->triggers[i].trigger.code << setw(10) << "0" << endl;
+		iTriggers[i] = EEGFormat::ITrigger(triggers[i].MainEvent());
 	}
-
-	posFile.close();
-	posFileX.close();
+	EEGFormat::ElanFile::SaveTriggers(filePath, iTriggers);
 }
 
 void InsermLibrary::LOCA::createConfFile(eegContainer *myeegContainer)
@@ -430,6 +441,18 @@ void InsermLibrary::LOCA::processEventsDown(eegContainer *myeegContainer, PROV *
 
 	deleteAndNullify1D(triggCatEla2);
 	deleteAndNullify1D(downEegTriggers);
+}
+
+void InsermLibrary::LOCA::ProcessEventsForExperiment(TriggerContainer *triggerContainer, PROV *myprovFile, int downSaplingFactor = 1)
+{
+	std::vector<Trigger> Triggers = triggerContainer->GetTriggerList(99, downSaplingFactor);
+	triggerContainer->PairStimulationWithResponses(Triggers, myprovFile);
+	triggerContainer->DeleteTriggerNotInExperiment(Triggers, myprovFile);
+	if (myprovFile->getSecondaryCodes()[0][0] != 0) //At this point , if there is secondary code, we need to check if all have been paired correctly 
+	{
+		triggerContainer->DeleteTriggerNotPaired(Triggers);
+	}
+	triggerContainer->SortTrialsForExperiment(Triggers, myprovFile);
 }
 
 void InsermLibrary::LOCA::pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile)

@@ -61,6 +61,20 @@ namespace InsermLibrary
 		{
 			return EEGFormat::Utility::GetFileName(m_file->DefaultFilePath(), withExtension);
 		}
+		inline int TriggerCount()
+		{
+			return m_file->TriggerCount();
+		}
+		inline std::vector<EEGFormat::ITrigger>& Triggers()
+		{
+			int TriggerCount = m_file->TriggerCount();
+			std::vector<EEGFormat::ITrigger> triggers(TriggerCount);
+			for (int i = 0; i < TriggerCount; i++)
+			{
+				triggers.push_back(EEGFormat::ITrigger(*m_file->Trigger(i)));
+			}
+			return triggers;
+		}
 		inline int BipoleCount()
 		{
 			return m_bipoles.size();
@@ -109,7 +123,6 @@ namespace InsermLibrary
 		void GetElectrodes(EEGFormat::IFile* edf);
 		int idSplitDigiAndNum(string myString);
 		void calculateSmoothing();
-		std::vector<int> findIndexes(std::vector<EEGFormat::ITrigger*> & trigg, int value2find);
 		void initElanFreqStruct();
 		void hilbertDownSampSumData(dataContainer *dataCont, int threadId, int freqId);
 		void meanConvolveData(dataContainer *dataCont, int threadId);
@@ -117,8 +130,8 @@ namespace InsermLibrary
 	public :
 		//[IdNbFrequency][sm0-sm5000][channels][sample]
 		std::vector<std::vector<EEGFormat::ElanFile*>> elanFrequencyBand;
-		TRIGGINFO *triggEeg = nullptr;
-		TRIGGINFO *triggEegDownsampled = nullptr;
+		//TRIGGINFO *triggEeg = nullptr;
+		//TRIGGINFO *triggEegDownsampled = nullptr;
 		vector<elecContainer> electrodes;
 		vector<string> flatElectrodes;
 		vector<int> idElecToDelete;

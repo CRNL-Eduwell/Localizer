@@ -60,19 +60,19 @@ InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFr
 	sampInfo.nbSample = Data().size() > 0 ? Data()[0].size() : 0;
 
 	calculateSmoothing();
-	//== get triggers after last beginningCode that indicates beginning of expe
-	int beginValue = 0;
-	vector<int> indexBegin = findIndexes(m_file->Triggers(), 99);
-	if (indexBegin.size() > 0)
-		beginValue = indexBegin[indexBegin.size() - 1] + 1;
+	////== get triggers after last beginningCode that indicates beginning of expe
+	//int beginValue = 0;
+	//vector<int> indexBegin = findIndexes(m_file->Triggers(), 99);
+	//if (indexBegin.size() > 0)
+	//	beginValue = indexBegin[indexBegin.size() - 1] + 1;
 
-	if (m_file->Triggers().size() > 0)
-	{
-		deleteAndNullify1D(triggEeg);
-		triggEeg = new TRIGGINFO(m_file->Triggers(), beginValue, m_file->Triggers().size());
-		deleteAndNullify1D(triggEegDownsampled);
-		triggEegDownsampled = new TRIGGINFO(m_file->Triggers(), beginValue, m_file->Triggers().size(), sampInfo.downsampFactor);
-	}
+	//if (m_file->Triggers().size() > 0)
+	//{
+	//	deleteAndNullify1D(triggEeg);
+	//	triggEeg = new TRIGGINFO(m_file->Triggers(), beginValue, m_file->Triggers().size());
+	//	deleteAndNullify1D(triggEegDownsampled);
+	//	triggEegDownsampled = new TRIGGINFO(m_file->Triggers(), beginValue, m_file->Triggers().size(), sampInfo.downsampFactor);
+	//}
 }
 
 InsermLibrary::eegContainer::~eegContainer()
@@ -355,20 +355,6 @@ void InsermLibrary::eegContainer::calculateSmoothing()
 	{
 		smoothingSample[i] = ((sampInfo.samplingFrequency * smoothingMilliSec[i]) / 1000) / sampInfo.downsampFactor;
 	}
-}
-
-std::vector<int> InsermLibrary::eegContainer::findIndexes(std::vector<EEGFormat::ITrigger*> & trigg, int value2find)
-{
-	std::vector<int> indexesFound;
-	for (int i = 0; i < trigg.size(); i++)
-	{
-		if (trigg[i]->Code() == value2find)
-		{
-			indexesFound.push_back(i);
-		}
-	}
-
-	return indexesFound;
 }
 
 void InsermLibrary::eegContainer::initElanFreqStruct()

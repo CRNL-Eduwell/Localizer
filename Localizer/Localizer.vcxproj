@@ -269,6 +269,8 @@
     <ClCompile Include="PROV.cpp" />
     <ClCompile Include="singleFile.cpp" />
     <ClCompile Include="Stats.cpp" />
+    <ClCompile Include="Trigger.cpp" />
+    <ClCompile Include="TriggerContainer.cpp" />
     <ClCompile Include="Utility.cpp" />
     <ClCompile Include="Worker.cpp" />
   </ItemGroup>
@@ -494,6 +496,8 @@
     <ClInclude Include="PROV.h" />
     <ClInclude Include="PROVParameters.h" />
     <ClInclude Include="singleFile.h" />
+    <ClInclude Include="Trigger.h" />
+    <ClInclude Include="TriggerContainer.h" />
     <ClInclude Include="Utility.h" />
     <CustomBuild Include="optionsStats.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
