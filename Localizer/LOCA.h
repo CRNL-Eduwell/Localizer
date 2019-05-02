@@ -43,11 +43,6 @@ namespace InsermLibrary
 		void createConfFile(eegContainer *myeegContainer);
 		void renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
 		//==
-		//void processEvents(eegContainer *myeegContainer, PROV *myprovFile);
-		//void processEventsDown(eegContainer *myeegContainer, PROV *myprovFile);
-		//void pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
-		//void deleteUnsignificativEvents(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
-		//void sortTrials(TRIGGINFO *eegTriggersTemp, PROV *myprovFile, int downSampFreq);
 		void swapStimResp(TRIGGINFO *eegTriggers, PROV *myprovFile);
 		//==
 		string createIfFreqFolderExistNot(eegContainer *myeegContainer, frequency currentFreq);

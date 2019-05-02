@@ -250,6 +250,14 @@ void InsermLibrary::eegContainer::LoadFrequencyData(std::vector<std::string>& fi
 void InsermLibrary::eegContainer::GetFrequencyBlocData(vec3<float>& outputEegData, int frequencyId, int smoothingId, std::vector<Trigger>& triggEeg, int winSam[2])
 {
 	int TriggerCount = triggEeg.size();
+	if (triggEeg[0].SamplingFrequency() != elanFrequencyBand[frequencyId][smoothingId]->SamplingFrequency())
+	{
+		for (int i = 0; i < TriggerCount; i++)
+		{
+			triggEeg[i].UpdateFrequency(elanFrequencyBand[frequencyId][smoothingId]->SamplingFrequency());
+		}
+	}
+
 	for (int i = 0; i < elanFrequencyBand[frequencyId][smoothingId]->ElectrodeCount(); i++)
 	{
 		for (int j = 0; j < TriggerCount; j++)
@@ -272,6 +280,14 @@ void InsermLibrary::eegContainer::GetFrequencyBlocData(vec3<float>& outputEegDat
 void InsermLibrary::eegContainer::GetFrequencyBlocDataEvents(vec3<float>& outputEegData, int frequencyId, int smoothingId, std::vector<Trigger>& triggEeg, int winSam[2])
 {
 	int TriggerCount = triggEeg.size();
+	if (triggEeg[0].SamplingFrequency() != elanFrequencyBand[frequencyId][smoothingId]->SamplingFrequency())
+	{
+		for (int i = 0; i < TriggerCount; i++)
+		{
+			triggEeg[i].UpdateFrequency(elanFrequencyBand[frequencyId][smoothingId]->SamplingFrequency());
+		}
+	}
+
 	for (int i = 0; i < TriggerCount; i++)
 	{
 		for (int j = 0; j < winSam[1] - winSam[0]; j++)

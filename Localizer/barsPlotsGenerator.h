@@ -6,7 +6,7 @@
 #include "Utility.h"
 #include "PROV.h"
 #include "eegContainer.h"
-#include"eegContainerParameters.h"
+#include "TriggerContainer.h"
 #include <QPixmap>
 #include <QPainter>
 #include "optionsParameters.h"
@@ -38,7 +38,7 @@ namespace InsermLibrary
 		public:
 			drawBars(PROV *myprovFile, string outputFolder, QSize size);
 			~drawBars();
-			void drawDataOnTemplate(vec3<float> &bigData, TRIGGINFO *triggCatEla, vec1<PVALUECOORD> significantValue, eegContainer* myeegContainer);
+			void drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* triggerContainer, vec1<PVALUECOORD> significantValue, eegContainer* myeegContainer);
 			QString createPicPath(string picFolder, eegContainer* myeegContainer, int idElec);
 		public:
 			PROV *myprovFile = nullptr;
@@ -50,7 +50,7 @@ namespace InsermLibrary
 		public:
 			drawPlots(PROV *myprovFile, string outputFolder, QSize size);
 			~drawPlots();
-			void drawDataOnTemplate(vec3<float> &bigData, TRIGGINFO *triggCatEla, eegContainer* myeegContainer, int card2Draw);
+			void drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* triggerContainer, eegContainer* myeegContainer, int card2Draw);
 			QString createPicPath(string picFolder, eegContainer* myeegContainer, int cards2Draw, int nbFigureDrawn);
 		public:
 			PROV *myprovFile = nullptr;

@@ -2,15 +2,18 @@
 
 InsermLibrary::Trigger::Trigger(EEGFormat::ITrigger mainEvent, int samplingFrequency)
 {
-	m_mainEvent = mainEvent;
+	m_mainEvent.Code(mainEvent.Code());
+	m_mainEvent.Sample(mainEvent.Sample());
 	m_samplingFrequency = samplingFrequency;
 	m_response.Code(-1);
 }
 
 InsermLibrary::Trigger::Trigger(EEGFormat::ITrigger mainEvent, EEGFormat::ITrigger response, int samplingFrequency)
 {
-	m_mainEvent = mainEvent;
-	m_response = response;
+	m_mainEvent.Code(mainEvent.Code());
+	m_mainEvent.Sample(mainEvent.Sample());
+	m_response.Code(response.Code());
+	m_response.Sample(response.Sample());
 	m_samplingFrequency = samplingFrequency;
 }
 

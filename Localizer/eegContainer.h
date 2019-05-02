@@ -72,7 +72,7 @@ namespace InsermLibrary
 			std::vector<EEGFormat::ITrigger> triggers(TriggerCount);
 			for (int i = 0; i < TriggerCount; i++)
 			{
-				triggers.push_back(EEGFormat::ITrigger(*m_file->Trigger(i)));
+				triggers[i] = EEGFormat::ITrigger(*m_file->Trigger(i));
 			}
 			return triggers;
 		}

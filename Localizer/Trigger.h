@@ -19,6 +19,16 @@ namespace InsermLibrary
 		{
 			return m_response;
 		}
+		inline void Response(int code, long sample)
+		{
+			m_response.Code(code);
+			m_response.Sample(sample);
+		}
+		inline void Response(EEGFormat::ITrigger response)
+		{
+			m_response.Code(response.Code());
+			m_response.Sample(response.Sample());
+		}
 		inline int SamplingFrequency()
 		{
 			return m_samplingFrequency;
