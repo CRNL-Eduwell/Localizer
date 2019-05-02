@@ -43,12 +43,11 @@ namespace InsermLibrary
 		void createConfFile(eegContainer *myeegContainer);
 		void renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
 		//==
-		void processEvents(eegContainer *myeegContainer, PROV *myprovFile);
-		void processEventsDown(eegContainer *myeegContainer, PROV *myprovFile);
-		void ProcessEventsForExperiment(TriggerContainer *triggerContainer, PROV *myprovFile, int downSaplingFactor = 1);
-		void pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
-		void deleteUnsignificativEvents(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
-		void sortTrials(TRIGGINFO *eegTriggersTemp, PROV *myprovFile, int downSampFreq);
+		//void processEvents(eegContainer *myeegContainer, PROV *myprovFile);
+		//void processEventsDown(eegContainer *myeegContainer, PROV *myprovFile);
+		//void pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
+		//void deleteUnsignificativEvents(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
+		//void sortTrials(TRIGGINFO *eegTriggersTemp, PROV *myprovFile, int downSampFreq);
 		void swapStimResp(TRIGGINFO *eegTriggers, PROV *myprovFile);
 		//==
 		string createIfFreqFolderExistNot(eegContainer *myeegContainer, frequency currentFreq);
@@ -78,7 +77,7 @@ namespace InsermLibrary
 		void incrementAdavnce(int divider);
 
 	private:
-		TRIGGINFO *triggCatEla = nullptr, *triggCatEla2 = nullptr;
+		//TRIGGINFO *triggCatEla = nullptr, *triggCatEla2 = nullptr;
 		locaFolder *currentLoca = nullptr;
 		TriggerContainer *m_triggerContainer = nullptr;
 		int idCurrentLoca = -1;

@@ -6,6 +6,7 @@
 #include "eegContainerParameters.h"
 #include "FirBandPass.h"	
 #include "Convolution.h"
+#include "Trigger.h"
 
 #include <iostream>
 #include <vector>
@@ -65,7 +66,7 @@ namespace InsermLibrary
 		{
 			return m_file->TriggerCount();
 		}
-		inline std::vector<EEGFormat::ITrigger>& Triggers()
+		inline std::vector<EEGFormat::ITrigger> Triggers()
 		{
 			int TriggerCount = m_file->TriggerCount();
 			std::vector<EEGFormat::ITrigger> triggers(TriggerCount);
@@ -116,8 +117,8 @@ namespace InsermLibrary
 		void LoadFrequencyData(std::vector<std::string>& filesPath, int frequencyId, int smoothingId);
 
 		//===[ Read / Get Data ]===
-		void GetFrequencyBlocData(vec3<float>& outputEegData, int frequencyId, int smoothingId, TRIGGINFO *triggEeg, int winSam[2]);
-		void GetFrequencyBlocDataEvents(vec3<float>& outputEegData, int frequencyId, int smoothingId, TRIGGINFO *triggEeg, int winSam[2]);
+		void GetFrequencyBlocData(vec3<float>& outputEegData, int frequencyId, int smoothingId, std::vector<Trigger>& triggEeg, int winSam[2]);
+		void GetFrequencyBlocDataEvents(vec3<float>& outputEegData, int frequencyId, int smoothingId, std::vector<Trigger>& triggEeg, int winSam[2]);
 
 	private:
 		void GetElectrodes(EEGFormat::IFile* edf);

@@ -247,13 +247,14 @@ void InsermLibrary::eegContainer::LoadFrequencyData(std::vector<std::string>& fi
 	}
 }
 
-void InsermLibrary::eegContainer::GetFrequencyBlocData(vec3<float>& outputEegData, int frequencyId, int smoothingId, TRIGGINFO *triggEeg, int winSam[2])
+void InsermLibrary::eegContainer::GetFrequencyBlocData(vec3<float>& outputEegData, int frequencyId, int smoothingId, std::vector<Trigger>& triggEeg, int winSam[2])
 {
+	int TriggerCount = triggEeg.size();
 	for (int i = 0; i < elanFrequencyBand[frequencyId][smoothingId]->ElectrodeCount(); i++)
 	{
-		for (int j = 0; j < triggEeg->triggers.size(); j++)
+		for (int j = 0; j < TriggerCount; j++)
 		{
-			int trigTime = triggEeg->triggers[j].trigger.sample;
+			int trigTime = triggEeg[j].MainSample();
 			int beginTime = trigTime + winSam[0];
 
 			for (int k = 0; k < (winSam[1] - winSam[0]); k++)
@@ -268,13 +269,14 @@ void InsermLibrary::eegContainer::GetFrequencyBlocData(vec3<float>& outputEegDat
 	}
 }
 
-void InsermLibrary::eegContainer::GetFrequencyBlocDataEvents(vec3<float>& outputEegData, int frequencyId, int smoothingId, TRIGGINFO *triggEeg, int winSam[2])
+void InsermLibrary::eegContainer::GetFrequencyBlocDataEvents(vec3<float>& outputEegData, int frequencyId, int smoothingId, std::vector<Trigger>& triggEeg, int winSam[2])
 {
-	for (int i = 0; i < triggEeg->triggers.size(); i++)
+	int TriggerCount = triggEeg.size();
+	for (int i = 0; i < TriggerCount; i++)
 	{
 		for (int j = 0; j < winSam[1] - winSam[0]; j++)
 		{
-			int trigTime = triggEeg->triggers[i].trigger.sample;
+			int trigTime = triggEeg[i].MainSample();
 			int beginTime = trigTime + winSam[0];
 
 			for (int k = 0; k < elanFrequencyBand[frequencyId][smoothingId]->ElectrodeCount(); k++)

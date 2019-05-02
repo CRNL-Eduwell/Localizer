@@ -19,7 +19,7 @@ InsermLibrary::TriggerContainer::~TriggerContainer()
 std::vector<InsermLibrary::Trigger> InsermLibrary::TriggerContainer::GetTriggerList(int flagCode, int downSamplingFactor)
 {
 	int beginvalue = 0;
-	if(flagCode != -1)
+	if (flagCode != -1)
 		beginvalue = FindFirstIndexAfter(flagCode);
 	std::vector<InsermLibrary::Trigger> triggers;
 	if (m_originalTriggers.size() > 0)
@@ -31,6 +31,18 @@ std::vector<InsermLibrary::Trigger> InsermLibrary::TriggerContainer::GetTriggerL
 		}
 	}
 	return triggers;
+}
+
+void InsermLibrary::TriggerContainer::ProcessEventsForExperiment(PROV *myprovFile, int flagCode, int downSaplingFactor)
+{
+	std::vector<Trigger> m_processedTriggers = GetTriggerList(flagCode, downSaplingFactor);
+	PairStimulationWithResponses(m_processedTriggers, myprovFile);
+	DeleteTriggerNotInExperiment(m_processedTriggers, myprovFile);
+	if (myprovFile->getSecondaryCodes()[0][0] != 0) //At this point , if there is secondary code, we need to check if all have been paired correctly 
+	{
+		DeleteTriggerNotPaired(m_processedTriggers);
+	}
+	std::vector<int> m_subGroupStimTrials = SortTrialsForExperiment(m_processedTriggers, myprovFile);
 }
 
 void InsermLibrary::TriggerContainer::PairStimulationWithResponses(std::vector<Trigger>& triggers, PROV *myprovFile)
@@ -166,31 +178,65 @@ void InsermLibrary::TriggerContainer::DeleteTriggerNotPaired(std::vector<Trigger
 		triggers.erase(triggers.begin() + IdToDelete[i]);
 }
 
-// An interval has start time and end time 
-struct Interval {
-	int start, end;
-};
-
-// Compares two intervals according to staring times. 
-bool compareInterval(int provCode, int triggerCode)
+std::vector<int> InsermLibrary::TriggerContainer::SortTrialsForExperiment(std::vector<Trigger>& triggers, PROV *myprovFile)
 {
-	return provCode == triggerCode;
-}
-
-void InsermLibrary::TriggerContainer::SortTrialsForExperiment(std::vector<Trigger>& triggers, PROV *myprovFile)
-{
-	vector<int> dataId;
+	std::vector<int> subGroupStimTrials;
 	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
 	{
-		sort(triggers.begin(), triggers.end(),[&](int m, int n)-> bool 
+		sort(triggers.begin(), triggers.end(),[&](Trigger m, Trigger n)-> bool
 		{
-			return m < n; //or use paramA in some way
+			bool a = m.MainCode() == myprovFile->visuBlocs[i].mainEventBloc.eventCode[0];
+			bool b = n.MainCode() == myprovFile->visuBlocs[i].mainEventBloc.eventCode[0];
+			return a == b;
 		});
 
-		if (triggers[0].MainCode() == myprovFile->visuBlocs[i].mainEventBloc.eventCode[0])
+		//get first id of each new main code
+		subGroupStimTrials.push_back(0);
+		vector<int> mainEventsCode = myprovFile->getMainCodes();
+		for (int i = 0; i < triggers.size() - 1; i++)
 		{
+			if (triggers[i].MainCode() != triggers[i + 1].MainCode())
+			{
+				subGroupStimTrials.push_back(i + 1);
+			}
+		}
+		subGroupStimTrials.push_back(triggers.size());
+
+		//according to the rest sort by what is wanted
+		int beg = 0, end = 0;
+		for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
+		{
+			string currentSort = myprovFile->visuBlocs[i].dispBloc.sort();
+			vector<string> sortSplited = split<string>(currentSort, "_");
+			for (int j = 1; j < sortSplited.size(); j++)
+			{
+				SortingChoice Choice = (SortingChoice)(sortSplited[j][0]);
+				switch (Choice)
+				{
+					//Sort by resp code
+				case SortingChoice::Code:
+					beg = subGroupStimTrials[i];
+					end = subGroupStimTrials[i + 1];
+					sort(triggers.begin() + beg, triggers.begin() + end,
+						[](Trigger a, Trigger b) {
+						return (a.ResponseCode() < b.ResponseCode());
+					});
+					break;
+					//Sort by reaction time
+				case SortingChoice::Latency:
+					beg = subGroupStimTrials[i];
+					end = subGroupStimTrials[i + 1];
+					sort(triggers.begin() + beg, triggers.begin() + end,
+						[](Trigger a, Trigger b) {
+						return (a.ReactionTimeInMilliSeconds() < b.ReactionTimeInMilliSeconds());
+					});
+					break;
+				}
+			}
 		}
 	}
+
+	return subGroupStimTrials;
 }
 
 int InsermLibrary::TriggerContainer::FindFirstIndexAfter(int flagCode)
