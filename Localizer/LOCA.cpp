@@ -161,7 +161,7 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 			emit incrementAdavnce(1);
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 
-			CreateEventsFile(myeegContainer, m_triggerContainer);
+			CreateEventsFile(myeegContainer, m_triggerContainer, nullptr);
 		}
 	}
 }
@@ -195,19 +195,13 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 	vector<PROV> provFiles = loadProvCurrentLoca();
 	for (int i = 0; i < provFiles.size(); i++)
 	{
-		if (provFiles[i].changeCodeFilePath != "")
-		{
-			std::cerr << "Caution : RenameTrigger function is commented, needs to be refactored" << std::endl;
-			//renameTriggers(myeegContainer->triggEeg, myeegContainer->triggEegDownsampled, &provFiles[i]);
-		}
-		CreateEventsFile(myeegContainer, m_triggerContainer);
+		CreateEventsFile(myeegContainer, m_triggerContainer, &provFiles[i]);
 		createConfFile(myeegContainer);
 		m_triggerContainer->ProcessEventsForExperiment(&provFiles[i], 99);
 
 		if (provFiles[i].invertmapsinfo != "")
 		{
-			std::cerr << "Caution : swapStimResp function is commented, needs to be refactored" << std::endl;
-			//swapStimResp(triggCatEla, &provFiles[i]);
+			m_triggerContainer->SwapStimulationsAndResponses(&provFiles[i]);
 		}
 
 		if (a.env2plot)//env2plot
@@ -241,14 +235,14 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 /*	 - Conf File								  */
 /*	 - Rename Trigger : For visualisation purpose */
 /**************************************************/
-void InsermLibrary::LOCA::CreateEventsFile(eegContainer *myeegContainer, TriggerContainer *triggerContainer)
+void InsermLibrary::LOCA::CreateEventsFile(eegContainer *myeegContainer, TriggerContainer *triggerContainer, PROV *myprovFile)
 {
 	std::string fileNameBase = myeegContainer->RootFileFolder() + myeegContainer->RootFileName();
 
 	std::string triggersPosFilePath = fileNameBase + ".pos";
-	std::vector<Trigger> triggers = triggerContainer->GetTriggerList(99);
+	std::vector<Trigger> triggers = triggerContainer->GetTriggerForExperiment(myprovFile, 99);
 	createPosFile(triggersPosFilePath, triggers);
-	std::vector<Trigger> triggersDownsampled = triggerContainer->GetTriggerList(99, myeegContainer->sampInfo.downsampFactor);
+	std::vector<Trigger> triggersDownsampled = triggerContainer->GetTriggerForExperiment(myprovFile, 99, myeegContainer->sampInfo.downsampFactor);
 	std::string downsampledTriggersPosFilePath = fileNameBase + "_ds" + to_string(myeegContainer->sampInfo.downsampFactor) + ".pos";
 	createPosFile(downsampledTriggersPosFilePath, triggersDownsampled);
 }
@@ -302,125 +296,6 @@ void InsermLibrary::LOCA::createConfFile(eegContainer *myeegContainer)
 		}
 	}
 	confFile.close();
-}
-
-void InsermLibrary::LOCA::renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *downsampledEegTriggers,
-	PROV *myprovFile)
-{
-	stringstream buffer;
-	ifstream provFile(myprovFile->changeCodeFilePath, ios::binary);
-	if (provFile)
-	{
-		buffer << provFile.rdbuf();
-		provFile.close();
-	}
-	else
-	{
-		cout << " Error opening Change Code File @ " << myprovFile->changeCodeFilePath << endl;
-	}
-
-	vector<int> oldMainCode, oldSecondaryCode, newMainCode, newSecondaryCode;
-	vector<string> lineSplit = InsermLibrary::split<string>(buffer.str(), "\r\n");
-	for (int i = 0; i < lineSplit.size(); i++)
-	{
-		vector<string> elementSplit = InsermLibrary::split<string>(lineSplit[i], "+=");
-		oldMainCode.push_back(atoi(&(elementSplit[0])[0]));
-		oldSecondaryCode.push_back(atoi(&(elementSplit[1])[0]));
-		newMainCode.push_back(atoi(&(elementSplit[2])[0]));
-		newSecondaryCode.push_back(atoi(&(elementSplit[3])[0]));
-	}
-	
-	for (int k = 0; k < downsampledEegTriggers->triggers.size(); k++)
-	{
-		int idVisuBloc = -1;
-		int idMain = -1;
-		int idSec = -1;
-		int dd = -1;
-		int idcode = -1;
-
-		for (int l = 0; l < oldMainCode.size(); l++)
-		{
-			if (downsampledEegTriggers->triggers[k].trigger.code == oldMainCode[l])
-			{
-				idMain = k;
-				for (int m = 0; m < myprovFile->visuBlocs.size(); m++)
-				{
-					if(newMainCode[l] == myprovFile->visuBlocs[m].mainEventBloc.eventCode[0])
-						idVisuBloc = m;
-				}
-			}
-		}
-
-		if (idMain != -1)
-		{
-			int winSamMin = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMin()) / 1000);
-			int winSamMax = round((64 * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMax()) / 1000);
-
-			dd = k + 1;
-
-			while (idSec == -1 && dd < downsampledEegTriggers->triggers.size() - 1)
-			{
-				for (int l = 0; l < oldMainCode.size(); l++)
-				{
-					if (downsampledEegTriggers->triggers[dd].trigger.code == oldSecondaryCode[l] && 
-						downsampledEegTriggers->triggers[idMain].trigger.code == oldMainCode[l])
-					{
-						idSec = dd;
-						idcode = l;
-					}
-					else if (downsampledEegTriggers->triggers[dd].trigger.code == oldMainCode[l] && idSec == -1)
-					{
-						idMain = dd;
-						idcode = l;
-					}
-				}
-				dd++;
-			}
-
-
-			if (idMain != -1 && idSec != -1)
-			{
-				int winMax = downsampledEegTriggers->triggers[idMain].trigger.sample + winSamMax;
-				int winMin = downsampledEegTriggers->triggers[idMain].trigger.sample - abs(winSamMin);
-
-				bool isInWindow = (downsampledEegTriggers->triggers[idSec].trigger.sample < winMax) && 
-								  (downsampledEegTriggers->triggers[idSec].trigger.sample > winMin);
-				bool specialLoca = (currentLoca->localizerName() == "MARA" ||
-									currentLoca->localizerName() == "MARM" ||
-									currentLoca->localizerName() == "MARD");
-				if (isInWindow || specialLoca)
-				{
-					eegTriggers->triggers[idMain].trigger.code = newMainCode[idcode];
-					downsampledEegTriggers->triggers[idMain].trigger.code = newMainCode[idcode];
-					eegTriggers->triggers[idSec].trigger.code = newSecondaryCode[idcode];
-					downsampledEegTriggers->triggers[idSec].trigger.code = newSecondaryCode[idcode];
-				}
-			}
-		}
-
-	}
-
-}
-
-/******************************************/
-/* Trigger manipulation for visualisation */
-/******************************************/
-//First we need to check if all trigg have found a resp , otherwise delete
-void InsermLibrary::LOCA::swapStimResp(TRIGGINFO *eegTriggers, PROV *myprovFile)
-{
-	for (int i = 0; i < eegTriggers->triggers.size(); i++)
-	{
-		swap(eegTriggers->triggers[i].trigger, eegTriggers->triggers[i].response);
-		eegTriggers->triggers[i].rtSample = -eegTriggers->triggers[i].rtSample;
-		eegTriggers->triggers[i].rtMs = -eegTriggers->triggers[i].rtMs;
-	}
-
-	//This is the new window to visualize data
-	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
-	{
-		myprovFile->visuBlocs[i].dispBloc.window(myprovFile->invertmaps.epochWindow[0], myprovFile->invertmaps.epochWindow[1]);
-		myprovFile->visuBlocs[i].dispBloc.baseLine(myprovFile->invertmaps.baseLineWindow[0], myprovFile->invertmaps.baseLineWindow[1]);
-	}
 }
 
 /*********************************/

@@ -11,11 +11,21 @@ namespace InsermLibrary
 		Trigger(EEGFormat::ITrigger mainEvent, int samplingFrequency);
 		Trigger(EEGFormat::ITrigger mainEvent, EEGFormat::ITrigger response, int samplingFrequency);
 		~Trigger();
-		inline EEGFormat::ITrigger MainEvent()
+		inline const EEGFormat::ITrigger MainEvent() const
 		{
 			return m_mainEvent;
 		}
-		inline EEGFormat::ITrigger Reponse()
+		inline void MainEvent(int code, long sample)
+		{
+			m_mainEvent.Code(code);
+			m_mainEvent.Sample(sample);
+		}
+		inline void MainEvent(EEGFormat::ITrigger mainEvent)
+		{
+			m_mainEvent.Code(mainEvent.Code());
+			m_mainEvent.Sample(mainEvent.Sample());
+		}
+		inline const EEGFormat::ITrigger Response () const
 		{
 			return m_response;
 		}
@@ -37,17 +47,33 @@ namespace InsermLibrary
 		{
 			return m_mainEvent.Code();
 		}
+		inline void MainCode(const int& code)
+		{
+			return m_mainEvent.Code(code);
+		}
 		inline long MainSample()
 		{
 			return m_mainEvent.Sample();
+		}
+		inline void MainSample(const long& sample)
+		{
+			return m_mainEvent.Sample(sample);
 		}
 		inline int ResponseCode()
 		{
 			return m_response.Code();
 		}
+		inline void ResponseCode(const int& code)
+		{
+			return m_response.Code(code);
+		}
 		inline long ResponseSample()
 		{
 			m_response.Sample();
+		}
+		inline void ResponseSample(const long& sample)
+		{
+			return m_response.Sample(sample);
 		}
 		inline int ReactionTimeInSample()
 		{
@@ -60,6 +86,7 @@ namespace InsermLibrary
 			return responseTime - mainTime;
 		}
 		void UpdateFrequency(int newFrequency);
+		void SwapStimulationAndResponse();
 
 	private:
 		int m_samplingFrequency = 0;

@@ -37,3 +37,8 @@ void InsermLibrary::Trigger::UpdateFrequency(int newFrequency)
 
 	m_samplingFrequency = newFrequency;
 }
+
+void InsermLibrary::Trigger::SwapStimulationAndResponse()
+{
+	std::swap(m_mainEvent, m_response);
+}

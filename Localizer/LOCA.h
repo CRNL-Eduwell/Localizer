@@ -38,12 +38,9 @@ namespace InsermLibrary
 	private:
 		void toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreq, string freqFolder, analysisOption a);
 		//==
-		void CreateEventsFile(eegContainer *myeegContainer, TriggerContainer *triggerContainer);
+		void CreateEventsFile(eegContainer *myeegContainer, TriggerContainer *triggerContainer, PROV *myprovFile);
 		void createPosFile(std::string filePath, std::vector<Trigger> & triggers);
 		void createConfFile(eegContainer *myeegContainer);
-		void renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
-		//==
-		void swapStimResp(TRIGGINFO *eegTriggers, PROV *myprovFile);
 		//==
 		string createIfFreqFolderExistNot(eegContainer *myeegContainer, frequency currentFreq);
 		vector<PROV> loadProvCurrentLoca();

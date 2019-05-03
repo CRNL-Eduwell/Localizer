@@ -16,6 +16,17 @@ InsermLibrary::TriggerContainer::~TriggerContainer()
 }
 
 //flag = -1 to get the full trigger list
+
+std::vector<InsermLibrary::Trigger> InsermLibrary::TriggerContainer::GetTriggerForExperiment(PROV *myprovFile, int flagCode, int downSamplingFactor)
+{
+	std::vector<Trigger> triggers = GetTriggerList(flagCode, downSamplingFactor);
+	if (myprovFile->changeCodeFilePath != "")
+	{
+		RenameTriggersForExperiment(myprovFile, triggers);
+	}
+	return triggers;
+}
+
 std::vector<InsermLibrary::Trigger> InsermLibrary::TriggerContainer::GetTriggerList(int flagCode, int downSamplingFactor)
 {
 	int beginvalue = 0;
@@ -37,6 +48,10 @@ std::vector<InsermLibrary::Trigger> InsermLibrary::TriggerContainer::GetTriggerL
 void InsermLibrary::TriggerContainer::ProcessEventsForExperiment(PROV *myprovFile, int flagCode, int downSaplingFactor)
 {
 	m_processedTriggers = GetTriggerList(flagCode, downSaplingFactor);
+	if (myprovFile->changeCodeFilePath != "")
+	{
+		RenameTriggersForExperiment(myprovFile, m_processedTriggers);
+	}
 	PairStimulationWithResponses(m_processedTriggers, myprovFile);
 	DeleteTriggerNotInExperiment(m_processedTriggers, myprovFile);
 	if (myprovFile->getSecondaryCodes()[0][0] != 0) //At this point , if there is secondary code, we need to check if all have been paired correctly 
@@ -44,6 +59,129 @@ void InsermLibrary::TriggerContainer::ProcessEventsForExperiment(PROV *myprovFil
 		DeleteTriggerNotPaired(m_processedTriggers);
 	}
 	m_subGroupStimTrials = SortTrialsForExperiment(m_processedTriggers, myprovFile);
+	if (myprovFile->invertmapsinfo != "")
+	{
+		SwapStimulationsAndResponses(myprovFile);
+	}
+}
+
+void InsermLibrary::TriggerContainer::RenameTriggersForExperiment(PROV *myprovFile, std::vector<Trigger>& triggers)
+{
+	std::vector<std::string> rawChangeCodeData = EEGFormat::Utility::ReadTextFile(myprovFile->changeCodeFilePath);
+
+	std::vector<std::vector<std::pair<int, int>>> oldCodes;
+	std::vector<std::pair<int, int>> newCodes;
+	for (int i = 0; i < rawChangeCodeData.size(); i++)
+	{
+		vector<string> currentRawCodes = EEGFormat::Utility::Split<string>(rawChangeCodeData[i], "+=");
+		std::pair<int, int> currentOldCode = std::make_pair(atoi(&(currentRawCodes[0])[0]), atoi(&(currentRawCodes[1])[0]));
+		std::pair<int, int> currenNewCode = std::make_pair(atoi(&(currentRawCodes[2])[0]), atoi(&(currentRawCodes[3])[0]));
+
+		auto it = std::find(newCodes.begin(), newCodes.end(), currenNewCode);
+		if (it != newCodes.end()) //if the pair already exists
+		{
+			int indexOfPair = distance(newCodes.begin(), it);
+			oldCodes[indexOfPair].push_back(currentOldCode);
+		}
+		else
+		{
+			newCodes.push_back(currenNewCode);
+			//==
+			std::vector<std::pair<int, int>> newVector;
+			newVector.push_back(currentOldCode);
+			oldCodes.push_back(newVector);
+		}
+	}
+
+	int idVisuBloc = 0;
+	int TriggerCount = triggers.size();
+	for (int k = 0; k < TriggerCount; k++)
+	{
+		int idVisuBloc = -1;
+		int idMain = -1;
+		int idSec = -1;
+
+		for (int l = 0; l < oldCodes.size(); l++)
+		{
+			for (int m = 0; m < oldCodes[l].size(); m++)
+			{
+				if (triggers[k].MainEvent().Code() == oldCodes[l][m].first)
+				{
+					idMain = k;
+					for (int n = 0; n < myprovFile->visuBlocs.size(); n++)
+					{
+						if (newCodes[l].first == myprovFile->visuBlocs[n].mainEventBloc.eventCode[0])
+							idVisuBloc = n;
+					}
+				}
+			}
+		}
+
+		//TODO : add a function that check there is not some triggerd with a different
+		//sampling frequnecy, otherwise throw exception
+		int memId = 0;
+		int triggersSamplingFrequency = triggers[0].SamplingFrequency();
+		if (idMain != -1)
+		{
+			int winSamMin = round((triggersSamplingFrequency * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMin()) / 1000);
+			int winSamMax = round((triggersSamplingFrequency * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMax()) / 1000);
+
+			int CurrentTriggerId = k + 1;
+			while (idSec == -1 && CurrentTriggerId < TriggerCount - 1)
+			{
+				for (int l = 0; l < oldCodes.size(); l++)
+				{
+					for (int m = 0; m < oldCodes[l].size(); m++)
+					{
+						if (triggers[idMain].MainCode() == oldCodes[l][m].first && triggers[CurrentTriggerId].MainCode() == oldCodes[l][m].second)
+						{
+							idSec = CurrentTriggerId;
+							memId = l;
+							break;
+						}
+						else if (triggers[CurrentTriggerId].MainCode() == oldCodes[l][m].first && idSec == -1)
+						{
+							idMain = CurrentTriggerId;
+							memId = l;
+						}
+					}
+				}
+				CurrentTriggerId++;
+			}
+
+			if (idMain != -1 && idSec != -1)
+			{
+				int winMax = triggers[idMain].MainSample() + winSamMax;
+				int winMin = triggers[idMain].MainSample() - abs(winSamMin);
+
+				bool isInWindow = (triggers[idSec].MainSample() < winMax) && (triggers[idSec].MainSample() > winMin);
+				//bool specialLoca = (currentLoca->localizerName() == "MARA" ||
+				//	currentLoca->localizerName() == "MARM" ||
+				//	currentLoca->localizerName() == "MARD");
+				if (isInWindow /*|| specialLoca*/)
+				{
+					triggers[idMain].MainCode(newCodes[memId].first);
+					triggers[idSec].MainCode(newCodes[memId].second);
+				}
+			}
+		}
+	}
+}
+
+void InsermLibrary::TriggerContainer::SwapStimulationsAndResponses(PROV *myprovFile)
+{
+	int TriggerCount = m_processedTriggers.size();
+	for (int i = 0; i < TriggerCount; i++)
+	{
+		m_processedTriggers[i].SwapStimulationAndResponse();
+	}
+
+	//This is the new window to visualize data
+	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
+	{
+		myprovFile->visuBlocs[i].dispBloc.window(myprovFile->invertmaps.epochWindow[0], myprovFile->invertmaps.epochWindow[1]);
+		myprovFile->visuBlocs[i].dispBloc.baseLine(myprovFile->invertmaps.baseLineWindow[0], myprovFile->invertmaps.baseLineWindow[1]);
+	}
 }
 
 void InsermLibrary::TriggerContainer::PairStimulationWithResponses(std::vector<Trigger>& triggers, PROV *myprovFile)
@@ -80,7 +218,7 @@ void InsermLibrary::TriggerContainer::PairStimulationWithResponses(std::vector<T
 			int winSamMin = round((triggersSamplingFrequency * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMin()) / 1000);
 			int winSamMax = round((triggersSamplingFrequency * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMax()) / 1000);
 
-			int CurrentTriggerId = k + 1; 
+			int CurrentTriggerId = k + 1;
 			while (idSec == -1 && CurrentTriggerId < TriggerCount - 1)
 			{
 				for (int l = 0; l < mainEventsCode.size(); l++)
@@ -180,63 +318,59 @@ void InsermLibrary::TriggerContainer::DeleteTriggerNotPaired(std::vector<Trigger
 std::vector<int> InsermLibrary::TriggerContainer::SortTrialsForExperiment(std::vector<Trigger>& triggers, PROV *myprovFile)
 {
 	std::vector<int> subGroupStimTrials;
-	//for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
-	//{
-		sort(triggers.begin(), triggers.end(),[&](Trigger m, Trigger n)-> bool
-		{
-			return  m.MainCode() < n.MainCode();
-		});
-	//}
-		//get first id of each new main code
-		subGroupStimTrials.push_back(0);
-		vector<int> mainEventsCode = myprovFile->getMainCodes();
-		for (int i = 0; i < triggers.size() - 1; i++)
-		{
-			if (triggers[i].MainCode() != triggers[i + 1].MainCode())
-			{
-				subGroupStimTrials.push_back(i + 1);
-			}
-		}
-		subGroupStimTrials.push_back(triggers.size());
+	
+	//Sort by MainCode
+	sort(triggers.begin(), triggers.end(), [](Trigger m, Trigger n)-> bool
+	{
+		return  m.MainCode() < n.MainCode();
+	});
 
-		//according to the rest sort by what is wanted
-		int beg = 0, end = 0;
-		for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
+	//get first id of each new main code
+	subGroupStimTrials.push_back(0);
+	vector<int> mainEventsCode = myprovFile->getMainCodes();
+	for (int i = 0; i < triggers.size() - 1; i++)
+	{
+		if (triggers[i].MainCode() != triggers[i + 1].MainCode())
 		{
-			string currentSort = myprovFile->visuBlocs[i].dispBloc.sort();
-			vector<string> sortSplited = split<string>(currentSort, "_");
-			for (int j = 1; j < sortSplited.size(); j++)
+			subGroupStimTrials.push_back(i + 1);
+		}
+	}
+	subGroupStimTrials.push_back(triggers.size());
+
+	//according to the rest sort by what is wanted
+	int beg = 0, end = 0;
+	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
+	{
+		string currentSort = myprovFile->visuBlocs[i].dispBloc.sort();
+		vector<string> sortSplited = split<string>(currentSort, "_");
+		for (int j = 1; j < sortSplited.size(); j++)
+		{
+			SortingChoice Choice = (SortingChoice)(sortSplited[j][0]);
+			switch (Choice)
 			{
-				SortingChoice Choice = (SortingChoice)(sortSplited[j][0]);
-				switch (Choice)
+				//Sort by resp code
+			case SortingChoice::Code:
+				beg = subGroupStimTrials[i];
+				end = subGroupStimTrials[i + 1];
+				sort(triggers.begin() + beg, triggers.begin() + end,
+					[](Trigger a, Trigger b)-> bool
 				{
-					//Sort by resp code
-				case SortingChoice::Code:
-					beg = subGroupStimTrials[i];
-					end = subGroupStimTrials[i + 1];
-					sort(triggers.begin() + beg, triggers.begin() + end,
-						[&](Trigger a, Trigger b) {
-						return (a.ResponseCode() < b.ResponseCode());
-					});
-					break;
-					//Sort by reaction time
-				case SortingChoice::Latency:
-					beg = subGroupStimTrials[i];
-					end = subGroupStimTrials[i + 1];
-					//sort(triggers.begin() + beg, triggers.begin() + end,
-					//	[&](Trigger a, Trigger b) {
-					//	return (a.ReactionTimeInMilliSeconds() < b.ReactionTimeInMilliSeconds());
-					//});
-
-					sort(triggers.begin() + beg, triggers.begin() + end, [&](Trigger m, Trigger n)-> bool
-					{
-						return  m.ReactionTimeInMilliSeconds() < n.ReactionTimeInMilliSeconds();
-					});
-					break;
-				}
+					return (a.ResponseCode() < b.ResponseCode());
+				});
+				break;
+				//Sort by reaction time
+			case SortingChoice::Latency:
+				beg = subGroupStimTrials[i];
+				end = subGroupStimTrials[i + 1];
+				sort(triggers.begin() + beg, triggers.begin() + end,
+					[](Trigger m, Trigger n)-> bool
+				{
+					return  m.ReactionTimeInMilliSeconds() < n.ReactionTimeInMilliSeconds();
+				});
+				break;
 			}
 		}
-
+	}
 
 	return subGroupStimTrials;
 }

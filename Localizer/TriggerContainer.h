@@ -22,16 +22,19 @@ namespace InsermLibrary
 		inline std::vector<Trigger>& ProcessedTriggers() { return m_processedTriggers; }
 		inline const std::vector<Trigger>& ProcessedTriggers() const { return m_processedTriggers; }
 		inline const std::vector<int>& SubGroupStimTrials() const { return m_subGroupStimTrials; }		
-		std::vector<Trigger> GetTriggerList(int flagCode, int downSamplingFactor = 1);
+		std::vector<Trigger> GetTriggerForExperiment(PROV *myprovFile, int flagCode = 99, int downSamplingFactor = 1);
 		void ProcessEventsForExperiment(PROV *myprovFile, int flagCode = 99, int downSaplingFactor = 1);
+		void SwapStimulationsAndResponses(PROV *myprovFile);
 
 	private:		
 		int FindFirstIndexAfter(int flagCode = 99);
 		std::vector<int> FindIndexes(int searchValue);
+		std::vector<Trigger> GetTriggerList(int flagCode, int downSamplingFactor = 1);
 		void PairStimulationWithResponses(std::vector<Trigger>& triggers, PROV *myprovFile);
 		void DeleteTriggerNotInExperiment(std::vector<Trigger>& triggers, PROV *myprovFile);
 		void DeleteTriggerNotPaired(std::vector<Trigger>& triggers);
 		std::vector<int> SortTrialsForExperiment(std::vector<Trigger>& triggers, PROV *myprovFile);
+		void RenameTriggersForExperiment(PROV *myprovFile, std::vector<Trigger>& triggers);
 
 	private:
 		std::vector<int> m_subGroupStimTrials;
