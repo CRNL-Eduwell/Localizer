@@ -39,8 +39,8 @@ namespace InsermLibrary
 		void toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreq, string freqFolder, analysisOption a);
 		//==
 		void CreateEventsFile(eegContainer *myeegContainer, TriggerContainer *triggerContainer, PROV *myprovFile);
-		void createPosFile(std::string filePath, std::vector<Trigger> & triggers);
-		void createConfFile(eegContainer *myeegContainer);
+		void CreatePosFile(std::string filePath, std::vector<Trigger> & triggers);
+		void CreateConfFile(eegContainer *myeegContainer);
 		//==
 		string createIfFreqFolderExistNot(eegContainer *myeegContainer, frequency currentFreq);
 		vector<PROV> loadProvCurrentLoca();
@@ -69,11 +69,10 @@ namespace InsermLibrary
 		void incrementAdavnce(int divider);
 
 	private:
-		//TRIGGINFO *triggCatEla = nullptr, *triggCatEla2 = nullptr;
-		locaFolder *currentLoca = nullptr;
+		locaFolder *m_currentLoca = nullptr;
+		int m_idCurrentLoca = -1;
 		TriggerContainer *m_triggerContainer = nullptr;
-		int idCurrentLoca = -1;
-		userOption *userOpt = nullptr;
+		userOption *m_userOpt = nullptr;
 	};
 }
 

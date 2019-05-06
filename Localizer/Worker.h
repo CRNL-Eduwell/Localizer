@@ -38,10 +38,10 @@ public:
 private:
 	void analysePatientFolder(patientFolder *currentPatient);
 	void analyseSingleFiles(vector<singleFile> currentFiles);
-	eegContainer *extractEEGData(locaFolder currentLoca, int idFile, int nbFreqBand);
-	eegContainer *extractEEGData(locaFolder currentLoca);
-	eegContainer *extractEEGData(singleFile currentFile, int idFile, int nbFreqBand);
-	eegContainer *extractEEGData(singleFile currentFile);
+	eegContainer* extractEEGData(locaFolder currentLoca, int idFile, int nbFreqBand);
+	eegContainer* extractEEGData(locaFolder currentLoca);
+	eegContainer* extractEEGData(singleFile currentFile, int idFile, int nbFreqBand);
+	eegContainer* extractEEGData(singleFile currentFile);
 	bool extractOriginalData(locaAnalysisOption anaOpt);
 
 public slots:

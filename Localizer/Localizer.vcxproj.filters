@@ -239,6 +239,9 @@
     <ClCompile Include="Trigger.cpp">
       <Filter>Source Files\Files\eegFiles</Filter>
     </ClCompile>
+    <ClCompile Include="DataContainer.cpp">
+      <Filter>Source Files\Files\eegFiles</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="localizer.qrc">
@@ -382,6 +385,9 @@
       <Filter>Header Files\Files\eegFiles</Filter>
     </ClInclude>
     <ClInclude Include="Trigger.h">
+      <Filter>Header Files\Files\eegFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="DataContainer.h">
       <Filter>Header Files\Files\eegFiles</Filter>
     </ClInclude>
   </ItemGroup>

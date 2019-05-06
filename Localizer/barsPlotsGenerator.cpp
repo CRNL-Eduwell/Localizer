@@ -99,7 +99,7 @@ void drawBars::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* trigge
 	QPixmap *pixmap = nullptr;
 	QColor drawRectColor;
 
-	int *windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency);
+	int *windowSam = myprovFile->getBiggestWindowSam(myeegContainer->DownsampledFrequency());
 	int nbRow = myprovFile->nbRow();
 
 	QString tifName = "";
@@ -334,9 +334,9 @@ void drawPlots::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* trigg
 	int *windowSam = nullptr; 
 	
 	if (card2Draw == 2)
-		windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency); 
+		windowSam = myprovFile->getBiggestWindowSam(myeegContainer->DownsampledFrequency());
 	else
-		windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.samplingFrequency);
+		windowSam = myprovFile->getBiggestWindowSam(myeegContainer->SamplingFrequency());
 	
 	int nbRow = myprovFile->nbRow();
 

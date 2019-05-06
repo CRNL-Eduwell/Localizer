@@ -3,76 +3,21 @@
 using Framework::Filtering::Linear::FirBandPass;
 using Framework::Filtering::Linear::Convolution;
 
-InsermLibrary::dataContainer::dataContainer(vector<int> frequencyBand, samplingInformation samplingInfo)
-{
-	sampInfo.samplingFrequency = samplingInfo.samplingFrequency;
-	sampInfo.downsampledFrequency = samplingInfo.downsampledFrequency;
-	sampInfo.downsampFactor = samplingInfo.downsampFactor;
-	sampInfo.nbSample = samplingInfo.nbSample;
-
-	arrayLength = sampInfo.nbSample;
-	arrayDownLength = arrayLength / sampInfo.downsampFactor;
-	frequencyLength = (int)frequencyBand.size();
-
-	bipData.resize(5, vector<float>(arrayLength));
-	hilData.resize(5, vector<float>(arrayLength));
-
-	downData.resize(5, vector<float>(arrayDownLength));
-	meanData.resize(5, vector<float>(arrayDownLength));
-	convoData.resize(6, vector<vector<float>>(5, vector<float>(arrayDownLength)));
-
-	//TODO : It is more efficient for memory usage to declara the 5 fftForward and 5 fftBackward 
-	//objects outside of the firBandPass for memory usage. 
-	//See if it's not possible to improve the paralellisation of the calcul (omp for vs threads) 
-	Filters.resize(5, vector<FirBandPass*>());
-	for (int j = 0; j < 5; j++)
-	{
-		for (int i = 0; i < frequencyBand.size() - 1; i++)
-			Filters[j].push_back(new FirBandPass(frequencyBand[i], frequencyBand[i + 1], sampInfo.samplingFrequency, sampInfo.nbSample));
-	}
-}
-
-InsermLibrary::dataContainer::~dataContainer()
-{
-	for (int i = 0; i < Filters.size(); i++)
-	{
-		for (int j = 0; j < Filters[i].size(); j++)
-		{
-			EEGFormat::Utility::DeleteAndNullify(Filters[i][j]);
-		}
-	}
-	Filters.clear();
-}
-
 InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFrequency, int nbFreqBand)
 {
 	fftwf_init_threads();
 	fftwf_plan_with_nthreads(5);
-	
+
 	elanFrequencyBand.resize(nbFreqBand, std::vector<EEGFormat::ElanFile*>(6));
 
 	m_file = file;
 	GetElectrodes(m_file);
 	//==
-	sampInfo.samplingFrequency = m_file->SamplingFrequency();
-	sampInfo.downsampledFrequency = downsampFrequency;
-	sampInfo.downsampFactor = sampInfo.samplingFrequency / sampInfo.downsampledFrequency; //verifier si bonne fréquence d'échantillonage ( non 2^n factor)
-	sampInfo.nbSample = Data().size() > 0 ? Data()[0].size() : 0;
+	m_originalSamplingFrequency = m_file->SamplingFrequency();
+	m_downsampledFrequency = downsampFrequency;
+	m_nbSample = Data().size() > 0 ? Data()[0].size() : 0;
 
 	calculateSmoothing();
-	////== get triggers after last beginningCode that indicates beginning of expe
-	//int beginValue = 0;
-	//vector<int> indexBegin = findIndexes(m_file->Triggers(), 99);
-	//if (indexBegin.size() > 0)
-	//	beginValue = indexBegin[indexBegin.size() - 1] + 1;
-
-	//if (m_file->Triggers().size() > 0)
-	//{
-	//	deleteAndNullify1D(triggEeg);
-	//	triggEeg = new TRIGGINFO(m_file->Triggers(), beginValue, m_file->Triggers().size());
-	//	deleteAndNullify1D(triggEegDownsampled);
-	//	triggEegDownsampled = new TRIGGINFO(m_file->Triggers(), beginValue, m_file->Triggers().size(), sampInfo.downsampFactor);
-	//}
 }
 
 InsermLibrary::eegContainer::~eegContainer()
@@ -124,14 +69,14 @@ void InsermLibrary::eegContainer::ToHilbert(int IdFrequency, vector<int> frequen
 {
 	thread thr[5];
 	initElanFreqStruct();
-	dataContainer dataCont = dataContainer(frequencyBand, sampInfo);
+	DataContainer dataCont = DataContainer(m_originalSamplingFrequency, m_downsampledFrequency, m_nbSample, frequencyBand);
 
 	for (int i = 0; i < m_bipoles.size() / 5; i++)
 	{
 		for (int j = 0; j < 5; j++)
 		{
 			int idCurrentBip = (i * 5) + j;
-			for (int k = 0; k < dataCont.arrayLength; k++)
+			for (int k = 0; k < m_nbSample; k++)
 			{
 				dataCont.bipData[j][k] = Data()[m_bipoles[idCurrentBip].first][k] - Data()[m_bipoles[idCurrentBip].second][k];
 			}
@@ -180,7 +125,7 @@ void InsermLibrary::eegContainer::ToHilbert(int IdFrequency, vector<int> frequen
 	{
 		for (int i = 0; i < m_bipoles.size() % 5; i++)
 		{
-			for (int j = 0; j < dataCont.arrayLength; j++)
+			for (int j = 0; j < m_nbSample; j++)
 			{
 				int idCurrentBip = (m_bipoles.size() / 5) * 5;
 				dataCont.bipData[i][j] = Data()[m_bipoles[idCurrentBip + i].first][j] - Data()[m_bipoles[idCurrentBip + i].second][j];
@@ -229,7 +174,7 @@ void InsermLibrary::eegContainer::ToHilbert(int IdFrequency, vector<int> frequen
 
 	for (int i = 0; i < 6; i++)
 	{
-		std::string nameOuputFile = rootFrequencyFolder + patientName + frequencyFolder + "_ds" + to_string(sampInfo.downsampFactor) + "_sm" + to_string((int)smoothingMilliSec[i]);
+		std::string nameOuputFile = rootFrequencyFolder + patientName + frequencyFolder + "_ds" + to_string(DownsamplingFactor()) + "_sm" + to_string((int)m_smoothingMilliSec[i]);
 		elanFrequencyBand[IdFrequency][i]->SaveAs(nameOuputFile + ".eeg.ent", nameOuputFile + ".eeg", "", "");
 	}
 }
@@ -371,7 +316,7 @@ void InsermLibrary::eegContainer::calculateSmoothing()
 {
 	for (int i = 0; i < 6; i++)
 	{
-		smoothingSample[i] = ((sampInfo.samplingFrequency * smoothingMilliSec[i]) / 1000) / sampInfo.downsampFactor;
+		m_smoothingSample[i] = ((SamplingFrequency() * m_smoothingMilliSec[i]) / 1000) / DownsamplingFactor();
 	}
 }
 
@@ -389,39 +334,37 @@ void InsermLibrary::eegContainer::initElanFreqStruct()
 		{
 			elanFrequencyBand[i][j] = new EEGFormat::ElanFile();
 			elanFrequencyBand[i][j]->ElectrodeCount((int)bipolesList.size());
-			elanFrequencyBand[i][j]->SamplingFrequency(sampInfo.downsampledFrequency);
+			elanFrequencyBand[i][j]->SamplingFrequency(m_downsampledFrequency);
 			elanFrequencyBand[i][j]->Electrodes(bipolesList);
 			//Define type of elec : label + "EEG" + "uV"
-			elanFrequencyBand[i][j]->Data(EEGFormat::DataConverterType::Digital).resize((int)bipolesList.size(), std::vector<float>(sampInfo.nbSample / sampInfo.downsampFactor));
+			elanFrequencyBand[i][j]->Data(EEGFormat::DataConverterType::Digital).resize((int)bipolesList.size(), std::vector<float>(m_downsampledFrequency));
 		}
 	}
 }
 
-void InsermLibrary::eegContainer::hilbertDownSampSumData(dataContainer *dataCont, int threadId, int freqId)
+void InsermLibrary::eegContainer::hilbertDownSampSumData(DataContainer *dataCont, int threadId, int freqId)
 {
 	if (freqId == 0)
 	{
-		for (int i = 0; i < dataCont->arrayDownLength; i++)
+		for (int i = 0; i < dataCont->NbSampleDownsampled(); i++)
 		{
 			dataCont->meanData[threadId][i] = 0.0f;
 		}
 	}
 
-	mtx.lock();
-	//MATLABFUNC::bandPassHilbertFreq(dataCont->bipData[threadId], dataCont->hilData[threadId],
-	//								 dataCont->firData[freqId], dataCont->fftFront[threadId],
-	//								 dataCont->fftBack[threadId]);
-	dataCont->Filters[threadId][freqId]->BandPassHilbert(&dataCont->hilData[threadId][0], &dataCont->bipData[threadId][0], dataCont->arrayLength);
-	mtx.unlock();
+	m_mtx.lock();
+	dataCont->Filters[threadId][freqId]->BandPassHilbert(&dataCont->hilData[threadId][0], &dataCont->bipData[threadId][0], dataCont->NbSample());
+	m_mtx.unlock();
 
 	//Downsamp
-	for (int i = 0; i < dataCont->arrayDownLength; i++)
+	int downsamplingFactor = DownsamplingFactor();
+	for (int i = 0; i < dataCont->NbSampleDownsampled(); i++)
 	{
-		dataCont->downData[threadId][i] = dataCont->hilData[threadId][sampInfo.downsampFactor * i];
+		dataCont->downData[threadId][i] = dataCont->hilData[threadId][downsamplingFactor * i];
 	}
 
 	float mean = 0;
-	int value = round(dataCont->arrayDownLength / 4);
+	int value = round(dataCont->NbSampleDownsampled() / 4);
 	for (int i = value; i < 3 * value; i++)
 	{
 		mean += dataCont->downData[threadId][i];
@@ -432,24 +375,24 @@ void InsermLibrary::eegContainer::hilbertDownSampSumData(dataContainer *dataCont
 	if (fmtab == 0)
 		fmtab = 1;
 
-	for (int i = 0; i < dataCont->arrayDownLength; i++)
+	for (int i = 0; i < dataCont->NbSampleDownsampled(); i++)
 	{
 		dataCont->downData[threadId][i] = (100 * dataCont->downData[threadId][i]) / fmtab;
 		dataCont->meanData[threadId][i] += dataCont->downData[threadId][i];
 	}
 }
 
-void InsermLibrary::eegContainer::meanConvolveData(dataContainer *dataCont, int threadId)
+void InsermLibrary::eegContainer::meanConvolveData(DataContainer *dataCont, int threadId)
 {
-	for (int i = 0; i < dataCont->arrayDownLength; i++)
+	for (int i = 0; i < dataCont->NbSampleDownsampled(); i++)
 	{
-		dataCont->meanData[threadId][i] = (10 * dataCont->meanData[threadId][i]) / (dataCont->frequencyLength - 1);
+		dataCont->meanData[threadId][i] = (10 * dataCont->meanData[threadId][i]) / (dataCont->NbFrequencySlices() - 1);
 		dataCont->convoData[0][threadId][i] = dataCont->meanData[threadId][i];
 	}
 
-	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[1][threadId][0], dataCont->arrayDownLength, smoothingSample[1]);
-	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[2][threadId][0], dataCont->arrayDownLength, smoothingSample[2]);
-	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[3][threadId][0], dataCont->arrayDownLength, smoothingSample[3]);
-	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[4][threadId][0], dataCont->arrayDownLength, smoothingSample[4]);
-	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[5][threadId][0], dataCont->arrayDownLength, smoothingSample[5]);
+	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[1][threadId][0], dataCont->NbSampleDownsampled(), m_smoothingSample[1]);
+	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[2][threadId][0], dataCont->NbSampleDownsampled(), m_smoothingSample[2]);
+	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[3][threadId][0], dataCont->NbSampleDownsampled(), m_smoothingSample[3]);
+	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[4][threadId][0], dataCont->NbSampleDownsampled(), m_smoothingSample[4]);
+	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[5][threadId][0], dataCont->NbSampleDownsampled(), m_smoothingSample[5]);
 }

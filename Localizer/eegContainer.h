@@ -4,6 +4,7 @@
 #include "IFile.h"
 #include "ElanFile.h"
 #include "eegContainerParameters.h"
+#include "DataContainer.h"
 #include "FirBandPass.h"	
 #include "Convolution.h"
 #include "Trigger.h"
@@ -20,33 +21,6 @@ using namespace InsermLibrary;
 
 namespace InsermLibrary
 {
-	struct samplingInformation
-	{
-		int samplingFrequency;
-		int downsampledFrequency;
-		int downsampFactor;
-		int nbSample;//Original size of one channel (no downsamp)
-	};
-
-	struct dataContainer
-	{
-		dataContainer(vector<int> frequencyBand, samplingInformation samplingInfo);
-		~dataContainer();
-
-		vector<vector<float>> bipData;
-		vector<vector<float>> hilData;
-
-		vector<vector<Framework::Filtering::Linear::FirBandPass*>> Filters;
-		vector<vector<float>>downData;
-		vector<vector<float>>meanData;
-		vector<vector<vector<float>>> convoData;
-
-		samplingInformation sampInfo;
-		int arrayLength;
-		int arrayDownLength;
-		int frequencyLength;
-	};
-
 	class eegContainer
 	{
 	public:
@@ -61,6 +35,19 @@ namespace InsermLibrary
 		inline std::string RootFileName(bool withExtension = false)
 		{
 			return EEGFormat::Utility::GetFileName(m_file->DefaultFilePath(), withExtension);
+		}
+		inline int SamplingFrequency()
+		{
+			return m_originalSamplingFrequency;
+		}
+		inline int DownsampledFrequency()
+		{
+			return m_downsampledFrequency;
+		}
+		//verifier si bonne fréquence d'échantillonage ( non 2^n factor)
+		inline int DownsamplingFactor()
+		{
+			return m_originalSamplingFrequency / m_downsampledFrequency;
 		}
 		inline int TriggerCount()
 		{
@@ -125,24 +112,24 @@ namespace InsermLibrary
 		int idSplitDigiAndNum(string myString);
 		void calculateSmoothing();
 		void initElanFreqStruct();
-		void hilbertDownSampSumData(dataContainer *dataCont, int threadId, int freqId);
-		void meanConvolveData(dataContainer *dataCont, int threadId);
+		void hilbertDownSampSumData(DataContainer *dataCont, int threadId, int freqId);
+		void meanConvolveData(DataContainer *dataCont, int threadId);
 
 	public :
 		//[IdNbFrequency][sm0-sm5000][channels][sample]
 		std::vector<std::vector<EEGFormat::ElanFile*>> elanFrequencyBand;
-		//TRIGGINFO *triggEeg = nullptr;
-		//TRIGGINFO *triggEegDownsampled = nullptr;
 		vector<elecContainer> electrodes;
 		vector<string> flatElectrodes;
 		vector<int> idElecToDelete;
-		samplingInformation sampInfo;
 	private:
+		int m_originalSamplingFrequency = 0;
+		int m_downsampledFrequency = 0;
+		int m_nbSample = 0; //Original size of one channel (no downsamp)
 		std::vector<std::pair<int, int>> m_bipoles;
-		float smoothingSample[6];
-		float smoothingMilliSec[6] = { 0, 250, 500, 1000, 2500, 5000 };
+		float m_smoothingSample[6];
+		float m_smoothingMilliSec[6] = { 0, 250, 500, 1000, 2500, 5000 };
 		EEGFormat::IFile* m_file = nullptr;
-		std::mutex mtx;
+		std::mutex m_mtx;
 	};
 }
 #endif
