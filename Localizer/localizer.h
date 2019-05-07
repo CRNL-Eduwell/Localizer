@@ -48,6 +48,9 @@ private:
 	void loadSingleFile();
 	void loadWidgetListTRC(patientFolder *pat);
 	void loadWidgetListTRC(vector<singleFile> currentFiles);
+	
+	void LoadTreeView(patientFolder *pat);
+	
 	void updateGUIFrame(locaFolder currentLoca);
 	void updateGUIFrame(singleFile currentFiles);
 	void updateQFrame(string fileLooked, QFrame *frameFile);
@@ -61,6 +64,7 @@ private:
 	void deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1<singleFile> &files);
 
 private slots:
+	void ShowFileTreeContextMenu(QPoint point);
 	void updateGUIClick(QListWidgetItem *);
 	void eventUpdateGUI(QListWidgetItem *, QListWidgetItem *);
 	void checkMultipleItems(QListWidgetItem * item);
@@ -83,6 +87,7 @@ signals:
 	void bipDone(int);
 
 private:
+	QFileSystemModel *m_localFileSystemModel = nullptr;
 	//==Data for analysis
 	userOption userOpt;
 	patientFolder* currentPat = nullptr;

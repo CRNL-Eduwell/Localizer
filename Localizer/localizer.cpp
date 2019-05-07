@@ -80,6 +80,11 @@ void Localizer::deactivateUISingleFiles()
 void Localizer::connectSignals()
 {
 	connectMenuBar();
+	
+	ui.FileTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(ui.FileTreeView, &QTreeView::customContextMenuRequested, this, &Localizer::ShowFileTreeContextMenu);
+
+
 	connect(ui.ToElanButton, SIGNAL(clicked()), this, SLOT(processConvertToElan()));
 	connect(ui.sameanaCheckBox,SIGNAL(clicked()), this, SLOT(linkFreqCheckBox()));
 	connect(ui.cancelButton, SIGNAL(clicked()), this, SLOT(cancelAnalysis()));
@@ -128,6 +133,7 @@ void Localizer::loadPatientFolder()
 		deleteAndNullify1D(currentPat);
 		currentPat = new patientFolder(fileName.toStdString());
 		loadWidgetListTRC(currentPat);
+		LoadTreeView(currentPat);
 	}
 }
 
@@ -202,6 +208,34 @@ void Localizer::loadWidgetListTRC(vector<singleFile> currentFiles)
 	connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processSingleAnalysis()));
 
 	updateGUIFrame(currentFiles[0]);
+}
+
+void Localizer::LoadTreeView(patientFolder *pat)
+{
+	QString initialFolder = pat->rootFolder().c_str();
+
+	//Define file system model at the root folder chosen by the user
+	m_localFileSystemModel = new QFileSystemModel();
+	m_localFileSystemModel->setReadOnly(true);
+	m_localFileSystemModel->setRootPath(initialFolder);
+
+	//set model in treeview
+	ui.FileTreeView->setModel(m_localFileSystemModel);
+	//Show only what is under this path
+	ui.FileTreeView->setRootIndex(m_localFileSystemModel->index(initialFolder));
+	//Show everything put starts at the given model index
+	//ui.FileTreeView->setCurrentIndex(m_localFileSystemModel.index(initialFolder));
+	
+	//==[Ui Layout]
+	ui.FileTreeView->setAnimated(false);
+	ui.FileTreeView->setIndentation(20);
+	//Sorting enabled puts elements in reverse (last is first, first is last)
+	//ui.FileTreeView->setSortingEnabled(true);
+	//Hide name, file size, file type , etc 
+	ui.FileTreeView->hideColumn(1);
+	ui.FileTreeView->hideColumn(2);
+	ui.FileTreeView->hideColumn(3);
+	ui.FileTreeView->header()->hide();
 }
 
 void Localizer::updateGUIFrame(locaFolder currentLoca)
@@ -284,6 +318,11 @@ void Localizer::updateQFrame(string fileLooked, QFrame *frameFile)
 		frameFile->setStyleSheet(styleSheetGreen);
 	else
 		frameFile->setStyleSheet(styleSheetRed);
+}
+
+void Localizer::ShowFileTreeContextMenu(QPoint point)
+{
+
 }
 
 void Localizer::updateGUIClick(QListWidgetItem *clickedItem)
