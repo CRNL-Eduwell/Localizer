@@ -54,7 +54,7 @@ void Worker::processAnalysis()
 
 void Worker::processERP()
 {
-	eegContainer *myContainer = extractEEGData(*locaFold);
+	eegContainer *myContainer = ExtractExamData(*locaFold);
 	PROV *myprovFile = new PROV("./Resources/Config/Prov/" + locaFold->localizerName() + ".prov");
 	if (myprovFile != nullptr)
 		loca->eeg2erp(myContainer, myprovFile);
@@ -118,7 +118,7 @@ void Worker::analysePatientFolder(patientFolder *currentPatient)
 		if (optionUser->anaOption[i].localizer)
 		{
 			emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + currentPatient->localizerFolder()[i].rootLocaFolder() + " ==="));
-			myContainer = extractEEGData(currentPatient->localizerFolder()[i], i, optionUser->freqOption.frequencyBands.size());
+			myContainer = ExtractExamData(currentPatient->localizerFolder()[i], i, optionUser->freqOption.frequencyBands.size());
 
 			if (myContainer != nullptr)
 			{
@@ -156,7 +156,7 @@ void Worker::analyseSingleFiles(vector<singleFile> currentFiles)
 	for (int i = 0; i < currentFiles.size(); i++)
 	{
 		emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + currentFiles[i].rootFolder() + " ==="));
-		myContainer = extractEEGData(currentFiles[i], i, optionUser->freqOption.frequencyBands.size());
+		myContainer = ExtractSingleFileData(currentFiles[i], i, optionUser->freqOption.frequencyBands.size());
 
 		if (myContainer != nullptr)
 		{
@@ -180,49 +180,16 @@ void Worker::analyseSingleFiles(vector<singleFile> currentFiles)
 	}
 }
 
-eegContainer *Worker::extractEEGData(locaFolder currentLoca, int idFile, int nbFreqBand)
+eegContainer* Worker::ExtractExamData(locaFolder currentLoca, int idFile, int nbFreqBand)
 {
-	eegContainer *myContainer = nullptr;
+	FileExt currentExtention = currentLoca.fileExtention();
+	if (currentExtention == NO_EXT)
+		return nullptr;
+	std::string currentFilePath = currentLoca.filePath(currentExtention);
+	eegContainer *myContainer = GetEegContainer(currentFilePath, idFile, nbFreqBand);
 
-	bool shouldExtractData = extractOriginalData(optionUser->anaOption[idFile]);
-	switch (currentLoca.fileExtention())
-	{
-		case TRC:
-		{
-			emit sendLogInfo(QString::fromStdString("  => Reading : " + currentLoca.filePath(TRC)));
-			EEGFormat::MicromedFile *myTRC = new EEGFormat::MicromedFile(currentLoca.filePath(TRC));
-			if (shouldExtractData)
-				myTRC->LoadDataAllChannels();
-			myContainer = new eegContainer(myTRC, 64, nbFreqBand);
-			break;
-		}
-		case EEG_ELAN:
-		{	
-			emit sendLogInfo(QString::fromStdString("  => Reading : " + currentLoca.filePath(EEG_ELAN)));
-			EEGFormat::ElanFile *myElan = new EEGFormat::ElanFile(currentLoca.filePath(ENT_ELAN), currentLoca.filePath(EEG_ELAN), currentLoca.filePath(POS_ELAN));
-			if (shouldExtractData)
-				myElan->Load();
-			myContainer = new eegContainer(myElan, 64, nbFreqBand);
-			break;
-		}
-		case EDF:
-		{	
-			emit sendLogInfo(QString::fromStdString("  => Reading : " + currentLoca.filePath(EDF)));
-			EEGFormat::EdfFile *myEdf = new EEGFormat::EdfFile(currentLoca.filePath(EDF));
-			myEdf->LoadEvents();
-			if (shouldExtractData)
-				myEdf->Load();
-			myContainer = new eegContainer(myEdf, 64, nbFreqBand);
-			break;
-		}
-		case NO_EXT:
-		{	
-			return nullptr;
-			break;
-		}
-	}
-
-	if (idFile == 0)
+	bool promptToDelete = (idFile == -1) || (idFile == 0);
+	if (promptToDelete)
 	{
 		emit sendContainerPointer(myContainer);
 		while (bipCreated == -1) //While bipole not created 
@@ -243,43 +210,13 @@ eegContainer *Worker::extractEEGData(locaFolder currentLoca, int idFile, int nbF
 	return myContainer;
 }
 
-eegContainer *Worker::extractEEGData(locaFolder currentLoca)
+eegContainer* Worker::ExtractSingleFileData(singleFile currentFile, int idFile, int nbFreqBand)
 {
-	eegContainer *myContainer = nullptr;
-
-	switch (currentLoca.fileExtention())
-	{
-		case TRC:
-		{
-			emit sendLogInfo(QString::fromStdString("  => Reading : " + currentLoca.filePath(TRC)));
-			EEGFormat::MicromedFile *myTRC = new EEGFormat::MicromedFile(currentLoca.filePath(TRC));
-			myTRC->LoadDataAllChannels();
-			myContainer = new eegContainer(myTRC, 64, 0);
-			break;
-		}
-		case EEG_ELAN:
-		{	
-			emit sendLogInfo(QString::fromStdString("  => Reading : " + currentLoca.filePath(EEG_ELAN)));
-			EEGFormat::ElanFile *myElan = new EEGFormat::ElanFile(currentLoca.filePath(ENT_ELAN), currentLoca.filePath(EEG_ELAN), currentLoca.filePath(POS_ELAN));
-			myElan->Load();
-			myContainer = new eegContainer(myElan, 64, 0);
-			break;
-		}
-		case EDF:
-		{	
-			emit sendLogInfo(QString::fromStdString("  => Reading : " + currentLoca.filePath(EDF)));
-			EEGFormat::EdfFile *myEdf = new EEGFormat::EdfFile(currentLoca.filePath(EDF));
-			myEdf->LoadEvents();
-			myEdf->Load();
-			myContainer = new eegContainer(myEdf, 64, 0);
-			break;
-		}
-		case NO_EXT:
-		{
-			return nullptr;
-			break;
-		}
-	}
+	FileExt currentExtention = currentFile.fileExtention();
+	if (currentExtention == NO_EXT)
+		return nullptr;
+	std::string currentFilePath = currentFile.filePath(currentExtention);
+	eegContainer *myContainer = GetEegContainer(currentFilePath, idFile, nbFreqBand);
 
 	emit sendContainerPointer(myContainer);
 	while (bipCreated == -1) //While bipole not created 
@@ -288,6 +225,9 @@ eegContainer *Worker::extractEEGData(locaFolder currentLoca)
 	}
 	if (bipCreated == 0)
 		return nullptr;
+
+	if (idFile > -1)
+		bipCreated = -1; //Since we loop one or multiple file we need to recheck each time the good/bad elec
 
 	elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
 
@@ -299,122 +239,12 @@ eegContainer *Worker::extractEEGData(locaFolder currentLoca)
 	return myContainer;
 }
 
-eegContainer *Worker::extractEEGData(singleFile currentFile, int idFile, int nbFreqBand)
+eegContainer* Worker::GetEegContainer(std::string currentFilePath, int idFile, int nbFreqBand)
 {
-	eegContainer *myContainer = nullptr;
-
-	bool shouldExtractData = extractOriginalData(optionUser->anaOption[idFile]);
-	switch (currentFile.fileExtention())
-	{
-		case TRC:
-		{	
-			emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFile.filePath(TRC)));
-			EEGFormat::MicromedFile *myTRC = new EEGFormat::MicromedFile(currentFile.filePath(TRC));
-			if (shouldExtractData)
-				myTRC->LoadDataAllChannels();
-			myContainer = new eegContainer(myTRC, 64, nbFreqBand);
-			break;
-		}
-		case EEG_ELAN:
-		{	
-			emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFile.filePath(EEG_ELAN)));
-			EEGFormat::ElanFile *myElan = new EEGFormat::ElanFile(currentFile.filePath(ENT_ELAN), currentFile.filePath(EEG_ELAN), currentFile.filePath(POS_ELAN));
-			if (shouldExtractData)
-				myElan->Load();
-			myContainer = new eegContainer(myElan, 64, nbFreqBand);
-			break;
-		}
-		case EDF:
-		{
-			emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFile.filePath(EDF)));
-			EEGFormat::EdfFile *myEdf = new EEGFormat::EdfFile(currentFile.filePath(EDF));
-			myEdf->LoadEvents();
-			if (shouldExtractData)
-				myEdf->Load();
-			myContainer = new eegContainer(myEdf, 64, nbFreqBand);
-			break;
-		}
-		case NO_EXT:
-		{	
-			return nullptr;
-			break;
-		}
-	}
-
-	emit sendContainerPointer(myContainer);
-	while (bipCreated == -1) //While bipole not created 
-	{
-		QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
-	}
-	if (bipCreated == 0)
-		return nullptr;
-
-	bipCreated = -1; //Since we loop one or multiple file we need to recheck each time the good/bad elec
-
-	elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
-
-	myContainer->DeleteElectrodes(elecToDeleteMem);
-	myContainer->GetElectrodes();
-	myContainer->BipolarizeElectrodes();
-
-	emit sendLogInfo(QString::fromStdString("Bipole created !"));
-	return myContainer;
-}
-
-eegContainer *Worker::extractEEGData(singleFile currentFile)
-{
-	eegContainer *myContainer = nullptr;
-
-	switch (currentFile.fileExtention())
-	{
-		case TRC:
-		{
-			emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFile.filePath(TRC)));
-			EEGFormat::MicromedFile *myTRC = new EEGFormat::MicromedFile(currentFile.filePath(TRC));
-			myTRC->LoadDataAllChannels();
-			myContainer = new eegContainer(myTRC, 64, 0);
-			break;
-		}
-		case EEG_ELAN:
-		{
-			emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFile.filePath(EEG_ELAN)));
-			EEGFormat::ElanFile *myElan = new EEGFormat::ElanFile(currentFile.filePath(ENT_ELAN), currentFile.filePath(EEG_ELAN), currentFile.filePath(POS_ELAN));
-			myElan->Load();
-			myContainer = new eegContainer(myElan, 64, 0);
-			break;
-		}
-		case EDF:
-		{
-			emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFile.filePath(EDF)));
-			EEGFormat::EdfFile *myEdf = new EEGFormat::EdfFile(currentFile.filePath(EDF));
-			myEdf->LoadEvents();
-			myEdf->Load();
-			myContainer = new eegContainer(myEdf, 64, 0);
-			break;
-		}
-		case NO_EXT:
-		{
-			return nullptr;
-			break;
-		}
-	}
-
-	emit sendContainerPointer(myContainer);
-	while (bipCreated == -1) //While bipole not created 
-	{
-		QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
-	}
-	if (bipCreated == 0)
-		return nullptr;
-
-	elecToDeleteMem = vector<int>(myContainer->idElecToDelete);
-
-	myContainer->DeleteElectrodes(elecToDeleteMem);
-	myContainer->GetElectrodes();
-	myContainer->BipolarizeElectrodes();
-
-	emit sendLogInfo(QString::fromStdString("Bipole created !"));
-	return myContainer;
+	bool shouldExtractData = idFile > -1 ? extractOriginalData(optionUser->anaOption[idFile]) : true;
+	emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFilePath));
+	EEGFormat::IFile* file = CreateGenericFile(currentFilePath, shouldExtractData);
+	return new eegContainer(file, 64, nbFreqBand);;
 }
 
 bool Worker::extractOriginalData(locaAnalysisOption anaOpt)

@@ -337,7 +337,7 @@ void InsermLibrary::eegContainer::initElanFreqStruct()
 			elanFrequencyBand[i][j]->SamplingFrequency(m_downsampledFrequency);
 			elanFrequencyBand[i][j]->Electrodes(bipolesList);
 			//Define type of elec : label + "EEG" + "uV"
-			elanFrequencyBand[i][j]->Data(EEGFormat::DataConverterType::Digital).resize((int)bipolesList.size(), std::vector<float>(m_downsampledFrequency));
+			elanFrequencyBand[i][j]->Data(EEGFormat::DataConverterType::Digital).resize((int)bipolesList.size(), std::vector<float>(m_nbSample / DownsamplingFactor()));
 		}
 	}
 }

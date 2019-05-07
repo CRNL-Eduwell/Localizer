@@ -6,20 +6,15 @@
 #include <QDir>
 #include <QThread>
 
+#include "eegContainer.h"
+#include "Wrapper.h"
+#include "LOCA.h"
 #include "Utility.h"
 #include "patientFolder.h"
 #include "singleFile.h"
 #include "optionsStats.h"
 #include "optionsPerf.h"
-
-#include "MicromedFile.h"
-#include "ElanFile.h"
-#include "EdfFile.h"
-#include "eegContainer.h"
-
-#include"LOCA.h"
 #include "Windows.h"
-
 
 using namespace std;
 using namespace InsermLibrary;
@@ -38,10 +33,9 @@ public:
 private:
 	void analysePatientFolder(patientFolder *currentPatient);
 	void analyseSingleFiles(vector<singleFile> currentFiles);
-	eegContainer* extractEEGData(locaFolder currentLoca, int idFile, int nbFreqBand);
-	eegContainer* extractEEGData(locaFolder currentLoca);
-	eegContainer* extractEEGData(singleFile currentFile, int idFile, int nbFreqBand);
-	eegContainer* extractEEGData(singleFile currentFile);
+	eegContainer* ExtractExamData(locaFolder currentLoca, int idFile = -1, int nbFreqBand = 0);
+	eegContainer* ExtractSingleFileData(singleFile currentFile, int idFile = -1, int nbFreqBand = 0);
+	eegContainer* GetEegContainer(std::string currentFilePath, int idFile, int nbFreqBand);
 	bool extractOriginalData(locaAnalysisOption anaOpt);
 
 public slots:
