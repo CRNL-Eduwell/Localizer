@@ -51,12 +51,6 @@
     <Filter Include="Header Files\Files">
       <UniqueIdentifier>{308969a6-8508-448c-ad29-d0936de0d619}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Math">
-      <UniqueIdentifier>{942948ac-aff5-43eb-a2e9-fe60848e87f9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Math">
-      <UniqueIdentifier>{0b019078-bfab-4046-993a-0035d7aa251a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Files\eegFiles">
       <UniqueIdentifier>{5a977d77-da83-4e96-ac30-cb962d934b1f}</UniqueIdentifier>
     </Filter>
@@ -68,12 +62,6 @@
     </Filter>
     <Filter Include="Source Files\Files\dataBrowse">
       <UniqueIdentifier>{1bc11de0-0f03-45bd-93bf-b69873a36cb1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Math\Stats">
-      <UniqueIdentifier>{8424e364-c5c6-4e26-b00f-86d69f6b1d2b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Math\Stats">
-      <UniqueIdentifier>{176b47cb-d120-434a-a258-27d005489787}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Draw">
       <UniqueIdentifier>{788f93d2-a5c1-4110-a586-3d8c1fd8a59c}</UniqueIdentifier>
@@ -188,9 +176,6 @@
     <ClCompile Include="singleFile.cpp">
       <Filter>Source Files\Files\dataBrowse</Filter>
     </ClCompile>
-    <ClCompile Include="Stats.cpp">
-      <Filter>Source Files\Math\Stats</Filter>
-    </ClCompile>
     <ClCompile Include="mapsGenerator.cpp">
       <Filter>Source Files\Draw</Filter>
     </ClCompile>
@@ -241,6 +226,9 @@
     </ClCompile>
     <ClCompile Include="DataContainer.cpp">
       <Filter>Source Files\Files\eegFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="Stats.cpp">
+      <Filter>Source Files\Tools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -351,9 +339,6 @@
     <ClInclude Include="singleFile.h">
       <Filter>Header Files\Files\dataBrowse</Filter>
     </ClInclude>
-    <ClInclude Include="Stats.h">
-      <Filter>Header Files\Math\Stats</Filter>
-    </ClInclude>
     <ClInclude Include="mapsGenerator.h">
       <Filter>Header Files\Draw</Filter>
     </ClInclude>
@@ -389,6 +374,9 @@
     </ClInclude>
     <ClInclude Include="DataContainer.h">
       <Filter>Header Files\Files\eegFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats.h">
+      <Filter>Header Files\Tools</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
