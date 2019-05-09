@@ -27,6 +27,7 @@
 #include "LOCA.h"
 #include "ui_localizer.h"
 #include <QCoreApplication>
+#include "DeselectableTreeView.h"
 
 using namespace std;
 
@@ -46,11 +47,9 @@ private:
 	void connectMenuBar();
 	void loadPatientFolder();
 	void loadSingleFile();
-	void loadWidgetListTRC(patientFolder *pat);
-	void loadWidgetListTRC(vector<singleFile> currentFiles);
-	
 	void LoadTreeView(patientFolder *pat);
-	
+	void LoadTreeView(vector<singleFile> currentFiles);
+	void LoadTreeViewUI(QString initialFolder);
 	void updateGUIFrame(locaFolder currentLoca);
 	void updateGUIFrame(singleFile currentFiles);
 	void updateQFrame(string fileLooked, QFrame *frameFile);
@@ -64,6 +63,7 @@ private:
 	void deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1<singleFile> &files);
 
 private slots:
+	void ModelClicked(const QModelIndex &current);
 	void ShowFileTreeContextMenu(QPoint point);
 	void updateGUIClick(QListWidgetItem *);
 	void eventUpdateGUI(QListWidgetItem *, QListWidgetItem *);
@@ -109,7 +109,6 @@ private:
 	concatenator *concatFiles = nullptr;
 	uiUserElement* uiElement = nullptr;
 	Ui::LocalizerClass ui;
-
 	QStringList inputArguments;
 };
 

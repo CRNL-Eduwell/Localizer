@@ -7,7 +7,7 @@ Localizer::Localizer(QWidget *parent) : QMainWindow(parent)
 	connectSignals();
 
 	inputArguments = QCoreApplication::arguments();
-	if (inputArguments.count() > 1 )
+	if (inputArguments.count() > 1)
 	{
 		if (inputArguments[1].compare("MicromedExternalCall") == 0)
 		{
@@ -19,7 +19,7 @@ Localizer::Localizer(QWidget *parent) : QMainWindow(parent)
 
 				deleteAndNullify1D(currentPat);
 				currentPat = new patientFolder(fileName.toStdString());
-				loadWidgetListTRC(currentPat);
+				LoadTreeView(currentPat);
 			}
 		}
 	}
@@ -80,13 +80,16 @@ void Localizer::deactivateUISingleFiles()
 void Localizer::connectSignals()
 {
 	connectMenuBar();
-	
+
 	ui.FileTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(ui.FileTreeView, &QTreeView::customContextMenuRequested, this, &Localizer::ShowFileTreeContextMenu);
+	connect((DeselectableTreeView*)ui.FileTreeView, &DeselectableTreeView::ResetNbFolder, this, [&]() {
+		int nbFolderSelected = 0;
+		QString label = nbFolderSelected > 1 ? "folder" : "folders";
+		ui.FolderCountLabel->setText(QString::number(nbFolderSelected) + " patient " + label + " selected for Analysis");
+	});
 
-
-	connect(ui.ToElanButton, SIGNAL(clicked()), this, SLOT(processConvertToElan()));
-	connect(ui.sameanaCheckBox,SIGNAL(clicked()), this, SLOT(linkFreqCheckBox()));
+	connect(ui.sameanaCheckBox, SIGNAL(clicked()), this, SLOT(linkFreqCheckBox()));
 	connect(ui.cancelButton, SIGNAL(clicked()), this, SLOT(cancelAnalysis()));
 }
 
@@ -113,8 +116,8 @@ void Localizer::connectMenuBar()
 	connect(openLocaMenu, &QAction::triggered, this, [&] { optLoca->exec(); });
 	//===Aide
 	QAction* openAbout = ui.menuAide->actions().at(0);
-	connect(openAbout, &QAction::triggered, this, [&] 
-	{ 
+	connect(openAbout, &QAction::triggered, this, [&]
+	{
 		AboutDycog about;
 		about.exec();
 	});
@@ -132,7 +135,6 @@ void Localizer::loadPatientFolder()
 
 		deleteAndNullify1D(currentPat);
 		currentPat = new patientFolder(fileName.toStdString());
-		loadWidgetListTRC(currentPat);
 		LoadTreeView(currentPat);
 	}
 }
@@ -151,69 +153,45 @@ void Localizer::loadSingleFile()
 		for (int i = 0; i < fileNames.size(); i++)
 			currentFiles.push_back(singleFile(fileNames[i].toStdString(), ui.freqTabWidget->count()));
 
-		loadWidgetListTRC(currentFiles);
+		LoadTreeView(currentFiles);
 	}
-}
-
-void Localizer::loadWidgetListTRC(patientFolder *pat)
-{
-	disconnect(ui.TrcERPButton, 0, 0, 0);
-	disconnect(ui.ElanERPButton, 0, 0, 0);
-	disconnect(ui.TRCListWidget, 0, 0, 0);
-	disconnect(ui.processButton, 0, 0, 0);
-	ui.TRCListWidget->clear();
-
-	for (int i = 0; i < pat->localizerFolder().size(); i++)
-	{
-		QListWidgetItem *currentTRC = new QListWidgetItem(ui.TRCListWidget);
-		currentTRC->setText(QString::fromStdString(pat->localizerFolder()[i].localizerName()));
-		currentTRC->setFlags(currentTRC->flags() | Qt::ItemIsUserCheckable); // set checkable flag
-		currentTRC->setCheckState(Qt::Unchecked); // AND initialize check state
-	}
-
-	connect(ui.TrcERPButton, SIGNAL(clicked()), this, SLOT(processERPAnalysis()));
-	connect(ui.ElanERPButton, SIGNAL(clicked()), this, SLOT(processERPAnalysis()));
-	connect(ui.TRCListWidget, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(updateGUIClick(QListWidgetItem *)));
-	connect(ui.TRCListWidget, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)), this, SLOT(eventUpdateGUI(QListWidgetItem *, QListWidgetItem *)));
-	connect(ui.TRCListWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkMultipleItems(QListWidgetItem *)));
-	connect(ui.TRCListWidget, SIGNAL(itemActivated(QListWidgetItem *)), this, SLOT(checkOnEnter(QListWidgetItem *)));
-	connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processFolderAnalysis()));
-
-	updateGUIFrame(pat->localizerFolder()[0]);
-}
-
-void Localizer::loadWidgetListTRC(vector<singleFile> currentFiles)
-{
-	deactivateUISingleFiles();
-	disconnect(ui.TrcERPButton, 0, 0, 0);
-	disconnect(ui.ElanERPButton, 0, 0, 0);
-	disconnect(ui.TRCListWidget, 0, 0, 0);
-	disconnect(ui.processButton, 0, 0, 0);
-	ui.TRCListWidget->clear();
-
-	for (int i = 0; i < currentFiles.size(); i++)
-	{
-		QListWidgetItem *currentTRC = new QListWidgetItem(ui.TRCListWidget);
-		currentTRC->setText(currentFiles[i].patientName().c_str());
-		currentTRC->setFlags(currentTRC->flags() | Qt::ItemIsUserCheckable); // set checkable flag
-		currentTRC->setCheckState(Qt::Unchecked); // AND initialize check state
-	}
-
-	connect(ui.TrcERPButton, &QPushButton::clicked, this, [&] {	QMessageBox::information(this, "Error", "Not Available for Single Files"); });
-	connect(ui.ElanERPButton, &QPushButton::clicked, this, [&] {	QMessageBox::information(this, "Error", "Not Available for Single Files"); });
-	connect(ui.TRCListWidget, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(updateGUIClick(QListWidgetItem *)));
-	connect(ui.TRCListWidget, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)), this, SLOT(eventUpdateGUI(QListWidgetItem *, QListWidgetItem *)));
-	connect(ui.TRCListWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkMultipleItems(QListWidgetItem *)));
-	connect(ui.TRCListWidget, SIGNAL(itemActivated(QListWidgetItem *)), this, SLOT(checkOnEnter(QListWidgetItem *)));
-	connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processSingleAnalysis()));
-
-	updateGUIFrame(currentFiles[0]);
 }
 
 void Localizer::LoadTreeView(patientFolder *pat)
 {
-	QString initialFolder = pat->rootFolder().c_str();
+	disconnect(ui.processButton, 0, 0, 0);
+	if (ui.FileTreeView->selectionModel() != nullptr)
+		disconnect(ui.FileTreeView->selectionModel(), 0, 0, 0);
 
+	QString initialFolder = pat->rootFolder().c_str();
+	LoadTreeViewUI(initialFolder);
+
+	//==[Event connected to model of treeview]
+	connect(ui.FileTreeView, &QTreeView::clicked, this, &Localizer::ModelClicked);
+	//==[Event for rest of UI]
+	connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processFolderAnalysis()));
+	updateGUIFrame(pat->localizerFolder()[0]);
+}
+
+void Localizer::LoadTreeView(vector<singleFile> currentFiles)
+{
+	deactivateUISingleFiles();
+	disconnect(ui.processButton, 0, 0, 0);
+	if (currentFiles.size() > 0)
+	{
+		QString initialFolder = currentFiles[0].rootFolder().c_str();
+		LoadTreeViewUI(initialFolder);
+		connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processSingleAnalysis()));
+		updateGUIFrame(currentFiles[0]);
+	}
+	else
+	{
+		QMessageBox::information(this, "Are you sure ? ", "There is no file in this folder.");
+	}
+}
+
+void Localizer::LoadTreeViewUI(QString initialFolder)
+{
 	//Define file system model at the root folder chosen by the user
 	m_localFileSystemModel = new QFileSystemModel();
 	m_localFileSystemModel->setReadOnly(true);
@@ -225,7 +203,7 @@ void Localizer::LoadTreeView(patientFolder *pat)
 	ui.FileTreeView->setRootIndex(m_localFileSystemModel->index(initialFolder));
 	//Show everything put starts at the given model index
 	//ui.FileTreeView->setCurrentIndex(m_localFileSystemModel.index(initialFolder));
-	
+
 	//==[Ui Layout]
 	ui.FileTreeView->setAnimated(false);
 	ui.FileTreeView->setIndentation(20);
@@ -240,11 +218,6 @@ void Localizer::LoadTreeView(patientFolder *pat)
 
 void Localizer::updateGUIFrame(locaFolder currentLoca)
 {
-	updateQFrame(currentLoca.filePath(TRC), ui.TRCFrame);
-	updateQFrame(currentLoca.filePath(EEG_ELAN), ui.EEGFrame);
-	updateQFrame(currentLoca.filePath(ENT_ELAN), ui.ENTFrame);
-	updateQFrame(currentLoca.filePath(POS_ELAN), ui.POSFrame);
-
 	for (int i = 0; i < ui.freqTabWidget->count(); i++)
 	{
 		if (currentLoca.frequencyFolders().size() == 0)
@@ -274,7 +247,7 @@ void Localizer::updateGUIFrame(locaFolder currentLoca)
 					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM2500_ELAN), uiElement->sm2500Frame[i]);
 					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM5000_ELAN), uiElement->sm5000Frame[i]);
 					updateQFrame(currentLoca.filePath(POS_DS_ELAN), uiElement->dsPOSFrame[i]);
-					
+
 					//===
 					if (currentLoca.frequencyFolders()[j].hasTrialMap())
 					{
@@ -293,11 +266,6 @@ void Localizer::updateGUIFrame(locaFolder currentLoca)
 
 void Localizer::updateGUIFrame(singleFile currentFiles)
 {
-	updateQFrame(currentFiles.filePath(TRC), ui.TRCFrame);
-	updateQFrame(currentFiles.filePath(EEG_ELAN), ui.EEGFrame);
-	updateQFrame(currentFiles.filePath(ENT_ELAN), ui.ENTFrame);
-	updateQFrame(currentFiles.filePath(POS_ELAN), ui.POSFrame);
-
 	for (int i = 0; i < currentFiles.frequencyFolders().size(); i++)
 	{
 		updateQFrame(currentFiles.frequencyFolders()[i].sm0eeg, uiElement->sm0Frame[i]);
@@ -318,6 +286,142 @@ void Localizer::updateQFrame(string fileLooked, QFrame *frameFile)
 		frameFile->setStyleSheet(styleSheetGreen);
 	else
 		frameFile->setStyleSheet(styleSheetRed);
+}
+
+void Localizer::reInitStructFolder()
+{
+	if (savePat == nullptr)
+		savePat = new patientFolder(currentPat);
+
+	if (userOpt.anaOption.size() == currentPat->localizerFolder().size())
+	{
+		deleteAndNullify1D(currentPat);
+		currentPat = new patientFolder(savePat);
+	}
+}
+
+void Localizer::reInitStructFiles()
+{
+	if (saveFiles.size() == 0)
+		saveFiles = vector<singleFile>(currentFiles);
+
+	if (userOpt.anaOption.size() == saveFiles.size())
+	{
+		saveFiles.clear();
+		saveFiles = vector<singleFile>(currentFiles);
+	}
+}
+
+void Localizer::reInitProgressBar(userOption *optionUser)
+{
+	nbTaskToDo = 0;
+	for (int i = 0; i < optionUser->anaOption.size(); i++)
+	{
+		if (optionUser->anaOption[i].localizer)
+		{
+			for (int j = 0; j < optionUser->anaOption[i].anaOpt.size(); j++)
+			{
+				bool processFreq = optionUser->anaOption[i].anaOpt[j].eeg2env;
+				bool processEnv = optionUser->anaOption[i].anaOpt[j].env2plot;
+				bool processMap = optionUser->anaOption[i].anaOpt[j].trialmat;
+
+				if (processFreq || processEnv || processMap)
+				{
+					nbTaskToDo++; //eeg2env, wheter we need to compute or load
+					if (processEnv) { nbTaskToDo++; }
+					if (processMap) { nbTaskToDo++; }
+				}
+			}
+		}
+	}
+	//cout << "[==============]" << endl;
+	//cout << "Number of Loca : " << nbLoca << endl;
+	//cout << "Number of tasks : " << nbTaskToDo << endl;
+
+	ui.progressBar->reset();
+	nbDoneTask = 0;
+}
+
+void Localizer::getUIAnalysisOption(patientFolder *pat)
+{
+	uiElement->analysis(userOpt.anaOption, pat->localizerFolder().size());
+	getAnalysisCheckBox(userOpt.anaOption);
+	deleteUncheckedFiles(userOpt.anaOption, pat);
+	optStat->getStatOption(&userOpt.statOption);
+	picOpt->getPicOption(&userOpt.picOption);
+	optPerf->getPerfLoca(userOpt.locaPerf);
+}
+
+void Localizer::getUIAnalysisOption(vec1<singleFile> &files)
+{
+	uiElement->analysis(userOpt.anaOption, files.size());
+	getAnalysisCheckBox(userOpt.anaOption);
+	deleteUncheckedFiles(userOpt.anaOption, files);
+}
+
+void Localizer::getAnalysisCheckBox(vector<locaAnalysisOption> &anaOption)
+{
+	//QListWidget *a = ui.TRCListWidget->item(0)->listWidget();
+	//for (int i = 0; i < a->count(); i++)
+	//{
+	//	if (a->item(i)->checkState() == Qt::CheckState::Checked)
+	//		anaOption[i].localizer = true;
+	//	else if (a->item(i)->checkState() == Qt::CheckState::Unchecked)
+	//		anaOption[i].localizer = false;
+	//}
+}
+
+void Localizer::deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, patientFolder *pat)
+{
+	int sizeLoca = anaOption.size() - 1;
+	for (int i = sizeLoca; i >= 0; i--)
+	{
+		if (!anaOption[i].localizer)
+		{
+			pat->localizerFolder().erase(pat->localizerFolder().begin() + i);
+			anaOption.erase(anaOption.begin() + i);
+		}
+	}
+}
+
+void Localizer::deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1<singleFile> &files)
+{
+	int sizeLoca = anaOption.size() - 1;
+	for (int i = sizeLoca; i >= 0; i--)
+	{
+		if (!anaOption[i].localizer)
+		{
+			files.erase(files.begin() + i);
+			anaOption.erase(anaOption.begin() + i);
+		}
+	}
+}
+
+//=== Slots	
+void Localizer::ModelClicked(const QModelIndex &current)
+{
+	qDebug() << "dede " << ui.FileTreeView->selectionModel()->selectedRows().size();
+	qDebug() << "ModelClicked for Patient folder";
+
+
+	int nbFolderSelected = 0;
+	QModelIndexList selectedIndexes = ui.FileTreeView->selectionModel()->selectedRows();
+	for (int i = 0; i < selectedIndexes.size(); i++)
+	{
+		bool isRoot = selectedIndexes[i].parent() == ui.FileTreeView->rootIndex();
+		if (m_localFileSystemModel->isDir(selectedIndexes[i]) && isRoot)
+		{
+			if (ui.FileTreeView->selectionModel()->isSelected(selectedIndexes[i]))
+				nbFolderSelected++;
+			else
+				nbFolderSelected--;
+		}
+	}
+
+
+	QString label = nbFolderSelected > 1 ? "folder" : "folders";
+	ui.FolderCountLabel->setText(QString::number(nbFolderSelected) + " patient " + label + " selected for Analysis");
+
 }
 
 void Localizer::ShowFileTreeContextMenu(QPoint point)
@@ -524,7 +628,7 @@ void Localizer::processERPAnalysis()
 	{
 		if (!isAlreadyRunning)
 		{
-			QModelIndex index = ui.TRCListWidget->currentIndex();
+			QModelIndex index = QModelIndex();// ui.TRCListWidget->currentIndex();
 			if (index.isValid())
 			{
 				nbTaskToDo = 1;
@@ -579,7 +683,7 @@ void Localizer::processConvertToElan()
 	{
 		if (!isAlreadyRunning)
 		{
-			QModelIndex index = ui.TRCListWidget->currentIndex();
+			QModelIndex index = QModelIndex();// ui.TRCListWidget->currentIndex();
 			if (index.isValid())
 			{
 				nbTaskToDo = 1;
@@ -657,115 +761,6 @@ void Localizer::cancelAnalysis()
 	}
 }
 
-void Localizer::reInitStructFolder()
-{
-	if (savePat == nullptr)
-		savePat = new patientFolder(currentPat);
-
-	if (userOpt.anaOption.size() == currentPat->localizerFolder().size())
-	{
-		deleteAndNullify1D(currentPat);
-		currentPat = new patientFolder(savePat);
-	}
-}
-
-void Localizer::reInitStructFiles()
-{
-	if (saveFiles.size() == 0)
-		saveFiles = vector<singleFile>(currentFiles);
-
-	if (userOpt.anaOption.size() == saveFiles.size())
-	{
-		saveFiles.clear();
-		saveFiles = vector<singleFile>(currentFiles);
-	}
-}
-
-void Localizer::reInitProgressBar(userOption *optionUser)
-{
-	nbTaskToDo = 0;
-	for (int i = 0; i < optionUser->anaOption.size(); i++)
-	{
-		if (optionUser->anaOption[i].localizer)
-		{
-			for (int j = 0; j < optionUser->anaOption[i].anaOpt.size(); j++)
-			{
-				bool processFreq = optionUser->anaOption[i].anaOpt[j].eeg2env;
-				bool processEnv = optionUser->anaOption[i].anaOpt[j].env2plot;
-				bool processMap = optionUser->anaOption[i].anaOpt[j].trialmat;
-
-				if (processFreq || processEnv || processMap)
-				{
-					nbTaskToDo++; //eeg2env, wheter we need to compute or load
-					if (processEnv) { nbTaskToDo++; }
-					if (processMap) { nbTaskToDo++; }
-				}
-			}
-		}
-	}
-	//cout << "[==============]" << endl;
-	//cout << "Number of Loca : " << nbLoca << endl;
-	//cout << "Number of tasks : " << nbTaskToDo << endl;
-
-	ui.progressBar->reset();
-	nbDoneTask = 0;
-}
-
-void Localizer::getUIAnalysisOption(patientFolder *pat)
-{
-	uiElement->analysis(userOpt.anaOption, pat->localizerFolder().size());
-	getAnalysisCheckBox(userOpt.anaOption);
-	deleteUncheckedFiles(userOpt.anaOption, pat);
-	optStat->getStatOption(&userOpt.statOption);
-	picOpt->getPicOption(&userOpt.picOption);
-	optPerf->getPerfLoca(userOpt.locaPerf);
-}
-
-void Localizer::getUIAnalysisOption(vec1<singleFile> &files)
-{
-	uiElement->analysis(userOpt.anaOption, files.size());
-	getAnalysisCheckBox(userOpt.anaOption);
-	deleteUncheckedFiles(userOpt.anaOption, files);
-}
-
-void Localizer::getAnalysisCheckBox(vector<locaAnalysisOption> &anaOption)
-{
-	QListWidget *a = ui.TRCListWidget->item(0)->listWidget();
-	for (int i = 0; i < a->count(); i++)
-	{
-		if (a->item(i)->checkState() == Qt::CheckState::Checked)
-			anaOption[i].localizer = true;
-		else if (a->item(i)->checkState() == Qt::CheckState::Unchecked)
-			anaOption[i].localizer = false;
-	}
-}
-
-void Localizer::deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, patientFolder *pat)
-{
-	int sizeLoca = anaOption.size() - 1;
-	for (int i = sizeLoca; i >= 0; i--)
-	{
-		if (!anaOption[i].localizer)
-		{
-			pat->localizerFolder().erase(pat->localizerFolder().begin() + i);
-			anaOption.erase(anaOption.begin() + i);
-		}
-	}
-}
-
-void Localizer::deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1<singleFile> &files)
-{
-	int sizeLoca = anaOption.size() - 1;
-	for (int i = sizeLoca; i >= 0; i--)
-	{
-		if (!anaOption[i].localizer)
-		{
-			files.erase(files.begin() + i);
-			anaOption.erase(anaOption.begin() + i);
-		}
-	}
-}
-
 void Localizer::receiveContainerPointer(eegContainer *eegCont)
 {
 	chooseElec *elecWin = new chooseElec(eegCont, 0);
@@ -803,13 +798,13 @@ void Localizer::UpdateSinglePostAna()
 	if (saveFiles.size() > 0)
 		saveFiles.clear();
 
-	for(int i = 0; i < saveFiles.size(); i++)
+	for (int i = 0; i < saveFiles.size(); i++)
 		updateGUIFrame(saveFiles[i]);
 }
 
 void Localizer::loadConcat()
 {
-	QModelIndexList list = ui.TRCListWidget->selectionModel()->selectedIndexes();
+	QModelIndexList list = QModelIndexList(); // ui.TRCListWidget->selectionModel()->selectedIndexes();
 	if (list.count() > 1 || list.count() == 0)
 	{
 		QMessageBox::information(this, "Error", "You Need To Select One Folder");

@@ -230,6 +230,15 @@
     <ClCompile Include="Stats.cpp">
       <Filter>Source Files\Tools</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_DeselectableTreeView.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="DeselectableTreeView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_DeselectableTreeView.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="localizer.qrc">
@@ -300,6 +309,9 @@
     </CustomBuild>
     <CustomBuild Include="AboutDycog.h">
       <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DeselectableTreeView.h">
+      <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
