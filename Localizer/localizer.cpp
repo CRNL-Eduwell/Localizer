@@ -3,7 +3,7 @@
 Localizer::Localizer(QWidget *parent) : QMainWindow(parent)
 {
 	ui.setupUi(this);
-	reSetupGUI();
+	ReSetupGUI();
 	connectSignals();
 
 	inputArguments = QCoreApplication::arguments();
@@ -30,51 +30,39 @@ Localizer::~Localizer()
 
 }
 
-void Localizer::reSetupGUI()
+void Localizer::ReSetupGUI()
 {
-	for (int i = 0; i < userOpt.freqOption.frequencyBands.size(); i++)
-	{
-		ui.freqTabWidget->addTab(new freqwidget(), QString(userOpt.freqOption.frequencyBands[i].freqName.c_str()));
-	}
+	m_frequencyFile = new FrequencyFile();
+	m_frequencyFile->Load();
+	LoadFrequencyBandsUI(m_frequencyFile->FrequencyBands());
+
 	optPerf = new optionsPerf();
 	optStat = new optionsStats();
 	picOpt = new picOptions();
 	optLoca = new form();
-	getUIelement();
+
 	ui.progressBar->reset();
 }
 
-void Localizer::getUIelement()
+void Localizer::LoadFrequencyBandsUI(const std::vector<FrequencyBand>& FrequencyBands)
 {
-	uiElement = new uiUserElement();
-	for (int i = 0; i < ui.freqTabWidget->count(); i++)
+	ui.FrequencyListWidget->clear();
+	int FrequencyCount = FrequencyBands.size();
+	for (int i = 0; i < FrequencyCount; i++)
 	{
-		uiElement->eeg2envCheckBox.push_back(ui.freqTabWidget->widget(i)->findChild<QCheckBox *>(QString("eeg2envCheckBox"), Qt::FindChildOption::FindChildrenRecursively));
-		uiElement->sm0Frame.push_back(ui.freqTabWidget->widget(i)->findChild<QFrame *>(QString("sm0Frame"), Qt::FindChildOption::FindChildrenRecursively));
-		uiElement->sm250Frame.push_back(ui.freqTabWidget->widget(i)->findChild<QFrame *>(QString("sm250Frame"), Qt::FindChildOption::FindChildrenRecursively));
-		uiElement->sm500Frame.push_back(ui.freqTabWidget->widget(i)->findChild<QFrame *>(QString("sm500Frame"), Qt::FindChildOption::FindChildrenRecursively));
-		uiElement->sm1000Frame.push_back(ui.freqTabWidget->widget(i)->findChild<QFrame *>(QString("sm1000Frame"), Qt::FindChildOption::FindChildrenRecursively));
-		uiElement->sm2500Frame.push_back(ui.freqTabWidget->widget(i)->findChild<QFrame *>(QString("sm2500Frame"), Qt::FindChildOption::FindChildrenRecursively));
-		uiElement->sm5000Frame.push_back(ui.freqTabWidget->widget(i)->findChild<QFrame *>(QString("sm5000Frame"), Qt::FindChildOption::FindChildrenRecursively));
-		uiElement->dsPOSFrame.push_back(ui.freqTabWidget->widget(i)->findChild<QFrame *>(QString("posDSFrame"), Qt::FindChildOption::FindChildrenRecursively));
-		//===
-		uiElement->trialmapGroupBox.push_back(ui.freqTabWidget->widget(i)->findChild<QGroupBox *>(QString("trialmapGroupBox"), Qt::FindChildOption::FindChildrenRecursively));
-		uiElement->trialmapCheckBox.push_back(ui.freqTabWidget->widget(i)->findChild<QCheckBox *>(QString("trialMapCheckBox"), Qt::FindChildOption::FindChildrenRecursively));
-		uiElement->trialmapFrame.push_back(ui.freqTabWidget->widget(i)->findChild<QFrame *>(QString("trialMapFrame"), Qt::FindChildOption::FindChildrenRecursively));
-		//===
-		uiElement->env2plotGroupBox.push_back(ui.freqTabWidget->widget(i)->findChild<QGroupBox *>(QString("env2plotGroupBox"), Qt::FindChildOption::FindChildrenRecursively));
-		uiElement->env2plotCheckBox.push_back(ui.freqTabWidget->widget(i)->findChild<QCheckBox *>(QString("env2plotCheckBox"), Qt::FindChildOption::FindChildrenRecursively));
-		uiElement->env2plotFrame.push_back(ui.freqTabWidget->widget(i)->findChild<QFrame *>(QString("env2plotFrame"), Qt::FindChildOption::FindChildrenRecursively));
+		QString Label = QString::fromStdString(FrequencyBands[i].Label());
+
+		QListWidgetItem *currentBand = new QListWidgetItem(ui.FrequencyListWidget);
+		currentBand->setText(Label);
+		currentBand->setFlags(currentBand->flags() | Qt::ItemIsUserCheckable); // set checkable flag
+		currentBand->setCheckState(Qt::Unchecked); // AND initialize check state
 	}
 }
 
-void Localizer::deactivateUISingleFiles()
+void Localizer::DeactivateUIForSingleFiles()
 {
-	for (int i = 0; i < ui.freqTabWidget->count(); i++)
-	{
-		uiElement->trialmapGroupBox[i]->setEnabled(false);
-		uiElement->env2plotGroupBox[i]->setEnabled(false);
-	}
+	ui.Env2plotCheckBox->setEnabled(false);
+	ui.TrialmatCheckBox->setEnabled(false);
 }
 
 void Localizer::connectSignals()
@@ -85,8 +73,8 @@ void Localizer::connectSignals()
 	connect(ui.FileTreeView, &QTreeView::customContextMenuRequested, this, &Localizer::ShowFileTreeContextMenu);
 	connect((DeselectableTreeView*)ui.FileTreeView, &DeselectableTreeView::ResetNbFolder, this, [&]() { SetFolderLabelCount(0); });
 
-	connect(ui.sameanaCheckBox, SIGNAL(clicked()), this, SLOT(linkFreqCheckBox()));
-	connect(ui.cancelButton, SIGNAL(clicked()), this, SLOT(cancelAnalysis()));
+	connect(ui.AllBandsCheckBox, &QCheckBox::clicked, this, &Localizer::ToggleAllBands);
+	connect(ui.cancelButton, SIGNAL(clicked()), this, SLOT(CancelAnalysis()));
 }
 
 void Localizer::connectMenuBar()
@@ -147,7 +135,7 @@ void Localizer::loadSingleFile()
 
 		deleteAndNullify1D(currentPat);
 		for (int i = 0; i < fileNames.size(); i++)
-			currentFiles.push_back(singleFile(fileNames[i].toStdString(), ui.freqTabWidget->count()));
+			currentFiles.push_back(singleFile(fileNames[i].toStdString(), ui.FrequencyListWidget->count()));
 
 		LoadTreeView(currentFiles);
 	}
@@ -166,20 +154,18 @@ void Localizer::LoadTreeView(patientFolder *pat)
 	connect(ui.FileTreeView, &QTreeView::clicked, this, &Localizer::ModelClicked);
 	//==[Event for rest of UI]
 	connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processFolderAnalysis()));
-	updateGUIFrame(pat->localizerFolder()[0]);
 	ui.FolderCountLabel->setText("0 patient folders selected for Analysis");
 }
 
 void Localizer::LoadTreeView(vector<singleFile> currentFiles)
 {
-	deactivateUISingleFiles();
+	DeactivateUIForSingleFiles();
 	disconnect(ui.processButton, 0, 0, 0);
 	if (currentFiles.size() > 0)
 	{
 		QString initialFolder = currentFiles[0].rootFolder().c_str();
 		LoadTreeViewUI(initialFolder);
 		connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processSingleAnalysis()));
-		updateGUIFrame(currentFiles[0]);
 	}
 	else
 	{
@@ -213,78 +199,6 @@ void Localizer::LoadTreeViewUI(QString initialFolder)
 	ui.FileTreeView->header()->hide();
 }
 
-void Localizer::updateGUIFrame(locaFolder currentLoca)
-{
-	for (int i = 0; i < ui.freqTabWidget->count(); i++)
-	{
-		if (currentLoca.frequencyFolders().size() == 0)
-		{
-			updateQFrame("", uiElement->sm0Frame[i]);
-			updateQFrame("", uiElement->sm250Frame[i]);
-			updateQFrame("", uiElement->sm500Frame[i]);
-			updateQFrame("", uiElement->sm1000Frame[i]);
-			updateQFrame("", uiElement->sm2500Frame[i]);
-			updateQFrame("", uiElement->sm5000Frame[i]);
-			updateQFrame("", uiElement->dsPOSFrame[i]);
-			//===
-			updateQFrame("", uiElement->trialmapFrame[i]);
-			//===
-			updateQFrame("", uiElement->env2plotFrame[i]);
-		}
-		else
-		{
-			for (int j = 0; j < currentLoca.frequencyFolders().size(); j++)
-			{
-				if (currentLoca.frequencyFolders()[j].frequencyName() == userOpt.freqOption.frequencyBands[i].freqFolderName)
-				{
-					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM0_ELAN), uiElement->sm0Frame[i]);
-					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM250_ELAN), uiElement->sm250Frame[i]);
-					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM500_ELAN), uiElement->sm500Frame[i]);
-					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM1000_ELAN), uiElement->sm1000Frame[i]);
-					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM2500_ELAN), uiElement->sm2500Frame[i]);
-					updateQFrame(currentLoca.frequencyFolders()[j].filePath(SM5000_ELAN), uiElement->sm5000Frame[i]);
-					updateQFrame(currentLoca.filePath(POS_DS_ELAN), uiElement->dsPOSFrame[i]);
-
-					//===
-					if (currentLoca.frequencyFolders()[j].hasTrialMap())
-					{
-						updateQFrame("trigg", uiElement->trialmapFrame[i]);
-					}
-					//===
-					if (currentLoca.frequencyFolders()[j].hasEnvBar())
-					{
-						updateQFrame("trigg", uiElement->env2plotFrame[i]);
-					}
-				}
-			}
-		}
-	}
-}
-
-void Localizer::updateGUIFrame(singleFile currentFiles)
-{
-	for (int i = 0; i < currentFiles.frequencyFolders().size(); i++)
-	{
-		updateQFrame(currentFiles.frequencyFolders()[i].sm0eeg, uiElement->sm0Frame[i]);
-		updateQFrame(currentFiles.frequencyFolders()[i].sm250eeg, uiElement->sm250Frame[i]);
-		updateQFrame(currentFiles.frequencyFolders()[i].sm500eeg, uiElement->sm500Frame[i]);
-		updateQFrame(currentFiles.frequencyFolders()[i].sm1000eeg, uiElement->sm1000Frame[i]);
-		updateQFrame(currentFiles.frequencyFolders()[i].sm2500eeg, uiElement->sm2500Frame[i]);
-		updateQFrame(currentFiles.frequencyFolders()[i].sm5000eeg, uiElement->sm5000Frame[i]);
-	}
-}
-
-void Localizer::updateQFrame(string fileLooked, QFrame *frameFile)
-{
-	QString styleSheetRed("background:rgb(255, 0, 0)");
-	QString styleSheetGreen("background:rgb(0, 255, 0)");
-
-	if (fileLooked != "")
-		frameFile->setStyleSheet(styleSheetGreen);
-	else
-		frameFile->setStyleSheet(styleSheetRed);
-}
-
 void Localizer::reInitStructFolder()
 {
 	if (savePat == nullptr)
@@ -309,102 +223,48 @@ void Localizer::reInitStructFiles()
 	}
 }
 
-void Localizer::reInitProgressBar(userOption *optionUser)
+void Localizer::InitProgressBar()
 {
-	nbTaskToDo = 0;
-	for (int i = 0; i < optionUser->anaOption.size(); i++)
-	{
-		if (optionUser->anaOption[i].localizer)
-		{
-			for (int j = 0; j < optionUser->anaOption[i].anaOpt.size(); j++)
-			{
-				bool processFreq = optionUser->anaOption[i].anaOpt[j].eeg2env;
-				bool processEnv = optionUser->anaOption[i].anaOpt[j].env2plot;
-				bool processMap = optionUser->anaOption[i].anaOpt[j].trialmat;
-
-				if (processFreq || processEnv || processMap)
-				{
-					nbTaskToDo++; //eeg2env, wheter we need to compute or load
-					if (processEnv) { nbTaskToDo++; }
-					if (processMap) { nbTaskToDo++; }
-				}
-			}
-		}
-	}
-	//cout << "[==============]" << endl;
-	//cout << "Number of Loca : " << nbLoca << endl;
-	//cout << "Number of tasks : " << nbTaskToDo << endl;
-
 	ui.progressBar->reset();
 	nbDoneTask = 0;
+	nbTaskToDo = 0;
+
+	int nbFolderSelected = GetNbPatientFolder(ui.FileTreeView->selectionModel()->selectedRows());
+	int nbFrequencyBands = ui.FrequencyListWidget->selectionModel()->selectedRows().size();
+
+	ui.Eeg2envCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo++; //eeg2env, wheter we need to compute or load
+	ui.Env2plotCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
+	ui.TrialmatCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
+
+	nbTaskToDo *= nbFolderSelected * nbFrequencyBands;
 }
 
-void Localizer::getUIAnalysisOption(patientFolder *pat)
+std::vector<FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
 {
-	uiElement->analysis(userOpt.anaOption, pat->localizerFolder().size());
-	getAnalysisCheckBox(userOpt.anaOption);
-	deleteUncheckedFiles(userOpt.anaOption, pat);
-	optStat->getStatOption(&userOpt.statOption);
-	picOpt->getPicOption(&userOpt.picOption);
-	optPerf->getPerfLoca(userOpt.locaPerf);
-}
+	int FrequencyCount = ui.FrequencyListWidget->selectionModel()->selectedRows().size();
+	std::vector<FrequencyBandAnalysisOpt> analysisOpt = std::vector<FrequencyBandAnalysisOpt>(FrequencyCount);
 
-void Localizer::getUIAnalysisOption(vec1<singleFile> &files)
-{
-	uiElement->analysis(userOpt.anaOption, files.size());
-	getAnalysisCheckBox(userOpt.anaOption);
-	deleteUncheckedFiles(userOpt.anaOption, files);
-}
+	for (int i = 0; i < FrequencyCount; i++)
+	{	
+		//	- env2plot and / or trial mat
+		analysisOpt[i].eeg2env2 = ui.Eeg2envCheckBox->isChecked();
+		analysisOpt[i].eeg2env2 = ui.Eeg2envCheckBox->isChecked();
+		analysisOpt[i].eeg2env2 = ui.Eeg2envCheckBox->isChecked();
 
-void Localizer::getAnalysisCheckBox(vector<locaAnalysisOption> &anaOption)
-{
-	//QListWidget *a = ui.TRCListWidget->item(0)->listWidget();
-	//for (int i = 0; i < a->count(); i++)
-	//{
-	//	if (a->item(i)->checkState() == Qt::CheckState::Checked)
-	//		anaOption[i].localizer = true;
-	//	else if (a->item(i)->checkState() == Qt::CheckState::Unchecked)
-	//		anaOption[i].localizer = false;
-	//}
-}
-
-void Localizer::deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, patientFolder *pat)
-{
-	int sizeLoca = anaOption.size() - 1;
-	for (int i = sizeLoca; i >= 0; i--)
-	{
-		if (!anaOption[i].localizer)
+		//	- what frequency bands data is 
+		QString label = ui.FrequencyListWidget->selectedItems()[i]->text();
+		std::vector<FrequencyBand>::const_iterator it = std::find(m_frequencyFile->FrequencyBands().begin(), m_frequencyFile->FrequencyBands().end(), label);
+		if (it != m_frequencyFile->FrequencyBands().end())
 		{
-			pat->localizerFolder().erase(pat->localizerFolder().begin() + i);
-			anaOption.erase(anaOption.begin() + i);
+			int index = distance(it, m_frequencyFile->FrequencyBands().begin());
+			analysisOpt[i].Band = FrequencyBand(m_frequencyFile->FrequencyBands()[index]);
 		}
 	}
 }
 
-void Localizer::deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1<singleFile> &files)
-{
-	int sizeLoca = anaOption.size() - 1;
-	for (int i = sizeLoca; i >= 0; i--)
-	{
-		if (!anaOption[i].localizer)
-		{
-			files.erase(files.begin() + i);
-			anaOption.erase(anaOption.begin() + i);
-		}
-	}
-}
-
-//=== Slots	
-void Localizer::SetFolderLabelCount(int count)
-{
-	QString label = count > 1 ? "folder" : "folders";
-	ui.FolderCountLabel->setText(QString::number(count) + " patient " + label + " selected for Analysis");
-}
-
-void Localizer::ModelClicked(const QModelIndex &current)
+int Localizer::GetNbPatientFolder(QModelIndexList selectedIndexes)
 {
 	int nbFolderSelected = 0;
-	QModelIndexList selectedIndexes = ui.FileTreeView->selectionModel()->selectedRows();
 	for (int i = 0; i < selectedIndexes.size(); i++)
 	{
 		bool isRoot = selectedIndexes[i].parent() == ui.FileTreeView->rootIndex();
@@ -416,7 +276,64 @@ void Localizer::ModelClicked(const QModelIndex &current)
 				nbFolderSelected--;
 		}
 	}
+	return nbFolderSelected;
+}
 
+//
+//void Localizer::getUIAnalysisOption(patientFolder *pat)
+//{
+//	uiElement->analysis(userOpt.anaOption, pat->localizerFolder().size());
+//	getAnalysisCheckBox(userOpt.anaOption);
+//	deleteUncheckedFiles(userOpt.anaOption, pat);
+//	optStat->getStatOption(&userOpt.statOption);
+//	picOpt->getPicOption(&userOpt.picOption);
+//	optPerf->getPerfLoca(userOpt.locaPerf);
+//}
+//
+//void Localizer::getUIAnalysisOption(vec1<singleFile> &files)
+//{
+//	uiElement->analysis(userOpt.anaOption, files.size());
+//	getAnalysisCheckBox(userOpt.anaOption);
+//	deleteUncheckedFiles(userOpt.anaOption, files);
+//}
+
+//void Localizer::deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, patientFolder *pat)
+//{
+//	int sizeLoca = anaOption.size() - 1;
+//	for (int i = sizeLoca; i >= 0; i--)
+//	{
+//		if (!anaOption[i].localizer)
+//		{
+//			pat->localizerFolder().erase(pat->localizerFolder().begin() + i);
+//			anaOption.erase(anaOption.begin() + i);
+//		}
+//	}
+//}
+//
+//void Localizer::deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1<singleFile> &files)
+//{
+//	int sizeLoca = anaOption.size() - 1;
+//	for (int i = sizeLoca; i >= 0; i--)
+//	{
+//		if (!anaOption[i].localizer)
+//		{
+//			files.erase(files.begin() + i);
+//			anaOption.erase(anaOption.begin() + i);
+//		}
+//	}
+//}
+
+//=== Slots	
+void Localizer::SetFolderLabelCount(int count)
+{
+	QString label = count > 1 ? "folder" : "folders";
+	ui.FolderCountLabel->setText(QString::number(count) + " patient " + label + " selected for Analysis");
+}
+
+void Localizer::ModelClicked(const QModelIndex &current)
+{
+	QModelIndexList selectedIndexes = ui.FileTreeView->selectionModel()->selectedRows();
+	int nbFolderSelected = GetNbPatientFolder(selectedIndexes);
 	SetFolderLabelCount(nbFolderSelected);
 }
 
@@ -425,68 +342,12 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 
 }
 
-void Localizer::checkMultipleItems(QListWidgetItem * item)
+void Localizer::ToggleAllBands()
 {
-	QList<QListWidgetItem *> selecItem = item->listWidget()->selectedItems();
-
-	for (int i = 0; i < selecItem.size(); i++)
+	Qt::CheckState status = ui.AllBandsCheckBox->checkState();
+	for (int i = 0; i < ui.FrequencyListWidget->count(); i++)
 	{
-		selecItem.at(i)->setCheckState(item->checkState());
-	}
-}
-
-void Localizer::checkOnEnter(QListWidgetItem * item)
-{
-	if (Qt::Key::Key_Return)
-	{
-		Qt::CheckState currentState = item->checkState();
-		if (currentState == Qt::CheckState::Checked)
-		{
-			item->setCheckState(Qt::CheckState::Unchecked);
-		}
-		else
-		{
-			item->setCheckState(Qt::CheckState::Checked);
-		}
-	}
-}
-
-void Localizer::linkFreqCheckBox()
-{
-	if (ui.sameanaCheckBox->checkState() == Qt::CheckState::Checked)
-	{
-		for (int i = 0; i < ui.freqTabWidget->count(); i++)
-		{
-			connect(uiElement->eeg2envCheckBox[i], &QCheckBox::toggled, this, [&](bool newValue) {
-				for (int j = 0; j < uiElement->eeg2envCheckBox.size(); j++)
-				{
-					uiElement->eeg2envCheckBox[j]->setChecked(newValue);
-				}
-			});
-
-			connect(uiElement->trialmapCheckBox[i], &QCheckBox::clicked, this, [&](bool newValue) {
-				for (int j = 0; j < uiElement->trialmapCheckBox.size(); j++)
-				{
-					uiElement->trialmapCheckBox[j]->setChecked(newValue);
-				}
-			});
-
-			connect(uiElement->env2plotCheckBox[i], &QCheckBox::clicked, this, [&](bool newValue) {
-				for (int j = 0; j < uiElement->env2plotCheckBox.size(); j++)
-				{
-					uiElement->env2plotCheckBox[j]->setChecked(newValue);
-				}
-			});
-		}
-	}
-	else
-	{
-		for (int i = 0; i < ui.freqTabWidget->count(); i++)
-		{
-			disconnect(uiElement->eeg2envCheckBox[i], 0, 0, 0);
-			disconnect(uiElement->trialmapCheckBox[i], 0, 0, 0);
-			disconnect(uiElement->env2plotCheckBox[i], 0, 0, 0);
-		}
+		ui.FrequencyListWidget->item(i)->setCheckState(status);
 	}
 }
 
@@ -496,18 +357,18 @@ void Localizer::processFolderAnalysis()
 	{
 		if (!isAlreadyRunning)
 		{
-			ui.progressBar->reset();
-			reInitStructFolder();
-			getUIAnalysisOption(currentPat);
-			reInitProgressBar(&userOpt);
+			InitProgressBar();
+			std::vector<FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
+
+			reInitStructFolder(); //remplacer par juste un chargement de la structure en fonction de root str
 
 			thread = new QThread;
 			worker = new Worker(currentPat, &userOpt);
 
 			//=== Event update displayer
-			connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
-			connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
-			connect(worker->getLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(updateProgressBar(int)));
+			connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+			connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+			connect(worker->getLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
 
 			//=== 
 			connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
@@ -544,17 +405,17 @@ void Localizer::processSingleAnalysis()
 	{
 		if (!isAlreadyRunning)
 		{
+			InitProgressBar();
+			std::vector<FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
 			reInitStructFiles();
-			getUIAnalysisOption(currentFiles);
-			reInitProgressBar(&userOpt);
 
 			thread = new QThread;
 			worker = new Worker(currentFiles, &userOpt, -1);
 
 			//=== Event update displayer
-			connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
-			connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
-			connect(worker->getLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(updateProgressBar(int)));
+			connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+			connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+			connect(worker->getLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
 
 			//=== 
 			connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
@@ -603,9 +464,9 @@ void Localizer::processERPAnalysis()
 				worker = new Worker(&currentPat->localizerFolder()[index.row()], &userOpt);
 
 				//=== Event update displayer
-				connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
-				connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
-				connect(worker->getLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(updateProgressBar(int)));
+				connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+				connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+				connect(worker->getLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
 
 				//=== 
 				connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
@@ -661,8 +522,8 @@ void Localizer::processConvertToElan()
 					worker = new Worker(currentFiles, &userOpt, index.row());
 
 				//=== Event update displayer
-				connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
-				connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
+				connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+				connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
 
 				//=== 
 				connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
@@ -698,18 +559,19 @@ void Localizer::processConvertToElan()
 	}
 }
 
-void Localizer::displayLog(QString messageToDisplay)
+void Localizer::DisplayLog(QString messageToDisplay, Qt::GlobalColor color)
 {
+	ui.messageDisplayer->setTextColor(color);
 	ui.messageDisplayer->append(messageToDisplay);
 }
 
-void Localizer::updateProgressBar(int divider)
+void Localizer::UpdateProgressBar(int divider)
 {
 	nbDoneTask = nbDoneTask + ((float)1 / divider);
 	ui.progressBar->setValue((nbDoneTask / nbTaskToDo) * 100);
 }
 
-void Localizer::cancelAnalysis()
+void Localizer::CancelAnalysis()
 {
 	if (isAlreadyRunning)
 	{
@@ -719,7 +581,7 @@ void Localizer::cancelAnalysis()
 		{
 		}
 		isAlreadyRunning = false;
-		QMessageBox::information(this, "Canceled", "Canceled");
+		QMessageBox::information(this, "Canceled", "Analysis has been canceled by the user");
 		m_lockLoop.unlock();
 	}
 }
@@ -738,7 +600,7 @@ void Localizer::UpdateFolderPostAna()
 	deleteAndNullify1D(savePat);
 	currentPat = new patientFolder(currentPat->rootFolder());
 
-	updateGUIFrame(currentPat->localizerFolder()[0]);
+	//updateGUIFrame(currentPat->localizerFolder()[0]);
 	if (savePat != nullptr)
 	{
 		deleteAndNullify1D(savePat);
@@ -756,13 +618,13 @@ void Localizer::UpdateSinglePostAna()
 		currentFiles.clear();
 
 	for (int i = 0; i < analyzedPath.size(); i++)
-		currentFiles.push_back(singleFile(analyzedPath[i], ui.freqTabWidget->count()));
+		currentFiles.push_back(singleFile(analyzedPath[i], ui.FrequencyListWidget->count()));
 
 	if (saveFiles.size() > 0)
 		saveFiles.clear();
 
-	for (int i = 0; i < saveFiles.size(); i++)
-		updateGUIFrame(saveFiles[i]);
+	//for (int i = 0; i < saveFiles.size(); i++)
+	//	updateGUIFrame(saveFiles[i]);
 }
 
 void Localizer::loadConcat()
@@ -775,7 +637,7 @@ void Localizer::loadConcat()
 	else
 	{
 		concatFiles = new concatenator(currentPat->localizerFolder()[list[0].row()].rootLocaFolder());
-		connect(concatFiles, SIGNAL(sendLogInfo(QString)), this, SLOT(displayLog(QString)));
+		connect(concatFiles, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
 		concatFiles->exec();
 		deleteAndNullify1D(concatFiles);
 		UpdateFolderPostAna();

@@ -75,6 +75,24 @@
     <Filter Include="Source Files\Files\PROV">
       <UniqueIdentifier>{cfb90fb8-b953-48df-b8b0-49f668238067}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\GUI\QtUiElement">
+      <UniqueIdentifier>{5ee193b2-a244-4220-a545-2bd4359d6d8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\QtUiElement">
+      <UniqueIdentifier>{f8a199f8-bb29-4fbf-8a98-70b2f3b6edfa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Files\OptFiles">
+      <UniqueIdentifier>{270b326f-b4ca-4cc4-a0bd-7aa083f98093}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Files\OptFiles">
+      <UniqueIdentifier>{6db3647d-f132-4679-9953-9173dac3141a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Workers">
+      <UniqueIdentifier>{1cb6765c-d854-4171-9847-1b316b68c6f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Workers">
+      <UniqueIdentifier>{ebfb0042-c55c-4872-8d3c-bfadb1503e5b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -233,11 +251,38 @@
     <ClCompile Include="GeneratedFiles\Debug\moc_DeselectableTreeView.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="DeselectableTreeView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_DeselectableTreeView.cpp">
       <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="DeselectableTreeView.cpp">
+      <Filter>Source Files\GUI\QtUiElement</Filter>
+    </ClCompile>
+    <ClCompile Include="ITxtFile.cpp">
+      <Filter>Source Files\Files\OptFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="FrequencyFile.cpp">
+      <Filter>Source Files\Files\OptFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="FrequencyBand.cpp">
+      <Filter>Source Files\Files\OptFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_IWorker.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_IWorker.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="PatientFolderWorker.cpp">
+      <Filter>Source Files\Workers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_PatientFolderWorker.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_PatientFolderWorker.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="IWorker.cpp">
+      <Filter>Source Files\Workers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -311,7 +356,13 @@
       <Filter>Header Files\GUI</Filter>
     </CustomBuild>
     <CustomBuild Include="DeselectableTreeView.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\GUI\QtUiElement</Filter>
+    </CustomBuild>
+    <CustomBuild Include="IWorker.h">
+      <Filter>Header Files\Workers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="PatientFolderWorker.h">
+      <Filter>Header Files\Workers</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -389,6 +440,18 @@
     </ClInclude>
     <ClInclude Include="Stats.h">
       <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="ITxtFile.h">
+      <Filter>Header Files\Files\OptFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="FrequencyFile.h">
+      <Filter>Header Files\Files\OptFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="FrequencyBand.h">
+      <Filter>Header Files\Files\OptFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="FrequencyBandAnalysisOpt.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

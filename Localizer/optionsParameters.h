@@ -65,27 +65,27 @@ namespace InsermLibrary
 
 	//== UI stuff in localizer.cpp
 
-	struct uiUserElement
-	{
-		void analysis(vector<locaAnalysisOption> &analysisToRun, int nbLoca);
+	//struct uiUserElement
+	//{
+	//	void analysis(vector<locaAnalysisOption> &analysisToRun, int nbLoca);
 
-		vector<QCheckBox *> eeg2envCheckBox;
-		vector<QFrame *>  sm0Frame;
-		vector<QFrame *>  sm250Frame;
-		vector<QFrame *>  sm500Frame;
-		vector<QFrame *>  sm1000Frame;
-		vector<QFrame *>  sm2500Frame;
-		vector<QFrame *>  sm5000Frame;
-		vector<QFrame *>  dsPOSFrame;
-		//===
-		vector<QGroupBox *> trialmapGroupBox;
-		vector<QCheckBox *> trialmapCheckBox;
-		vector<QFrame *>  trialmapFrame;
-		//===
-		vector<QGroupBox *> env2plotGroupBox;
-		vector<QCheckBox *> env2plotCheckBox;
-		vector<QFrame *>  env2plotFrame;
-	};
+	//	vector<QCheckBox *> eeg2envCheckBox;
+	//	vector<QFrame *>  sm0Frame;
+	//	vector<QFrame *>  sm250Frame;
+	//	vector<QFrame *>  sm500Frame;
+	//	vector<QFrame *>  sm1000Frame;
+	//	vector<QFrame *>  sm2500Frame;
+	//	vector<QFrame *>  sm5000Frame;
+	//	vector<QFrame *>  dsPOSFrame;
+	//	//===
+	//	vector<QGroupBox *> trialmapGroupBox;
+	//	vector<QCheckBox *> trialmapCheckBox;
+	//	vector<QFrame *>  trialmapFrame;
+	//	//===
+	//	vector<QGroupBox *> env2plotGroupBox;
+	//	vector<QCheckBox *> env2plotCheckBox;
+	//	vector<QFrame *>  env2plotFrame;
+	//};
 
 	//==
 }

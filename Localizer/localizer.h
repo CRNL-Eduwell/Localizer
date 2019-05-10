@@ -28,7 +28,9 @@
 #include "ui_localizer.h"
 #include <QCoreApplication>
 #include "DeselectableTreeView.h"
-
+#include "FrequencyBand.h"
+#include "FrequencyFile.h"
+#include "FrequencyBandAnalysisOpt.h"
 using namespace std;
 
 class Localizer : public QMainWindow
@@ -40,9 +42,9 @@ public:
 	~Localizer();
 
 private:
-	void reSetupGUI();
-	void getUIelement();
-	void deactivateUISingleFiles();
+	void ReSetupGUI();
+	void LoadFrequencyBandsUI(const std::vector<FrequencyBand>& FrequencyBands);
+	void DeactivateUIForSingleFiles();
 	void connectSignals();
 	void connectMenuBar();
 	void loadPatientFolder();
@@ -50,30 +52,26 @@ private:
 	void LoadTreeView(patientFolder *pat);
 	void LoadTreeView(vector<singleFile> currentFiles);
 	void LoadTreeViewUI(QString initialFolder);
-	void updateGUIFrame(locaFolder currentLoca);
-	void updateGUIFrame(singleFile currentFiles);
-	void updateQFrame(string fileLooked, QFrame *frameFile);
 	void reInitStructFolder();
 	void reInitStructFiles();
-	void reInitProgressBar(userOption *optionUser);
-	void getUIAnalysisOption(patientFolder *pat);
-	void getUIAnalysisOption(vec1<singleFile> &files);
-	void getAnalysisCheckBox(vector<locaAnalysisOption> &anaOption);
-	void deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, patientFolder *pat);
-	void deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1<singleFile> &files);
+	void InitProgressBar();
+	std::vector<FrequencyBandAnalysisOpt> GetUIAnalysisOption();
+	int GetNbPatientFolder(QModelIndexList selectedIndexes);
+	//void deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, patientFolder *pat);
+	//void deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1<singleFile> &files);
 
 private slots:
 	void SetFolderLabelCount(int count);
 	void ModelClicked(const QModelIndex &current);
 	void ShowFileTreeContextMenu(QPoint point);
-	void linkFreqCheckBox();
+	void ToggleAllBands();
 	void processFolderAnalysis();
 	void processSingleAnalysis();
 	void processERPAnalysis();
 	void processConvertToElan();
-	void displayLog(QString info);
-	void updateProgressBar(int divider);
-	void cancelAnalysis();
+	void DisplayLog(QString info, Qt::GlobalColor color = Qt::GlobalColor::black);
+	void UpdateProgressBar(int divider);
+	void CancelAnalysis();
 	void receiveContainerPointer(eegContainer *eegCont);
 	void UpdateFolderPostAna();
 	void UpdateSinglePostAna();
@@ -87,7 +85,9 @@ private:
 	//==Visualisation
 	QFileSystemModel *m_localFileSystemModel = nullptr;
 	//==Data for analysis
-	userOption userOpt;
+	FrequencyFile *m_frequencyFile = nullptr;
+
+	//userOption userOpt;
 	patientFolder* currentPat = nullptr;
 	patientFolder* savePat = nullptr;
 	vector<singleFile> currentFiles;
@@ -105,7 +105,7 @@ private:
 	optionsPerf *optPerf = nullptr;
 	form *optLoca = nullptr;
 	concatenator *concatFiles = nullptr;
-	uiUserElement* uiElement = nullptr;
+	//uiUserElement* uiElement = nullptr;
 	Ui::LocalizerClass ui;
 	QStringList inputArguments;
 };
