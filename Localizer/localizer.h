@@ -63,12 +63,9 @@ private:
 	void deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1<singleFile> &files);
 
 private slots:
+	void SetFolderLabelCount(int count);
 	void ModelClicked(const QModelIndex &current);
 	void ShowFileTreeContextMenu(QPoint point);
-	void updateGUIClick(QListWidgetItem *);
-	void eventUpdateGUI(QListWidgetItem *, QListWidgetItem *);
-	void checkMultipleItems(QListWidgetItem * item);
-	void checkOnEnter(QListWidgetItem * item);
 	void linkFreqCheckBox();
 	void processFolderAnalysis();
 	void processSingleAnalysis();
@@ -87,6 +84,7 @@ signals:
 	void bipDone(int);
 
 private:
+	//==Visualisation
 	QFileSystemModel *m_localFileSystemModel = nullptr;
 	//==Data for analysis
 	userOption userOpt;

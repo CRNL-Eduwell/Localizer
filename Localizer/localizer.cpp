@@ -83,11 +83,7 @@ void Localizer::connectSignals()
 
 	ui.FileTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(ui.FileTreeView, &QTreeView::customContextMenuRequested, this, &Localizer::ShowFileTreeContextMenu);
-	connect((DeselectableTreeView*)ui.FileTreeView, &DeselectableTreeView::ResetNbFolder, this, [&]() {
-		int nbFolderSelected = 0;
-		QString label = nbFolderSelected > 1 ? "folder" : "folders";
-		ui.FolderCountLabel->setText(QString::number(nbFolderSelected) + " patient " + label + " selected for Analysis");
-	});
+	connect((DeselectableTreeView*)ui.FileTreeView, &DeselectableTreeView::ResetNbFolder, this, [&]() { SetFolderLabelCount(0); });
 
 	connect(ui.sameanaCheckBox, SIGNAL(clicked()), this, SLOT(linkFreqCheckBox()));
 	connect(ui.cancelButton, SIGNAL(clicked()), this, SLOT(cancelAnalysis()));
@@ -171,6 +167,7 @@ void Localizer::LoadTreeView(patientFolder *pat)
 	//==[Event for rest of UI]
 	connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processFolderAnalysis()));
 	updateGUIFrame(pat->localizerFolder()[0]);
+	ui.FolderCountLabel->setText("0 patient folders selected for Analysis");
 }
 
 void Localizer::LoadTreeView(vector<singleFile> currentFiles)
@@ -398,12 +395,14 @@ void Localizer::deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1
 }
 
 //=== Slots	
+void Localizer::SetFolderLabelCount(int count)
+{
+	QString label = count > 1 ? "folder" : "folders";
+	ui.FolderCountLabel->setText(QString::number(count) + " patient " + label + " selected for Analysis");
+}
+
 void Localizer::ModelClicked(const QModelIndex &current)
 {
-	qDebug() << "dede " << ui.FileTreeView->selectionModel()->selectedRows().size();
-	qDebug() << "ModelClicked for Patient folder";
-
-
 	int nbFolderSelected = 0;
 	QModelIndexList selectedIndexes = ui.FileTreeView->selectionModel()->selectedRows();
 	for (int i = 0; i < selectedIndexes.size(); i++)
@@ -418,48 +417,12 @@ void Localizer::ModelClicked(const QModelIndex &current)
 		}
 	}
 
-
-	QString label = nbFolderSelected > 1 ? "folder" : "folders";
-	ui.FolderCountLabel->setText(QString::number(nbFolderSelected) + " patient " + label + " selected for Analysis");
-
+	SetFolderLabelCount(nbFolderSelected);
 }
 
 void Localizer::ShowFileTreeContextMenu(QPoint point)
 {
 
-}
-
-void Localizer::updateGUIClick(QListWidgetItem *clickedItem)
-{
-	QString locaClicked = clickedItem->text();
-
-	if (currentPat != nullptr)
-	{
-		for (int i = 0; i < currentPat->localizerFolder().size(); i++)
-		{
-			if (currentPat->localizerFolder()[i].localizerName() == locaClicked.toStdString())
-			{
-				updateGUIFrame(currentPat->localizerFolder()[i]);
-			}
-		}
-	}
-	else if (currentFiles.size() > 0)
-	{
-		for (int i = 0; i < currentFiles.size(); i++)
-		{
-			QString fullPathClicked = QString::fromStdString(currentFiles[i].rootFolder()) + locaClicked;
-			if ((currentFiles[i].filePath(TRC) == fullPathClicked.toStdString()) ||
-				(currentFiles[i].filePath(EEG_ELAN) == fullPathClicked.toStdString()))
-			{
-				updateGUIFrame(currentFiles[i]);
-			}
-		}
-	}
-}
-
-void Localizer::eventUpdateGUI(QListWidgetItem *newItem, QListWidgetItem *oldItem)
-{
-	updateGUIClick(newItem);
 }
 
 void Localizer::checkMultipleItems(QListWidgetItem * item)
