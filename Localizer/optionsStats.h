@@ -20,7 +20,7 @@ class optionsStats : public QDialog
 public :
 	optionsStats(QWidget *parent = 0);
 	~optionsStats();
-	void getStatOption(statOption *statOpt);
+	statOption getStatOption();
 
 private:
 	void connectSignals();

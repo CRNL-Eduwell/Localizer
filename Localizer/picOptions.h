@@ -17,7 +17,7 @@ public:
 	picOptions(QWidget *parent = 0);
 	~picOptions();
 	void connectSignals();
-	void getPicOption(picOption *picOpt);
+	picOption getPicOption();
 
 private slots:
 	void width2HeigthTrialRatio();

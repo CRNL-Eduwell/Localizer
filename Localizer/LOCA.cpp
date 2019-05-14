@@ -1,8 +1,10 @@
 #include "LOCA.h"
 
-InsermLibrary::LOCA::LOCA(userOption *userOpt)
+InsermLibrary::LOCA::LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption* statOption, picOption* picOption)
 {
-	m_userOpt = userOpt;
+	m_analysisOpt = analysisOpt;
+	m_statOption = statOption;
+	m_picOption = picOption;
 }
 
 InsermLibrary::LOCA::~LOCA()
@@ -57,7 +59,7 @@ void InsermLibrary::LOCA::eeg2erp(eegContainer *myeegContainer, PROV *myprovFile
 		}
 	}
 
-	drawPlots b = drawPlots(myprovFile, monoErpOutput, m_userOpt->picOption.sizePlotmap);
+	drawPlots b = drawPlots(myprovFile, monoErpOutput, m_picOption->sizePlotmap);
 	b.drawDataOnTemplate(bigDataMono, m_triggerContainer, myeegContainer, 0);
 	emit sendLogInfo("Mono Maps Generated");
 	b.drawDataOnTemplate(bigDataBipo, m_triggerContainer, myeegContainer, 1);
@@ -94,26 +96,26 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 	m_idCurrentLoca = idCurrentLoca;
 	m_currentLoca = currentLoca;
 
-	for (int i = 0; i < m_userOpt->freqOption.frequencyBands.size(); i++)
+	for (int i = 0; i < m_analysisOpt.size(); i++)
 	{
-		frequency currentFrequencyBand = frequency(m_userOpt->freqOption.frequencyBands[i]);
-		checkShannonCompliance(myeegContainer->SamplingFrequency(), currentFrequencyBand);
-		if (m_userOpt->anaOption[idCurrentLoca].anaOpt[i].eeg2env)
+		FrequencyBand currentFrequencyBand(m_analysisOpt[i].Band);
+		currentFrequencyBand.CheckShannonCompliance(myeegContainer->SamplingFrequency());
+
+		if (m_analysisOpt[i].eeg2env2)
 		{
-			myeegContainer->ToHilbert(i, currentFrequencyBand.freqBandValue);
+			myeegContainer->ToHilbert(i, currentFrequencyBand.FrequencyBins());
 			emit incrementAdavnce(1);
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 
 			string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
-			toBeNamedCorrectlyFunction(myeegContainer, i, freqFolder, m_userOpt->anaOption[idCurrentLoca].anaOpt[i]);
+			toBeNamedCorrectlyFunction(myeegContainer, i, freqFolder, m_analysisOpt[i]);
 		}
 		else 
 		{
 			for (int j = 0; j < currentLoca->frequencyFolders().size(); j++)
 			{
-				int sizeFreq = currentFrequencyBand.freqBandValue.size() - 1;
-				string fMin = to_string(currentFrequencyBand.freqBandValue[0]);
-				string fMax = to_string(currentFrequencyBand.freqBandValue[sizeFreq]);
+				string fMin = to_string(currentFrequencyBand.FMin());
+				string fMax = to_string(currentFrequencyBand.FMax());
 
 				if ((currentLoca->frequencyFolders()[j].frequencyName() == "f" + fMin + "f" + fMax) &&
 					(currentLoca->frequencyFolders()[j].filePath(SM0_ELAN) != ""))
@@ -131,7 +133,7 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 						emit sendLogInfo("Envelloppe File Loaded");
 
 						string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
-						toBeNamedCorrectlyFunction(myeegContainer, i, freqFolder, m_userOpt->anaOption[idCurrentLoca].anaOpt[i]);
+						toBeNamedCorrectlyFunction(myeegContainer, i, freqFolder, m_analysisOpt[i]);
 					}
 					else
 					{
@@ -151,13 +153,13 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 	deleteAndNullify1D(m_triggerContainer);
 	m_triggerContainer = new TriggerContainer(myeegContainer->Triggers(), myeegContainer->SamplingFrequency());
 
-	for (int i = 0; i < m_userOpt->freqOption.frequencyBands.size(); i++)
+	for (int i = 0; i < m_analysisOpt.size(); i++)
 	{
-		frequency currentFrequencyBand = frequency(m_userOpt->freqOption.frequencyBands[i]);
-		LOCA::checkShannonCompliance(myeegContainer->SamplingFrequency(), currentFrequencyBand);
-		if (m_userOpt->anaOption[idCurrentLoca].anaOpt[i].eeg2env)
+		FrequencyBand currentFrequencyBand(m_analysisOpt[i].Band);
+		currentFrequencyBand.CheckShannonCompliance(myeegContainer->SamplingFrequency());
+		if (m_analysisOpt[i].eeg2env2)
 		{
-			myeegContainer->ToHilbert(i, currentFrequencyBand.freqBandValue);
+			myeegContainer->ToHilbert(i, currentFrequencyBand.FrequencyBins());
 			emit incrementAdavnce(1);
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 
@@ -166,26 +168,8 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 	}
 }
 
-void InsermLibrary::LOCA::checkShannonCompliance(int p_samplingFrequency, frequency & p_freq)
-{
-	if (p_freq.freqBandValue[p_freq.freqBandValue.size() - 1] > (p_samplingFrequency / 2))
-	{
-		int step = p_freq.freqBandValue[1] - p_freq.freqBandValue[0];
-		int oldfMax = p_freq.freqBandValue[p_freq.freqBandValue.size() - 1];
-		int fMin = p_freq.freqBandValue[0];
-		int fMax = ((p_samplingFrequency / 2) / step) * step;
-
-		p_freq.freqBandValue.clear();
-		for (int i = 0; i <= ((fMax - fMin) / step); i++)
-			p_freq.freqBandValue.push_back(fMin + (i * step));
-
-		p_freq.freqFolderName = "";
-		p_freq.freqFolderName.append("f").append(to_string(fMin)).append("f").append(to_string(fMax));
-	}
-}
-
 void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreqfrequency, 
-													 string freqFolder, analysisOption a)
+													 string freqFolder, FrequencyBandAnalysisOpt a)
 {
 	deleteAndNullify1D(m_triggerContainer);
 	m_triggerContainer = new TriggerContainer(myeegContainer->Triggers(), myeegContainer->SamplingFrequency());
@@ -294,11 +278,11 @@ void InsermLibrary::LOCA::CreateConfFile(eegContainer *myeegContainer)
 /*********************************/
 /* Various check before analysis */
 /*********************************/
-string InsermLibrary::LOCA::createIfFreqFolderExistNot(eegContainer *myeegContainer, frequency currentFreq)
+string InsermLibrary::LOCA::createIfFreqFolderExistNot(eegContainer *myeegContainer, FrequencyBand currentFreq)
 {
-	string fMin = to_string(currentFreq.freqBandValue[0]);
-	string fMax = to_string(currentFreq.freqBandValue[currentFreq.freqBandValue.size() - 1]);
-	string freqFolder = myeegContainer->RootFileFolder() + myeegContainer->RootFileName() + "_f" + fMin + "f" + fMax + "/";
+	std::string fMin = std::to_string(currentFreq.FMin());
+	std::string fMax = std::to_string(currentFreq.FMax());
+	std::string freqFolder = myeegContainer->RootFileFolder() + myeegContainer->RootFileName() + "_f" + fMin + "f" + fMax + "/";
 
 	if (!QDir(&freqFolder.c_str()[0]).exists())
 	{
@@ -312,19 +296,19 @@ string InsermLibrary::LOCA::createIfFreqFolderExistNot(eegContainer *myeegContai
 vector<PROV> InsermLibrary::LOCA::loadProvCurrentLoca()
 {
 	vector<PROV> provFiles;
-	for (int i = 0; i < m_userOpt->statOption.locaWilcoxon.size(); i++)
+	for (int i = 0; i < m_statOption->locaWilcoxon.size(); i++)
 	{
-		if (m_userOpt->statOption.locaWilcoxon[i].contains(QString::fromStdString(m_currentLoca->localizerName())))
+		if (m_statOption->locaWilcoxon[i].contains(QString::fromStdString(m_currentLoca->localizerName())))
 		{
-			provFiles.push_back(PROV("./Resources/Config/Prov/" + m_userOpt->statOption.locaWilcoxon[i].toStdString() + ".prov"));
+			provFiles.push_back(PROV("./Resources/Config/Prov/" + m_statOption->locaWilcoxon[i].toStdString() + ".prov"));
 		}
 	}
 
-	for (int i = 0; i < m_userOpt->statOption.locaKruskall.size(); i++)
+	for (int i = 0; i < m_statOption->locaKruskall.size(); i++)
 	{
-		if (m_userOpt->statOption.locaKruskall[i].contains(QString::fromStdString(m_currentLoca->localizerName())))
+		if (m_statOption->locaKruskall[i].contains(QString::fromStdString(m_currentLoca->localizerName())))
 		{
-			provFiles.push_back(PROV("./Resources/Config/Prov/" + m_userOpt->statOption.locaKruskall[i].toStdString() + ".prov"));
+			provFiles.push_back(PROV("./Resources/Config/Prov/" + m_statOption->locaKruskall[i].toStdString() + ".prov"));
 		}
 	}
 
@@ -338,9 +322,9 @@ vector<PROV> InsermLibrary::LOCA::loadProvCurrentLoca()
 
 bool InsermLibrary::LOCA::shouldPerformBarPlot(string locaName)
 {
-	for (int i = 0; i < m_userOpt->statOption.locaKruskall.size(); i++)
+	for (int i = 0; i < m_statOption->locaKruskall.size(); i++)
 	{
-		if (m_userOpt->statOption.locaKruskall[i].contains(QString::fromStdString(m_currentLoca->localizerName())))
+		if (m_statOption->locaKruskall[i].contains(QString::fromStdString(m_currentLoca->localizerName())))
 		{
 			return true;
 		}
@@ -382,7 +366,7 @@ void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, int idCurrentFre
 	vec1<PVALUECOORD> significantValue = calculateStatisticKruskall(eegData3D, myeegContainer, myprovFile, mapsFolder);
 
 	//==
-	drawBars b = drawBars(myprovFile, mapPath, m_userOpt->picOption.sizePlotmap);
+	drawBars b = drawBars(myprovFile, mapPath, m_picOption->sizePlotmap);
 	b.drawDataOnTemplate(eegData3D, m_triggerContainer, significantValue, myeegContainer);
 
 	delete windowSam;
@@ -397,10 +381,10 @@ string InsermLibrary::LOCA::getMapsFolderBar(string freqFolder, PROV *myprovFile
 	mapsFolder.append("_bar");
 
 	stringstream streamPValue;
-	streamPValue << fixed << setprecision(2) << m_userOpt->statOption.pKruskall;
-	if (m_userOpt->statOption.kruskall)
+	streamPValue << fixed << setprecision(2) << m_statOption->pKruskall;
+	if (m_statOption->kruskall)
 	{
-		if (m_userOpt->statOption.FDRkruskall)
+		if (m_statOption->FDRkruskall)
 			mapsFolder.append("_FDR" + streamPValue.str());
 		else
 			mapsFolder.append("_P" + streamPValue.str());
@@ -426,18 +410,18 @@ vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticKruskall(vec3<float> &b
 																  PROV *myprovFile, string freqFolder)
 {
 	vector<PVALUECOORD> significantValue;
-	if (m_userOpt->statOption.kruskall)
+	if (m_statOption->kruskall)
 	{
 		int copyIndex = 0;
 		vec3<float> pValue3D; vec3<int> psign3D;
 		Stats::pValuesKruskall(pValue3D, psign3D, bigData, m_triggerContainer, myeegContainer->DownsampledFrequency(), myprovFile);
-		if (m_userOpt->statOption.FDRkruskall)
+		if (m_statOption->FDRkruskall)
 		{
-			significantValue = Stats::FDR(pValue3D, psign3D, copyIndex, m_userOpt->statOption.pKruskall);
+			significantValue = Stats::FDR(pValue3D, psign3D, copyIndex, m_statOption->pKruskall);
 		}
 		else
 		{
-			significantValue = Stats::loadPValues(pValue3D, psign3D, m_userOpt->statOption.pKruskall);
+			significantValue = Stats::loadPValues(pValue3D, psign3D, m_statOption->pKruskall);
 		}
 		Stats::exportStatsData(myeegContainer, myprovFile, significantValue, freqFolder, true);
 	}
@@ -460,7 +444,7 @@ void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, int idCurrentFr
 	myeegContainer->GetFrequencyBlocDataEvents(eegData3D, idCurrentFreqfrequency, 0, m_triggerContainer->ProcessedTriggers(), windowSam);
 
 	//==
-	drawPlots b = drawPlots(myprovFile, mapPath, m_userOpt->picOption.sizePlotmap);
+	drawPlots b = drawPlots(myprovFile, mapPath, m_picOption->sizePlotmap);
 	b.drawDataOnTemplate(eegData3D, m_triggerContainer, myeegContainer, 2);
 
 	delete windowSam;
@@ -511,7 +495,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 
 	//== Draw for each plot and according to a template to reduce drawing time
 	std::vector<int> SubGroupStimTrials = m_triggerContainer->SubGroupStimTrials();
-	mapsGenerator mGen(m_userOpt->picOption.sizeTrialmap.width(), m_userOpt->picOption.sizeTrialmap.height());
+	mapsGenerator mGen(m_picOption->sizeTrialmap.width(), m_picOption->sizeTrialmap.height());
 	mGen.trialmatTemplate(SubGroupStimTrials, myprovFile);
 
 	QPixmap *pixmapChanel = nullptr, *pixmapSubSubMatrix = nullptr;
@@ -529,8 +513,8 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 		mGen.graduateColorBar(painterChanel, Maxi);
 
 		int SUBMatrixWidth = mGen.MatrixRect.width() / nbCol;
-		int interpolFactorX = m_userOpt->picOption.interpolationtrialmap.width();	
-		int interpolFactorY = m_userOpt->picOption.interpolationtrialmap.height();
+		int interpolFactorX = m_picOption->interpolationtrialmap.width();	
+		int interpolFactorY = m_picOption->interpolationtrialmap.height();
 
 		int indexPos = 0;
 		for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
@@ -612,7 +596,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 		mGen.drawVerticalZeroLine(painterChanel, myprovFile);
 
 		//Display Stat
-		if (m_userOpt->statOption.wilcoxon)
+		if (m_statOption->wilcoxon)
 		{
 			vector<int> allIdCurrentMap = mGen.checkIfNeedDisplayStat(significantValue, i);
 			if (allIdCurrentMap.size() > 0)
@@ -651,10 +635,10 @@ string InsermLibrary::LOCA::getMapsFolderTrial(PROV *myprovFile, string freqFold
 		mapsFolder.append("_trials_resp");
 
 	stringstream streamPValue;
-	streamPValue << fixed << setprecision(2) << m_userOpt->statOption.pWilcoxon;
-	if (m_userOpt->statOption.wilcoxon)
+	streamPValue << fixed << setprecision(2) << m_statOption->pWilcoxon;
+	if (m_statOption->wilcoxon)
 	{
-		if (m_userOpt->statOption.FDRwilcoxon)
+		if (m_statOption->FDRwilcoxon)
 			mapsFolder.append("_FDR" + streamPValue.str());
 		else
 			mapsFolder.append("_P" + streamPValue.str());
@@ -678,9 +662,9 @@ string InsermLibrary::LOCA::prepareFolderAndPathsTrial(string mapsFolder, int ds
 
 bool InsermLibrary::LOCA::shouldPerformStatTrial(string locaName)
 {
-	for (int i = 0; i < m_userOpt->statOption.locaWilcoxon.size(); i++)
+	for (int i = 0; i < m_statOption->locaWilcoxon.size(); i++)
 	{
-		if (m_userOpt->statOption.locaWilcoxon[i].contains(QString::fromStdString(m_currentLoca->localizerName())))
+		if (m_statOption->locaWilcoxon[i].contains(QString::fromStdString(m_currentLoca->localizerName())))
 		{
 			return true;
 		}
@@ -693,18 +677,18 @@ vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticWilcoxon(vec3<float> &b
 															PROV *myprovFile, string freqFolder)
 {
 	vector<PVALUECOORD> significantValue;
-	if (m_userOpt->statOption.wilcoxon)
+	if (m_statOption->wilcoxon)
 	{
 		int copyIndex = 0;
 		vec3<float> pValue3D; vec3<int> psign3D;
 		Stats::pValuesWilcoxon(pValue3D, psign3D, bigData, m_triggerContainer, myeegContainer->DownsampledFrequency(), myprovFile);
-		if (m_userOpt->statOption.FDRwilcoxon)
+		if (m_statOption->FDRwilcoxon)
 		{
-			significantValue = Stats::FDR(pValue3D, psign3D, copyIndex, m_userOpt->statOption.pWilcoxon);
+			significantValue = Stats::FDR(pValue3D, psign3D, copyIndex, m_statOption->pWilcoxon);
 		}
 		else
 		{
-			significantValue = Stats::loadPValues(pValue3D, psign3D, m_userOpt->statOption.pWilcoxon);
+			significantValue = Stats::loadPValues(pValue3D, psign3D, m_statOption->pWilcoxon);
 		}
 		Stats::exportStatsData(myeegContainer, myprovFile, significantValue, freqFolder, false);
 	}

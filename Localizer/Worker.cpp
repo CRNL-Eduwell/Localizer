@@ -4,14 +4,14 @@ Worker::Worker(patientFolder *currentPatient, userOption *userOpt)
 {
 	patient = currentPatient;
 	optionUser = userOpt;
-	loca = new LOCA(optionUser);
+	loca = nullptr;// new LOCA(optionUser);
 }
 
 Worker::Worker(locaFolder *locaFold, userOption *userOpt)
 {
 	this->locaFold = locaFold;
 	optionUser = userOpt;
-	loca = new LOCA(optionUser);
+	loca = nullptr;// new LOCA(optionUser);
 }
 
 Worker::Worker(vector<singleFile> currentFiles, userOption *userOpt, int idFile)
@@ -19,7 +19,7 @@ Worker::Worker(vector<singleFile> currentFiles, userOption *userOpt, int idFile)
 	files = vector<singleFile>(currentFiles);
 	this->idFile = idFile;
 	optionUser = userOpt;
-	loca = new LOCA(optionUser);
+	loca = nullptr;// new LOCA(optionUser);
 }
 
 Worker::Worker(string myFirstTRC, string mySecondTRC, string myOutputTRC)
@@ -118,7 +118,7 @@ void Worker::analysePatientFolder(patientFolder *currentPatient)
 		if (optionUser->anaOption[i].localizer)
 		{
 			emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + currentPatient->localizerFolder()[i].rootLocaFolder() + " ==="));
-			myContainer = ExtractExamData(currentPatient->localizerFolder()[i], i, optionUser->freqOption.frequencyBands.size());
+			myContainer = nullptr;// ExtractExamData(currentPatient->localizerFolder()[i], i, optionUser->freqOption.frequencyBands.size());
 
 			if (myContainer != nullptr)
 			{
@@ -156,7 +156,7 @@ void Worker::analyseSingleFiles(vector<singleFile> currentFiles)
 	for (int i = 0; i < currentFiles.size(); i++)
 	{
 		emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + currentFiles[i].rootFolder() + " ==="));
-		myContainer = ExtractSingleFileData(currentFiles[i], i, optionUser->freqOption.frequencyBands.size());
+		myContainer = nullptr;// ExtractSingleFileData(currentFiles[i], i, optionUser->freqOption.frequencyBands.size());
 
 		if (myContainer != nullptr)
 		{

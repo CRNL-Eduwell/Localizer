@@ -3,6 +3,7 @@
 
 #include <QtWidgets/QMainWindow>	
 #include <iostream>	
+#include <vector>
 #include <ostream>
 #include <iomanip>
 #include <algorithm>
@@ -14,8 +15,10 @@
 #include "Stats.h"
 #include "mapsGenerator.h"
 #include "barsPlotsGenerator.h"
+#include "FrequencyBandAnalysisOpt.h"
 #include "optionsParameters.h"
 #include "TriggerContainer.h"
+#include "FrequencyBand.h"
 
 using namespace std;
 using namespace InsermLibrary;
@@ -29,20 +32,20 @@ namespace InsermLibrary
 		Q_OBJECT
 
 	public:
-		LOCA(userOption *userOpt);
+		LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption* statOption, picOption* picOption);
 		~LOCA();
 		void eeg2erp(eegContainer *myeegContainer, PROV *myprovFile);
 		void LocaSauron(eegContainer *myeegContainer, int idCurrentLoca, locaFolder *currentLoca);
 		void LocaFrequency(eegContainer *myeegContainer, int idCurrentLoca);
-		static void checkShannonCompliance(int p_samplingFrequency, frequency & p_freq);
+
 	private:
-		void toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreq, string freqFolder, analysisOption a);
+		void toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreq, string freqFolder, FrequencyBandAnalysisOpt a);
 		//==
 		void CreateEventsFile(eegContainer *myeegContainer, TriggerContainer *triggerContainer, PROV *myprovFile);
 		void CreatePosFile(std::string filePath, std::vector<Trigger> & triggers);
 		void CreateConfFile(eegContainer *myeegContainer);
 		//==
-		string createIfFreqFolderExistNot(eegContainer *myeegContainer, frequency currentFreq);
+		string createIfFreqFolderExistNot(eegContainer *myeegContainer, FrequencyBand currentFreq);
 		vector<PROV> loadProvCurrentLoca();
 		bool shouldPerformBarPlot(string locaName);
 		bool isBarPlot(string provFile);
@@ -72,7 +75,11 @@ namespace InsermLibrary
 		locaFolder *m_currentLoca = nullptr;
 		int m_idCurrentLoca = -1;
 		TriggerContainer *m_triggerContainer = nullptr;
-		userOption *m_userOpt = nullptr;
+		//userOption *m_userOpt = nullptr;
+
+		std::vector<FrequencyBandAnalysisOpt> m_analysisOpt;
+		statOption* m_statOption;
+		picOption* m_picOption;
 	};
 }
 

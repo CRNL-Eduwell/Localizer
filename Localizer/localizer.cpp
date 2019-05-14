@@ -199,28 +199,60 @@ void Localizer::LoadTreeViewUI(QString initialFolder)
 	ui.FileTreeView->header()->hide();
 }
 
-void Localizer::reInitStructFolder()
+void Localizer::PreparePatientFolder()
 {
-	if (savePat == nullptr)
-		savePat = new patientFolder(currentPat);
+	//Get row id's and sort them because they can be selected in whatever order
+	QModelIndex rootIndex = ui.FileTreeView->rootIndex();
+	int ExamCount = m_localFileSystemModel->rowCount(rootIndex);
 
-	if (userOpt.anaOption.size() == currentPat->localizerFolder().size())
+	std::vector<pair<int, bool>> sortedIdToKeep;
+	for (int i = 0; i < ExamCount; i++)
 	{
-		deleteAndNullify1D(currentPat);
-		currentPat = new patientFolder(savePat);
+		sortedIdToKeep.push_back(make_pair(i,false));
+	}
+	QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
+	for (int i = 0; i < selectedRows.size(); i++)
+	{
+		for (int j = 0; j < sortedIdToKeep.size(); j++)
+		{
+			if (selectedRows[i].row() == sortedIdToKeep[j].first)
+			{
+				sortedIdToKeep[j].second = true;
+				continue;
+			}
+		}
+	}
+	std::sort(sortedIdToKeep.begin(), sortedIdToKeep.end(), [&](pair<int, bool> a, pair<int, bool> b)
+	{
+		return a.first < b.first;
+	});
+
+	//Create data structure
+	qDebug() << "Root path : " << m_localFileSystemModel->rootPath();
+	deleteAndNullify1D(currentPat);
+	currentPat = new patientFolder(m_localFileSystemModel->rootPath().toStdString());
+
+	//Remove unwanted exam
+	for (int i = ExamCount - 1; i >= 0; i--)
+	{
+		if (sortedIdToKeep[i].second == false)
+		{
+			currentPat->localizerFolder().erase(currentPat->localizerFolder().begin() + sortedIdToKeep[i].first);
+		}
 	}
 }
 
-void Localizer::reInitStructFiles()
+//TODO
+void Localizer::PrepareSingleFiles()
 {
-	if (saveFiles.size() == 0)
-		saveFiles = vector<singleFile>(currentFiles);
+	//if (saveFiles.size() == 0)
+	//	saveFiles = vector<singleFile>(currentFiles);
 
-	if (userOpt.anaOption.size() == saveFiles.size())
-	{
-		saveFiles.clear();
-		saveFiles = vector<singleFile>(currentFiles);
-	}
+	//if (userOpt.anaOption.size() == saveFiles.size())
+	//{
+	//	saveFiles.clear();
+	//	saveFiles = vector<singleFile>(currentFiles);
+	//}
 }
 
 void Localizer::InitProgressBar()
@@ -241,25 +273,36 @@ void Localizer::InitProgressBar()
 
 std::vector<FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
 {
-	int FrequencyCount = ui.FrequencyListWidget->selectionModel()->selectedRows().size();
-	std::vector<FrequencyBandAnalysisOpt> analysisOpt = std::vector<FrequencyBandAnalysisOpt>(FrequencyCount);
+	std::vector<FrequencyBand> frequencyBands = m_frequencyFile->FrequencyBands();
+	std::vector<int> indexes;
+	for (int i = 0; i < ui.FrequencyListWidget->count(); i++)
+	{
+		if (ui.FrequencyListWidget->item(i)->checkState() == Qt::CheckState::Checked)
+			indexes.push_back(i);
+	}
+	std::vector<FrequencyBandAnalysisOpt> analysisOpt = std::vector<FrequencyBandAnalysisOpt>(indexes.size());
 
-	for (int i = 0; i < FrequencyCount; i++)
-	{	
+	for (int i = 0; i < indexes.size(); i++)
+	{
 		//	- env2plot and / or trial mat
 		analysisOpt[i].eeg2env2 = ui.Eeg2envCheckBox->isChecked();
-		analysisOpt[i].eeg2env2 = ui.Eeg2envCheckBox->isChecked();
-		analysisOpt[i].eeg2env2 = ui.Eeg2envCheckBox->isChecked();
+		analysisOpt[i].env2plot = ui.Env2plotCheckBox->isChecked();
+		analysisOpt[i].trialmat = ui.TrialmatCheckBox->isChecked();
 
 		//	- what frequency bands data is 
-		QString label = ui.FrequencyListWidget->selectedItems()[i]->text();
-		std::vector<FrequencyBand>::const_iterator it = std::find(m_frequencyFile->FrequencyBands().begin(), m_frequencyFile->FrequencyBands().end(), label);
-		if (it != m_frequencyFile->FrequencyBands().end())
+		QString label = ui.FrequencyListWidget->item(indexes[i])->text();
+		std::vector<FrequencyBand>::iterator it = std::find_if(frequencyBands.begin(), frequencyBands.end(), [&](const FrequencyBand &c) 
 		{
-			int index = distance(it, m_frequencyFile->FrequencyBands().begin());
-			analysisOpt[i].Band = FrequencyBand(m_frequencyFile->FrequencyBands()[index]);
+			return (c.Label() == label.toStdString()); 
+		});
+		if (it != frequencyBands.end())
+		{
+			int index = distance(it, frequencyBands.begin());
+			analysisOpt[i].Band = FrequencyBand(frequencyBands[indexes[i]]);
 		}
 	}
+
+	return analysisOpt;
 }
 
 int Localizer::GetNbPatientFolder(QModelIndexList selectedIndexes)
@@ -275,53 +318,13 @@ int Localizer::GetNbPatientFolder(QModelIndexList selectedIndexes)
 			else
 				nbFolderSelected--;
 		}
+		else
+		{
+			ui.FileTreeView->selectionModel()->setCurrentIndex(selectedIndexes[i], QItemSelectionModel::Deselect);
+		}
 	}
 	return nbFolderSelected;
 }
-
-//
-//void Localizer::getUIAnalysisOption(patientFolder *pat)
-//{
-//	uiElement->analysis(userOpt.anaOption, pat->localizerFolder().size());
-//	getAnalysisCheckBox(userOpt.anaOption);
-//	deleteUncheckedFiles(userOpt.anaOption, pat);
-//	optStat->getStatOption(&userOpt.statOption);
-//	picOpt->getPicOption(&userOpt.picOption);
-//	optPerf->getPerfLoca(userOpt.locaPerf);
-//}
-//
-//void Localizer::getUIAnalysisOption(vec1<singleFile> &files)
-//{
-//	uiElement->analysis(userOpt.anaOption, files.size());
-//	getAnalysisCheckBox(userOpt.anaOption);
-//	deleteUncheckedFiles(userOpt.anaOption, files);
-//}
-
-//void Localizer::deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, patientFolder *pat)
-//{
-//	int sizeLoca = anaOption.size() - 1;
-//	for (int i = sizeLoca; i >= 0; i--)
-//	{
-//		if (!anaOption[i].localizer)
-//		{
-//			pat->localizerFolder().erase(pat->localizerFolder().begin() + i);
-//			anaOption.erase(anaOption.begin() + i);
-//		}
-//	}
-//}
-//
-//void Localizer::deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1<singleFile> &files)
-//{
-//	int sizeLoca = anaOption.size() - 1;
-//	for (int i = sizeLoca; i >= 0; i--)
-//	{
-//		if (!anaOption[i].localizer)
-//		{
-//			files.erase(files.begin() + i);
-//			anaOption.erase(anaOption.begin() + i);
-//		}
-//	}
-//}
 
 //=== Slots	
 void Localizer::SetFolderLabelCount(int count)
@@ -357,31 +360,34 @@ void Localizer::processFolderAnalysis()
 	{
 		if (!isAlreadyRunning)
 		{
+			//Data Struct info
+			picOption optpic = picOpt->getPicOption();
+			statOption optstat = optStat->getStatOption();
+
+			//UI
 			InitProgressBar();
 			std::vector<FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
 
-			reInitStructFolder(); //remplacer par juste un chargement de la structure en fonction de root str
-
+			//Should probably senbd back the struct here and not keep a global variable
+			PreparePatientFolder();
 			thread = new QThread;
-			worker = new Worker(currentPat, &userOpt);
+			worker = new PatientFolderWorker(*currentPat, analysisOptions, optstat, optpic);
 
 			//=== Event update displayer
 			connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-			connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-			connect(worker->getLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
+			connect(worker->GetLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+			connect(worker->GetLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
 
 			//=== 
 			connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
-			//connect(this, &Localizer::bipDone, worker, [&] { worker->bipCreated = true; });
 			connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
 
 			//=== Event From worker and thread
-			connect(thread, SIGNAL(started()), worker, SLOT(processAnalysis()));
+			connect(thread, SIGNAL(started()), worker, SLOT(Process()));
 			connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
 			connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
 			connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-			connect(worker, &Worker::finished, this, [&] { isAlreadyRunning = false; });
-			connect(worker, &Worker::finished, this, &Localizer::UpdateFolderPostAna);
+			connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
 			//=== Launch Thread and lock possible second launch
 			worker->moveToThread(thread);
@@ -399,6 +405,7 @@ void Localizer::processFolderAnalysis()
 	}
 }
 
+//TODO
 void Localizer::processSingleAnalysis()
 {
 	if (currentFiles.size() > 0)
@@ -407,15 +414,17 @@ void Localizer::processSingleAnalysis()
 		{
 			InitProgressBar();
 			std::vector<FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
-			reInitStructFiles();
+			PrepareSingleFiles();
 
 			thread = new QThread;
-			worker = new Worker(currentFiles, &userOpt, -1);
+			// ATTENTION CA NE MARCHE PLUS ICI 
+			//worker = new Worker(currentFiles, &userOpt, -1);
+			worker = nullptr;
 
 			//=== Event update displayer
 			connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-			connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-			connect(worker->getLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
+			connect(worker->GetLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+			connect(worker->GetLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
 
 			//=== 
 			connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
@@ -427,8 +436,8 @@ void Localizer::processSingleAnalysis()
 			connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
 			connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
 			connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-			connect(worker, &Worker::finished, this, [&] { isAlreadyRunning = false; });
-			connect(worker, &Worker::finished, this, &Localizer::UpdateSinglePostAna);
+			connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
+			//connect(worker, &IWorker::finished, this, &Localizer::UpdateSinglePostAna);
 
 			//=== Launch Thread and lock possible second launch
 			worker->moveToThread(thread);
@@ -446,6 +455,7 @@ void Localizer::processSingleAnalysis()
 	}
 }
 
+//TODO
 void Localizer::processERPAnalysis()
 {
 	if (currentPat != nullptr || currentFiles.size() > 0)
@@ -459,14 +469,17 @@ void Localizer::processERPAnalysis()
 				nbDoneTask = 0;
 				ui.progressBar->reset();
 
-				picOpt->getPicOption(&userOpt.picOption);
+				picOption opt = picOpt->getPicOption();
 				thread = new QThread;
-				worker = new Worker(&currentPat->localizerFolder()[index.row()], &userOpt);
+
+				// ATTENTION CA NE MARCHE PLUS ICI 
+				//worker = new Worker(&currentPat->localizerFolder()[index.row()], &userOpt);
+				worker = nullptr;
 
 				//=== Event update displayer
 				connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-				connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-				connect(worker->getLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
+				connect(worker->GetLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+				connect(worker->GetLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
 
 				//=== 
 				connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
@@ -478,7 +491,7 @@ void Localizer::processERPAnalysis()
 				connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
 				connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
 				connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-				connect(worker, &Worker::finished, this, [&] { isAlreadyRunning = false; });
+				connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
 				//=== Launch Thread and lock possible second launch
 				worker->moveToThread(thread);
@@ -501,6 +514,7 @@ void Localizer::processERPAnalysis()
 	}
 }
 
+//TODO
 void Localizer::processConvertToElan()
 {
 	if (currentPat != nullptr || currentFiles.size() > 0)
@@ -516,14 +530,16 @@ void Localizer::processConvertToElan()
 
 				thread = new QThread;
 
-				if (currentPat != nullptr)
-					worker = new Worker(&currentPat->localizerFolder()[index.row()], &userOpt);
-				else if (currentFiles.size() > 0)
-					worker = new Worker(currentFiles, &userOpt, index.row());
+				// ATTENTION CA NE MARCHE PLUS ICI 
+				worker = nullptr;
+				//if (currentPat != nullptr)
+				//	worker = new Worker(&currentPat->localizerFolder()[index.row()], &userOpt);
+				//else if (currentFiles.size() > 0)
+				//	worker = new Worker(currentFiles, &userOpt, index.row());
 
 				//=== Event update displayer
 				connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-				connect(worker->getLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+				connect(worker->GetLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
 
 				//=== 
 				connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
@@ -535,8 +551,8 @@ void Localizer::processConvertToElan()
 				connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
 				connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
 				connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-				connect(worker, &Worker::finished, this, [&] { ui.progressBar->setValue(100); });
-				connect(worker, &Worker::finished, this, [&] { isAlreadyRunning = false; });
+				connect(worker, &IWorker::finished, this, [&] { ui.progressBar->setValue(100); });
+				connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
 				//=== Launch Thread and lock possible second launch
 				worker->moveToThread(thread);
@@ -595,38 +611,6 @@ void Localizer::receiveContainerPointer(eegContainer *eegCont)
 	delete elecWin;
 }
 
-void Localizer::UpdateFolderPostAna()
-{
-	deleteAndNullify1D(savePat);
-	currentPat = new patientFolder(currentPat->rootFolder());
-
-	//updateGUIFrame(currentPat->localizerFolder()[0]);
-	if (savePat != nullptr)
-	{
-		deleteAndNullify1D(savePat);
-		savePat = new patientFolder(currentPat);
-	}
-}
-
-void Localizer::UpdateSinglePostAna()
-{
-	vector<string> analyzedPath;
-	for (int i = 0; i < currentFiles.size(); i++)
-		analyzedPath.push_back(currentFiles[i].filePath(currentFiles[i].fileExtention()));
-
-	if (currentFiles.size() > 0)
-		currentFiles.clear();
-
-	for (int i = 0; i < analyzedPath.size(); i++)
-		currentFiles.push_back(singleFile(analyzedPath[i], ui.FrequencyListWidget->count()));
-
-	if (saveFiles.size() > 0)
-		saveFiles.clear();
-
-	//for (int i = 0; i < saveFiles.size(); i++)
-	//	updateGUIFrame(saveFiles[i]);
-}
-
 void Localizer::loadConcat()
 {
 	QModelIndexList list = QModelIndexList(); // ui.TRCListWidget->selectionModel()->selectedIndexes();
@@ -640,6 +624,6 @@ void Localizer::loadConcat()
 		connect(concatFiles, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
 		concatFiles->exec();
 		deleteAndNullify1D(concatFiles);
-		UpdateFolderPostAna();
+		//UpdateFolderPostAna();
 	}
 }

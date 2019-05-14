@@ -23,7 +23,7 @@
 #include "form.h"
 #include "AboutDycog.h"
 #include "concatenator.h"
-#include "Worker.h"
+//#include "Worker.h"
 #include "LOCA.h"
 #include "ui_localizer.h"
 #include <QCoreApplication>
@@ -31,6 +31,10 @@
 #include "FrequencyBand.h"
 #include "FrequencyFile.h"
 #include "FrequencyBandAnalysisOpt.h"
+#include "IWorker.h"
+#include "PatientFolderWorker.h"
+#include <QListWidgetItem>
+
 using namespace std;
 
 class Localizer : public QMainWindow
@@ -52,13 +56,11 @@ private:
 	void LoadTreeView(patientFolder *pat);
 	void LoadTreeView(vector<singleFile> currentFiles);
 	void LoadTreeViewUI(QString initialFolder);
-	void reInitStructFolder();
-	void reInitStructFiles();
+	void PreparePatientFolder();
+	void PrepareSingleFiles();
 	void InitProgressBar();
 	std::vector<FrequencyBandAnalysisOpt> GetUIAnalysisOption();
 	int GetNbPatientFolder(QModelIndexList selectedIndexes);
-	//void deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, patientFolder *pat);
-	//void deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1<singleFile> &files);
 
 private slots:
 	void SetFolderLabelCount(int count);
@@ -73,9 +75,6 @@ private slots:
 	void UpdateProgressBar(int divider);
 	void CancelAnalysis();
 	void receiveContainerPointer(eegContainer *eegCont);
-	void UpdateFolderPostAna();
-	void UpdateSinglePostAna();
-
 	void loadConcat();
 
 signals:
@@ -95,7 +94,9 @@ private:
 	//==Thread and Worker
 	QReadWriteLock m_lockLoop;  
 	QThread* thread = nullptr;
-	Worker* worker = nullptr;
+	//Worker* worker = nullptr;
+	IWorker* worker = nullptr;
+
 	bool isAlreadyRunning = false;
 	//==UI
 	float nbDoneTask = 0;

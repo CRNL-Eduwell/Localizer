@@ -8,7 +8,7 @@
 #include <QCheckBox>
 #include <QFrame>
 
-#include "freqOption.h"
+//#include "freqOption.h"
 
 namespace InsermLibrary
 {
@@ -47,7 +47,7 @@ namespace InsermLibrary
 	struct userOption
 	{
 		std::vector<QString> locaPerf;
-		freqOption freqOption;
+		//freqOption freqOption;
 		std::vector<locaAnalysisOption> anaOption;
 		statOption statOption;
 		picOption picOption;

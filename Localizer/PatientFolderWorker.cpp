@@ -4,15 +4,16 @@
 
 PatientFolderWorker::PatientFolderWorker(patientFolder currentPatient, std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption statOption, picOption picOption)
 {
-	m_patient = new patientFolder(currentPatient.rootFolder());
+	m_patient = new patientFolder(currentPatient);
 	m_frequencyBands = std::vector<FrequencyBandAnalysisOpt>(analysisOpt);
 
-	m_loca = new LOCA(nullptr); //CHANGER POUR QUE CELA PRENNE EN COMPTE LE NOUVEL ENVOI DE DONNEE	
+	m_loca = new LOCA(m_frequencyBands, new InsermLibrary::statOption(statOption), new InsermLibrary::picOption(picOption));
 }
 
 PatientFolderWorker::~PatientFolderWorker()
 {
-
+	deleteAndNullify1D(m_patient);
+	//m_loca destroyed in base class
 }
 
 void PatientFolderWorker::Process()
@@ -46,6 +47,8 @@ void PatientFolderWorker::Process()
 			deleteAndNullify1D(myContainer);
 		}
 	}
+
+	deleteAndNullify1D(myContainer);
 
 	//Generate comportemental perf report
 

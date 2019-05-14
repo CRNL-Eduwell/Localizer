@@ -12,16 +12,18 @@ optionsStats::~optionsStats()
 
 }
 
-void optionsStats::getStatOption(statOption *statOpt)
+statOption optionsStats::getStatOption()
 {
-	statOpt->kruskall = ui.pCheckBoxKW->isChecked();
-	statOpt->FDRkruskall = ui.FDRCheckBoxKW->isChecked();
-	statOpt->pKruskall = atof(&ui.pValueLE_KW->text().toStdString()[0]);
-	statOpt->locaKruskall = vector<QString>(wantedLocaKW);
-	statOpt->wilcoxon = ui.pCheckBoxWil->isChecked();
-	statOpt->FDRwilcoxon = ui.FDRCheckBoxWil->isChecked();
-	statOpt->pWilcoxon = atof(&ui.pValueLE_Wil->text().toStdString()[0]);
-	statOpt->locaWilcoxon = vector<QString>(wantedLocaWil);
+	statOption statOpt;
+	statOpt.kruskall = ui.pCheckBoxKW->isChecked();
+	statOpt.FDRkruskall = ui.FDRCheckBoxKW->isChecked();
+	statOpt.pKruskall = atof(&ui.pValueLE_KW->text().toStdString()[0]);
+	statOpt.locaKruskall = vector<QString>(wantedLocaKW);
+	statOpt.wilcoxon = ui.pCheckBoxWil->isChecked();
+	statOpt.FDRwilcoxon = ui.FDRCheckBoxWil->isChecked();
+	statOpt.pWilcoxon = atof(&ui.pValueLE_Wil->text().toStdString()[0]);
+	statOpt.locaWilcoxon = vector<QString>(wantedLocaWil);
+	return statOpt;
 }
 
 void optionsStats::connectSignals()

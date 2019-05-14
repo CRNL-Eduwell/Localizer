@@ -7,7 +7,7 @@
 #include "IWorker.h"
 #include "patientFolder.h"
 #include "FrequencyBandAnalysisOpt.h"
-
+#include "optionsParameters.h" //pour stat et pic options, a separer
 
 class PatientFolderWorker : public IWorker
 {

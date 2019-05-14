@@ -3,22 +3,24 @@
 InsermLibrary::FrequencyBand::FrequencyBand(const std::string& bandName, int fMin, int fMax, int step)
 {
 	m_name = bandName;
-	m_fMin = fMin;
-	m_fMax = fMax;
-	m_step = step;
 
-	for (int i = 0; i <= ((m_fMax - m_fMin) / m_step); i++)
+	for (int i = 0; i <= ((fMax - fMin) / step); i++)
 	{
-		m_bins.push_back(m_fMin + (i * m_step));
+		m_bins.push_back(fMin + (i * step));
 	}
 }
 
-bool InsermLibrary::FrequencyBand::IsShannonCompliant(int samplingFrequency)
+void InsermLibrary::FrequencyBand::CheckShannonCompliance(int samplingFrequency)
 {
-	int BandCount = m_bins.size();
-	if (m_bins[BandCount - 1] > (samplingFrequency / 2))
-		return true;
-	else
-		return false;
+	if (!(samplingFrequency > (2 * FMax())))
+	{
+		int fMin = FMin();
+		int step = Step();
+		int fMax = ((samplingFrequency / 2) / step) * step;
+
+		m_bins.clear();
+		for (int i = 0; i <= ((fMax - fMin) / step); i++)
+			m_bins.push_back(fMin + (i * step));
+	}
 }
 
