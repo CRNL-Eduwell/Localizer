@@ -311,6 +311,15 @@
     <ClCompile Include="GeneratedFiles\Release\moc_ErpWorker.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="FileConverterWorker.cpp">
+      <Filter>Source Files\Workers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_FileConverterWorker.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_FileConverterWorker.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="localizer.qrc">
@@ -401,6 +410,9 @@
       <Filter>Header Files\GUI</Filter>
     </CustomBuild>
     <CustomBuild Include="ErpWorker.h">
+      <Filter>Header Files\Workers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="FileConverterWorker.h">
       <Filter>Header Files\Workers</Filter>
     </CustomBuild>
   </ItemGroup>
