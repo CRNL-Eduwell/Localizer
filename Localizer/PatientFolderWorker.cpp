@@ -48,8 +48,6 @@ void PatientFolderWorker::Process()
 		}
 	}
 
-	deleteAndNullify1D(myContainer);
-
 	//Generate comportemental perf report
 
 	emit finished();

@@ -33,6 +33,7 @@
 #include "FrequencyBandAnalysisOpt.h"
 #include "IWorker.h"
 #include "PatientFolderWorker.h"
+#include "SingleFilesWorker.h"
 #include <QListWidgetItem>
 
 using namespace std;
@@ -60,10 +61,10 @@ private:
 	void PrepareSingleFiles();
 	void InitProgressBar();
 	std::vector<FrequencyBandAnalysisOpt> GetUIAnalysisOption();
-	int GetNbPatientFolder(QModelIndexList selectedIndexes);
+	int GetNbElement(QModelIndexList selectedIndexes);
 
 private slots:
-	void SetFolderLabelCount(int count);
+	void SetLabelCount(int count);
 	void ModelClicked(const QModelIndex &current);
 	void ShowFileTreeContextMenu(QPoint point);
 	void ToggleAllBands();
@@ -85,6 +86,7 @@ private:
 	QFileSystemModel *m_localFileSystemModel = nullptr;
 	//==Data for analysis
 	FrequencyFile *m_frequencyFile = nullptr;
+	bool m_isPatFolder = false;
 
 	//userOption userOpt;
 	patientFolder* currentPat = nullptr;

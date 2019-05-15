@@ -19,6 +19,8 @@ Localizer::Localizer(QWidget *parent) : QMainWindow(parent)
 
 				deleteAndNullify1D(currentPat);
 				currentPat = new patientFolder(fileName.toStdString());
+
+				m_isPatFolder = true;
 				LoadTreeView(currentPat);
 			}
 		}
@@ -71,7 +73,7 @@ void Localizer::connectSignals()
 
 	ui.FileTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(ui.FileTreeView, &QTreeView::customContextMenuRequested, this, &Localizer::ShowFileTreeContextMenu);
-	connect((DeselectableTreeView*)ui.FileTreeView, &DeselectableTreeView::ResetNbFolder, this, [&]() { SetFolderLabelCount(0); });
+	connect((DeselectableTreeView*)ui.FileTreeView, &DeselectableTreeView::ResetNbFolder, this, [&]() { SetLabelCount(0); });
 
 	connect(ui.AllBandsCheckBox, &QCheckBox::clicked, this, &Localizer::ToggleAllBands);
 	connect(ui.cancelButton, SIGNAL(clicked()), this, SLOT(CancelAnalysis()));
@@ -119,6 +121,8 @@ void Localizer::loadPatientFolder()
 
 		deleteAndNullify1D(currentPat);
 		currentPat = new patientFolder(fileName.toStdString());
+		
+		m_isPatFolder = true;
 		LoadTreeView(currentPat);
 	}
 }
@@ -136,7 +140,8 @@ void Localizer::loadSingleFile()
 		deleteAndNullify1D(currentPat);
 		for (int i = 0; i < fileNames.size(); i++)
 			currentFiles.push_back(singleFile(fileNames[i].toStdString(), ui.FrequencyListWidget->count()));
-
+		
+		m_isPatFolder = false;
 		LoadTreeView(currentFiles);
 	}
 }
@@ -154,7 +159,7 @@ void Localizer::LoadTreeView(patientFolder *pat)
 	connect(ui.FileTreeView, &QTreeView::clicked, this, &Localizer::ModelClicked);
 	//==[Event for rest of UI]
 	connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processFolderAnalysis()));
-	ui.FolderCountLabel->setText("0 patient folders selected for Analysis");
+	SetLabelCount(0);
 }
 
 void Localizer::LoadTreeView(vector<singleFile> currentFiles)
@@ -165,7 +170,12 @@ void Localizer::LoadTreeView(vector<singleFile> currentFiles)
 	{
 		QString initialFolder = currentFiles[0].rootFolder().c_str();
 		LoadTreeViewUI(initialFolder);
+
+		//==[Event connected to model of treeview]
+		connect(ui.FileTreeView, &QTreeView::clicked, this, &Localizer::ModelClicked);
+		//==[Event for rest of UI]
 		connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processSingleAnalysis()));
+		SetLabelCount(0);
 	}
 	else
 	{
@@ -228,7 +238,8 @@ void Localizer::PreparePatientFolder()
 	});
 
 	//Create data structure
-	qDebug() << "Root path : " << m_localFileSystemModel->rootPath();
+	if (currentFiles.size() > 0)
+		currentFiles.clear();
 	deleteAndNullify1D(currentPat);
 	currentPat = new patientFolder(m_localFileSystemModel->rootPath().toStdString());
 
@@ -242,17 +253,20 @@ void Localizer::PreparePatientFolder()
 	}
 }
 
-//TODO
 void Localizer::PrepareSingleFiles()
 {
-	//if (saveFiles.size() == 0)
-	//	saveFiles = vector<singleFile>(currentFiles);
+	//Create data structure
+	deleteAndNullify1D(currentPat);
+	if (currentFiles.size() > 0)
+		currentFiles.clear();
 
-	//if (userOpt.anaOption.size() == saveFiles.size())
-	//{
-	//	saveFiles.clear();
-	//	saveFiles = vector<singleFile>(currentFiles);
-	//}
+	int nbFrequencyBands = ui.FrequencyListWidget->selectionModel()->selectedRows().size();
+	QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
+	for (int i = 0; i < selectedRows.size(); i++)
+	{
+		std::string currentFile = m_localFileSystemModel->filePath(selectedRows[i]).toStdString();
+		currentFiles.push_back(singleFile(currentFile, nbFrequencyBands));
+	}
 }
 
 void Localizer::InitProgressBar()
@@ -261,7 +275,7 @@ void Localizer::InitProgressBar()
 	nbDoneTask = 0;
 	nbTaskToDo = 0;
 
-	int nbFolderSelected = GetNbPatientFolder(ui.FileTreeView->selectionModel()->selectedRows());
+	int nbFolderSelected = GetNbElement(ui.FileTreeView->selectionModel()->selectedRows());
 	int nbFrequencyBands = ui.FrequencyListWidget->selectionModel()->selectedRows().size();
 
 	ui.Eeg2envCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo++; //eeg2env, wheter we need to compute or load
@@ -305,41 +319,44 @@ std::vector<FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
 	return analysisOpt;
 }
 
-int Localizer::GetNbPatientFolder(QModelIndexList selectedIndexes)
+int Localizer::GetNbElement(QModelIndexList selectedIndexes)
 {
-	int nbFolderSelected = 0;
+	int nbElementSelected = 0;
 	for (int i = 0; i < selectedIndexes.size(); i++)
 	{
 		bool isRoot = selectedIndexes[i].parent() == ui.FileTreeView->rootIndex();
-		if (m_localFileSystemModel->isDir(selectedIndexes[i]) && isRoot)
+		QFileInfo info = m_localFileSystemModel->fileInfo(selectedIndexes[i]);
+		bool wantedElement = m_isPatFolder ? info.isDir() : info.isFile();
+		if (wantedElement && isRoot)
 		{
 			if (ui.FileTreeView->selectionModel()->isSelected(selectedIndexes[i]))
-				nbFolderSelected++;
+				nbElementSelected++;
 			else
-				nbFolderSelected--;
+				nbElementSelected--;
 		}
 		else
 		{
 			ui.FileTreeView->selectionModel()->setCurrentIndex(selectedIndexes[i], QItemSelectionModel::Deselect);
 		}
 	}
-	return nbFolderSelected;
+	return nbElementSelected;
 }
 
 //=== Slots	
-void Localizer::SetFolderLabelCount(int count)
+void Localizer::SetLabelCount(int count)
 {
-	QString label = count > 1 ? "folder" : "folders";
-	ui.FolderCountLabel->setText(QString::number(count) + " patient " + label + " selected for Analysis");
+	QString label = m_isPatFolder ? (count > 1 ? " patient folders" : " patient folder") : (count > 1 ? "single files" : "single file");
+	ui.FolderCountLabel->setText(QString::number(count) + label + " selected for Analysis");
 }
 
 void Localizer::ModelClicked(const QModelIndex &current)
 {
 	QModelIndexList selectedIndexes = ui.FileTreeView->selectionModel()->selectedRows();
-	int nbFolderSelected = GetNbPatientFolder(selectedIndexes);
-	SetFolderLabelCount(nbFolderSelected);
+	int nbFolderSelected = GetNbElement(selectedIndexes);
+	SetLabelCount(nbFolderSelected);
 }
 
+//TODO
 void Localizer::ShowFileTreeContextMenu(QPoint point)
 {
 
@@ -405,7 +422,6 @@ void Localizer::processFolderAnalysis()
 	}
 }
 
-//TODO
 void Localizer::processSingleAnalysis()
 {
 	if (currentFiles.size() > 0)
@@ -414,12 +430,12 @@ void Localizer::processSingleAnalysis()
 		{
 			InitProgressBar();
 			std::vector<FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
+
+			//Should probably senbd back the vector here and not keep a global variable
 			PrepareSingleFiles();
 
 			thread = new QThread;
-			// ATTENTION CA NE MARCHE PLUS ICI 
-			//worker = new Worker(currentFiles, &userOpt, -1);
-			worker = nullptr;
+			worker = new SingleFilesWorker(currentFiles, analysisOptions);
 
 			//=== Event update displayer
 			connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
@@ -428,16 +444,14 @@ void Localizer::processSingleAnalysis()
 
 			//=== 
 			connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
-			//connect(this, &Localizer::bipDone, worker, [&] { worker->bipCreated = true; });
 			connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
 
 			//=== Event From worker and thread
-			connect(thread, SIGNAL(started()), worker, SLOT(processAnalysis()));
+			connect(thread, SIGNAL(started()), worker, SLOT(Process()));
 			connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
 			connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
 			connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
 			connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
-			//connect(worker, &IWorker::finished, this, &Localizer::UpdateSinglePostAna);
 
 			//=== Launch Thread and lock possible second launch
 			worker->moveToThread(thread);
@@ -611,6 +625,7 @@ void Localizer::receiveContainerPointer(eegContainer *eegCont)
 	delete elecWin;
 }
 
+//TODO
 void Localizer::loadConcat()
 {
 	QModelIndexList list = QModelIndexList(); // ui.TRCListWidget->selectionModel()->selectedIndexes();
