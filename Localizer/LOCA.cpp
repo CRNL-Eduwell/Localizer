@@ -28,6 +28,9 @@ void InsermLibrary::LOCA::eeg2erp(eegContainer *myeegContainer, PROV *myprovFile
 		QDir().mkdir(&outputErpFolder.c_str()[0]);
 	}
 	string monoErpOutput = outputErpFolder.append(myeegContainer->RootFileName());
+
+	deleteAndNullify1D(m_triggerContainer);
+	m_triggerContainer = new TriggerContainer(myeegContainer->Triggers(), myeegContainer->SamplingFrequency());
 	m_triggerContainer->ProcessEventsForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
 
 	vec3<float> bigDataMono = vec3<float>(m_triggerContainer->ProcessedTriggerCount(), vec2<float>(myeegContainer->flatElectrodes.size(), vec1<float>(windowSam[1] - windowSam[0])));

@@ -32,6 +32,7 @@ signals:
 	void sendLogInfo(QString);
 	void finished();
 	void sendContainerPointer(eegContainer *eegCont);
+	void incrementAdavnce(int divider);
 
 public:
 	int bipCreated = -1;

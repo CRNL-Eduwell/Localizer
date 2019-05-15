@@ -121,7 +121,7 @@ void Localizer::loadPatientFolder()
 
 		deleteAndNullify1D(currentPat);
 		currentPat = new patientFolder(fileName.toStdString());
-		
+
 		m_isPatFolder = true;
 		LoadTreeView(currentPat);
 	}
@@ -140,7 +140,7 @@ void Localizer::loadSingleFile()
 		deleteAndNullify1D(currentPat);
 		for (int i = 0; i < fileNames.size(); i++)
 			currentFiles.push_back(singleFile(fileNames[i].toStdString(), ui.FrequencyListWidget->count()));
-		
+
 		m_isPatFolder = false;
 		LoadTreeView(currentFiles);
 	}
@@ -218,7 +218,7 @@ void Localizer::PreparePatientFolder()
 	std::vector<pair<int, bool>> sortedIdToKeep;
 	for (int i = 0; i < ExamCount; i++)
 	{
-		sortedIdToKeep.push_back(make_pair(i,false));
+		sortedIdToKeep.push_back(make_pair(i, false));
 	}
 	QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
 	for (int i = 0; i < selectedRows.size(); i++)
@@ -305,9 +305,9 @@ std::vector<FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
 
 		//	- what frequency bands data is 
 		QString label = ui.FrequencyListWidget->item(indexes[i])->text();
-		std::vector<FrequencyBand>::iterator it = std::find_if(frequencyBands.begin(), frequencyBands.end(), [&](const FrequencyBand &c) 
+		std::vector<FrequencyBand>::iterator it = std::find_if(frequencyBands.begin(), frequencyBands.end(), [&](const FrequencyBand &c)
 		{
-			return (c.Label() == label.toStdString()); 
+			return (c.Label() == label.toStdString());
 		});
 		if (it != frequencyBands.end())
 		{
@@ -334,10 +334,10 @@ int Localizer::GetNbElement(QModelIndexList selectedIndexes)
 			else
 				nbElementSelected--;
 		}
-		else
-		{
-			ui.FileTreeView->selectionModel()->setCurrentIndex(selectedIndexes[i], QItemSelectionModel::Deselect);
-		}
+		//else
+		//{
+		//	ui.FileTreeView->selectionModel()->setCurrentIndex(selectedIndexes[i], QItemSelectionModel::Deselect);
+		//}
 	}
 	return nbElementSelected;
 }
@@ -359,7 +359,53 @@ void Localizer::ModelClicked(const QModelIndex &current)
 //TODO
 void Localizer::ShowFileTreeContextMenu(QPoint point)
 {
+	QStringList extention;
+	extention << "trc" << "eeg" << "vhdr" << "edf";
 
+	QMenu* contextMenu = new QMenu();
+	connect(contextMenu, &QMenu::aboutToHide, contextMenu, &QMenu::deleteLater);
+
+	QModelIndex index = ui.FileTreeView->indexAt(point);
+	QFileInfo selectedElementInfo = QFileInfo(m_localFileSystemModel->filePath(index));
+	QString suffix = selectedElementInfo.suffix().toLower();
+
+	bool isRootFile = m_isPatFolder ? (index.parent().parent() == ui.FileTreeView->rootIndex()) : (index.parent() == ui.FileTreeView->rootIndex());
+	if (isRootFile && extention.contains(suffix)) //if it is a recognized eeg file at the root level
+	{
+		QAction* processErpAction = contextMenu->addAction("Process ERP", [=]
+		{
+			QList<QString> files;
+			QModelIndexList indexes = ui.FileTreeView->selectionModel()->selectedRows();
+			for (int i = 0; i < indexes.count(); i++)
+			{
+				files.push_back(m_localFileSystemModel->filePath(indexes[i]));
+			}
+
+			if (!isAlreadyRunning)
+			{
+				ErpProcessor* erpWindow = new ErpProcessor(files, this);
+				connect(erpWindow, &ErpProcessor::SendExamCorrespondance, this, &Localizer::processERPAnalysis);
+				erpWindow->exec();
+				delete erpWindow;
+			}
+			else
+			{
+				QMessageBox::information(this, "Error", "Analysis already running");
+			}
+		});
+		QAction* convertFileAction = contextMenu->addAction("Convert File", [=]
+		{
+			//QModelIndexList indexes = ui.FileTreeView->selectionModel()->selectedRows();
+			//for (int i = 0; i < indexes.count(); i++)
+			//{
+
+			//}
+			qDebug() << "Convert file needs to be implemented";
+		});
+	}
+
+	if (sender() == ui.FileTreeView)
+		contextMenu->exec(ui.FileTreeView->viewport()->mapToGlobal(point));
 }
 
 void Localizer::ToggleAllBands()
@@ -469,8 +515,55 @@ void Localizer::processSingleAnalysis()
 	}
 }
 
-//TODO
-void Localizer::processERPAnalysis()
+//DOING
+void Localizer::processERPAnalysis(QList<QString> exams)
+{
+	QModelIndexList indexes = ui.FileTreeView->selectionModel()->selectedRows();
+	if (indexes.size() != exams.size())
+	{
+		DisplayLog("Not the same number of eeg files and exam files, aborting Erp Processing", Qt::GlobalColor::red);
+		return;
+	}
+
+	std::vector<std::string> files;
+	std::vector<std::string> provFiles;
+	for (int i = 0; i < indexes.count(); i++)
+	{
+		files.push_back(m_localFileSystemModel->filePath(indexes[i]).toStdString());
+		provFiles.push_back(exams[i].toStdString());
+	}
+
+	nbTaskToDo = exams.size();
+	nbDoneTask = 0;
+	ui.progressBar->reset();
+
+	picOption opt = picOpt->getPicOption();
+	thread = new QThread;
+	worker = new ErpWorker(files, provFiles, opt);
+
+	//=== Event update displayer
+	connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+	connect(worker->GetLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+	connect(worker, SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
+
+	//=== 
+	connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
+	connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
+
+	//=== Event From worker and thread
+	connect(thread, SIGNAL(started()), worker, SLOT(Process()));
+	connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
+	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+	connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
+
+	//=== Launch Thread and lock possible second launch
+	worker->moveToThread(thread);
+	thread->start();
+	isAlreadyRunning = true;
+}
+
+void Localizer::processERPAnalysis2()
 {
 	if (currentPat != nullptr || currentFiles.size() > 0)
 	{

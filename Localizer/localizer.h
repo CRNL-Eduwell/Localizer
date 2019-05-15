@@ -34,7 +34,10 @@
 #include "IWorker.h"
 #include "PatientFolderWorker.h"
 #include "SingleFilesWorker.h"
+#include "ErpWorker.h"
 #include <QListWidgetItem>
+#include "../../EEGFormat/EEGFormat/Utility.h"
+#include "ErpProcessor.h"
 
 using namespace std;
 
@@ -70,7 +73,8 @@ private slots:
 	void ToggleAllBands();
 	void processFolderAnalysis();
 	void processSingleAnalysis();
-	void processERPAnalysis();
+	void processERPAnalysis(QList<QString> examCorrespondance);
+	void processERPAnalysis2();
 	void processConvertToElan();
 	void DisplayLog(QString info, Qt::GlobalColor color = Qt::GlobalColor::black);
 	void UpdateProgressBar(int divider);
