@@ -16,7 +16,7 @@ void FileConverterWorker::Process()
 	int fileCount = m_eegFiles.size();
 	for (int i = 0; i < fileCount; i++)
 	{
-		EEGFormat::IFile* current = CreateGenericFile(m_eegFiles[i], true);
+		EEGFormat::IFile* current = CreateGenericFile(m_eegFiles[i].c_str(), true);
 		std::string oldType = EEGFormat::Utility::GetFileExtension(m_eegFiles[i]);
 		std::string newType = m_convertionType[i];
 		std::transform(newType.begin(), newType.end(), newType.begin(), ::tolower);
