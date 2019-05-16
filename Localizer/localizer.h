@@ -1,45 +1,46 @@
 #ifndef LOCALIZER_H
 #define LOCALIZER_H
 
+#include "Utility.h"
+#include "../../EEGFormat/EEGFormat/Utility.h"
+
 #include <QtWidgets/QMainWindow>
+#include <QCoreApplication>
 #include <QCheckBox>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QKeyEvent>
 #include <QShortcut>
-
 #include <QtUiTools>
 #include <QUiLoader>
+#include <QListWidgetItem>
 
-#include "Utility.h"
+//==Ui headers
+#include "ui_localizer.h"
+#include "DeselectableTreeView.h"
 #include "optionsParameters.h"
 #include "patientFolder.h"
 #include "singleFile.h"
 #include "optionsPerf.h"
 #include "optionsStats.h"
-#include "freqwidget.h"
 #include "chooseElec.h"
 #include "picOptions.h"
 #include "form.h"
 #include "AboutDycog.h"
-#include "concatenator.h"
-//#include "Worker.h"
+#include "ErpProcessor.h"
+#include "FileConverterProcessor.h"
 #include "LOCA.h"
-#include "ui_localizer.h"
-#include <QCoreApplication>
-#include "DeselectableTreeView.h"
-#include "FrequencyBand.h"
+//==Tools & files headers
 #include "FrequencyFile.h"
+#include "FrequencyBand.h"
 #include "FrequencyBandAnalysisOpt.h"
+//==Workers
 #include "IWorker.h"
 #include "PatientFolderWorker.h"
 #include "SingleFilesWorker.h"
-#include "ErpWorker.h"
 #include "FileConverterWorker.h"
-#include <QListWidgetItem>
-#include "../../EEGFormat/EEGFormat/Utility.h"
-#include "ErpProcessor.h"
-#include "FileConverterProcessor.h"
+#include "ErpWorker.h"
+#include "ConcatenationWorker.h"
 
 using namespace std;
 
@@ -77,11 +78,11 @@ private slots:
 	void processSingleAnalysis();
 	void processERPAnalysis(QList<QString> examCorrespondance);
 	void processFileConvertion(QList<QString> newFileType);
+	void ProcessMicromedFileConcatenation(QList<QString> files, QString directoryPath, QString fileName);
 	void DisplayLog(QString info, Qt::GlobalColor color = Qt::GlobalColor::black);
 	void UpdateProgressBar(int divider);
 	void CancelAnalysis();
 	void receiveContainerPointer(eegContainer *eegCont);
-	void loadConcat();
 
 signals:
 	void bipDone(int);
@@ -107,7 +108,6 @@ private:
 	optionsStats *optStat = nullptr;
 	optionsPerf *optPerf = nullptr;
 	form *optLoca = nullptr;
-	concatenator *concatFiles = nullptr;
 
 	Ui::LocalizerClass ui;
 	QStringList inputArguments;

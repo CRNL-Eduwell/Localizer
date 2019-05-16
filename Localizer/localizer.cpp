@@ -90,7 +90,7 @@ void Localizer::connectMenuBar()
 	QAction* openTRCSecator = ui.menuOutils->actions().at(0);
 	connect(openTRCSecator, &QAction::triggered, this, [&] { QMessageBox::information(this, "Secator", "Something"); });
 	QAction* openConcatenator = ui.menuOutils->actions().at(1);
-	connect(openConcatenator, &QAction::triggered, this, &Localizer::loadConcat);
+	connect(openConcatenator, &QAction::triggered, this, [&] { QMessageBox::information(this, "Error", "Deactivated, need to be deleted"); });
 	//===Configuration
 	QAction* openPerfMenu = ui.menuConfiguration->actions().at(0);
 	connect(openPerfMenu, &QAction::triggered, this, [&] { optPerf->exec(); });
@@ -390,7 +390,7 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 			}
 			else
 			{
-				QMessageBox::information(this, "Error", "Analysis already running");
+				QMessageBox::information(this, "Error", "Process already running");
 			}
 		});
 		QAction* convertFileAction = contextMenu->addAction("Convert File", [=]
@@ -411,7 +411,40 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 			}
 			else
 			{
-				QMessageBox::information(this, "Error", "Analysis already running");
+				QMessageBox::information(this, "Error", "Process already running");
+			}
+		});
+		QAction* processConcatenationAction = contextMenu->addAction("Concatenate TRC Files", [=]
+		{
+			QList<QString> files;
+			QModelIndexList indexes = ui.FileTreeView->selectionModel()->selectedRows();
+			for (int i = 0; i < indexes.count(); i++)
+			{
+				QFileInfo selectedElementInfo = QFileInfo(m_localFileSystemModel->filePath(index));
+				QString suffix = selectedElementInfo.suffix().toLower();
+				if(suffix.contains("trc"))
+					files.push_back(m_localFileSystemModel->filePath(indexes[i]));
+			}
+
+			if (!isAlreadyRunning)
+			{
+				bool ok;
+				QString fileName = QInputDialog::getText(ui.FileTreeView, "New Name", "Choose New File Name", QLineEdit::Normal, "New Micromed File", &ok);
+				std::string suffixx = EEGFormat::Utility::GetFileExtension(fileName.toStdString());
+				
+				QString suffix = QString::fromStdString(suffixx).toLower();
+				if (ok && !fileName.isEmpty() && suffix.contains("trc"))
+				{
+					ProcessMicromedFileConcatenation(files, m_localFileSystemModel->rootPath(), fileName);
+				}
+				else
+				{
+					QMessageBox::information(this, "Error", "File name must contain the .TRC extention and be non empty");
+				}
+			}
+			else
+			{
+				QMessageBox::information(this, "Error", "Process already running");
 			}
 		});
 	}
@@ -620,6 +653,34 @@ void Localizer::processFileConvertion(QList<QString> newFileType)
 	isAlreadyRunning = true;
 }
 
+void Localizer::ProcessMicromedFileConcatenation(QList<QString> files, QString directoryPath, QString fileName)
+{
+	int FileNumber = files.size();
+	std::vector<std::string> trcFiles;
+	for (int i = 0; i < FileNumber; i++)
+	{
+		trcFiles.push_back(files[i].toStdString());
+	}
+
+	thread = new QThread;
+	worker = new ConcatenationWorker(trcFiles, directoryPath.toStdString(), fileName.toStdString());
+
+	//Update info
+	connect(worker, &IWorker::sendLogInfo, this, [&](QString info) { emit DisplayLog(info); });
+
+	//=== Event From worker and thread
+	connect(thread, SIGNAL(started()), worker, SLOT(Process()));
+	connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
+	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+	connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
+
+	//=== Launch Thread and lock possible second launch
+	worker->moveToThread(thread);
+	thread->start();
+	isAlreadyRunning = true;
+}
+
 void Localizer::DisplayLog(QString messageToDisplay, Qt::GlobalColor color)
 {
 	ui.messageDisplayer->setTextColor(color);
@@ -654,22 +715,4 @@ void Localizer::receiveContainerPointer(eegContainer *eegCont)
 	//eegCont->bipolarizeData();
 	emit bipDone(res);
 	delete elecWin;
-}
-
-//TODO
-void Localizer::loadConcat()
-{
-	QModelIndexList list = QModelIndexList(); // ui.TRCListWidget->selectionModel()->selectedIndexes();
-	if (list.count() > 1 || list.count() == 0)
-	{
-		QMessageBox::information(this, "Error", "You Need To Select One Folder");
-	}
-	else
-	{
-		concatFiles = new concatenator(currentPat->localizerFolder()[list[0].row()].rootLocaFolder());
-		connect(concatFiles, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-		concatFiles->exec();
-		deleteAndNullify1D(concatFiles);
-		//UpdateFolderPostAna();
-	}
 }

@@ -13,6 +13,6 @@ IWorker::~IWorker()
 eegContainer* IWorker::GetEegContainer(std::string currentFilePath, bool shouldExtractData, int nbFreqBand)
 {	
 	emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFilePath));
-	EEGFormat::IFile* file = CreateGenericFile(currentFilePath, shouldExtractData);
+	EEGFormat::IFile* file = CreateGenericFile(currentFilePath.c_str(), shouldExtractData);
 	return new eegContainer(file, 64, nbFreqBand);;
 }

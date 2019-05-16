@@ -63,12 +63,6 @@
     <Filter Include="Source Files\Workers">
       <UniqueIdentifier>{ebfb0042-c55c-4872-8d3c-bfadb1503e5b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\DELETEME">
-      <UniqueIdentifier>{59b29320-82e3-4da2-b102-40a5a032a03d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\DELETEME">
-      <UniqueIdentifier>{94f2183b-3959-4ac6-a40e-2c5322b1a60f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\DataBrowse">
       <UniqueIdentifier>{ca7a1018-2147-41d5-8809-696a8646df14}</UniqueIdentifier>
     </Filter>
@@ -112,15 +106,6 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_localizer.cpp">
       <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_freqwidget.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_freqwidget.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="freqwidget.cpp">
-      <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="localizer.cpp">
       <Filter>Source Files\GUI</Filter>
@@ -210,9 +195,6 @@
       <Filter>Source Files\PROV</Filter>
     </ClCompile>
     <ClCompile Include="form.cpp">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="concatenator.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_concatenator.cpp">
@@ -320,22 +302,22 @@
     <ClCompile Include="FileConverterProcessor.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="Worker.cpp">
-      <Filter>Source Files\DELETEME</Filter>
-    </ClCompile>
-    <ClCompile Include="freqOption.cpp">
-      <Filter>Source Files\DELETEME</Filter>
-    </ClCompile>
     <ClCompile Include="FrequencyBand.cpp">
       <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="ConcatenationWorker.cpp">
+      <Filter>Source Files\Workers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ConcatenationWorker.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ConcatenationWorker.cpp">
+      <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="localizer.qrc">
       <Filter>Resource Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="freqwidget.h">
-      <Filter>Header Files\GUI</Filter>
     </CustomBuild>
     <CustomBuild Include="optionsStats.h">
       <Filter>Header Files\GUI</Filter>
@@ -345,9 +327,6 @@
     </CustomBuild>
     <CustomBuild Include="optionsPerf.h">
       <Filter>Header Files\GUI</Filter>
-    </CustomBuild>
-    <CustomBuild Include="freqwidget.ui">
-      <Filter>Form Files</Filter>
     </CustomBuild>
     <CustomBuild Include="localizer.ui">
       <Filter>Form Files</Filter>
@@ -383,12 +362,6 @@
       <Filter>Form Files</Filter>
     </CustomBuild>
     <CustomBuild Include="form.h">
-      <Filter>Header Files\GUI</Filter>
-    </CustomBuild>
-    <CustomBuild Include="concatenator.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="concatenator.h">
       <Filter>Header Files\GUI</Filter>
     </CustomBuild>
     <CustomBuild Include="AboutDycog.ui">
@@ -427,16 +400,13 @@
     <CustomBuild Include="FileConverterProcessor.h">
       <Filter>Header Files\GUI</Filter>
     </CustomBuild>
-    <CustomBuild Include="Worker.h">
-      <Filter>Header Files\DELETEME</Filter>
+    <CustomBuild Include="ConcatenationWorker.h">
+      <Filter>Header Files\Workers</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility.h">
       <Filter>Header Files\Tools</Filter>
-    </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_freqwidget.h">
-      <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_localizer.h">
       <Filter>Generated Files</Filter>
@@ -486,9 +456,6 @@
     <ClInclude Include="PROVParameters.h">
       <Filter>Header Files\PROV</Filter>
     </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_concatenator.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_AboutDycog.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
@@ -515,9 +482,6 @@
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_FileConverterProcessor.h">
       <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="freqOption.h">
-      <Filter>Header Files\DELETEME</Filter>
     </ClInclude>
     <ClInclude Include="FrequencyBand.h">
       <Filter>Header Files\Tools</Filter>
