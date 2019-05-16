@@ -35,9 +35,11 @@
 #include "PatientFolderWorker.h"
 #include "SingleFilesWorker.h"
 #include "ErpWorker.h"
+#include "FileConverterWorker.h"
 #include <QListWidgetItem>
 #include "../../EEGFormat/EEGFormat/Utility.h"
 #include "ErpProcessor.h"
+#include "FileConverterProcessor.h"
 
 using namespace std;
 
@@ -74,8 +76,7 @@ private slots:
 	void processFolderAnalysis();
 	void processSingleAnalysis();
 	void processERPAnalysis(QList<QString> examCorrespondance);
-	void processERPAnalysis2();
-	void processConvertToElan();
+	void processFileConvertion(QList<QString> newFileType);
 	void DisplayLog(QString info, Qt::GlobalColor color = Qt::GlobalColor::black);
 	void UpdateProgressBar(int divider);
 	void CancelAnalysis();
@@ -91,18 +92,13 @@ private:
 	//==Data for analysis
 	FrequencyFile *m_frequencyFile = nullptr;
 	bool m_isPatFolder = false;
-
 	//userOption userOpt;
 	patientFolder* currentPat = nullptr;
-	patientFolder* savePat = nullptr;
 	vector<singleFile> currentFiles;
-	vector<singleFile> saveFiles;
 	//==Thread and Worker
 	QReadWriteLock m_lockLoop;  
 	QThread* thread = nullptr;
-	//Worker* worker = nullptr;
 	IWorker* worker = nullptr;
-
 	bool isAlreadyRunning = false;
 	//==UI
 	float nbDoneTask = 0;
@@ -112,7 +108,7 @@ private:
 	optionsPerf *optPerf = nullptr;
 	form *optLoca = nullptr;
 	concatenator *concatFiles = nullptr;
-	//uiUserElement* uiElement = nullptr;
+
 	Ui::LocalizerClass ui;
 	QStringList inputArguments;
 };

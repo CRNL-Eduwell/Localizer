@@ -395,12 +395,24 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 		});
 		QAction* convertFileAction = contextMenu->addAction("Convert File", [=]
 		{
-			//QModelIndexList indexes = ui.FileTreeView->selectionModel()->selectedRows();
-			//for (int i = 0; i < indexes.count(); i++)
-			//{
-
-			//}
-			qDebug() << "Convert file needs to be implemented";
+			QList<QString> files;
+			QModelIndexList indexes = ui.FileTreeView->selectionModel()->selectedRows();
+			for (int i = 0; i < indexes.count(); i++)
+			{
+				files.push_back(m_localFileSystemModel->filePath(indexes[i]));
+			}
+			
+			if (!isAlreadyRunning)
+			{
+				FileConverterProcessor* fileWindow = new FileConverterProcessor(files, this);
+				connect(fileWindow, &FileConverterProcessor::SendExamCorrespondance, this, &Localizer::processFileConvertion);
+				fileWindow->exec();
+				delete fileWindow;
+			}
+			else
+			{
+				QMessageBox::information(this, "Error", "Analysis already running");
+			}
 		});
 	}
 
@@ -515,7 +527,6 @@ void Localizer::processSingleAnalysis()
 	}
 }
 
-//DOING
 void Localizer::processERPAnalysis(QList<QString> exams)
 {
 	QModelIndexList indexes = ui.FileTreeView->selectionModel()->selectedRows();
@@ -563,123 +574,50 @@ void Localizer::processERPAnalysis(QList<QString> exams)
 	isAlreadyRunning = true;
 }
 
-void Localizer::processERPAnalysis2()
+void Localizer::processFileConvertion(QList<QString> newFileType)
 {
-	if (currentPat != nullptr || currentFiles.size() > 0)
+	QModelIndexList indexes = ui.FileTreeView->selectionModel()->selectedRows();
+	if (indexes.size() != newFileType.size())
 	{
-		if (!isAlreadyRunning)
-		{
-			QModelIndex index = QModelIndex();// ui.TRCListWidget->currentIndex();
-			if (index.isValid())
-			{
-				nbTaskToDo = 1;
-				nbDoneTask = 0;
-				ui.progressBar->reset();
-
-				picOption opt = picOpt->getPicOption();
-				thread = new QThread;
-
-				// ATTENTION CA NE MARCHE PLUS ICI 
-				//worker = new Worker(&currentPat->localizerFolder()[index.row()], &userOpt);
-				worker = nullptr;
-
-				//=== Event update displayer
-				connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-				connect(worker->GetLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-				connect(worker->GetLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
-
-				//=== 
-				connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
-				//connect(this, &Localizer::bipDone, worker, [&] { worker->bipCreated = true; });
-				connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
-
-				//=== Event From worker and thread
-				connect(thread, SIGNAL(started()), worker, SLOT(processERP()));
-				connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
-				connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-				connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-				connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
-
-				//=== Launch Thread and lock possible second launch
-				worker->moveToThread(thread);
-				thread->start();
-				isAlreadyRunning = true;
-			}
-			else
-			{
-				QMessageBox::information(this, "Error", "Click On A File before having maps");
-			}
-		}
-		else
-		{
-			QMessageBox::information(this, "Error", "Analysis already running");
-		}
+		DisplayLog("Not the same number of eeg files and selected new types, aborting File Convertion", Qt::GlobalColor::red);
+		return;
 	}
-	else
+
+	std::vector<std::string> files;
+	std::vector<std::string> provFiles;
+	for (int i = 0; i < indexes.count(); i++)
 	{
-		QMessageBox::information(this, "Error", "Load Data ...");
+		files.push_back(m_localFileSystemModel->filePath(indexes[i]).toStdString());
+		provFiles.push_back(newFileType[i].toStdString());
 	}
-}
 
-//TODO
-void Localizer::processConvertToElan()
-{
-	if (currentPat != nullptr || currentFiles.size() > 0)
-	{
-		if (!isAlreadyRunning)
-		{
-			QModelIndex index = QModelIndex();// ui.TRCListWidget->currentIndex();
-			if (index.isValid())
-			{
-				nbTaskToDo = 1;
-				nbDoneTask = 0;
-				ui.progressBar->reset();
+	nbTaskToDo = newFileType.size();
+	nbDoneTask = 0;
+	ui.progressBar->reset();
 
-				thread = new QThread;
+	picOption opt = picOpt->getPicOption();
+	thread = new QThread;
+	worker = new FileConverterWorker(files, provFiles);
 
-				// ATTENTION CA NE MARCHE PLUS ICI 
-				worker = nullptr;
-				//if (currentPat != nullptr)
-				//	worker = new Worker(&currentPat->localizerFolder()[index.row()], &userOpt);
-				//else if (currentFiles.size() > 0)
-				//	worker = new Worker(currentFiles, &userOpt, index.row());
+	//=== Event update displayer
+	connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
 
-				//=== Event update displayer
-				connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-				connect(worker->GetLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+	//=== 
+	connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
+	connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
 
-				//=== 
-				connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
-				//connect(this, &Localizer::bipDone, worker, [&] { worker->bipCreated = true; });
-				connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
+	//=== Event From worker and thread
+	connect(thread, SIGNAL(started()), worker, SLOT(Process()));
+	connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
+	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+	connect(worker, &IWorker::finished, this, [&] { ui.progressBar->setValue(100); });
+	connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
-				//=== Event From worker and thread
-				connect(thread, SIGNAL(started()), worker, SLOT(processToELAN()));
-				connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
-				connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-				connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-				connect(worker, &IWorker::finished, this, [&] { ui.progressBar->setValue(100); });
-				connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
-
-				//=== Launch Thread and lock possible second launch
-				worker->moveToThread(thread);
-				thread->start();
-				isAlreadyRunning = true;
-			}
-			else
-			{
-				QMessageBox::information(this, "Error", "Click On A File before converting it");
-			}
-		}
-		else
-		{
-			QMessageBox::information(this, "Error", "Analysis already running");
-		}
-	}
-	else
-	{
-		QMessageBox::information(this, "Error", "Load Data ...");
-	}
+	//=== Launch Thread and lock possible second launch
+	worker->moveToThread(thread);
+	thread->start();
+	isAlreadyRunning = true;
 }
 
 void Localizer::DisplayLog(QString messageToDisplay, Qt::GlobalColor color)

@@ -42,26 +42,8 @@
     <Filter Include="Source Files\Tools">
       <UniqueIdentifier>{c9b2494b-4517-43ac-bba1-07182c2896b0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Files">
-      <UniqueIdentifier>{20fb85fc-537e-49ea-861d-2286bedd9a74}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Tools">
       <UniqueIdentifier>{f25f48c4-bf89-4a83-827e-b69c9c2a9dfe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Files">
-      <UniqueIdentifier>{308969a6-8508-448c-ad29-d0936de0d619}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Files\eegFiles">
-      <UniqueIdentifier>{5a977d77-da83-4e96-ac30-cb962d934b1f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Files\eegFiles">
-      <UniqueIdentifier>{5a1e4684-1961-4028-8283-30fdf6dd55aa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Files\dataBrowse">
-      <UniqueIdentifier>{ca7a1018-2147-41d5-8809-696a8646df14}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Files\dataBrowse">
-      <UniqueIdentifier>{1bc11de0-0f03-45bd-93bf-b69873a36cb1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Draw">
       <UniqueIdentifier>{788f93d2-a5c1-4110-a586-3d8c1fd8a59c}</UniqueIdentifier>
@@ -69,29 +51,47 @@
     <Filter Include="Header Files\Draw">
       <UniqueIdentifier>{bcd67d41-b8ef-45dd-8dda-0ccc821e6d4a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Files\PROV">
-      <UniqueIdentifier>{806a7b7e-7325-4c89-87dc-95a7465771d0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Files\PROV">
-      <UniqueIdentifier>{cfb90fb8-b953-48df-b8b0-49f668238067}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\GUI\QtUiElement">
       <UniqueIdentifier>{5ee193b2-a244-4220-a545-2bd4359d6d8e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\GUI\QtUiElement">
       <UniqueIdentifier>{f8a199f8-bb29-4fbf-8a98-70b2f3b6edfa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Files\OptFiles">
-      <UniqueIdentifier>{270b326f-b4ca-4cc4-a0bd-7aa083f98093}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Files\OptFiles">
-      <UniqueIdentifier>{6db3647d-f132-4679-9953-9173dac3141a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Workers">
       <UniqueIdentifier>{1cb6765c-d854-4171-9847-1b316b68c6f5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Workers">
       <UniqueIdentifier>{ebfb0042-c55c-4872-8d3c-bfadb1503e5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\DELETEME">
+      <UniqueIdentifier>{59b29320-82e3-4da2-b102-40a5a032a03d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DELETEME">
+      <UniqueIdentifier>{94f2183b-3959-4ac6-a40e-2c5322b1a60f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\DataBrowse">
+      <UniqueIdentifier>{ca7a1018-2147-41d5-8809-696a8646df14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\EegFiles">
+      <UniqueIdentifier>{5a977d77-da83-4e96-ac30-cb962d934b1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OptFiles">
+      <UniqueIdentifier>{270b326f-b4ca-4cc4-a0bd-7aa083f98093}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PROV">
+      <UniqueIdentifier>{806a7b7e-7325-4c89-87dc-95a7465771d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PROV">
+      <UniqueIdentifier>{cfb90fb8-b953-48df-b8b0-49f668238067}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DataBrowse">
+      <UniqueIdentifier>{1bc11de0-0f03-45bd-93bf-b69873a36cb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\EegFiles">
+      <UniqueIdentifier>{5a1e4684-1961-4028-8283-30fdf6dd55aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OptFiles">
+      <UniqueIdentifier>{6db3647d-f132-4679-9953-9173dac3141a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -164,9 +164,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_chooseElec.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Worker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="picOptions.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
@@ -186,22 +183,19 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="eegContainer.cpp">
-      <Filter>Source Files\Files\eegFiles</Filter>
+      <Filter>Source Files\EegFiles</Filter>
     </ClCompile>
     <ClCompile Include="patientFolder.cpp">
-      <Filter>Source Files\Files\dataBrowse</Filter>
+      <Filter>Source Files\DataBrowse</Filter>
     </ClCompile>
     <ClCompile Include="singleFile.cpp">
-      <Filter>Source Files\Files\dataBrowse</Filter>
+      <Filter>Source Files\DataBrowse</Filter>
     </ClCompile>
     <ClCompile Include="mapsGenerator.cpp">
       <Filter>Source Files\Draw</Filter>
     </ClCompile>
     <ClCompile Include="barsPlotsGenerator.cpp">
       <Filter>Source Files\Draw</Filter>
-    </ClCompile>
-    <ClCompile Include="freqOption.cpp">
-      <Filter>Source Files\Files\dataBrowse</Filter>
     </ClCompile>
     <ClCompile Include="optionsParameters.cpp">
       <Filter>Source Files\GUI</Filter>
@@ -213,7 +207,7 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="PROV.cpp">
-      <Filter>Source Files\Files\PROV</Filter>
+      <Filter>Source Files\PROV</Filter>
     </ClCompile>
     <ClCompile Include="form.cpp">
       <Filter>Source Files\GUI</Filter>
@@ -237,13 +231,13 @@
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="TriggerContainer.cpp">
-      <Filter>Source Files\Files\eegFiles</Filter>
+      <Filter>Source Files\EegFiles</Filter>
     </ClCompile>
     <ClCompile Include="Trigger.cpp">
-      <Filter>Source Files\Files\eegFiles</Filter>
+      <Filter>Source Files\EegFiles</Filter>
     </ClCompile>
     <ClCompile Include="DataContainer.cpp">
-      <Filter>Source Files\Files\eegFiles</Filter>
+      <Filter>Source Files\EegFiles</Filter>
     </ClCompile>
     <ClCompile Include="Stats.cpp">
       <Filter>Source Files\Tools</Filter>
@@ -258,13 +252,10 @@
       <Filter>Source Files\GUI\QtUiElement</Filter>
     </ClCompile>
     <ClCompile Include="ITxtFile.cpp">
-      <Filter>Source Files\Files\OptFiles</Filter>
+      <Filter>Source Files\OptFiles</Filter>
     </ClCompile>
     <ClCompile Include="FrequencyFile.cpp">
-      <Filter>Source Files\Files\OptFiles</Filter>
-    </ClCompile>
-    <ClCompile Include="FrequencyBand.cpp">
-      <Filter>Source Files\Files\OptFiles</Filter>
+      <Filter>Source Files\OptFiles</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_IWorker.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -320,6 +311,24 @@
     <ClCompile Include="GeneratedFiles\Release\moc_FileConverterWorker.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_FileConverterProcessor.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_FileConverterProcessor.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="FileConverterProcessor.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Worker.cpp">
+      <Filter>Source Files\DELETEME</Filter>
+    </ClCompile>
+    <ClCompile Include="freqOption.cpp">
+      <Filter>Source Files\DELETEME</Filter>
+    </ClCompile>
+    <ClCompile Include="FrequencyBand.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="localizer.qrc">
@@ -360,9 +369,6 @@
     </CustomBuild>
     <CustomBuild Include="chooseElec.h">
       <Filter>Header Files\GUI</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Worker.h">
-      <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="picOptions.h">
       <Filter>Header Files\GUI</Filter>
@@ -415,6 +421,15 @@
     <CustomBuild Include="FileConverterWorker.h">
       <Filter>Header Files\Workers</Filter>
     </CustomBuild>
+    <CustomBuild Include="FileConverterProcessor.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="FileConverterProcessor.h">
+      <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Worker.h">
+      <Filter>Header Files\DELETEME</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility.h">
@@ -442,25 +457,22 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="eegContainer.h">
-      <Filter>Header Files\Files\eegFiles</Filter>
+      <Filter>Header Files\EegFiles</Filter>
     </ClInclude>
     <ClInclude Include="eegContainerParameters.h">
-      <Filter>Header Files\Files\eegFiles</Filter>
+      <Filter>Header Files\EegFiles</Filter>
     </ClInclude>
     <ClInclude Include="patientFolder.h">
-      <Filter>Header Files\Files\dataBrowse</Filter>
+      <Filter>Header Files\DataBrowse</Filter>
     </ClInclude>
     <ClInclude Include="singleFile.h">
-      <Filter>Header Files\Files\dataBrowse</Filter>
+      <Filter>Header Files\DataBrowse</Filter>
     </ClInclude>
     <ClInclude Include="mapsGenerator.h">
       <Filter>Header Files\Draw</Filter>
     </ClInclude>
     <ClInclude Include="barsPlotsGenerator.h">
       <Filter>Header Files\Draw</Filter>
-    </ClInclude>
-    <ClInclude Include="freqOption.h">
-      <Filter>Header Files\Files\dataBrowse</Filter>
     </ClInclude>
     <ClInclude Include="optionsParameters.h">
       <Filter>Header Files\GUI</Filter>
@@ -469,10 +481,10 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="PROV.h">
-      <Filter>Header Files\Files\PROV</Filter>
+      <Filter>Header Files\PROV</Filter>
     </ClInclude>
     <ClInclude Include="PROVParameters.h">
-      <Filter>Header Files\Files\PROV</Filter>
+      <Filter>Header Files\PROV</Filter>
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_concatenator.h">
       <Filter>Generated Files</Filter>
@@ -481,31 +493,37 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="TriggerContainer.h">
-      <Filter>Header Files\Files\eegFiles</Filter>
+      <Filter>Header Files\EegFiles</Filter>
     </ClInclude>
     <ClInclude Include="Trigger.h">
-      <Filter>Header Files\Files\eegFiles</Filter>
+      <Filter>Header Files\EegFiles</Filter>
     </ClInclude>
     <ClInclude Include="DataContainer.h">
-      <Filter>Header Files\Files\eegFiles</Filter>
+      <Filter>Header Files\EegFiles</Filter>
     </ClInclude>
     <ClInclude Include="Stats.h">
       <Filter>Header Files\Tools</Filter>
     </ClInclude>
     <ClInclude Include="ITxtFile.h">
-      <Filter>Header Files\Files\OptFiles</Filter>
+      <Filter>Header Files\OptFiles</Filter>
     </ClInclude>
     <ClInclude Include="FrequencyFile.h">
-      <Filter>Header Files\Files\OptFiles</Filter>
-    </ClInclude>
-    <ClInclude Include="FrequencyBand.h">
-      <Filter>Header Files\Files\OptFiles</Filter>
-    </ClInclude>
-    <ClInclude Include="FrequencyBandAnalysisOpt.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\OptFiles</Filter>
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_ErpProcessor.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_FileConverterProcessor.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="freqOption.h">
+      <Filter>Header Files\DELETEME</Filter>
+    </ClInclude>
+    <ClInclude Include="FrequencyBand.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="FrequencyBandAnalysisOpt.h">
+      <Filter>Header Files\Tools</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

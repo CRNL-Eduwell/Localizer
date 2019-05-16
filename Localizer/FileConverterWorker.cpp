@@ -33,12 +33,12 @@ void FileConverterWorker::Process()
 		{
 			EEGFormat::ElanFile* newFile = new EEGFormat::ElanFile(*current);
 
-			std::string headerPath = fileName + ".eeg.ent";
-			std::string dataPath = fileName + ".eeg";
-			std::string posPath = fileName + "_raw.pos";
-			std::string notePath = fileName + ".notes.txt";
+			std::string headerPath = outputDirectory + fileName + ".eeg.ent";
+			std::string dataPath = outputDirectory + fileName + ".eeg";
+			std::string posPath = outputDirectory + fileName + "_raw.pos";
+			std::string notePath = outputDirectory + fileName + ".notes.txt";
 
-			newFile->SaveAs(headerPath, dataPath, posPath, notePath);
+			newFile->SaveAs(headerPath, dataPath, notePath, posPath);
 			EEGFormat::Utility::DeleteAndNullify(newFile);
 		}
 		else if (newType.compare("vhdr") == 0)
@@ -50,6 +50,10 @@ void FileConverterWorker::Process()
 		else if (newType.compare("edf") == 0)
 		{
 			emit sendLogInfo("It is not possible to create edf file yet.");
+		}
+		else
+		{
+			emit sendLogInfo("File type unknown, aborting convertion for " + QString::fromStdString(fileName));
 		}
 
 		EEGFormat::Utility::DeleteAndNullify(current);

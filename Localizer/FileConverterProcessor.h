@@ -1,7 +1,7 @@
-#ifndef ERPPROCESSOR_H
-#define ERPPROCESSOR_H
+#ifndef FILECONVERTERPROCESSOR_H
+#define FILECONVERTERPROCESSOR_H
 
-#include "ui_ErpProcessor.h"
+#include "ui_FileConverterProcessor.h"
 #include "../../EEGFormat/EEGFormat/Utility.h"
 #include <QDir>
 #include <QList>
@@ -9,13 +9,13 @@
 #include <QFileInfo>
 #include <QtWidgets/QDialog>
 
-class ErpProcessor : public QDialog
+class FileConverterProcessor : public QDialog
 {
 	Q_OBJECT
 
 public:
-	ErpProcessor(QList<QString> fileList, QWidget *parent = 0);
-	~ErpProcessor();
+	FileConverterProcessor(QList<QString> fileList, QWidget *parent = 0);
+	~FileConverterProcessor();
 
 private slots:
 	void CancelProcess();
@@ -25,13 +25,12 @@ signals:
 	void SendExamCorrespondance(QList<QString>);
 
 private:
-	QStringList GetProvList();
 	void LoadFileList(QList<QString> fileList);
-	void LoadProvList(QList<QString> fileList, QStringList examList);
+	void LoadFileTypeList(QList<QString> fileList, QStringList fileTypeName);
 	void ResizeColumns();
 
 private:
-	Ui::Dialog ui;
+	Ui::FileConvertDialog ui;
 };
 
 #endif
