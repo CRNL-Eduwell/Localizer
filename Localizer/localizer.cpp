@@ -82,14 +82,14 @@ void Localizer::connectSignals()
 void Localizer::connectMenuBar()
 {
 	//===Fichier
-	QAction* openPatFolder = ui.menuFichier->actions().at(0);
+	QAction* openPatFolder = ui.menuFiles->actions().at(0);
 	connect(openPatFolder, &QAction::triggered, this, [&] { loadPatientFolder(); });
-	QAction* openSingleFile = ui.menuFichier->actions().at(1);
+	QAction* openSingleFile = ui.menuFiles->actions().at(1);
 	connect(openSingleFile, &QAction::triggered, this, [&] { loadSingleFile(); });
 	//===Outils
-	QAction* openTRCSecator = ui.menuOutils->actions().at(0);
+	QAction* openTRCSecator = ui.menuTools->actions().at(0);
 	connect(openTRCSecator, &QAction::triggered, this, [&] { QMessageBox::information(this, "Secator", "Something"); });
-	QAction* openConcatenator = ui.menuOutils->actions().at(1);
+	QAction* openConcatenator = ui.menuTools->actions().at(1);
 	connect(openConcatenator, &QAction::triggered, this, [&] { QMessageBox::information(this, "Error", "Deactivated, need to be deleted"); });
 	//===Configuration
 	QAction* openPerfMenu = ui.menuConfiguration->actions().at(0);
@@ -101,7 +101,7 @@ void Localizer::connectMenuBar()
 	QAction* openLocaMenu = ui.menuConfiguration->actions().at(3);
 	connect(openLocaMenu, &QAction::triggered, this, [&] { optLoca->exec(); });
 	//===Aide
-	QAction* openAbout = ui.menuAide->actions().at(0);
+	QAction* openAbout = ui.menuHelp->actions().at(0);
 	connect(openAbout, &QAction::triggered, this, [&]
 	{
 		AboutDycog about;
