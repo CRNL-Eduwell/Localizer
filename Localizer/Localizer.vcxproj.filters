@@ -87,6 +87,12 @@
     <Filter Include="Source Files\OptFiles">
       <UniqueIdentifier>{6db3647d-f132-4679-9953-9173dac3141a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\AlgorithmStrategy">
+      <UniqueIdentifier>{63fe25ad-5c94-40d8-a16e-0934d2b53caf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AlgorithmStrategy">
+      <UniqueIdentifier>{87136f4a-524b-409d-895e-a0e7bb09bfef}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -132,12 +138,6 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_displayProv.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_Worker.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_Worker.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="chooseElec.cpp">
@@ -196,12 +196,6 @@
     </ClCompile>
     <ClCompile Include="form.cpp">
       <Filter>Source Files\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_concatenator.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_concatenator.cpp">
-      <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_AboutDycog.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -314,6 +308,18 @@
     <ClCompile Include="GeneratedFiles\Release\moc_ConcatenationWorker.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_IAlgorithmStrategy.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_IAlgorithmStrategy.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="HilbertEnveloppe.cpp">
+      <Filter>Source Files\AlgorithmStrategy</Filter>
+    </ClCompile>
+    <ClCompile Include="AlgorithmContext.cpp">
+      <Filter>Source Files\AlgorithmStrategy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="localizer.qrc">
@@ -403,6 +409,9 @@
     <CustomBuild Include="ConcatenationWorker.h">
       <Filter>Header Files\Workers</Filter>
     </CustomBuild>
+    <CustomBuild Include="IAlgorithmStrategy.h">
+      <Filter>Header Files\AlgorithmStrategy</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility.h">
@@ -488,6 +497,12 @@
     </ClInclude>
     <ClInclude Include="FrequencyBandAnalysisOpt.h">
       <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="HilbertEnveloppe.h">
+      <Filter>Header Files\AlgorithmStrategy</Filter>
+    </ClInclude>
+    <ClInclude Include="AlgorithmContext.h">
+      <Filter>Header Files\AlgorithmStrategy</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

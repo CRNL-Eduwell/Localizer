@@ -67,8 +67,7 @@ namespace InsermLibrary
 		{
 			return m_bipoles.size();
 		}
-		//First is positiv Electrode ID
-		//Second is negativ Electrode ID
+		//First is positiv, second is negativ Electrode ID
 		inline std::pair<int,int> Bipole(const int& i)
 		{
 			if (i >= 0 && i < m_bipoles.size())
