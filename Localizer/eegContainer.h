@@ -49,6 +49,10 @@ namespace InsermLibrary
 		{
 			return m_originalSamplingFrequency / m_downsampledFrequency;
 		}
+		inline int NbSample()
+		{
+			return Data().size() > 0 ? Data()[0].size() : 0;
+		}
 		inline int TriggerCount()
 		{
 			return m_file->TriggerCount();
@@ -62,6 +66,15 @@ namespace InsermLibrary
 				triggers[i] = EEGFormat::ITrigger(*m_file->Trigger(i));
 			}
 			return triggers;
+		}
+		inline EEGFormat::IElectrode* Electrode(const int& i) const
+		{
+			int ElectrodeCount = m_file->ElectrodeCount();
+			if (i >= 0 && i < ElectrodeCount)
+			{
+				return m_file->Electrode(i);
+			}
+			return nullptr;
 		}
 		inline int BipoleCount()
 		{
@@ -99,7 +112,7 @@ namespace InsermLibrary
 		void DeleteElectrodes(vector<int> elecToDelete);
 		void GetElectrodes();
 		void BipolarizeElectrodes();
-		void ToHilbert(int IdFrequency, vector<int> frequencyBand);
+		void SaveFrequencyData(int IdFrequency, const std::vector<int>& frequencyBand);
 		void LoadFrequencyData(std::vector<std::string>& filesPath, int frequencyId, int smoothingId);
 
 		//===[ Read / Get Data ]===
@@ -109,10 +122,6 @@ namespace InsermLibrary
 	private:
 		void GetElectrodes(EEGFormat::IFile* edf);
 		int idSplitDigiAndNum(string myString);
-		void calculateSmoothing();
-		void initElanFreqStruct();
-		void hilbertDownSampSumData(DataContainer *dataCont, int threadId, int freqId);
-		void meanConvolveData(DataContainer *dataCont, int threadId);
 
 	public :
 		//[IdNbFrequency][sm0-sm5000][channels][sample]
@@ -125,7 +134,6 @@ namespace InsermLibrary
 		int m_downsampledFrequency = 0;
 		int m_nbSample = 0; //Original size of one channel (no downsamp)
 		std::vector<std::pair<int, int>> m_bipoles;
-		float m_smoothingSample[6];
 		float m_smoothingMilliSec[6] = { 0, 250, 500, 1000, 2500, 5000 };
 		EEGFormat::IFile* m_file = nullptr;
 		std::mutex m_mtx;

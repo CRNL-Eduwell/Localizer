@@ -16,8 +16,6 @@ InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFr
 	m_originalSamplingFrequency = m_file->SamplingFrequency();
 	m_downsampledFrequency = downsampFrequency;
 	m_nbSample = Data().size() > 0 ? Data()[0].size() : 0;
-
-	calculateSmoothing();
 }
 
 InsermLibrary::eegContainer::~eegContainer()
@@ -65,101 +63,8 @@ void InsermLibrary::eegContainer::BipolarizeElectrodes()
 	}
 }
 
-void InsermLibrary::eegContainer::ToHilbert(int IdFrequency, vector<int> frequencyBand)
+void InsermLibrary::eegContainer::SaveFrequencyData(int IdFrequency, const std::vector<int>& frequencyBand)
 {
-	thread thr[5];
-	initElanFreqStruct();
-	DataContainer dataCont = DataContainer(m_originalSamplingFrequency, m_downsampledFrequency, m_nbSample, frequencyBand);
-
-	for (int i = 0; i < m_bipoles.size() / 5; i++)
-	{
-		for (int j = 0; j < 5; j++)
-		{
-			int idCurrentBip = (i * 5) + j;
-			for (int k = 0; k < m_nbSample; k++)
-			{
-				dataCont.bipData[j][k] = Data()[m_bipoles[idCurrentBip].first][k] - Data()[m_bipoles[idCurrentBip].second][k];
-			}
-		}
-
-		for (int j = 0; j < frequencyBand.size() - 1; j++)
-		{
-			thr[0] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 0, j);
-			thr[1] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 1, j);
-			thr[2] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 2, j);
-			thr[3] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 3, j);
-			thr[4] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, 4, j);
-
-			thr[0].join();
-			thr[1].join();
-			thr[2].join();
-			thr[3].join();
-			thr[4].join();
-		}
-
-		thr[0] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 0);
-		thr[1] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 1);
-		thr[2] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 2);
-		thr[3] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 3);
-		thr[4] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, 4);
-
-		thr[0].join();
-		thr[1].join();
-		thr[2].join();
-		thr[3].join();
-		thr[4].join();
-
-		for (int j = 0; j < elanFrequencyBand[IdFrequency].size(); j++)
-		{
-			for (int k = 0; k < 5; k++)
-			{
-				for (int l = 0; l < elanFrequencyBand[IdFrequency][j]->Data(EEGFormat::DataConverterType::Digital)[(i * 5) + k].size(); l++)
-				{
-					elanFrequencyBand[IdFrequency][j]->Data(EEGFormat::DataConverterType::Digital)[(i * 5) + k][l] = dataCont.convoData[j][k][l];
-				}
-			}
-		}
-	}
-
-	if (m_bipoles.size() % 5 != 0)
-	{
-		for (int i = 0; i < m_bipoles.size() % 5; i++)
-		{
-			for (int j = 0; j < m_nbSample; j++)
-			{
-				int idCurrentBip = (m_bipoles.size() / 5) * 5;
-				dataCont.bipData[i][j] = Data()[m_bipoles[idCurrentBip + i].first][j] - Data()[m_bipoles[idCurrentBip + i].second][j];
-			}
-		}
-
-		for (int i = 0; i < frequencyBand.size() - 1; i++)
-		{
-			for (int j = 0; j < m_bipoles.size() % 5; j++)
-			{
-				thr[j] = thread(&InsermLibrary::eegContainer::hilbertDownSampSumData, this, &dataCont, j, i);
-				thr[j].join();
-			}
-		}
-
-		for (int i = 0; i < m_bipoles.size() % 5; i++)
-		{
-			thr[i] = thread(&InsermLibrary::eegContainer::meanConvolveData, this, &dataCont, i);
-			thr[i].join();
-		}
-
-		for (int i = 0; i < elanFrequencyBand[IdFrequency].size(); i++)
-		{
-			for (int j = 0; j < m_bipoles.size() % 5; j++)
-			{
-				int currentId = (m_bipoles.size() - (m_bipoles.size() % 5)) + j;
-				for (int k = 0; k < elanFrequencyBand[IdFrequency][i]->Data(EEGFormat::DataConverterType::Digital)[currentId].size(); k++)
-				{
-					elanFrequencyBand[IdFrequency][i]->Data(EEGFormat::DataConverterType::Digital)[currentId][k] = dataCont.convoData[i][j][k];
-				}
-			}
-		}
-	}
-
 	std::string rootFileFolder = EEGFormat::Utility::GetDirectoryPath(m_file->DefaultFilePath());
 	std::string patientName = EEGFormat::Utility::GetFileName(m_file->DefaultFilePath(), false);
 	std::string frequencyFolder = "_f" + to_string(frequencyBand[0]) + "f" + to_string(frequencyBand[frequencyBand.size() - 1]);
@@ -310,89 +215,4 @@ int InsermLibrary::eegContainer::idSplitDigiAndNum(string myString)
 		}
 	}
 	return -1;
-}
-
-void InsermLibrary::eegContainer::calculateSmoothing()
-{
-	for (int i = 0; i < 6; i++)
-	{
-		m_smoothingSample[i] = ((SamplingFrequency() * m_smoothingMilliSec[i]) / 1000) / DownsamplingFactor();
-	}
-}
-
-void InsermLibrary::eegContainer::initElanFreqStruct()
-{
-	std::vector<EEGFormat::IElectrode*> bipolesList;
-	for (int i = 0; i < m_bipoles.size(); i++)
-	{
-		bipolesList.push_back(m_file->Electrode(m_bipoles[i].first));
-	}
-
-	for (int i = 0; i < elanFrequencyBand.size(); i++)
-	{
-		for (int j = 0; j < elanFrequencyBand[i].size(); j++)
-		{
-			elanFrequencyBand[i][j] = new EEGFormat::ElanFile();
-			elanFrequencyBand[i][j]->ElectrodeCount((int)bipolesList.size());
-			elanFrequencyBand[i][j]->SamplingFrequency(m_downsampledFrequency);
-			elanFrequencyBand[i][j]->Electrodes(bipolesList);
-			//Define type of elec : label + "EEG" + "uV"
-			elanFrequencyBand[i][j]->Data(EEGFormat::DataConverterType::Digital).resize((int)bipolesList.size(), std::vector<float>(m_nbSample / DownsamplingFactor()));
-		}
-	}
-}
-
-void InsermLibrary::eegContainer::hilbertDownSampSumData(DataContainer *dataCont, int threadId, int freqId)
-{
-	if (freqId == 0)
-	{
-		for (int i = 0; i < dataCont->NbSampleDownsampled(); i++)
-		{
-			dataCont->meanData[threadId][i] = 0.0f;
-		}
-	}
-
-	m_mtx.lock();
-	dataCont->Filters[threadId][freqId]->BandPassHilbert(&dataCont->hilData[threadId][0], &dataCont->bipData[threadId][0], dataCont->NbSample());
-	m_mtx.unlock();
-
-	//Downsamp
-	int downsamplingFactor = DownsamplingFactor();
-	for (int i = 0; i < dataCont->NbSampleDownsampled(); i++)
-	{
-		dataCont->downData[threadId][i] = dataCont->hilData[threadId][downsamplingFactor * i];
-	}
-
-	float mean = 0;
-	int value = round(dataCont->NbSampleDownsampled() / 4);
-	for (int i = value; i < 3 * value; i++)
-	{
-		mean += dataCont->downData[threadId][i];
-	}
-
-	float fmtab = mean / (3 * value - value);
-
-	if (fmtab == 0)
-		fmtab = 1;
-
-	for (int i = 0; i < dataCont->NbSampleDownsampled(); i++)
-	{
-		dataCont->downData[threadId][i] = (100 * dataCont->downData[threadId][i]) / fmtab;
-		dataCont->meanData[threadId][i] += dataCont->downData[threadId][i];
-	}
-}
-
-void InsermLibrary::eegContainer::meanConvolveData(DataContainer *dataCont, int threadId)
-{
-	for (int i = 0; i < dataCont->NbSampleDownsampled(); i++)
-	{
-		dataCont->meanData[threadId][i] = (10 * dataCont->meanData[threadId][i]) / (dataCont->NbFrequencySlices() - 1);
-		dataCont->convoData[0][threadId][i] = dataCont->meanData[threadId][i];
-	}
-
-	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[1][threadId][0], dataCont->NbSampleDownsampled(), m_smoothingSample[1]);
-	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[2][threadId][0], dataCont->NbSampleDownsampled(), m_smoothingSample[2]);
-	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[3][threadId][0], dataCont->NbSampleDownsampled(), m_smoothingSample[3]);
-	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[4][threadId][0], dataCont->NbSampleDownsampled(), m_smoothingSample[4]);
-	Convolution::MovingAverage(&dataCont->meanData[threadId][0], &dataCont->convoData[5][threadId][0], dataCont->NbSampleDownsampled(), m_smoothingSample[5]);
 }

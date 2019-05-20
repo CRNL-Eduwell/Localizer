@@ -4,11 +4,10 @@
 #include <iostream>
 #include "eegContainer.h"
 
-enum Algorithm { Hilbert };
 class IAlgorithmStrategy
 {
 public:
-	virtual void Process(eegContainer* EegContainer, int IndexFrequencyData, vector<int>& FrequencyBand) { };
+	virtual void Process(eegContainer* EegContainer, int IndexFrequencyData, vector<int> FrequencyBand) = 0;
 };
 
 #endif

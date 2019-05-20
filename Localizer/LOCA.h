@@ -19,6 +19,7 @@
 #include "optionsParameters.h"
 #include "TriggerContainer.h"
 #include "FrequencyBand.h"
+#include "AlgorithmCalculator.h"
 
 using namespace std;
 using namespace InsermLibrary;

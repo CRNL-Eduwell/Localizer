@@ -11,9 +11,10 @@ class HilbertEnveloppe : public IAlgorithmStrategy
 public:
 	HilbertEnveloppe() { };
 	~HilbertEnveloppe() { };
-	void Process(eegContainer* Container, int IndexFrequencyData, vector<int> FrequencyBand);
+	virtual void Process(eegContainer* Container, int IndexFrequencyData, vector<int> FrequencyBand);
 
 private:
+	void InitOutputDataStructure(eegContainer* EegContainer);
 	void CalculateSmoothingCoefficients(int SamplingFrequency, int DownsamplingFactor);
 	void HilbertDownSampSumData(DataContainer* DataContainer, int threadId, int freqId);
 	void MeanConvolveData(DataContainer *DataContainer, int threadId);

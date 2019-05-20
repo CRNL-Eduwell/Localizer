@@ -87,10 +87,16 @@
     <Filter Include="Source Files\OptFiles">
       <UniqueIdentifier>{6db3647d-f132-4679-9953-9173dac3141a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\AlgorithmStrategy">
+    <Filter Include="Header Files\Algorithm">
+      <UniqueIdentifier>{dcbe9a53-ae36-4f02-95d3-7071ac7ac50c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Algorithm\Strategy">
       <UniqueIdentifier>{63fe25ad-5c94-40d8-a16e-0934d2b53caf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\AlgorithmStrategy">
+    <Filter Include="Source Files\Algorithm">
+      <UniqueIdentifier>{b8ae76a1-91f9-4bfd-804f-718a023a359b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Algorithm\Strategy">
       <UniqueIdentifier>{87136f4a-524b-409d-895e-a0e7bb09bfef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -308,17 +314,14 @@
     <ClCompile Include="GeneratedFiles\Release\moc_ConcatenationWorker.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_IAlgorithmStrategy.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_IAlgorithmStrategy.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="HilbertEnveloppe.cpp">
-      <Filter>Source Files\AlgorithmStrategy</Filter>
+      <Filter>Source Files\Algorithm\Strategy</Filter>
     </ClCompile>
-    <ClCompile Include="AlgorithmContext.cpp">
-      <Filter>Source Files\AlgorithmStrategy</Filter>
+    <ClCompile Include="AlgorithmStrategyFactory.cpp">
+      <Filter>Source Files\Algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="AlgorithmCalculator.cpp">
+      <Filter>Source Files\Algorithm</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -410,7 +413,7 @@
       <Filter>Header Files\Workers</Filter>
     </CustomBuild>
     <CustomBuild Include="IAlgorithmStrategy.h">
-      <Filter>Header Files\AlgorithmStrategy</Filter>
+      <Filter>Header Files\Algorithm\Strategy</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -499,10 +502,13 @@
       <Filter>Header Files\Tools</Filter>
     </ClInclude>
     <ClInclude Include="HilbertEnveloppe.h">
-      <Filter>Header Files\AlgorithmStrategy</Filter>
+      <Filter>Header Files\Algorithm\Strategy</Filter>
     </ClInclude>
-    <ClInclude Include="AlgorithmContext.h">
-      <Filter>Header Files\AlgorithmStrategy</Filter>
+    <ClInclude Include="AlgorithmCalculator.h">
+      <Filter>Header Files\Algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="AlgorithmStrategyFactory.h">
+      <Filter>Header Files\Algorithm</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

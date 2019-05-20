@@ -143,7 +143,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutDycog.cpp" />
-    <ClCompile Include="AlgorithmContext.cpp" />
+    <ClCompile Include="AlgorithmCalculator.cpp" />
     <ClCompile Include="barsPlotsGenerator.cpp" />
     <ClCompile Include="chooseElec.cpp" />
     <ClCompile Include="ConcatenationWorker.cpp" />
@@ -313,6 +313,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="HilbertEnveloppe.cpp" />
+    <ClCompile Include="AlgorithmStrategyFactory.cpp" />
     <ClCompile Include="ITxtFile.cpp" />
     <ClCompile Include="IWorker.cpp" />
     <ClCompile Include="LOCA.cpp" />
@@ -372,7 +373,8 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -D_CRT_SECURE_NO_WARNINGS -DUNICODE -DWIN32 -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_UITOOLS_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -D%(PreprocessorDefinitions)  "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtUiTools" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtANGLE"</Command>
     </CustomBuild>
-    <ClInclude Include="AlgorithmContext.h" />
+    <ClInclude Include="AlgorithmCalculator.h" />
+    <ClInclude Include="AlgorithmStrategyFactory.h" />
     <ClInclude Include="barsPlotsGenerator.h" />
     <CustomBuild Include="form.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

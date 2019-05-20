@@ -106,7 +106,8 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 
 		if (m_analysisOpt[i].eeg2env2)
 		{
-			myeegContainer->ToHilbert(i, currentFrequencyBand.FrequencyBins());
+			Algorithm::AlgorithmCalculator::ExecuteAlgorithm(Algorithm::Hilbert, myeegContainer, i, currentFrequencyBand.FrequencyBins());
+			myeegContainer->SaveFrequencyData(i, currentFrequencyBand.FrequencyBins());
 			emit incrementAdavnce(1);
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 
@@ -162,7 +163,8 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 		currentFrequencyBand.CheckShannonCompliance(myeegContainer->SamplingFrequency());
 		if (m_analysisOpt[i].eeg2env2)
 		{
-			myeegContainer->ToHilbert(i, currentFrequencyBand.FrequencyBins());
+			Algorithm::AlgorithmCalculator::ExecuteAlgorithm(Algorithm::Hilbert, myeegContainer, i, currentFrequencyBand.FrequencyBins());
+			myeegContainer->SaveFrequencyData(i, currentFrequencyBand.FrequencyBins());
 			emit incrementAdavnce(1);
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 
