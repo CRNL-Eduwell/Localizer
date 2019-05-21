@@ -7,17 +7,15 @@
 
 namespace Algorithm
 {
-	enum AlgorithmType { Hilbert };
-
 	class AlgorithmStrategyFactory
 	{
 	public:
 		AlgorithmStrategyFactory();
 		~AlgorithmStrategyFactory();
-		IAlgorithmStrategy* GetAlgorithmStrategy(AlgorithmType algo);
+		Strategy::IAlgorithmStrategy* GetAlgorithmStrategy(Strategy::AlgorithmType algo);
 
 	private:
-		HilbertEnveloppe* m_hilbert = nullptr;
+		Strategy::HilbertEnveloppe* m_hilbert = nullptr;
 	};
 }
 #endif

@@ -4,7 +4,7 @@ using Framework::Filtering::Linear::Convolution;
 
 //Note : Vérifier si il y'a besoin de garder un vecteur de données Fréquentielle par fréquence, vu que ce n'est pas
 //calculé en même temps on peut garder un seul vecteur de sm0 à sm5000
-void HilbertEnveloppe::Process(eegContainer* EegContainer, int IndexFrequencyData, vector<int> FrequencyBand)
+void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, int IndexFrequencyData, vector<int> FrequencyBand)
 {
 	thread thr[5];
 	int NumberOfSample = EegContainer->Data().size() > 0 ? EegContainer->Data()[0].size() : 0;
@@ -108,7 +108,7 @@ void HilbertEnveloppe::Process(eegContainer* EegContainer, int IndexFrequencyDat
 
 }
 
-void HilbertEnveloppe::InitOutputDataStructure(eegContainer* EegContainer)
+void Algorithm::Strategy::HilbertEnveloppe::InitOutputDataStructure(eegContainer* EegContainer)
 {
 	std::vector<EEGFormat::IElectrode*> bipolesList;
 	int BipoleCount = EegContainer->BipoleCount();
@@ -132,7 +132,7 @@ void HilbertEnveloppe::InitOutputDataStructure(eegContainer* EegContainer)
 	}
 }
 
-void HilbertEnveloppe::CalculateSmoothingCoefficients(int SamplingFrequency, int DownsamplingFactor)
+void Algorithm::Strategy::HilbertEnveloppe::CalculateSmoothingCoefficients(int SamplingFrequency, int DownsamplingFactor)
 {
 	for (int i = 0; i < 6; i++)
 	{
@@ -140,7 +140,7 @@ void HilbertEnveloppe::CalculateSmoothingCoefficients(int SamplingFrequency, int
 	}
 }
 
-void HilbertEnveloppe::HilbertDownSampSumData(DataContainer* DataContainer, int threadId, int freqId)
+void Algorithm::Strategy::HilbertEnveloppe::HilbertDownSampSumData(DataContainer* DataContainer, int threadId, int freqId)
 {
 	if (freqId == 0)
 	{
@@ -180,7 +180,7 @@ void HilbertEnveloppe::HilbertDownSampSumData(DataContainer* DataContainer, int 
 	}
 }
 
-void HilbertEnveloppe::MeanConvolveData(DataContainer* DataContainer, int threadId)
+void Algorithm::Strategy::HilbertEnveloppe::MeanConvolveData(DataContainer* DataContainer, int threadId)
 {
 	for (int i = 0; i < DataContainer->NbSampleDownsampled(); i++)
 	{

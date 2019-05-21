@@ -3,6 +3,8 @@
 
 #include "IFile.h"
 #include "ElanFile.h"
+#include "BrainVisionFile.h"
+#include "../../EEGFormat/EEGFormat/Utility.h"
 #include "eegContainerParameters.h"
 #include "DataContainer.h"
 #include "FirBandPass.h"	
@@ -112,7 +114,7 @@ namespace InsermLibrary
 		void DeleteElectrodes(vector<int> elecToDelete);
 		void GetElectrodes();
 		void BipolarizeElectrodes();
-		void SaveFrequencyData(int IdFrequency, const std::vector<int>& frequencyBand);
+		void SaveFrequencyData(EEGFormat::FileType FileType, int IdFrequency, const std::vector<int>& frequencyBand);
 		void LoadFrequencyData(std::vector<std::string>& filesPath, int frequencyId, int smoothingId);
 
 		//===[ Read / Get Data ]===

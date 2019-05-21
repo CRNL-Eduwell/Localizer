@@ -320,7 +320,6 @@
     <ClCompile Include="localizer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mapsGenerator.cpp" />
-    <ClCompile Include="optionsParameters.cpp" />
     <ClCompile Include="optionsPerf.cpp" />
     <ClCompile Include="optionsStats.cpp" />
     <ClCompile Include="patientFolder.cpp" />

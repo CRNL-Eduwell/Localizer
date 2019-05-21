@@ -25,7 +25,7 @@ void PatientFolderWorker::Process()
 	for (int i = 0; i < m_patient->localizerFolder().size(); i++)
 	{
 		emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + m_patient->localizerFolder()[i].rootLocaFolder() + " ==="));
-		bool extractData = m_frequencyBands.size() > 0 ? m_frequencyBands[0].eeg2env2 : false; //for now it's the same analysus choice for each band , might change in the future
+		bool extractData = m_frequencyBands.size() > 0 ? m_frequencyBands[0].analysisParameters.eeg2env2 : false; //for now it's the same analysus choice for each band , might change in the future
 		myContainer = ExtractData(m_patient->localizerFolder()[i], extractData, i, m_frequencyBands.size());
 
 		if (myContainer != nullptr)

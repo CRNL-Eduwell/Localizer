@@ -2,7 +2,7 @@
 
 Algorithm::AlgorithmStrategyFactory::AlgorithmStrategyFactory()
 {
-	m_hilbert = new HilbertEnveloppe();
+	m_hilbert = new Strategy::HilbertEnveloppe();
 };
 
 Algorithm::AlgorithmStrategyFactory::~AlgorithmStrategyFactory()
@@ -10,11 +10,11 @@ Algorithm::AlgorithmStrategyFactory::~AlgorithmStrategyFactory()
 	EEGFormat::Utility::DeleteAndNullify(m_hilbert);
 };
 
-IAlgorithmStrategy* Algorithm::AlgorithmStrategyFactory::GetAlgorithmStrategy(AlgorithmType algo)
+Algorithm::Strategy::IAlgorithmStrategy* Algorithm::AlgorithmStrategyFactory::GetAlgorithmStrategy(Strategy::AlgorithmType algo)
 {
 	switch (algo)
 	{
-	case AlgorithmType::Hilbert:
+	case Strategy::AlgorithmType::Hilbert:
 		return m_hilbert;
 		break;
 	default:

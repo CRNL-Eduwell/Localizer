@@ -188,9 +188,6 @@
     <ClCompile Include="barsPlotsGenerator.cpp">
       <Filter>Source Files\Draw</Filter>
     </ClCompile>
-    <ClCompile Include="optionsParameters.cpp">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_form.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>

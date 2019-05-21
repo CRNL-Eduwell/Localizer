@@ -63,7 +63,7 @@ void InsermLibrary::eegContainer::BipolarizeElectrodes()
 	}
 }
 
-void InsermLibrary::eegContainer::SaveFrequencyData(int IdFrequency, const std::vector<int>& frequencyBand)
+void InsermLibrary::eegContainer::SaveFrequencyData(EEGFormat::FileType FileType, int IdFrequency, const std::vector<int>& frequencyBand)
 {
 	std::string rootFileFolder = EEGFormat::Utility::GetDirectoryPath(m_file->DefaultFilePath());
 	std::string patientName = EEGFormat::Utility::GetFileName(m_file->DefaultFilePath(), false);
@@ -79,8 +79,39 @@ void InsermLibrary::eegContainer::SaveFrequencyData(int IdFrequency, const std::
 
 	for (int i = 0; i < 6; i++)
 	{
-		std::string nameOuputFile = rootFrequencyFolder + patientName + frequencyFolder + "_ds" + to_string(DownsamplingFactor()) + "_sm" + to_string((int)m_smoothingMilliSec[i]);
-		elanFrequencyBand[IdFrequency][i]->SaveAs(nameOuputFile + ".eeg.ent", nameOuputFile + ".eeg", "", "");
+		std::string directory = rootFrequencyFolder;
+		std::string baseFileName = patientName + frequencyFolder + "_ds" + to_string(DownsamplingFactor()) + "_sm" + to_string((int)m_smoothingMilliSec[i]);
+		switch (FileType)
+		{
+			case EEGFormat::FileType::Micromed:
+			{
+				throw std::runtime_error("Micromed File type is not allowed as an output file");
+				break;
+			}
+			case EEGFormat::FileType::Elan:
+			{
+				std::string baseFileName = rootFrequencyFolder + patientName + frequencyFolder + "_ds" + to_string(DownsamplingFactor()) + "_sm" + to_string((int)m_smoothingMilliSec[i]);
+				elanFrequencyBand[IdFrequency][i]->SaveAs(baseFileName + ".eeg.ent", baseFileName + ".eeg", "", "");
+				break;
+			}
+			case EEGFormat::FileType::BrainVision:
+			{
+				EEGFormat::BrainVisionFile* bvFile = new EEGFormat::BrainVisionFile(*elanFrequencyBand[IdFrequency][i]);
+				bvFile->SaveAs(rootFrequencyFolder, baseFileName);
+				EEGFormat::Utility::DeleteAndNullify(bvFile);
+				break;
+			}
+			case EEGFormat::FileType::EuropeanDataFormat:
+			{
+				throw std::runtime_error("European Data Format file type is not allowed as an output file");
+				break;
+			}
+			default:
+			{
+				throw std::runtime_error("Output file type not recognized");
+				break;
+			}
+		}
 	}
 }
 

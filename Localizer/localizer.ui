@@ -288,12 +288,12 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoadPatientFolder">
    <property name="text">
-    <string>Charger un dossier Patient</string>
+    <string>Load Patient Folder</string>
    </property>
   </action>
   <action name="actionLoadSingleFiles">
    <property name="text">
-    <string>Charger un fichier individuel</string>
+    <string>Load Single File(s)</string>
    </property>
   </action>
   <action name="actionTRSecator">

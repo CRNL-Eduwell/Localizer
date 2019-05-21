@@ -299,7 +299,9 @@ std::vector<FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
 	for (int i = 0; i < indexes.size(); i++)
 	{
 		//	- env2plot and / or trial mat
-		analysisOpt[i].eeg2env2 = ui.Eeg2envCheckBox->isChecked();
+		analysisOpt[i].analysisParameters.eeg2env2 = ui.Eeg2envCheckBox->isChecked();
+		analysisOpt[i].analysisParameters.outputType = EEGFormat::GetFileTypeFromString(ui.FileOutputComboBox->currentText().toStdString());
+		analysisOpt[i].analysisParameters.calculationType = Algorithm::Strategy::GetFileTypeFromString(ui.AnalysisCcomboBox->currentText().toStdString());
 		analysisOpt[i].env2plot = ui.Env2plotCheckBox->isChecked();
 		analysisOpt[i].trialmat = ui.TrialmatCheckBox->isChecked();
 
