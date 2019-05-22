@@ -90,14 +90,20 @@ void InsermLibrary::eegContainer::SaveFrequencyData(EEGFormat::FileType FileType
 			}
 			case EEGFormat::FileType::Elan:
 			{
-				std::string baseFileName = rootFrequencyFolder + patientName + frequencyFolder + "_ds" + to_string(DownsamplingFactor()) + "_sm" + to_string((int)m_smoothingMilliSec[i]);
-				elanFrequencyBand[IdFrequency][i]->SaveAs(baseFileName + ".eeg.ent", baseFileName + ".eeg", "", "");
+				elanFrequencyBand[IdFrequency][i]->SaveAs(rootFrequencyFolder + baseFileName + ".eeg.ent", rootFrequencyFolder + baseFileName + ".eeg", "", "");
 				break;
 			}
 			case EEGFormat::FileType::BrainVision:
 			{
+				std::string header = rootFrequencyFolder + baseFileName + ".vhdr";
+				std::string data = rootFrequencyFolder + baseFileName + ".eeg";
+			
 				EEGFormat::BrainVisionFile* bvFile = new EEGFormat::BrainVisionFile(*elanFrequencyBand[IdFrequency][i]);
-				bvFile->SaveAs(rootFrequencyFolder, baseFileName);
+				bvFile->HeaderFilePath(header);
+				bvFile->DataFilePath(data);
+				bvFile->MarkersFilePath("");
+				bvFile->Save();
+
 				EEGFormat::Utility::DeleteAndNullify(bvFile);
 				break;
 			}

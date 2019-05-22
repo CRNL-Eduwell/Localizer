@@ -168,7 +168,7 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 			emit incrementAdavnce(1);
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 
-			CreateEventsFile(myeegContainer, m_triggerContainer, nullptr);
+			CreateEventsFile(m_analysisOpt[i], myeegContainer, m_triggerContainer, nullptr);
 		}
 	}
 }
@@ -182,7 +182,7 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 	vector<PROV> provFiles = loadProvCurrentLoca();
 	for (int i = 0; i < provFiles.size(); i++)
 	{
-		CreateEventsFile(myeegContainer, m_triggerContainer, &provFiles[i]);
+		CreateEventsFile(a, myeegContainer, m_triggerContainer, &provFiles[i]);
 		CreateConfFile(myeegContainer);
 		m_triggerContainer->ProcessEventsForExperiment(&provFiles[i], 99);
 
@@ -211,34 +211,144 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 	}
 }
 
-/**************************************************/
-/* Elan Compatibility							  */
-/*   - Pos File : Events from eeg Data			  */
-/*	 - Conf File								  */
-/*	 - Rename Trigger : For visualisation purpose */
-/**************************************************/
-void InsermLibrary::LOCA::CreateEventsFile(eegContainer *myeegContainer, TriggerContainer *triggerContainer, PROV *myprovFile)
+void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt, eegContainer *myeegContainer, TriggerContainer *triggerContainer, PROV *myprovFile)
 {
 	std::string fileNameBase = myeegContainer->RootFileFolder() + myeegContainer->RootFileName();
 
-	std::string triggersPosFilePath = fileNameBase + ".pos";
-	std::vector<Trigger> triggers = triggerContainer->GetTriggerForExperiment(myprovFile, 99);
-	CreatePosFile(triggersPosFilePath, triggers);
-	std::vector<Trigger> triggersDownsampled = triggerContainer->GetTriggerForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
-	std::string downsampledTriggersPosFilePath = fileNameBase + "_ds" + to_string(myeegContainer->DownsamplingFactor()) + ".pos";
-	CreatePosFile(downsampledTriggersPosFilePath, triggersDownsampled);
+	EEGFormat::FileType outputType = analysisOpt.analysisParameters.outputType;
+	switch (outputType)
+	{
+		case EEGFormat::FileType::Micromed:
+		{
+			throw std::runtime_error("Micromed File type is not allowed as an event output file");
+			break;
+		}
+		case EEGFormat::FileType::Elan:
+		{
+			std::string eventFilePath = fileNameBase + ".pos";
+			std::string downsampledEventsFilePath = fileNameBase + "_ds" + to_string(myeegContainer->DownsamplingFactor()) + ".pos";
+			std::vector<Trigger> triggers = triggerContainer->GetTriggerForExperiment(myprovFile, 99);
+			std::vector<Trigger> triggersDownsampled = triggerContainer->GetTriggerForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
+			CreateFile(outputType, eventFilePath, triggers);
+			CreateFile(outputType, downsampledEventsFilePath, triggersDownsampled);
+			break;
+		}
+		case EEGFormat::FileType::BrainVision:
+		{
+			std::string eventFilePath = fileNameBase + ".vmkr";
+			std::string downsampledEventsFilePath = fileNameBase + "_ds" + to_string(myeegContainer->DownsamplingFactor()) + ".vmkr";
+			std::vector<Trigger> triggers = triggerContainer->GetTriggerForExperiment(myprovFile, 99);
+			std::vector<Trigger> triggersDownsampled = triggerContainer->GetTriggerForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
+			CreateFile(outputType, eventFilePath, triggers);
+			CreateFile(outputType, downsampledEventsFilePath, triggersDownsampled);
+
+			std::string frequencySuffix = "f" + std::to_string(analysisOpt.Band.FMin()) + "f" + std::to_string(analysisOpt.Band.FMax());
+			RelinkAnalysisFileAnUglyWay(myeegContainer->RootFileFolder(), myeegContainer->RootFileName(),frequencySuffix, to_string(myeegContainer->DownsamplingFactor()));
+			break;
+		}
+		case EEGFormat::FileType::EuropeanDataFormat:
+		{
+			throw std::runtime_error("European Data Format file type is not allowed as an output file");
+			break;
+		}
+		default:
+		{
+			throw std::runtime_error("Output file type not recognized");
+			break;
+		}
+	}
 }
 
-void InsermLibrary::LOCA::CreatePosFile(std::string filePath, std::vector<Trigger> & triggers)
+void InsermLibrary::LOCA::CreateFile(EEGFormat::FileType outputType, std::string filePath, std::vector<Trigger> & triggers)
 {
 	std::vector<EEGFormat::ITrigger> iTriggers(triggers.size());
 	for (int i = 0; i < iTriggers.size(); i++)
 	{
 		iTriggers[i] = EEGFormat::ITrigger(triggers[i].MainEvent());
 	}
-	EEGFormat::ElanFile::SaveTriggers(filePath, iTriggers);
+
+	switch (outputType)
+	{
+		case EEGFormat::FileType::Micromed:
+		{
+			throw std::runtime_error("Micromed File type is not allowed as an event output file");
+			break;
+		}
+		case EEGFormat::FileType::Elan:
+		{
+			EEGFormat::ElanFile::SaveTriggers(filePath, iTriggers);
+			break;
+		}
+		case EEGFormat::FileType::BrainVision:
+		{
+			EEGFormat::BrainVisionFile::SaveMarkers(filePath, iTriggers, std::vector<EEGFormat::INote>());
+			break;
+		}
+		case EEGFormat::FileType::EuropeanDataFormat:
+		{
+			throw std::runtime_error("European Data Format file type is not allowed as an output file");
+			break;
+		}
+		default:
+		{
+			throw std::runtime_error("Output file type not recognized");
+			break;
+		}
+	}
 }
 
+//Since each BrainVision file offers the possiblity to link an event file and for
+//each dsX_smX file we want it to point to the same marker file after creating the data
+//we need to open each vhdr file and change the path by hand
+void InsermLibrary::LOCA::RelinkAnalysisFileAnUglyWay(const std::string& rootPath, const std::string& fileNameBase, const std::string& frequencySuffix, const std::string& downsamplingFactor)
+{
+	std::string frequencyFolder = fileNameBase + "_" + frequencySuffix;
+
+	std::vector<std::string> pathToCheck;
+	pathToCheck.push_back(rootPath + frequencyFolder + "/" + frequencyFolder + "_ds" + downsamplingFactor + "_sm0.vhdr");
+	pathToCheck.push_back(rootPath + frequencyFolder + "/" + frequencyFolder + "_ds" + downsamplingFactor + "_sm250.vhdr");
+	pathToCheck.push_back(rootPath + frequencyFolder + "/" + frequencyFolder + "_ds" + downsamplingFactor + "_sm500.vhdr");
+	pathToCheck.push_back(rootPath + frequencyFolder + "/" + frequencyFolder + "_ds" + downsamplingFactor + "_sm1000.vhdr");
+	pathToCheck.push_back(rootPath + frequencyFolder + "/" + frequencyFolder + "_ds" + downsamplingFactor + "_sm2500.vhdr");
+	pathToCheck.push_back(rootPath + frequencyFolder + "/" + frequencyFolder + "_ds" + downsamplingFactor + "_sm5000.vhdr");
+
+	int PathCount = pathToCheck.size();
+	for (int i = 0; i < PathCount; i++)
+	{
+		if (EEGFormat::Utility::IsValidFile(pathToCheck[i]))
+		{
+			std::vector<std::string> rawHeader = EEGFormat::Utility::ReadTextFile(pathToCheck[i]);
+			int LineCount = rawHeader.size();
+			if (LineCount == 0)
+				throw std::runtime_error("Error, this file should not be empty");
+
+			auto it = std::find_if(rawHeader.begin(), rawHeader.end(), [&](const std::string& str)
+			{
+				return str.find("MarkerFile=") != std::string::npos; 
+			});
+			
+			if (it != rawHeader.end())
+			{
+				int id = std::distance(rawHeader.begin(), it);
+				rawHeader[id] = "MarkerFile=../" + fileNameBase + "_ds" + downsamplingFactor + ".vmkr";
+				
+				std::ofstream markersFile(pathToCheck[i], std::ios::trunc | std::ios::binary);
+				if (markersFile.is_open())
+				{
+					for (int j = 0; j < LineCount; j++)
+					{
+						markersFile << rawHeader[j] << std::endl;
+					}
+				}
+				markersFile.close();
+			}
+		}
+	}
+}
+
+/**************************************************/
+/*		Elan Compatibility : Conf File			  */
+/**************************************************/
 void InsermLibrary::LOCA::CreateConfFile(eegContainer *myeegContainer)
 {
 	std::string outputConfFilePath = myeegContainer->RootFileFolder() + myeegContainer->RootFileName();
@@ -279,6 +389,8 @@ void InsermLibrary::LOCA::CreateConfFile(eegContainer *myeegContainer)
 	}
 	confFile.close();
 }
+
+
 
 /*********************************/
 /* Various check before analysis */

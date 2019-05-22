@@ -42,9 +42,11 @@ namespace InsermLibrary
 	private:
 		void toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreq, string freqFolder, FrequencyBandAnalysisOpt a);
 		//==
-		void CreateEventsFile(eegContainer *myeegContainer, TriggerContainer *triggerContainer, PROV *myprovFile);
-		void CreatePosFile(std::string filePath, std::vector<Trigger> & triggers);
+		void CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt, eegContainer *myeegContainer, TriggerContainer *triggerContainer, PROV *myprovFile);
+		void CreateFile(EEGFormat::FileType outputType, std::string filePath, std::vector<Trigger> & triggers);
 		void CreateConfFile(eegContainer *myeegContainer);
+		void RelinkAnalysisFileAnUglyWay(const std::string& rootPath, const std::string& fileNameBase, const std::string& frequencySuffix, const std::string& downsamplingFactor);
+
 		//==
 		string createIfFreqFolderExistNot(eegContainer *myeegContainer, FrequencyBand currentFreq);
 		vector<PROV> loadProvCurrentLoca();
