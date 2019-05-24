@@ -120,19 +120,14 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 			{
 				string fMin = to_string(currentFrequencyBand.FMin());
 				string fMax = to_string(currentFrequencyBand.FMax());
+				std::vector<std::string> sm0Files = currentLoca->frequencyFolders()[j].FilePaths(SM0_ELAN);
 
-				if ((currentLoca->frequencyFolders()[j].frequencyName() == "f" + fMin + "f" + fMax) &&
-					(currentLoca->frequencyFolders()[j].filePath(SM0_ELAN) != ""))
+				if ((currentLoca->frequencyFolders()[j].frequencyName() == "f" + fMin + "f" + fMax) && (sm0Files.size() > 0))
 				{
-					std::string dataFile = currentLoca->frequencyFolders()[j].filePath(SM0_ELAN);
-
-					std::vector<std::string> filesPath;
-					filesPath.push_back(dataFile + ".ent");
-					filesPath.push_back(dataFile);
-
-					if (EEGFormat::Utility::IsValidFile(filesPath[0]) && EEGFormat::Utility::IsValidFile(filesPath[1]))
-					{				
-						myeegContainer->LoadFrequencyData(filesPath, i, 0);
+					std::vector<std::string> dataFiles = currentLoca->frequencyFolders()[j].FilePaths(SM0_ELAN);
+					int result = myeegContainer->LoadFrequencyData(dataFiles, i, 0);
+					if(result == 0)
+					{
 						emit incrementAdavnce(1);
 						emit sendLogInfo("Envelloppe File Loaded");
 
@@ -389,8 +384,6 @@ void InsermLibrary::LOCA::CreateConfFile(eegContainer *myeegContainer)
 	}
 	confFile.close();
 }
-
-
 
 /*********************************/
 /* Various check before analysis */

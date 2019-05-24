@@ -1,10 +1,11 @@
 #ifndef _EEGCONTAINER_H
 #define _EEGCONTAINER_H
 
-#include "IFile.h"
-#include "ElanFile.h"
-#include "BrainVisionFile.h"
+#include "../../EEGFormat/EEGFormat/IFile.h"
+#include "../../EEGFormat/EEGFormat/ElanFile.h"
+#include "../../EEGFormat/EEGFormat/BrainVisionFile.h"
 #include "../../EEGFormat/EEGFormat/Utility.h"
+#include "../../EEGFormat/EEGFormat/Wrapper.h"
 #include "eegContainerParameters.h"
 #include "DataContainer.h"
 #include "FirBandPass.h"	
@@ -115,7 +116,7 @@ namespace InsermLibrary
 		void GetElectrodes();
 		void BipolarizeElectrodes();
 		void SaveFrequencyData(EEGFormat::FileType FileType, int IdFrequency, const std::vector<int>& frequencyBand);
-		void LoadFrequencyData(std::vector<std::string>& filesPath, int frequencyId, int smoothingId);
+		int LoadFrequencyData(std::vector<std::string>& filesPath, int frequencyId, int smoothingId);
 
 		//===[ Read / Get Data ]===
 		void GetFrequencyBlocData(vec3<float>& outputEegData, int frequencyId, int smoothingId, std::vector<Trigger>& triggEeg, int winSam[2]);
@@ -127,7 +128,7 @@ namespace InsermLibrary
 
 	public :
 		//[IdNbFrequency][sm0-sm5000][channels][sample]
-		std::vector<std::vector<EEGFormat::ElanFile*>> elanFrequencyBand;
+		std::vector<std::vector<EEGFormat::IFile*>> elanFrequencyBand;
 		vector<elecContainer> electrodes;
 		vector<string> flatElectrodes;
 		vector<int> idElecToDelete;

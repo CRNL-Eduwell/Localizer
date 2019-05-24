@@ -238,6 +238,39 @@ string frequencyFolder::filePath(FileExt wantedFile)
 	}
 }
 
+//In the case where the user has generated ElanFile and then BrainVision File
+//or the other way around , we will have two header files and one data, for now 
+//there is no way to tell which one is the correct one so we send back
+//no paths , in the future, we might try to open the files to tell which one 
+//is the correct one
+std::vector<std::string> frequencyFolder::FilePaths(FileExt wantedFile)
+{
+	switch (wantedFile)
+	{
+	case SM0_ELAN:
+		return m_smXFiles.size() > 0 ? GetFirstFullDataSet(m_smXFiles[0]) : std::vector<std::string>();
+		break;
+	case SM250_ELAN:
+		return m_smXFiles.size() > 1 ? GetFirstFullDataSet(m_smXFiles[1]) : std::vector<std::string>();
+		break;
+	case SM500_ELAN:
+		return m_smXFiles.size() > 2 ? GetFirstFullDataSet(m_smXFiles[2]) : std::vector<std::string>();
+		break;
+	case SM1000_ELAN:
+		return m_smXFiles.size() > 3 ? GetFirstFullDataSet(m_smXFiles[3]) : std::vector<std::string>();
+		break;
+	case SM2500_ELAN:
+		return m_smXFiles.size() > 4 ? GetFirstFullDataSet(m_smXFiles[4]) : std::vector<std::string>();
+		break;
+	case SM5000_ELAN:
+		return m_smXFiles.size() > 5 ? GetFirstFullDataSet(m_smXFiles[5]) : std::vector<std::string>();
+		break;
+	default:
+		return std::vector<std::string>();
+		break;
+	}
+}
+
 bool frequencyFolder::hasTrialMap()
 {
 	for (int k = 0; k < m_dataFolders.size(); k++)
@@ -271,7 +304,7 @@ void frequencyFolder::getFreqBandName(string rootFreqFolder)
 	m_frequencyName = splitPath[splitPath.size() - 1];
 }
 
-void frequencyFolder::retrieveSMFile(string rootFreqFolder)
+void frequencyFolder::retrieveSMFile2(string rootFreqFolder)
 {
 	QDir currentDir(rootFreqFolder.c_str());
 	currentDir.setNameFilters(QStringList() << "*.eeg" << "*.eeg.ent");
@@ -306,6 +339,33 @@ void frequencyFolder::retrieveSMFile(string rootFreqFolder)
 	}
 }
 
+void frequencyFolder::retrieveSMFile(string rootFreqFolder)
+{
+	QDir currentDir(rootFreqFolder.c_str());
+	currentDir.setNameFilters(QStringList() << "*.eeg" << "*.eeg.ent" << "*.vhdr");
+
+	std::vector<QRegExp> rxEegSmX;
+	rxEegSmX.push_back(QRegExp(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm0") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
+	rxEegSmX.push_back(QRegExp(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm250") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
+	rxEegSmX.push_back(QRegExp(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm500") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
+	rxEegSmX.push_back(QRegExp(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm1000") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
+	rxEegSmX.push_back(QRegExp(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm2500") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
+	rxEegSmX.push_back(QRegExp(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm5000") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
+
+	m_smXFiles.resize(6, std::vector<std::string>());
+	QStringList fileFound = currentDir.entryList();
+	for (int i = 0; i < fileFound.size(); i++)
+	{
+		for (int j = 0; j < 6; j++)
+		{
+			if (rxEegSmX[j].exactMatch(fileFound[i]))
+			{
+				m_smXFiles[j].push_back(rootFreqFolder + fileFound[i].toStdString());
+			}
+		}
+	}
+}
+
 void frequencyFolder::retrieveDataFolders(string rootFreqFolder)
 {
 	QDir currentDir(rootFreqFolder.c_str());
@@ -319,6 +379,40 @@ void frequencyFolder::retrieveDataFolders(string rootFreqFolder)
 		{
 			m_dataFolders.push_back(analyzedDataFolder(this, rootFreqFolder + dirname.toStdString() + "/"));
 		}
+	}
+}
+
+std::vector<std::string> frequencyFolder::GetFirstFullDataSet(const std::vector<std::string>& rawFilePaths)
+{
+	std::vector<std::string> FileExtensions;
+	for (int i = 0; i < rawFilePaths.size(); i++)
+	{
+		FileExtensions.push_back(EEGFormat::Utility::GetFileExtension(rawFilePaths[i]));
+	}
+
+	if(FileExtensions.size() > 0 && FileExtensions.size() < 3)
+	{
+		std::vector<std::string> DataSet;
+		auto itBV = std::find_if(FileExtensions.begin(), FileExtensions.end(), [&](const std::string& str) { return str.compare("vhdr") == 0; });
+		if (itBV != FileExtensions.end())
+		{
+			int id = std::distance(FileExtensions.begin(), itBV);
+			DataSet.push_back(rawFilePaths[id]);
+			return DataSet;
+		}
+		else
+		{
+			for (int i = 0; i < FileExtensions.size(); i++)
+			{
+				DataSet.push_back(rawFilePaths[i]);
+			}
+			return DataSet;
+		}
+
+	}
+	else
+	{
+		return std::vector<std::string>();
 	}
 }
 

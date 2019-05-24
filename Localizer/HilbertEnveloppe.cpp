@@ -14,7 +14,7 @@ void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, 
 	CalculateSmoothingCoefficients(EegContainer->SamplingFrequency(), EegContainer->DownsampledFrequency());
 	InitOutputDataStructure(EegContainer);
 
-	std::vector<EEGFormat::ElanFile*> FrequencyBandFiles = EegContainer->elanFrequencyBand[IndexFrequencyData];
+	std::vector<EEGFormat::IFile*> FrequencyBandFiles = EegContainer->elanFrequencyBand[IndexFrequencyData];
 	for (int i = 0; i < NumberOfElement / 5; i++)
 	{
 		for (int j = 0; j < 5; j++)

@@ -8,7 +8,7 @@ InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFr
 	fftwf_init_threads();
 	fftwf_plan_with_nthreads(5);
 
-	elanFrequencyBand.resize(nbFreqBand, std::vector<EEGFormat::ElanFile*>(6));
+	elanFrequencyBand.resize(nbFreqBand, std::vector<EEGFormat::IFile*>(6));
 
 	m_file = file;
 	GetElectrodes(m_file);
@@ -90,7 +90,8 @@ void InsermLibrary::eegContainer::SaveFrequencyData(EEGFormat::FileType FileType
 			}
 			case EEGFormat::FileType::Elan:
 			{
-				elanFrequencyBand[IdFrequency][i]->SaveAs(rootFrequencyFolder + baseFileName + ".eeg.ent", rootFrequencyFolder + baseFileName + ".eeg", "", "");
+				EEGFormat::ElanFile* elanFile = new EEGFormat::ElanFile(*elanFrequencyBand[IdFrequency][i]);
+				elanFile->SaveAs(rootFrequencyFolder + baseFileName + ".eeg.ent", rootFrequencyFolder + baseFileName + ".eeg", "", "");
 				break;
 			}
 			case EEGFormat::FileType::BrainVision:
@@ -122,16 +123,22 @@ void InsermLibrary::eegContainer::SaveFrequencyData(EEGFormat::FileType FileType
 }
 
 //Advised order for filePaths : header-data-events-notes
-void InsermLibrary::eegContainer::LoadFrequencyData(std::vector<std::string>& filesPath, int frequencyId, int smoothingId)
+int InsermLibrary::eegContainer::LoadFrequencyData(std::vector<std::string>& filesPath, int frequencyId, int smoothingId)
 {
-	if (filesPath.size() > 0)
+	std::string concatenatedFiles = "";
+	for (int i = 0; i < filesPath.size(); i++)
 	{
-		elanFrequencyBand[frequencyId][smoothingId] = new EEGFormat::ElanFile(filesPath[0], filesPath[1]);
-		elanFrequencyBand[frequencyId][smoothingId]->Load();
-		int nbElectrodes = elanFrequencyBand[frequencyId][smoothingId]->ElectrodeCount();
-		std::vector<int> dummyIds = std::vector<int>{ nbElectrodes - 2, nbElectrodes - 1 };
-		elanFrequencyBand[frequencyId][smoothingId]->DeleteElectrodesAndData(dummyIds);
+		concatenatedFiles += filesPath[i];
+		if (i < filesPath.size() - 1)
+			concatenatedFiles += ";";
 	}
+
+	elanFrequencyBand[frequencyId][smoothingId] = CreateGenericFile(concatenatedFiles.c_str(), true);
+	if (elanFrequencyBand[frequencyId][smoothingId] == nullptr)
+		return -1;
+	else
+		return 0;
+
 }
 
 void InsermLibrary::eegContainer::GetFrequencyBlocData(vec3<float>& outputEegData, int frequencyId, int smoothingId, std::vector<Trigger>& triggEeg, int winSam[2])
@@ -158,7 +165,7 @@ void InsermLibrary::eegContainer::GetFrequencyBlocData(vec3<float>& outputEegDat
 				if (beginTime + k < 0)
 					outputEegData[i][j][k] = 0;
 				else
-					outputEegData[i][j][k] = (elanFrequencyBand[frequencyId][smoothingId]->Data(EEGFormat::DataConverterType::Digital)[i][beginTime + k] - 1000) / 10;
+					outputEegData[i][j][k] = (elanFrequencyBand[frequencyId][smoothingId]->Data(EEGFormat::DataConverterType::Digital)[i][beginTime + k] -1000) / 10;
 			}
 		}
 	}
@@ -188,7 +195,7 @@ void InsermLibrary::eegContainer::GetFrequencyBlocDataEvents(vec3<float>& output
 				if (beginTime + j < 0)
 					outputEegData[i][k][j] = 0;
 				else
-					outputEegData[i][k][j] = (elanFrequencyBand[frequencyId][smoothingId]->Data(EEGFormat::DataConverterType::Analog)[k][beginTime + j] - 1000) / 10;
+					outputEegData[i][k][j] = (elanFrequencyBand[frequencyId][smoothingId]->Data(EEGFormat::DataConverterType::Digital)[k][beginTime + j] -1000) / 10;
 			}
 		}
 	}

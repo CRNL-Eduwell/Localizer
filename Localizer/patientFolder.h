@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include "Utility.h"
+#include "../../EEGFormat/EEGFormat/Utility.h"
 
 #include <QDir>
 #include <QString>
@@ -52,14 +53,17 @@ public:
 	inline std::string frequencyName() const { return m_frequencyName; };
 	std::string fullFrequencyName();
 	std::string filePath(FileExt wantedFile);
+	std::vector<std::string> FilePaths(FileExt wantedFile);
 	inline std::string rootFrequencyFolder() const { return m_rootFrequencyFolder; };
 	bool hasTrialMap();
 	bool hasEnvBar();
 
 private :
 	void getFreqBandName(std::string rootFreqFolder);
+	void retrieveSMFile2(std::string rootFreqFolder);
 	void retrieveSMFile(std::string rootFreqFolder);
 	void retrieveDataFolders(std::string rootFreqFolder);
+	std::vector<std::string> GetFirstFullDataSet(const std::vector<std::string>& rawFilePaths);
 
 private:
 	std::string m_sm0eeg;
@@ -68,6 +72,7 @@ private:
 	std::string m_sm1000eeg;
 	std::string m_sm2500eeg;
 	std::string m_sm5000eeg;
+	std::vector<std::vector<std::string>> m_smXFiles;
 	std::vector<analyzedDataFolder> m_dataFolders;
 	//===
 	std::string m_frequencyName = "";
