@@ -58,9 +58,9 @@ void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, 
 		{
 			for (int k = 0; k < 5; k++)
 			{
-				for (int l = 0; l < FrequencyBandFiles[j]->Data(EEGFormat::DataConverterType::Digital)[(i * 5) + k].size(); l++)
+				for (int l = 0; l < FrequencyBandFiles[j]->Data(EEGFormat::DataConverterType::Analog)[(i * 5) + k].size(); l++)
 				{
-					FrequencyBandFiles[j]->Data(EEGFormat::DataConverterType::Digital)[(i * 5) + k][l] = dataCont.convoData[j][k][l];
+					FrequencyBandFiles[j]->Data(EEGFormat::DataConverterType::Analog)[(i * 5) + k][l] = dataCont.convoData[j][k][l];
 				}
 			}
 		}
@@ -98,9 +98,9 @@ void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, 
 			for (int j = 0; j < NumberOfElement % 5; j++)
 			{
 				int currentId = (NumberOfElement - (NumberOfElement % 5)) + j;
-				for (int k = 0; k < FrequencyBandFiles[i]->Data(EEGFormat::DataConverterType::Digital)[currentId].size(); k++)
+				for (int k = 0; k < FrequencyBandFiles[i]->Data(EEGFormat::DataConverterType::Analog)[currentId].size(); k++)
 				{
-					FrequencyBandFiles[i]->Data(EEGFormat::DataConverterType::Digital)[currentId][k] = dataCont.convoData[i][j][k];
+					FrequencyBandFiles[i]->Data(EEGFormat::DataConverterType::Analog)[currentId][k] = dataCont.convoData[i][j][k];
 				}
 			}
 		}
@@ -127,7 +127,7 @@ void Algorithm::Strategy::HilbertEnveloppe::InitOutputDataStructure(eegContainer
 			EegContainer->elanFrequencyBand[i][j]->SamplingFrequency(EegContainer->DownsampledFrequency());
 			EegContainer->elanFrequencyBand[i][j]->Electrodes(bipolesList);
 			//Define type of elec : label + "EEG" + "uV"
-			EegContainer->elanFrequencyBand[i][j]->Data(EEGFormat::DataConverterType::Digital).resize((int)bipolesList.size(), std::vector<float>(EegContainer->NbSample() / EegContainer->DownsamplingFactor()));
+			EegContainer->elanFrequencyBand[i][j]->Data(EEGFormat::DataConverterType::Analog).resize((int)bipolesList.size(), std::vector<float>(EegContainer->NbSample() / EegContainer->DownsamplingFactor()));
 		}
 	}
 }
@@ -184,7 +184,7 @@ void Algorithm::Strategy::HilbertEnveloppe::MeanConvolveData(DataContainer* Data
 {
 	for (int i = 0; i < DataContainer->NbSampleDownsampled(); i++)
 	{
-		DataContainer->meanData[threadId][i] = (10 * DataContainer->meanData[threadId][i]) / (DataContainer->NbFrequencySlices() - 1);
+		DataContainer->meanData[threadId][i] = (DataContainer->meanData[threadId][i]) / (DataContainer->NbFrequencySlices() - 1);
 		DataContainer->convoData[0][threadId][i] = DataContainer->meanData[threadId][i];
 	}
 

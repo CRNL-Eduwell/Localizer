@@ -152,6 +152,7 @@ void InsermLibrary::eegContainer::GetFrequencyBlocData(vec3<float>& outputEegDat
 		}
 	}
 
+	std::vector<std::vector<float>> currentData = elanFrequencyBand[frequencyId][smoothingId]->Data(EEGFormat::DataConverterType::Analog);
 	for (int i = 0; i < elanFrequencyBand[frequencyId][smoothingId]->ElectrodeCount(); i++)
 	{
 		for (int j = 0; j < TriggerCount; j++)
@@ -165,7 +166,7 @@ void InsermLibrary::eegContainer::GetFrequencyBlocData(vec3<float>& outputEegDat
 				if (beginTime + k < 0)
 					outputEegData[i][j][k] = 0;
 				else
-					outputEegData[i][j][k] = (elanFrequencyBand[frequencyId][smoothingId]->Data(EEGFormat::DataConverterType::Digital)[i][beginTime + k] -1000) / 10;
+					outputEegData[i][j][k] = (currentData[i][beginTime + k] - 100);
 			}
 		}
 	}
@@ -182,6 +183,7 @@ void InsermLibrary::eegContainer::GetFrequencyBlocDataEvents(vec3<float>& output
 		}
 	}
 
+	std::vector<std::vector<float>> currentData = elanFrequencyBand[frequencyId][smoothingId]->Data(EEGFormat::DataConverterType::Analog);
 	for (int i = 0; i < TriggerCount; i++)
 	{
 		for (int j = 0; j < winSam[1] - winSam[0]; j++)
@@ -195,7 +197,7 @@ void InsermLibrary::eegContainer::GetFrequencyBlocDataEvents(vec3<float>& output
 				if (beginTime + j < 0)
 					outputEegData[i][k][j] = 0;
 				else
-					outputEegData[i][k][j] = (elanFrequencyBand[frequencyId][smoothingId]->Data(EEGFormat::DataConverterType::Digital)[k][beginTime + j] -1000) / 10;
+					outputEegData[i][k][j] = (currentData[k][beginTime + j] - 100);
 			}
 		}
 	}
