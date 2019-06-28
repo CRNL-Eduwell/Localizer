@@ -168,17 +168,25 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 	}
 }
 
-void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreqfrequency, 
-													 string freqFolder, FrequencyBandAnalysisOpt a)
+void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreqfrequency, std::string freqFolder, FrequencyBandAnalysisOpt a)
 {
 	deleteAndNullify1D(m_triggerContainer);
 	m_triggerContainer = new TriggerContainer(myeegContainer->Triggers(), myeegContainer->SamplingFrequency());
 
-	vector<PROV> provFiles = loadProvCurrentLoca();
+	//We generate file.pos and file_dsX.pos if we find a prov file 
+	//with the exact same name as the experiment.
+	
+	PROV* mainTask = LoadProvForTask();
+	if (mainTask != nullptr)
+	{
+		CreateEventsFile(a, myeegContainer, m_triggerContainer, mainTask);
+		CreateConfFile(myeegContainer);
+		EEGFormat::Utility::DeleteAndNullify(mainTask);
+	}
+
+	std::vector<PROV> provFiles = LoadAllProvForTask();
 	for (int i = 0; i < provFiles.size(); i++)
 	{
-		CreateEventsFile(a, myeegContainer, m_triggerContainer, &provFiles[i]);
-		CreateConfFile(myeegContainer);
 		m_triggerContainer->ProcessEventsForExperiment(&provFiles[i], 99);
 
 		if (a.env2plot)
@@ -388,7 +396,7 @@ void InsermLibrary::LOCA::CreateConfFile(eegContainer *myeegContainer)
 /*********************************/
 /* Various check before analysis */
 /*********************************/
-string InsermLibrary::LOCA::createIfFreqFolderExistNot(eegContainer *myeegContainer, FrequencyBand currentFreq)
+std::string InsermLibrary::LOCA::createIfFreqFolderExistNot(eegContainer *myeegContainer, FrequencyBand currentFreq)
 {
 	std::string fMin = std::to_string(currentFreq.FMin());
 	std::string fMax = std::to_string(currentFreq.FMax());
@@ -403,14 +411,31 @@ string InsermLibrary::LOCA::createIfFreqFolderExistNot(eegContainer *myeegContai
 	return freqFolder;
 }
 
-vector<PROV> InsermLibrary::LOCA::loadProvCurrentLoca()
+PROV* InsermLibrary::LOCA::LoadProvForTask()
 {
-	vector<PROV> provFiles;
+	std::string MainProvPath = "./Resources/Config/Prov/" + m_currentLoca->localizerName() + ".prov";
+	if (EEGFormat::Utility::DoesFileExist(MainProvPath))
+	{
+		return new PROV(MainProvPath);
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+std::vector<PROV> InsermLibrary::LOCA::LoadAllProvForTask()
+{
+	std::vector<PROV> provFiles;
 	for (int i = 0; i < m_statOption->locaWilcoxon.size(); i++)
 	{
 		if (m_statOption->locaWilcoxon[i].contains(QString::fromStdString(m_currentLoca->localizerName())))
 		{
-			provFiles.push_back(PROV("./Resources/Config/Prov/" + m_statOption->locaWilcoxon[i].toStdString() + ".prov"));
+			std::string possibleFile = "./Resources/Config/Prov/" + m_statOption->locaWilcoxon[i].toStdString() + ".prov";
+			if (EEGFormat::Utility::DoesFileExist(possibleFile))
+			{
+				provFiles.push_back(PROV(possibleFile));
+			}
 		}
 	}
 
@@ -418,19 +443,18 @@ vector<PROV> InsermLibrary::LOCA::loadProvCurrentLoca()
 	{
 		if (m_statOption->locaKruskall[i].contains(QString::fromStdString(m_currentLoca->localizerName())))
 		{
-			provFiles.push_back(PROV("./Resources/Config/Prov/" + m_statOption->locaKruskall[i].toStdString() + ".prov"));
+			std::string possibleFile = "./Resources/Config/Prov/" + m_statOption->locaKruskall[i].toStdString() + ".prov";
+			if (EEGFormat::Utility::DoesFileExist(possibleFile))
+			{
+				provFiles.push_back(PROV(possibleFile));
+			}
 		}
-	}
-
-	if (provFiles.size() == 0) //We search if .prov with the loca name and no stat requierement
-	{
-		provFiles.push_back(PROV("./Resources/Config/Prov/" + m_currentLoca->localizerName() + ".prov"));
 	}
 
 	return provFiles;
 }
 
-bool InsermLibrary::LOCA::shouldPerformBarPlot(string locaName)
+bool InsermLibrary::LOCA::shouldPerformBarPlot(std::string locaName)
 {
 	for (int i = 0; i < m_statOption->locaKruskall.size(); i++)
 	{
@@ -443,10 +467,10 @@ bool InsermLibrary::LOCA::shouldPerformBarPlot(string locaName)
 	return false;
 }
 
-bool InsermLibrary::LOCA::isBarPlot(string provFile)
+bool InsermLibrary::LOCA::isBarPlot(std::string provFile)
 {
-	vec1<string> splitFile = split<string>(provFile, "_");
-	string toCheck = splitFile[splitFile.size() - 1];
+	vec1<string> splitFile = split<std::string>(provFile, "_");
+	std::string toCheck = splitFile[splitFile.size() - 1];
 	transform(toCheck.begin(), toCheck.end(), toCheck.begin(), ::tolower);
 	if (toCheck == "_barplot")
 	{
@@ -461,11 +485,10 @@ bool InsermLibrary::LOCA::isBarPlot(string provFile)
 /************/
 /* Barplot  */
 /************/
-void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, 
-								  string freqFolder)
+void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, std::string freqFolder)
 {
-	string mapsFolder = getMapsFolderBar(freqFolder, myprovFile);
-	string mapPath = prepareFolderAndPathsBar(mapsFolder, myeegContainer->DownsamplingFactor());
+	std::string mapsFolder = getMapsFolderBar(freqFolder, myprovFile);
+	std::string mapPath = prepareFolderAndPathsBar(mapsFolder, myeegContainer->DownsamplingFactor());
 	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->DownsampledFrequency());
 
 	//== get Bloc of eeg data we want to display center around events
@@ -482,10 +505,10 @@ void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, int idCurrentFre
 	delete windowSam;
 }
 
-string InsermLibrary::LOCA::getMapsFolderBar(string freqFolder, PROV *myprovFile)
+std::string InsermLibrary::LOCA::getMapsFolderBar(std::string freqFolder, PROV *myprovFile)
 {
-	string mapsFolder = freqFolder;
-	vec1<string> dd = split<string>(mapsFolder, "/");
+	std::string mapsFolder = freqFolder;
+	vec1<std::string> dd = split<std::string>(mapsFolder, "/");
 	mapsFolder.append(dd[dd.size() - 1]);
 
 	mapsFolder.append("_bar");
@@ -500,26 +523,25 @@ string InsermLibrary::LOCA::getMapsFolderBar(string freqFolder, PROV *myprovFile
 			mapsFolder.append("_P" + streamPValue.str());
 	}
 
-	vector<string> myProv = split<string>(myprovFile->filePath(), "/");
+	std::vector<std::string> myProv = split<std::string>(myprovFile->filePath(), "/");
 	mapsFolder.append(" - " + myProv[myProv.size() - 1]);
 
 	return mapsFolder;
 }
 
-string InsermLibrary::LOCA::prepareFolderAndPathsBar(string mapsFolder, int dsSampFreq)
+std::string InsermLibrary::LOCA::prepareFolderAndPathsBar(std::string mapsFolder, int dsSampFreq)
 {
 	if (!QDir(&mapsFolder.c_str()[0]).exists())
 		QDir().mkdir(&mapsFolder.c_str()[0]);
 
-	vec1<string> dd = split<string>(mapsFolder, "/");
+	vec1<std::string> dd = split<std::string>(mapsFolder, "/");
 
-	return string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + to_string(dsSampFreq) + "_sm0_bar_");
+	return std::string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + to_string(dsSampFreq) + "_sm0_bar_");
 }
 
-vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticKruskall(vec3<float> &bigData, eegContainer *myeegContainer,
-																  PROV *myprovFile, string freqFolder)
+vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticKruskall(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder)
 {
-	vector<PVALUECOORD> significantValue;
+	std::vector<PVALUECOORD> significantValue;
 	if (m_statOption->kruskall)
 	{
 		int copyIndex = 0;
@@ -542,11 +564,10 @@ vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticKruskall(vec3<float> &b
 /************/
 /* Env2Plot */
 /************/
-void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, 
-								   string freqFolder)
+void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, std::string freqFolder)
 {
-	string mapsFolder = getMapsFolderPlot(freqFolder, myprovFile);
-	string mapPath = prepareFolderAndPathsPlot(mapsFolder, myeegContainer->DownsamplingFactor());
+	std::string mapsFolder = getMapsFolderPlot(freqFolder, myprovFile);
+	std::string mapPath = prepareFolderAndPathsPlot(mapsFolder, myeegContainer->DownsamplingFactor());
 	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->DownsampledFrequency());
 
 	//== get Bloc of eeg data we want to display center around events
@@ -560,36 +581,35 @@ void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, int idCurrentFr
 	delete windowSam;
 }
 
-string InsermLibrary::LOCA::getMapsFolderPlot(string freqFolder, PROV *myprovFile)
+std::string InsermLibrary::LOCA::getMapsFolderPlot(std::string freqFolder, PROV *myprovFile)
 {
-	string mapsFolder = freqFolder;
-	vec1<string> dd = split<string>(mapsFolder, "/");
+	std::string mapsFolder = freqFolder;
+	vec1<std::string> dd = split<std::string>(mapsFolder, "/");
 	mapsFolder.append(dd[dd.size() - 1]);
 
-	vector<string> myProv = split<string>(myprovFile->filePath(), "/");
+	vector<std::string> myProv = split<std::string>(myprovFile->filePath(), "/");
 	return mapsFolder.append("_plots").append(" - " + myProv[myProv.size() - 1]);
 }
 
-string InsermLibrary::LOCA::prepareFolderAndPathsPlot(string mapsFolder, int dsSampFreq)
+std::string InsermLibrary::LOCA::prepareFolderAndPathsPlot(std::string mapsFolder, int dsSampFreq)
 {
 	if (!QDir(&mapsFolder.c_str()[0]).exists())
 		QDir().mkdir(&mapsFolder.c_str()[0]);
 
-	vec1<string> dd = split<string>(mapsFolder, "/");
+	vec1<std::string> dd = split<std::string>(mapsFolder, "/");
 
-	return string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + to_string(dsSampFreq) + "_sm0_plot_");
+	return std::string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + to_string(dsSampFreq) + "_sm0_plot_");
 }
 
 /************/
 /* TrialMat */
 /************/
-void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, 
-											string freqFolder)
+void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, std::string freqFolder)
 {
 	vector<PVALUECOORD> significantValue;
 	//== get some useful information
-	string mapsFolder = getMapsFolderTrial(myprovFile, freqFolder);
-	string mapPath = prepareFolderAndPathsTrial(mapsFolder, myeegContainer->DownsamplingFactor());
+	std::string mapsFolder = getMapsFolderTrial(myprovFile, freqFolder);
+	std::string mapPath = prepareFolderAndPathsTrial(mapsFolder, myeegContainer->DownsamplingFactor());
 	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->DownsampledFrequency());
 	int nbCol = myprovFile->nbCol();
 	int nbRow = myprovFile->nbRow();
@@ -717,8 +737,8 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 		}
 
 		//Display title on map and then Save
-		string outputPicPath = mapPath;
-		string elecName = myeegContainer->flatElectrodes[myeegContainer->Bipole(i).first];
+		std::string outputPicPath = mapPath;
+		std::string elecName = myeegContainer->flatElectrodes[myeegContainer->Bipole(i).first];
 		outputPicPath.append(elecName.c_str()).append(".jpg");
 		mGen.drawMapTitle(painterChanel, outputPicPath);
 		pixmapChanel->save(outputPicPath.c_str(), "JPG");
@@ -733,10 +753,10 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 	emit sendLogInfo("Time Trials Matrices generated");
 }
 
-string InsermLibrary::LOCA::getMapsFolderTrial(PROV *myprovFile, string freqFolder)
+std::string InsermLibrary::LOCA::getMapsFolderTrial(PROV *myprovFile, std::string freqFolder)
 {
-	string mapsFolder = freqFolder;
-	vec1<string> dd = split<string>(mapsFolder, "/");
+	std::string mapsFolder = freqFolder;
+	vec1<std::string> dd = split<string>(mapsFolder, "/");
 	mapsFolder.append(dd[dd.size() - 1]);
 
 	if (myprovFile->invertmapsinfo == "")
@@ -744,7 +764,7 @@ string InsermLibrary::LOCA::getMapsFolderTrial(PROV *myprovFile, string freqFold
 	else
 		mapsFolder.append("_trials_resp");
 
-	stringstream streamPValue;
+	std::stringstream streamPValue;
 	streamPValue << fixed << setprecision(2) << m_statOption->pWilcoxon;
 	if (m_statOption->wilcoxon)
 	{
@@ -754,23 +774,23 @@ string InsermLibrary::LOCA::getMapsFolderTrial(PROV *myprovFile, string freqFold
 			mapsFolder.append("_P" + streamPValue.str());
 	}
 
-	vector<string> myProv = split<string>(myprovFile->filePath(), "/");
+	std::vector<std::string> myProv = split<std::string>(myprovFile->filePath(), "/");
 	mapsFolder.append(" - " + myProv[myProv.size() - 1]);
 
 	return mapsFolder;
 }
 
-string InsermLibrary::LOCA::prepareFolderAndPathsTrial(string mapsFolder, int dsSampFreq)
+std::string InsermLibrary::LOCA::prepareFolderAndPathsTrial(std::string mapsFolder, int dsSampFreq)
 {
 	if (!QDir(&mapsFolder.c_str()[0]).exists())
 		QDir().mkdir(&mapsFolder.c_str()[0]);
 
-	vec1<string> dd = split<string>(mapsFolder, "/");
+	vec1<std::string> dd = split<std::string>(mapsFolder, "/");
 
-	return string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + to_string(dsSampFreq) + "_sm0_trials_");
+	return std::string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + to_string(dsSampFreq) + "_sm0_trials_");
 }
 
-bool InsermLibrary::LOCA::shouldPerformStatTrial(string locaName)
+bool InsermLibrary::LOCA::shouldPerformStatTrial(std::string locaName)
 {
 	for (int i = 0; i < m_statOption->locaWilcoxon.size(); i++)
 	{
@@ -783,10 +803,9 @@ bool InsermLibrary::LOCA::shouldPerformStatTrial(string locaName)
 	return false;
 }
 
-vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticWilcoxon(vec3<float> &bigData, eegContainer *myeegContainer,
-															PROV *myprovFile, string freqFolder)
+vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticWilcoxon(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder)
 {
-	vector<PVALUECOORD> significantValue;
+	std::vector<PVALUECOORD> significantValue;
 	if (m_statOption->wilcoxon)
 	{
 		int copyIndex = 0;
