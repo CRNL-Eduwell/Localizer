@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <iterator>
+#include "../../Framework/Framework/Measure.h"
 #include "Utility.h"
 #include "eegContainer.h"
 #include "patientFolder.h"
@@ -68,7 +69,6 @@ namespace InsermLibrary
 		std::string prepareFolderAndPathsTrial(std::string freqFolder, int dsSampFreq);
 		bool shouldPerformStatTrial(std::string locaName);
 		vector<PVALUECOORD> calculateStatisticWilcoxon(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
-		float stdMean(vec2<float> eegDataChanel, int windowSam[2]);
 
 	signals:
 		void sendLogInfo(QString);
@@ -78,8 +78,6 @@ namespace InsermLibrary
 		locaFolder *m_currentLoca = nullptr;
 		int m_idCurrentLoca = -1;
 		TriggerContainer *m_triggerContainer = nullptr;
-		//userOption *m_userOpt = nullptr;
-
 		std::vector<FrequencyBandAnalysisOpt> m_analysisOpt;
 		statOption* m_statOption;
 		picOption* m_picOption;
