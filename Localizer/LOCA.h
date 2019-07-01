@@ -40,7 +40,7 @@ namespace InsermLibrary
 		void LocaFrequency(eegContainer *myeegContainer, int idCurrentLoca);
 
 	private:
-		void toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreq, std::string freqFolder, FrequencyBandAnalysisOpt a);
+		void toBeNamedCorrectlyFunction(eegContainer *myeegContainer, std::string freqFolder, FrequencyBandAnalysisOpt a);
 		//==
 		void CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt, eegContainer *myeegContainer, TriggerContainer *triggerContainer, PROV *myprovFile);
 		void CreateFile(EEGFormat::FileType outputType, std::string filePath, std::vector<Trigger> & triggers);
@@ -54,17 +54,17 @@ namespace InsermLibrary
 		bool shouldPerformBarPlot(std::string locaName);
 		bool isBarPlot(std::string provFile);
 		//==
-		void barplot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, std::string freqFolder);
+		void barplot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
 		std::string getMapsFolderBar(std::string freqFolder, PROV *myprovFile);
 		std::string prepareFolderAndPathsBar(std::string freqFolder, int dsSampFreq);
 		vector<PVALUECOORD> calculateStatisticKruskall(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
 		//==
-		void env2plot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, std::string freqFolder);
+		void env2plot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
 		std::string getMapsFolderPlot(std::string freqFolder, PROV *myprovFile);
 		std::string prepareFolderAndPathsPlot(std::string freqFolder, int dsSampFreq);
 
 		//==
-		void timeTrialmatrices(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, std::string freqFolder);
+		void timeTrialmatrices(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
 		std::string getMapsFolderTrial(PROV *myprovFile, std::string freqFolder);
 		std::string prepareFolderAndPathsTrial(std::string freqFolder, int dsSampFreq);
 		bool shouldPerformStatTrial(std::string locaName);

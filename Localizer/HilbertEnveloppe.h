@@ -15,7 +15,7 @@ namespace Algorithm
 		public:
 			HilbertEnveloppe() { };
 			~HilbertEnveloppe() { };
-			virtual void Process(eegContainer* Container, int IndexFrequencyData, vector<int> FrequencyBand);
+			virtual void Process(eegContainer* Container, vector<int> FrequencyBand);
 
 		private:
 			void InitOutputDataStructure(eegContainer* EegContainer);

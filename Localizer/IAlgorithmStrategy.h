@@ -25,7 +25,7 @@ namespace Algorithm
 		class IAlgorithmStrategy
 		{
 		public:
-			virtual void Process(eegContainer* EegContainer, int IndexFrequencyData, vector<int> FrequencyBand) = 0;
+			virtual void Process(eegContainer* EegContainer, vector<int> FrequencyBand) = 0;
 		};
 	}
 }

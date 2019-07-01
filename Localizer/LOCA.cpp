@@ -108,13 +108,13 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 
 		if (m_analysisOpt[i].analysisParameters.eeg2env2)
 		{
-			Algorithm::AlgorithmCalculator::ExecuteAlgorithm(m_analysisOpt[i].analysisParameters.calculationType, myeegContainer, i, currentFrequencyBand.FrequencyBins());
-			myeegContainer->SaveFrequencyData(m_analysisOpt[i].analysisParameters.outputType, i, currentFrequencyBand.FrequencyBins());
+			Algorithm::AlgorithmCalculator::ExecuteAlgorithm(m_analysisOpt[i].analysisParameters.calculationType, myeegContainer, currentFrequencyBand.FrequencyBins());
+			myeegContainer->SaveFrequencyData(m_analysisOpt[i].analysisParameters.outputType, currentFrequencyBand.FrequencyBins());
 			emit incrementAdavnce(1);
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 
 			string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
-			toBeNamedCorrectlyFunction(myeegContainer, i, freqFolder, m_analysisOpt[i]);
+			toBeNamedCorrectlyFunction(myeegContainer, freqFolder, m_analysisOpt[i]);
 		}
 		else 
 		{
@@ -127,14 +127,14 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 				if ((currentLoca->frequencyFolders()[j].frequencyName() == "f" + fMin + "f" + fMax) && (sm0Files.size() > 0))
 				{
 					std::vector<std::string> dataFiles = currentLoca->frequencyFolders()[j].FilePaths(SM0_ELAN);
-					int result = myeegContainer->LoadFrequencyData(dataFiles, i, 0);
+					int result = myeegContainer->LoadFrequencyData(dataFiles, 0);
 					if(result == 0)
 					{
 						emit incrementAdavnce(1);
 						emit sendLogInfo("Envelloppe File Loaded");
 
 						string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
-						toBeNamedCorrectlyFunction(myeegContainer, i, freqFolder, m_analysisOpt[i]);
+						toBeNamedCorrectlyFunction(myeegContainer, freqFolder, m_analysisOpt[i]);
 					}
 					else
 					{
@@ -160,8 +160,8 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 		currentFrequencyBand.CheckShannonCompliance(myeegContainer->SamplingFrequency());
 		if (m_analysisOpt[i].analysisParameters.eeg2env2)
 		{
-			Algorithm::AlgorithmCalculator::ExecuteAlgorithm(m_analysisOpt[i].analysisParameters.calculationType, myeegContainer, i, currentFrequencyBand.FrequencyBins());
-			myeegContainer->SaveFrequencyData(m_analysisOpt[i].analysisParameters.outputType, i, currentFrequencyBand.FrequencyBins());
+			Algorithm::AlgorithmCalculator::ExecuteAlgorithm(m_analysisOpt[i].analysisParameters.calculationType, myeegContainer, currentFrequencyBand.FrequencyBins());
+			myeegContainer->SaveFrequencyData(m_analysisOpt[i].analysisParameters.outputType, currentFrequencyBand.FrequencyBins());
 			emit incrementAdavnce(1);
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 
@@ -170,7 +170,7 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 	}
 }
 
-void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreqfrequency, std::string freqFolder, FrequencyBandAnalysisOpt a)
+void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContainer, std::string freqFolder, FrequencyBandAnalysisOpt a)
 {
 	deleteAndNullify1D(m_triggerContainer);
 	m_triggerContainer = new TriggerContainer(myeegContainer->Triggers(), myeegContainer->SamplingFrequency());
@@ -195,14 +195,14 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 		{
 			if (shouldPerformBarPlot(m_currentLoca->localizerName()) || isBarPlot(provFiles[i].filePath()))
 			{
-				barplot(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
+				barplot(myeegContainer, &provFiles[i], freqFolder);
 				emit incrementAdavnce(provFiles.size());
 			}
 			else
 			{
 				if (provFiles[i].invertmapsinfo == "")
 				{
-					env2plot(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
+					env2plot(myeegContainer, &provFiles[i], freqFolder);
 					emit incrementAdavnce(provFiles.size());
 				}
 			}
@@ -210,7 +210,7 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 
 		if (a.trialmat && (isBarPlot(provFiles[i].filePath()) == false || provFiles.size() == 1))
 		{
-			timeTrialmatrices(myeegContainer, idCurrentFreqfrequency, &provFiles[i], freqFolder);
+			timeTrialmatrices(myeegContainer, &provFiles[i], freqFolder);
 			emit incrementAdavnce(provFiles.size());
 		}
 	}
@@ -487,7 +487,7 @@ bool InsermLibrary::LOCA::isBarPlot(std::string provFile)
 /************/
 /* Barplot  */
 /************/
-void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, std::string freqFolder)
+void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder)
 {
 	std::string mapsFolder = getMapsFolderBar(freqFolder, myprovFile);
 	std::string mapPath = prepareFolderAndPathsBar(mapsFolder, myeegContainer->DownsamplingFactor());
@@ -495,7 +495,7 @@ void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, int idCurrentFre
 
 	//== get Bloc of eeg data we want to display center around events
 	vec3<float> eegData3D = vec3<float>(m_triggerContainer->ProcessedTriggerCount(), vec2<float>(myeegContainer->BipoleCount(), vec1<float>(windowSam[1] - windowSam[0])));
-	myeegContainer->GetFrequencyBlocDataEvents(eegData3D, idCurrentFreqfrequency, 0, m_triggerContainer->ProcessedTriggers(), windowSam);
+	myeegContainer->GetFrequencyBlocDataEvents(eegData3D, 0, m_triggerContainer->ProcessedTriggers(), windowSam);
 
 	//== calculate stat
 	vec1<PVALUECOORD> significantValue = calculateStatisticKruskall(eegData3D, myeegContainer, myprovFile, mapsFolder);
@@ -566,7 +566,7 @@ vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticKruskall(vec3<float> &b
 /************/
 /* Env2Plot */
 /************/
-void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, std::string freqFolder)
+void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder)
 {
 	std::string mapsFolder = getMapsFolderPlot(freqFolder, myprovFile);
 	std::string mapPath = prepareFolderAndPathsPlot(mapsFolder, myeegContainer->DownsamplingFactor());
@@ -574,7 +574,7 @@ void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, int idCurrentFr
 
 	//== get Bloc of eeg data we want to display center around events
 	vec3<float> eegData3D = vec3<float>(m_triggerContainer->ProcessedTriggerCount(), vec2<float>(myeegContainer->BipoleCount(), vec1<float>(windowSam[1] - windowSam[0])));
-	myeegContainer->GetFrequencyBlocDataEvents(eegData3D, idCurrentFreqfrequency, 0, m_triggerContainer->ProcessedTriggers(), windowSam);
+	myeegContainer->GetFrequencyBlocDataEvents(eegData3D, 0, m_triggerContainer->ProcessedTriggers(), windowSam);
 
 	//==
 	drawPlots b = drawPlots(myprovFile, mapPath, m_picOption->sizePlotmap);
@@ -606,7 +606,7 @@ std::string InsermLibrary::LOCA::prepareFolderAndPathsPlot(std::string mapsFolde
 /************/
 /* TrialMat */
 /************/
-void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, std::string freqFolder)
+void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder)
 {
 	vector<PVALUECOORD> significantValue;
 	//== get some useful information
@@ -619,7 +619,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 	//== get Bloc of eeg data we want to display center around events
 	vec3<float> bigData;
 	bigData.resize(myeegContainer->BipoleCount(), vec2<float>(m_triggerContainer->ProcessedTriggerCount(), vec1<float>(windowSam[1] - windowSam[0])));
-	myeegContainer->GetFrequencyBlocData(bigData, idCurrentFreqfrequency, 0, m_triggerContainer->ProcessedTriggers(), windowSam);
+	myeegContainer->GetFrequencyBlocData(bigData, 0, m_triggerContainer->ProcessedTriggers(), windowSam);
 
 	//== calculate stat
 	if (shouldPerformStatTrial(m_currentLoca->localizerName()))
@@ -632,7 +632,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, int id
 
 	QPixmap *pixmapChanel = nullptr, *pixmapSubSubMatrix = nullptr;
 	QPainter *painterChanel = nullptr, *painterSubSubMatrix = nullptr;
-	for (int i = 0; i < myeegContainer->elanFrequencyBand[idCurrentFreqfrequency][0]->ElectrodeCount(); i++)
+	for (int i = 0; i < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); i++)
 	{
 		deleteAndNullify1D(painterChanel);
 		deleteAndNullify1D(pixmapChanel);

@@ -115,20 +115,22 @@ namespace InsermLibrary
 		void DeleteElectrodes(vector<int> elecToDelete);
 		void GetElectrodes();
 		void BipolarizeElectrodes();
-		void SaveFrequencyData(EEGFormat::FileType FileType, int IdFrequency, const std::vector<int>& frequencyBand);
-		int LoadFrequencyData(std::vector<std::string>& filesPath, int frequencyId, int smoothingId);
+		void SaveFrequencyData(EEGFormat::FileType FileType, const std::vector<int>& frequencyBand);
+		int LoadFrequencyData(std::vector<std::string>& filesPath, int smoothingId);
 
 		//===[ Read / Get Data ]===
-		void GetFrequencyBlocData(vec3<float>& outputEegData, int frequencyId, int smoothingId, std::vector<Trigger>& triggEeg, int winSam[2]);
-		void GetFrequencyBlocDataEvents(vec3<float>& outputEegData, int frequencyId, int smoothingId, std::vector<Trigger>& triggEeg, int winSam[2]);
+		void GetFrequencyBlocData(vec3<float>& outputEegData, int smoothingId, std::vector<Trigger>& triggEeg, int winSam[2]);
+		void GetFrequencyBlocDataEvents(vec3<float>& outputEegData, int smoothingId, std::vector<Trigger>& triggEeg, int winSam[2]);
 
 	private:
 		void GetElectrodes(EEGFormat::IFile* edf);
 		int idSplitDigiAndNum(string myString);
 
 	public :
-		//[IdNbFrequency][sm0-sm5000][channels][sample]
-		std::vector<std::vector<EEGFormat::IFile*>> elanFrequencyBand;
+		////[IdNbFrequency][sm0-sm5000][channels][sample]
+		//std::vector<std::vector<EEGFormat::IFile*>> elanFrequencyBand;
+		//[sm0-sm5000][channels][sample]
+		std::vector<EEGFormat::IFile*> elanFrequencyBand;
 		vector<elecContainer> electrodes;
 		vector<string> flatElectrodes;
 		vector<int> idElecToDelete;

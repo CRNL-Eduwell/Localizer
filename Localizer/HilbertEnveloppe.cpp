@@ -2,9 +2,7 @@
 
 using Framework::Filtering::Linear::Convolution;
 
-//Note : Vérifier si il y'a besoin de garder un vecteur de données Fréquentielle par fréquence, vu que ce n'est pas
-//calculé en même temps on peut garder un seul vecteur de sm0 à sm5000
-void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, int IndexFrequencyData, vector<int> FrequencyBand)
+void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, vector<int> FrequencyBand)
 {
 	thread thr[5];
 	int NumberOfSample = EegContainer->Data().size() > 0 ? EegContainer->Data()[0].size() : 0;
@@ -14,7 +12,7 @@ void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, 
 	CalculateSmoothingCoefficients(EegContainer->SamplingFrequency(), EegContainer->DownsampledFrequency());
 	InitOutputDataStructure(EegContainer);
 
-	std::vector<EEGFormat::IFile*> FrequencyBandFiles = EegContainer->elanFrequencyBand[IndexFrequencyData];
+	std::vector<EEGFormat::IFile*> FrequencyBandFiles = EegContainer->elanFrequencyBand;
 	for (int i = 0; i < NumberOfElement / 5; i++)
 	{
 		for (int j = 0; j < 5; j++)
@@ -120,15 +118,12 @@ void Algorithm::Strategy::HilbertEnveloppe::InitOutputDataStructure(eegContainer
 
 	for (int i = 0; i < EegContainer->elanFrequencyBand.size(); i++)
 	{
-		for (int j = 0; j < EegContainer->elanFrequencyBand[i].size(); j++)
-		{
-			EegContainer->elanFrequencyBand[i][j] = new EEGFormat::ElanFile();
-			EegContainer->elanFrequencyBand[i][j]->ElectrodeCount((int)bipolesList.size());
-			EegContainer->elanFrequencyBand[i][j]->SamplingFrequency(EegContainer->DownsampledFrequency());
-			EegContainer->elanFrequencyBand[i][j]->Electrodes(bipolesList);
-			//Define type of elec : label + "EEG" + "uV"
-			EegContainer->elanFrequencyBand[i][j]->Data(EEGFormat::DataConverterType::Analog).resize((int)bipolesList.size(), std::vector<float>(EegContainer->NbSample() / EegContainer->DownsamplingFactor()));
-		}
+		EegContainer->elanFrequencyBand[i] = new EEGFormat::ElanFile();
+		EegContainer->elanFrequencyBand[i]->ElectrodeCount((int)bipolesList.size());
+		EegContainer->elanFrequencyBand[i]->SamplingFrequency(EegContainer->DownsampledFrequency());
+		EegContainer->elanFrequencyBand[i]->Electrodes(bipolesList);
+		//Define type of elec : label + "EEG" + "uV"
+		EegContainer->elanFrequencyBand[i]->Data(EEGFormat::DataConverterType::Analog).resize((int)bipolesList.size(), std::vector<float>(EegContainer->NbSample() / EegContainer->DownsamplingFactor()));
 	}
 }
 
