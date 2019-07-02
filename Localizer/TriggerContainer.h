@@ -25,7 +25,7 @@ namespace InsermLibrary
 		std::vector<Trigger> GetTriggerForExperiment(PROV *myprovFile, int flagCode = 99, int downSamplingFactor = 1);
 		void ProcessEventsForExperiment(PROV *myprovFile, int flagCode = 99, int downSaplingFactor = 1);
 		void SwapStimulationsAndResponses(PROV *myprovFile);
-
+	
 	private:		
 		int FindFirstIndexAfter(int flagCode = 99);
 		std::vector<int> FindIndexes(int searchValue);

@@ -320,17 +320,21 @@ void InsermLibrary::TriggerContainer::DeleteTriggerNotPaired(std::vector<Trigger
 
 std::vector<int> InsermLibrary::TriggerContainer::SortTrialsForExperiment(std::vector<Trigger>& triggers, PROV *myprovFile)
 {
-	std::vector<int> subGroupStimTrials;
-	
 	//Sort by MainCode
-	sort(triggers.begin(), triggers.end(), [](Trigger m, Trigger n)-> bool
+	std::vector<int> mainEventsCode = myprovFile->getMainCodes();
+	std::vector<Trigger> sortedByMainCodeArray;
+	for (int i = 0; i < mainEventsCode.size(); i++)
 	{
-		return  m.MainCode() < n.MainCode();
-	});
+		std::copy_if(triggers.begin(), triggers.end(), std::back_inserter(sortedByMainCodeArray), [&](Trigger trigger) 
+		{
+			return trigger.MainCode() == mainEventsCode[i];
+		});
+	}
+	triggers = std::vector<Trigger>(sortedByMainCodeArray);
 
 	//get first id of each new main code
+	std::vector<int> subGroupStimTrials;
 	subGroupStimTrials.push_back(0);
-	vector<int> mainEventsCode = myprovFile->getMainCodes();
 	for (int i = 0; i < triggers.size() - 1; i++)
 	{
 		if (triggers[i].MainCode() != triggers[i + 1].MainCode())
