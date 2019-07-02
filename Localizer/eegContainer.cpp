@@ -21,6 +21,11 @@ InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFr
 InsermLibrary::eegContainer::~eegContainer()
 {
 	deleteAndNullify1D(m_file);
+	for (int i = 0; i < 6; i++)
+	{
+		EEGFormat::Utility::DeleteAndNullify(elanFrequencyBand[i]);
+	}
+	elanFrequencyBand.clear();
 	fftwf_cleanup_threads();
 }
 
@@ -92,6 +97,7 @@ void InsermLibrary::eegContainer::SaveFrequencyData(EEGFormat::FileType FileType
 			{
 				EEGFormat::ElanFile* elanFile = new EEGFormat::ElanFile(*elanFrequencyBand[i]);
 				elanFile->SaveAs(rootFrequencyFolder + baseFileName + ".eeg.ent", rootFrequencyFolder + baseFileName + ".eeg", "", "");
+				EEGFormat::Utility::DeleteAndNullify(elanFile);
 				break;
 			}
 			case EEGFormat::FileType::BrainVision:
@@ -133,6 +139,7 @@ int InsermLibrary::eegContainer::LoadFrequencyData(std::vector<std::string>& fil
 			concatenatedFiles += ";";
 	}
 
+	EEGFormat::Utility::DeleteAndNullify(elanFrequencyBand[smoothingId]);
 	elanFrequencyBand[smoothingId] = CreateGenericFile(concatenatedFiles.c_str(), true);
 	if (elanFrequencyBand[smoothingId] == nullptr)
 		return -1;
