@@ -20,7 +20,7 @@ InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFr
 
 InsermLibrary::eegContainer::~eegContainer()
 {
-	deleteAndNullify1D(m_file);
+	EEGFormat::Utility::DeleteAndNullify(m_file);
 	for (int i = 0; i < 6; i++)
 	{
 		EEGFormat::Utility::DeleteAndNullify(elanFrequencyBand[i]);

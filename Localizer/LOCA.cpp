@@ -11,7 +11,10 @@ InsermLibrary::LOCA::LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, st
 
 InsermLibrary::LOCA::~LOCA()
 {
-	//deleteAndNullify1D(userOpt);
+	EEGFormat::Utility::DeleteAndNullify(m_currentLoca);
+	EEGFormat::Utility::DeleteAndNullify(m_triggerContainer);
+	EEGFormat::Utility::DeleteAndNullify(m_statOption);
+	EEGFormat::Utility::DeleteAndNullify(m_picOption);
 }
 
 /************/
@@ -151,9 +154,7 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 	m_idCurrentLoca = idCurrentLoca;
 	m_currentLoca = nullptr;
 
-	deleteAndNullify1D(m_triggerContainer);
 	m_triggerContainer = new TriggerContainer(myeegContainer->Triggers(), myeegContainer->SamplingFrequency());
-
 	for (int i = 0; i < m_analysisOpt.size(); i++)
 	{
 		FrequencyBand currentFrequencyBand(m_analysisOpt[i].Band);
@@ -168,16 +169,15 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 			CreateEventsFile(m_analysisOpt[i], myeegContainer, m_triggerContainer, nullptr);
 		}
 	}
+	deleteAndNullify1D(m_triggerContainer);
 }
 
 void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContainer, std::string freqFolder, FrequencyBandAnalysisOpt a)
 {
-	deleteAndNullify1D(m_triggerContainer);
 	m_triggerContainer = new TriggerContainer(myeegContainer->Triggers(), myeegContainer->SamplingFrequency());
 
 	//We generate file.pos and file_dsX.pos if we find a prov file 
-	//with the exact same name as the experiment.
-	
+	//with the exact same name as the experiment.	
 	PROV* mainTask = LoadProvForTask();
 	if (mainTask != nullptr)
 	{
@@ -214,6 +214,8 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 			emit incrementAdavnce(provFiles.size());
 		}
 	}
+
+	deleteAndNullify1D(m_triggerContainer);
 }
 
 void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt, eegContainer *myeegContainer, TriggerContainer *triggerContainer, PROV *myprovFile)
