@@ -75,7 +75,7 @@ namespace InsermLibrary
 		void incrementAdavnce(int divider);
 
 	private:
-		locaFolder *m_currentLoca = nullptr;
+		locaFolder *m_currentLoca = nullptr; //Only contains a link to filesystem information about current localizer, do not delete in destructor
 		int m_idCurrentLoca = -1;
 		TriggerContainer *m_triggerContainer = nullptr;
 		std::vector<FrequencyBandAnalysisOpt> m_analysisOpt;

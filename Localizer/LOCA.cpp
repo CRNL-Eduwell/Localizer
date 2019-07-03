@@ -11,7 +11,6 @@ InsermLibrary::LOCA::LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, st
 
 InsermLibrary::LOCA::~LOCA()
 {
-	EEGFormat::Utility::DeleteAndNullify(m_currentLoca);
 	EEGFormat::Utility::DeleteAndNullify(m_triggerContainer);
 	EEGFormat::Utility::DeleteAndNullify(m_statOption);
 	EEGFormat::Utility::DeleteAndNullify(m_picOption);
