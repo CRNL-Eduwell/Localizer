@@ -19,8 +19,8 @@ PatientFolderWorker::~PatientFolderWorker()
 void PatientFolderWorker::Process()
 {
 	stringstream TimeDisp;
-	SYSTEMTIME LocalTime;
 	eegContainer *myContainer = nullptr;
+	std::time_t t = std::time(nullptr);
 
 	for (int i = 0; i < m_patient->localizerFolder().size(); i++)
 	{
@@ -33,15 +33,13 @@ void PatientFolderWorker::Process()
 			emit sendLogInfo("Number of Bip : " + QString::number(myContainer->BipoleCount()));
 			//==
 			stringstream().swap(TimeDisp);
-			GetLocalTime(&LocalTime);
-			TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
+			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
 			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
 			//==
 			m_loca->LocaSauron(myContainer, i, &m_patient->localizerFolder()[i]);
 			//==
 			stringstream().swap(TimeDisp);
-			GetLocalTime(&LocalTime);
-			TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
+			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
 			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
 			//==
 			sendLogInfo("End of Loca number " + QString::number(i) + "\n");

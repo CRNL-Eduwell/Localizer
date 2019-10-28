@@ -16,7 +16,7 @@ SingleFilesWorker::~SingleFilesWorker()
 void SingleFilesWorker::Process()
 {
 	stringstream TimeDisp;
-	SYSTEMTIME LocalTime;
+	std::time_t t = std::time(nullptr);
 	eegContainer *myContainer = nullptr;
 	
 	for (int i = 0; i < m_currentFiles.size(); i++)
@@ -29,15 +29,13 @@ void SingleFilesWorker::Process()
 			emit sendLogInfo("Number of Bip : " + QString::number(myContainer->BipoleCount()));
 			//==
 			stringstream().swap(TimeDisp);
-			GetLocalTime(&LocalTime);
-			TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
+			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
 			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
 			//==
 			m_loca->LocaFrequency(myContainer, i);
 			//==
 			stringstream().swap(TimeDisp);
-			GetLocalTime(&LocalTime);
-			TimeDisp << LocalTime.wHour << ":" << LocalTime.wMinute << ":" << LocalTime.wSecond << "\n";
+			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
 			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
 			//==
 			sendLogInfo("End of Loca number " + QString::number(i) + "\n");

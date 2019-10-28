@@ -3,7 +3,8 @@
 
 #include <QCoreApplication>
 
-#include "Windows.h" //pour SYSTEMTIME , voir pour changer pour un truc cross platform
+#include <iostream>
+#include <ctime>
 #include "IWorker.h"
 #include "singleFile.h"
 #include "FrequencyBandAnalysisOpt.h"
