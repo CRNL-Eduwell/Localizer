@@ -76,7 +76,7 @@ void InsermLibrary::TriggerContainer::RenameTriggersForExperiment(PROV *myprovFi
 	std::vector<std::pair<int, int>> newCodes;
 	for (int i = 0; i < rawChangeCodeData.size(); i++)
 	{
-		vector<string> currentRawCodes = EEGFormat::Utility::Split<string>(rawChangeCodeData[i], "+=");
+        std::vector<std::string> currentRawCodes = EEGFormat::Utility::Split<std::string>(rawChangeCodeData[i], "+=");
 		std::pair<int, int> currentOldCode = std::make_pair(atoi(&(currentRawCodes[0])[0]), atoi(&(currentRawCodes[1])[0]));
 		std::pair<int, int> currenNewCode = std::make_pair(atoi(&(currentRawCodes[2])[0]), atoi(&(currentRawCodes[3])[0]));
 
@@ -348,8 +348,8 @@ std::vector<int> InsermLibrary::TriggerContainer::SortTrialsForExperiment(std::v
 	int beg = 0, end = 0;
 	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
 	{
-		string currentSort = myprovFile->visuBlocs[i].dispBloc.sort();
-		vector<string> sortSplited = split<string>(currentSort, "_");
+        std::string currentSort = myprovFile->visuBlocs[i].dispBloc.sort();
+        std::vector<std::string> sortSplited = split<std::string>(currentSort, "_");
 		for (int j = 1; j < sortSplited.size(); j++)
 		{
 			SortingChoice Choice = (SortingChoice)(sortSplited[j][0]);
