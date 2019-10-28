@@ -1,5 +1,7 @@
 #include "optionsStats.h"
 
+using namespace InsermLibrary;
+
 optionsStats::optionsStats(QWidget *parent) : QDialog(parent)
 {
 	ui.setupUi(this);
@@ -18,11 +20,11 @@ statOption optionsStats::getStatOption()
 	statOpt.kruskall = ui.pCheckBoxKW->isChecked();
 	statOpt.FDRkruskall = ui.FDRCheckBoxKW->isChecked();
 	statOpt.pKruskall = atof(&ui.pValueLE_KW->text().toStdString()[0]);
-	statOpt.locaKruskall = vector<QString>(wantedLocaKW);
+	statOpt.locaKruskall = std::vector<QString>(wantedLocaKW);
 	statOpt.wilcoxon = ui.pCheckBoxWil->isChecked();
 	statOpt.FDRwilcoxon = ui.FDRCheckBoxWil->isChecked();
 	statOpt.pWilcoxon = atof(&ui.pValueLE_Wil->text().toStdString()[0]);
-	statOpt.locaWilcoxon = vector<QString>(wantedLocaWil);
+	statOpt.locaWilcoxon = std::vector<QString>(wantedLocaWil);
 	return statOpt;
 }
 
@@ -45,7 +47,7 @@ void optionsStats::connectSignals()
 	connect(ui.okPushButton, &QPushButton::clicked, this, &optionsStats::saveListsandClose);
 }
 
-void optionsStats::displayLoca(QListWidget *uiList, vector<QString> wantedLoca)
+void optionsStats::displayLoca(QListWidget *uiList, std::vector<QString> wantedLoca)
 {
 	uiList->clear();
 
@@ -61,13 +63,13 @@ void optionsStats::readList()
 	wantedLocaKW.clear();
 	wantedLocaWil.clear();
 
-	vector<string> locaFromFileKW = readTxtFile(kwFilePath.toStdString());
+	std::vector<std::string> locaFromFileKW = readTxtFile(kwFilePath.toStdString());
 	for (int i = 0; i < locaFromFileKW.size(); i++)
 	{
 		wantedLocaKW.push_back(locaFromFileKW[i].c_str());
 	}
 
-	vector<string> locaFromFileWil = readTxtFile(wilFilePath.toStdString());
+	std::vector<std::string> locaFromFileWil = readTxtFile(wilFilePath.toStdString());
 	for (int i = 0; i < locaFromFileWil.size(); i++)
 	{
 		wantedLocaWil.push_back(locaFromFileWil[i].c_str());
@@ -124,12 +126,12 @@ void optionsStats::deleteProvFromList()
 
 }
 
-void optionsStats::getProvList(vector<QString> provList)
+void optionsStats::getProvList(std::vector<QString> provList)
 {
 	if(toggle)
-		wantedLocaKW = vector<QString>(provList);
+		wantedLocaKW = std::vector<QString>(provList);
 	else
-		wantedLocaWil = vector<QString>(provList);
+		wantedLocaWil = std::vector<QString>(provList);
 }
 
 void optionsStats::saveListsandClose()

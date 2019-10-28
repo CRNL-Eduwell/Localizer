@@ -1,6 +1,6 @@
 #include "displayProv.h"
 
-displayProv::displayProv(vector<QString> currentList, QWidget *parent) : QDialog(parent)
+displayProv::displayProv(std::vector<QString> currentList, QWidget *parent) : QDialog(parent)
 {
 	ui.setupUi(this);
 	getProvList();
@@ -31,7 +31,7 @@ void displayProv::getProvList()
 	prov.erase(unique(prov.begin(), prov.end()), prov.end());
 }
 
-void displayProv::displayProvList(vector<QString> currentList)
+void displayProv::displayProvList(std::vector<QString> currentList)
 {
 	ui.listWidget->clear();
 
@@ -83,7 +83,7 @@ void displayProv::checkOnEnter(QListWidgetItem * item)
 
 void displayProv::sendListAndClose()
 {
-	vector<QString> provWanted;
+	std::vector<QString> provWanted;
 	for (int i = 0; i < prov.size(); i++)
 	{
 		if (ui.listWidget->item(i)->checkState() == Qt::CheckState::Checked)

@@ -1,10 +1,11 @@
 #include "HilbertEnveloppe.h"
 
+using namespace InsermLibrary;
 using Framework::Filtering::Linear::Convolution;
 
-void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, vector<int> FrequencyBand)
+void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, std::vector<int> FrequencyBand)
 {
-	thread thr[5];
+    std::thread thr[5];
 	int NumberOfSample = EegContainer->Data().size() > 0 ? EegContainer->Data()[0].size() : 0;
 	int NumberOfElement = EegContainer->BipoleCount();
 	int NumberOfFrequencyBins = FrequencyBand.size();
@@ -27,11 +28,11 @@ void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, 
 
 		for (int j = 0; j < NumberOfFrequencyBins - 1; j++)
 		{
-			thr[0] = thread(&HilbertEnveloppe::HilbertDownSampSumData, this, &dataCont, 0, j);
-			thr[1] = thread(&HilbertEnveloppe::HilbertDownSampSumData, this, &dataCont, 1, j);
-			thr[2] = thread(&HilbertEnveloppe::HilbertDownSampSumData, this, &dataCont, 2, j);
-			thr[3] = thread(&HilbertEnveloppe::HilbertDownSampSumData, this, &dataCont, 3, j);
-			thr[4] = thread(&HilbertEnveloppe::HilbertDownSampSumData, this, &dataCont, 4, j);
+            thr[0] = std::thread(&HilbertEnveloppe::HilbertDownSampSumData, this, &dataCont, 0, j);
+            thr[1] = std::thread(&HilbertEnveloppe::HilbertDownSampSumData, this, &dataCont, 1, j);
+            thr[2] = std::thread(&HilbertEnveloppe::HilbertDownSampSumData, this, &dataCont, 2, j);
+            thr[3] = std::thread(&HilbertEnveloppe::HilbertDownSampSumData, this, &dataCont, 3, j);
+            thr[4] = std::thread(&HilbertEnveloppe::HilbertDownSampSumData, this, &dataCont, 4, j);
 
 			thr[0].join();
 			thr[1].join();
@@ -40,11 +41,11 @@ void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, 
 			thr[4].join();
 		}
 
-		thr[0] = thread(&HilbertEnveloppe::MeanConvolveData, this, &dataCont, 0);
-		thr[1] = thread(&HilbertEnveloppe::MeanConvolveData, this, &dataCont, 1);
-		thr[2] = thread(&HilbertEnveloppe::MeanConvolveData, this, &dataCont, 2);
-		thr[3] = thread(&HilbertEnveloppe::MeanConvolveData, this, &dataCont, 3);
-		thr[4] = thread(&HilbertEnveloppe::MeanConvolveData, this, &dataCont, 4);
+        thr[0] = std::thread(&HilbertEnveloppe::MeanConvolveData, this, &dataCont, 0);
+        thr[1] = std::thread(&HilbertEnveloppe::MeanConvolveData, this, &dataCont, 1);
+        thr[2] = std::thread(&HilbertEnveloppe::MeanConvolveData, this, &dataCont, 2);
+        thr[3] = std::thread(&HilbertEnveloppe::MeanConvolveData, this, &dataCont, 3);
+        thr[4] = std::thread(&HilbertEnveloppe::MeanConvolveData, this, &dataCont, 4);
 
 		thr[0].join();
 		thr[1].join();
@@ -80,14 +81,14 @@ void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, 
 		{
 			for (int j = 0; j < NumberOfElement % 5; j++)
 			{
-				thr[j] = thread(&HilbertEnveloppe::HilbertDownSampSumData, this, &dataCont, j, i);
+                thr[j] = std::thread(&HilbertEnveloppe::HilbertDownSampSumData, this, &dataCont, j, i);
 				thr[j].join();
 			}
 		}
 
 		for (int i = 0; i < NumberOfElement % 5; i++)
 		{
-			thr[i] = thread(&HilbertEnveloppe::MeanConvolveData, this, &dataCont, i);
+            thr[i] = std::thread(&HilbertEnveloppe::MeanConvolveData, this, &dataCont, i);
 			thr[i].join();
 		}
 
@@ -135,7 +136,7 @@ void Algorithm::Strategy::HilbertEnveloppe::CalculateSmoothingCoefficients(int S
 	}
 }
 
-void Algorithm::Strategy::HilbertEnveloppe::HilbertDownSampSumData(DataContainer* DataContainer, int threadId, int freqId)
+void Algorithm::Strategy::HilbertEnveloppe::HilbertDownSampSumData(InsermLibrary::DataContainer* DataContainer, int threadId, int freqId)
 {
 	if (freqId == 0)
 	{

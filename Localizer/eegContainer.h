@@ -17,9 +17,6 @@
 #include <thread>
 #include <mutex> 
 
-using namespace std;
-using namespace InsermLibrary;
-
 namespace InsermLibrary
 {
 	class eegContainer
@@ -110,7 +107,7 @@ namespace InsermLibrary
 		inline const std::vector<std::vector<float>>& Data() const { return m_file->Data(EEGFormat::DataConverterType::Digital); }
 
 		//===[ Data Modification ]===
-		void DeleteElectrodes(vector<int> elecToDelete);
+        void DeleteElectrodes(std::vector<int> elecToDelete);
 		void GetElectrodes();
 		void BipolarizeElectrodes();
 		void SaveFrequencyData(EEGFormat::FileType FileType, const std::vector<int>& frequencyBand);
@@ -122,16 +119,16 @@ namespace InsermLibrary
 
 	private:
 		void GetElectrodes(EEGFormat::IFile* edf);
-		int idSplitDigiAndNum(string myString);
+        int idSplitDigiAndNum(std::string myString);
 
 	public :
 		////[IdNbFrequency][sm0-sm5000][channels][sample]
 		//std::vector<std::vector<EEGFormat::IFile*>> elanFrequencyBand;
 		//[sm0-sm5000][channels][sample]
 		std::vector<EEGFormat::IFile*> elanFrequencyBand;
-		vector<elecContainer> electrodes;
-		vector<string> flatElectrodes;
-		vector<int> idElecToDelete;
+        std::vector<elecContainer> electrodes;
+        std::vector<std::string> flatElectrodes;
+        std::vector<int> idElecToDelete;
 	private:
 		int m_originalSamplingFrequency = 0;
 		int m_downsampledFrequency = 0;

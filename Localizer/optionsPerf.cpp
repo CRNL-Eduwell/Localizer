@@ -12,9 +12,9 @@ optionsPerf::~optionsPerf()
 
 }
 
-void optionsPerf::getPerfLoca(vector<QString> &locaPerf)
+void optionsPerf::getPerfLoca(std::vector<QString> &locaPerf)
 {
-	locaPerf = vector<QString>(wantedLoca);
+	locaPerf = std::vector<QString>(wantedLoca);
 }
 
 void optionsPerf::connectSignals()
@@ -24,7 +24,7 @@ void optionsPerf::connectSignals()
 	connect(ui.ValidatePushButton, SIGNAL(clicked()), this, SLOT(saveListandClose()));
 }
 
-void optionsPerf::displayLoca(vector<QString> wantedLoca)
+void optionsPerf::displayLoca(std::vector<QString> wantedLoca)
 {
 	ui.listProv->clear();
 
@@ -39,7 +39,7 @@ void optionsPerf::readList()
 {
 	wantedLoca.clear();
 
-	vector<string> locaFromFile = readTxtFile(perfFilePath.toStdString());
+	std::vector<std::string> locaFromFile = InsermLibrary::readTxtFile(perfFilePath.toStdString());
 	for (int i = 0; i < locaFromFile.size(); i++)
 	{
 		wantedLoca.push_back(locaFromFile[i].c_str());
@@ -56,9 +56,9 @@ void optionsPerf::openProvWindow()
 	displayLoca(wantedLoca);
 }
 
-void optionsPerf::getProvList(vector<QString> provList)
+void optionsPerf::getProvList(std::vector<QString> provList)
 {
-	wantedLoca = vector<QString>(provList);
+	wantedLoca = std::vector<QString>(provList);
 }
 
 void optionsPerf::deleteProvFromList()
@@ -75,10 +75,10 @@ void optionsPerf::deleteProvFromList()
 
 void optionsPerf::saveListandClose()
 {
-	ofstream fichierPerf(perfFilePath.toStdString(), ios::out);
+	std::ofstream fichierPerf(perfFilePath.toStdString(), std::ios::out);
 	for (int i = 0; i < wantedLoca.size(); i++)
 	{
-		fichierPerf << wantedLoca[i].toStdString() << endl;
+		fichierPerf << wantedLoca[i].toStdString() << std::endl;
 	}
 	fichierPerf.close();
 	close();

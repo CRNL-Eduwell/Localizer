@@ -1,6 +1,6 @@
 #include "chooseElec.h"
 
-chooseElec::chooseElec(eegContainer* eegCont, QWidget *parent) : QDialog(parent)
+chooseElec::chooseElec(InsermLibrary::eegContainer* eegCont, QWidget *parent) : QDialog(parent)
 {
 	containerEeg = eegCont;
 	ui.setupUi(this);

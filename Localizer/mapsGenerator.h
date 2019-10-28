@@ -9,9 +9,6 @@
 #include <QFileInfo>
 #include <QDir>
 
-using namespace std;
-using namespace InsermLibrary;
-
 namespace InsermLibrary
 {
 	namespace DrawCard
@@ -22,11 +19,11 @@ namespace InsermLibrary
 			mapsGenerator(int width, int heigth);
 			~mapsGenerator();
 			//=== TrialMat Drawing Functions
-			void trialmatTemplate(vector<int> trialsPerRow, PROV *myprovFile);
+			void trialmatTemplate(std::vector<int> trialsPerRow, PROV *myprovFile);
 			void graduateColorBar(QPainter *painter, int maxValue);
 			void drawVerticalZeroLine(QPainter *painter, PROV* myprovFile);
 			void displayStatsOnMap(QPainter *painter, vec2<int> idCurrentMap, vec1<PVALUECOORD> significantValue, PROV* myprovFile);
-			void drawMapTitle(QPainter *painter, string title);
+			void drawMapTitle(QPainter *painter, std::string title);
 
 			//=== TrialMat Data2Color Functions
 			vec2<float> horizontalInterpolation(vec2<float> chanelToInterpol, int interpolationFactor, int idBegTrigg, int nbSubTrials);
@@ -40,14 +37,14 @@ namespace InsermLibrary
 		private:
 			void jetColorMap512(QColor *colorMap);
 			void createColorBar(QPainter *painter);
-			void defineLineSeparation(QPainter *painter, vector<int> nbTrialPerRow, int nbCol);
+			void defineLineSeparation(QPainter *painter, std::vector<int> nbTrialPerRow, int nbCol);
 			void createTimeLegend(QPainter *painter, PROV *myprovFile);
 			void createTrialsLegend(QPainter *painter, PROV *myprovFile);
 
 		public:
 			QPixmap pixmapTemplate;
-			vector<QRect> subMatrixes;
-			vector<QRect> separationLines;
+			std::vector<QRect> subMatrixes;
+			std::vector<QRect> separationLines;
 			QRect MatrixRect;
 			QRect colorBarRect;
 			QRect fullMap;

@@ -11,18 +11,16 @@
 #include <iostream>
 #include <vector>
 
-using namespace std;
-
 class displayProv : public QDialog
 {
 	Q_OBJECT
 
 public:
-	displayProv(vector<QString> currentList, QWidget *parent = 0);
+	displayProv(std::vector<QString> currentList, QWidget *parent = 0);
 	~displayProv();
 private:
 	void getProvList();
-	void displayProvList(vector<QString> currentList);
+	void displayProvList(std::vector<QString> currentList);
 	void connectSignals();
 
 private slots:
@@ -30,10 +28,10 @@ private slots:
 	void checkOnEnter(QListWidgetItem * item);
 	void sendListAndClose();
 signals:
-	void sendProvList(vector<QString> truc);
+	void sendProvList(std::vector<QString> truc);
 
 private:
-	vector<QString> prov;
+	std::vector<QString> prov;
 	Ui::FormDispProv ui;
 };
 

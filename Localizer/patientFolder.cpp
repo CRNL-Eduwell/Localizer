@@ -1,5 +1,7 @@
 #include "patientFolder.h"
 
+using namespace InsermLibrary;
+
 patientFolder::patientFolder(patientFolder *pat)
 {
 	this->m_rootFolder = pat->m_rootFolder;
@@ -7,12 +9,12 @@ patientFolder::patientFolder(patientFolder *pat)
 	this->m_year = pat->m_year;
 	this->m_patientName = pat->m_patientName;
 
-	m_localizerFolder = vector<locaFolder>(pat->m_localizerFolder);
+	m_localizerFolder = std::vector<locaFolder>(pat->m_localizerFolder);
 }
 
-patientFolder::patientFolder(string rootPath)
+patientFolder::patientFolder(std::string rootPath)
 {
-	vector<string> splitExt = split<string>(rootPath, "\\/");
+	std::vector<std::string> splitExt = split<std::string>(rootPath, "\\/");
 	if (rootPath[0] == '/' && rootPath[1] == '/') //In case this is a newtork ressource
 	{
 		m_rootFolder = "//";
@@ -39,15 +41,15 @@ std::string patientFolder::patientName()
 	return (m_hospital + "_" + m_year + "_" + m_patientName);
 }
 
-void patientFolder::getPatientInfo(string rootPath)
+void patientFolder::getPatientInfo(std::string rootPath)
 {
-	vector<string> splitPath = split<string>(rootPath, "_\\/");
+	std::vector<std::string> splitPath = split<std::string>(rootPath, "_\\/");
 	m_hospital = splitPath[splitPath.size() - 3];
 	m_year = splitPath[splitPath.size() - 2];
 	m_patientName = splitPath[splitPath.size() - 1];
 }
 
-void patientFolder::findLocaFolders(string rootPath)
+void patientFolder::findLocaFolders(std::string rootPath)
 {
 	//Get every folder corresponding to one LOCALIZER exam
 	QDir currentDir(rootPath.c_str());
@@ -66,7 +68,7 @@ void patientFolder::findLocaFolders(string rootPath)
 
 //===
 
-locaFolder::locaFolder(patientFolder *pat, string rootLocaFolder)
+locaFolder::locaFolder(patientFolder *pat, std::string rootLocaFolder)
 {
 	parent = pat;
 	m_rootLocaFolder = rootLocaFolder;
@@ -80,7 +82,7 @@ locaFolder::~locaFolder()
 
 }
 
-string locaFolder::fullLocalizerName()
+std::string locaFolder::fullLocalizerName()
 {
 	return parent->patientName() + "_" + m_locaName;
 }
@@ -97,45 +99,37 @@ FileExt locaFolder::fileExtention()
 		return NO_EXT;
 }
 
-string locaFolder::filePath(FileExt wantedFile)
+std::string locaFolder::filePath(FileExt wantedFile)
 {
 	switch (wantedFile)
 	{
 	case TRC:
 		return m_trcFile;
-		break;
 	case EEG_ELAN:
 		return m_eegFile;
-		break;
 	case ENT_ELAN:
 		return m_eegEntFile;
-		break;
 	case POS_ELAN:
 		return m_posFile;
-		break;
 	case POS_DS_ELAN:
 		return m_dsPosFile;
-		break;
 	case EDF:
 		return m_edfFile;
-		break;
 	case NO_EXT:
 		return "";
-		break;
 	default:
 		return "";
-		break;
 	}
 	//return "";
 }
 
-void locaFolder::getLocaName(string rootLocaFolder)
+void locaFolder::getLocaName(std::string rootLocaFolder)
 {
-	vector<string> splitPath = split<string>(rootLocaFolder, "\\/_");
+	std::vector<std::string> splitPath = split<std::string>(rootLocaFolder, "\\/_");
 	m_locaName = splitPath[splitPath.size() - 1];
 }
 
-void locaFolder::retrieveFiles(string rootLocaFolder)
+void locaFolder::retrieveFiles(std::string rootLocaFolder)
 {
 	QDir currentDir(rootLocaFolder.c_str());
 	currentDir.setNameFilters(QStringList() << "*.trc" << "*.eeg" << "*.eeg.ent" << "*.pos" << "*.edf");
@@ -170,7 +164,7 @@ void locaFolder::retrieveFiles(string rootLocaFolder)
 	}
 }
 
-void locaFolder::retrieveFrequencyFolders(string rootLocaFolder)
+void locaFolder::retrieveFrequencyFolders(std::string rootLocaFolder)
 {
 	QRegExp rxFreqFold((fullLocalizerName() + "_f(\\d+)f(\\d+)").c_str());
 
@@ -191,7 +185,7 @@ void locaFolder::retrieveFrequencyFolders(string rootLocaFolder)
 
 //===
 
-frequencyFolder::frequencyFolder(locaFolder *loca, string rootFrequencyPath)
+frequencyFolder::frequencyFolder(locaFolder *loca, std::string rootFrequencyPath)
 {
 	parent = loca;
 	m_rootFrequencyFolder = rootFrequencyPath;
@@ -205,36 +199,29 @@ frequencyFolder::~frequencyFolder()
 
 }
 
-string frequencyFolder::fullFrequencyName()
+std::string frequencyFolder::fullFrequencyName()
 {
 	return parent->fullLocalizerName() + "_" + m_frequencyName;
 }
 
-string frequencyFolder::filePath(FileExt wantedFile)
+std::string frequencyFolder::filePath(FileExt wantedFile)
 {
 	switch (wantedFile)
 	{
 	case SM0_ELAN:
 		return m_sm0eeg;
-		break;
 	case SM250_ELAN:
 		return m_sm250eeg;
-		break;	
 	case SM500_ELAN:
 		return m_sm500eeg;
-		break;
 	case SM1000_ELAN:
 		return m_sm1000eeg;
-		break;
 	case SM2500_ELAN:
 		return m_sm2500eeg;
-		break;
 	case SM5000_ELAN:
 		return m_sm5000eeg;
-		break;
 	default:
 		return "";
-		break;
 	}
 }
 
@@ -249,25 +236,18 @@ std::vector<std::string> frequencyFolder::FilePaths(FileExt wantedFile)
 	{
 	case SM0_ELAN:
 		return m_smXFiles.size() > 0 ? GetFirstFullDataSet(m_smXFiles[0]) : std::vector<std::string>();
-		break;
 	case SM250_ELAN:
 		return m_smXFiles.size() > 1 ? GetFirstFullDataSet(m_smXFiles[1]) : std::vector<std::string>();
-		break;
 	case SM500_ELAN:
 		return m_smXFiles.size() > 2 ? GetFirstFullDataSet(m_smXFiles[2]) : std::vector<std::string>();
-		break;
 	case SM1000_ELAN:
 		return m_smXFiles.size() > 3 ? GetFirstFullDataSet(m_smXFiles[3]) : std::vector<std::string>();
-		break;
 	case SM2500_ELAN:
 		return m_smXFiles.size() > 4 ? GetFirstFullDataSet(m_smXFiles[4]) : std::vector<std::string>();
-		break;
 	case SM5000_ELAN:
 		return m_smXFiles.size() > 5 ? GetFirstFullDataSet(m_smXFiles[5]) : std::vector<std::string>();
-		break;
 	default:
 		return std::vector<std::string>();
-		break;
 	}
 }
 
@@ -298,13 +278,13 @@ bool frequencyFolder::hasEnvBar()
 	return false;
 }
 
-void frequencyFolder::getFreqBandName(string rootFreqFolder)
+void frequencyFolder::getFreqBandName(std::string rootFreqFolder)
 {
-	vector<string> splitPath = split<string>(rootFreqFolder, "\\/_");
+	std::vector<std::string> splitPath = split<std::string>(rootFreqFolder, "\\/_");
 	m_frequencyName = splitPath[splitPath.size() - 1];
 }
 
-void frequencyFolder::retrieveSMFile2(string rootFreqFolder)
+void frequencyFolder::retrieveSMFile2(std::string rootFreqFolder)
 {
 	QDir currentDir(rootFreqFolder.c_str());
 	currentDir.setNameFilters(QStringList() << "*.eeg" << "*.eeg.ent");
@@ -339,7 +319,7 @@ void frequencyFolder::retrieveSMFile2(string rootFreqFolder)
 	}
 }
 
-void frequencyFolder::retrieveSMFile(string rootFreqFolder)
+void frequencyFolder::retrieveSMFile(std::string rootFreqFolder)
 {
 	QDir currentDir(rootFreqFolder.c_str());
 	currentDir.setNameFilters(QStringList() << "*.eeg" << "*.eeg.ent" << "*.vhdr");
@@ -366,7 +346,7 @@ void frequencyFolder::retrieveSMFile(string rootFreqFolder)
 	}
 }
 
-void frequencyFolder::retrieveDataFolders(string rootFreqFolder)
+void frequencyFolder::retrieveDataFolders(std::string rootFreqFolder)
 {
 	QDir currentDir(rootFreqFolder.c_str());
 	currentDir.setFilter(QDir::Dirs);
@@ -418,7 +398,7 @@ std::vector<std::string> frequencyFolder::GetFirstFullDataSet(const std::vector<
 
 //===
 
-analyzedDataFolder::analyzedDataFolder(frequencyFolder *freq, string rootPath)
+analyzedDataFolder::analyzedDataFolder(frequencyFolder *freq, std::string rootPath)
 {
 	parent = freq;
 	m_rootDataFolder = rootPath;
@@ -431,10 +411,10 @@ analyzedDataFolder::~analyzedDataFolder()
 
 }
 
-void analyzedDataFolder::getStatsInfo(string rootDataFolder)
+void analyzedDataFolder::getStatsInfo(std::string rootDataFolder)
 {
-	vector<string> splitPath = split<string>(rootDataFolder, "/");
-	vector<string> splitFolder = split<string>(splitPath[splitPath.size() - 1], "_");
+	std::vector<std::string> splitPath = split<std::string>(rootDataFolder, "/");
+	std::vector<std::string> splitFolder = split<std::string>(splitPath[splitPath.size() - 1], "_");
 
 	if (splitFolder[5] == "trials")
 	{
@@ -470,7 +450,7 @@ void analyzedDataFolder::getStatsInfo(string rootDataFolder)
 	}
 }
 
-void analyzedDataFolder::getPicturesFolder(string rootDataFolder)
+void analyzedDataFolder::getPicturesFolder(std::string rootDataFolder)
 {
 	QDir currentDir(rootDataFolder.c_str());
 	currentDir.setFilter(QDir::Files);
@@ -480,7 +460,7 @@ void analyzedDataFolder::getPicturesFolder(string rootDataFolder)
 		QString dirname = *entry;
 		if (dirname != QObject::tr(".") && dirname != QObject::tr(".."))
 		{
-			vector<string> splitVal = split<string>(dirname.toStdString(), "_.");
+			std::vector<std::string> splitVal = split<std::string>(dirname.toStdString(), "_.");
 			picData currentPic;
 			currentPic.sortingWeight = strToWeightInt(splitVal[splitVal.size() - 2]);
 			currentPic.pathToPic = rootDataFolder + "/" + dirname.toStdString();
@@ -494,7 +474,7 @@ void analyzedDataFolder::getPicturesFolder(string rootDataFolder)
 	});
 }
 
-int analyzedDataFolder::strToWeightInt(string myStr)
+int analyzedDataFolder::strToWeightInt(std::string myStr)
 {
 	int myVal = 0;
 	for (int i = 0; i < myStr.length(); i++)

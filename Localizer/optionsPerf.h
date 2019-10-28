@@ -9,9 +9,6 @@
 #include "Utility.h"
 #include "displayProv.h"
 
-using namespace std;
-using namespace InsermLibrary;
-
 class optionsPerf : public QDialog
 {
 	Q_OBJECT
@@ -19,21 +16,21 @@ class optionsPerf : public QDialog
 public:
 	optionsPerf(QWidget *parent = 0);
 	~optionsPerf();
-	void getPerfLoca(vector<QString> &locaPerf);
+	void getPerfLoca(std::vector<QString> &locaPerf);
 
 private:
 	void connectSignals();
-	void displayLoca(vector<QString> wantedLoca);
+	void displayLoca(std::vector<QString> wantedLoca);
 	void readList();
 
 private slots:
 	void openProvWindow();
 	void deleteProvFromList();
-	void getProvList(vector<QString> provList);
+	void getProvList(std::vector<QString> provList);
 	void saveListandClose();
 
 private:
-	vector<QString> wantedLoca;
+	std::vector<QString> wantedLoca;
 	displayProv *prov = nullptr;
 	QString perfFilePath = "./Resources/Config/perfComp.txt";
 	Ui::FormPerf ui;

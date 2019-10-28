@@ -1,28 +1,28 @@
 #include "Utility.h"
 
-vector<string> InsermLibrary::readTxtFile(string pathFile)
+std::vector<std::string> InsermLibrary::readTxtFile(std::string pathFile)
 {
-	stringstream buffer;
-	ifstream file(pathFile);
+	std::stringstream buffer;
+	std::ifstream file(pathFile);
 	if (file)
 	{
 		buffer << file.rdbuf();
 		file.close();
-		return(split<string>(buffer.str(), "\r\n"));
+		return(split<std::string>(buffer.str(), "\r\n"));
 	}
 	else
 	{
-		cout << " Error opening : " << pathFile << endl;
-		return vector<string>();
+		std::cout << " Error opening : " << pathFile << std::endl;
+		return std::vector<std::string>();
 	}
 }
 
-void InsermLibrary::saveTxtFile(vector<QString> data, string pathFile)
+void InsermLibrary::saveTxtFile(std::vector<QString> data, std::string pathFile)
 {
-	ofstream fichier(pathFile, ios::out);
+	std::ofstream fichier(pathFile, std::ios::out);
 	for (int i = 0; i < data.size(); i++)
 	{
-		fichier << data[i].toStdString() << endl;
+		fichier << data[i].toStdString() << std::endl;
 	}
 	fichier.close();
 }
@@ -32,7 +32,7 @@ void InsermLibrary::saveTxtFile(vector<QString> data, string pathFile)
 //	myString.erase(remove_if(myString.begin(), myString.end(), isspace), myString.end());
 //}
 
-string InsermLibrary::GetCurrentWorkingDir()
+std::string InsermLibrary::GetCurrentWorkingDir()
 {
 	char buff[FILENAME_MAX];
 	GetCurrentDir(buff, FILENAME_MAX);

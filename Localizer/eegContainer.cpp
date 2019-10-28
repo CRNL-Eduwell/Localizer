@@ -29,7 +29,7 @@ InsermLibrary::eegContainer::~eegContainer()
 	fftwf_cleanup_threads();
 }
 
-void InsermLibrary::eegContainer::DeleteElectrodes(vector<int> elecToDelete)
+void InsermLibrary::eegContainer::DeleteElectrodes(std::vector<int> elecToDelete)
 {
 	if (m_file != nullptr)
 	{
@@ -72,7 +72,7 @@ void InsermLibrary::eegContainer::SaveFrequencyData(EEGFormat::FileType FileType
 {
 	std::string rootFileFolder = EEGFormat::Utility::GetDirectoryPath(m_file->DefaultFilePath());
 	std::string patientName = EEGFormat::Utility::GetFileName(m_file->DefaultFilePath(), false);
-	std::string frequencyFolder = "_f" + to_string(frequencyBand[0]) + "f" + to_string(frequencyBand[frequencyBand.size() - 1]);
+    std::string frequencyFolder = "_f" + std::to_string(frequencyBand[0]) + "f" + std::to_string(frequencyBand[frequencyBand.size() - 1]);
 	std::string rootFrequencyFolder = rootFileFolder + "/" + patientName + frequencyFolder + "/";
 
 //	struct stat info;
@@ -85,7 +85,7 @@ void InsermLibrary::eegContainer::SaveFrequencyData(EEGFormat::FileType FileType
 	for (int i = 0; i < 6; i++)
 	{
 		std::string directory = rootFrequencyFolder;
-		std::string baseFileName = patientName + frequencyFolder + "_ds" + to_string(DownsamplingFactor()) + "_sm" + to_string((int)m_smoothingMilliSec[i]);
+        std::string baseFileName = patientName + frequencyFolder + "_ds" + std::to_string(DownsamplingFactor()) + "_sm" + std::to_string((int)m_smoothingMilliSec[i]);
 		switch (FileType)
 		{
 			case EEGFormat::FileType::Micromed:
@@ -219,10 +219,10 @@ void InsermLibrary::eegContainer::GetElectrodes(EEGFormat::IFile* edf)
 	if (flatElectrodes.size() > 0)
 		flatElectrodes.clear();
 
-	string elecNameStringTemp = "%#";
+    std::string elecNameStringTemp = "%#";
 	for (int i = 0; i < edf->Electrodes().size(); i++)
 	{
-		string result = "";
+        std::string result = "";
 		int resId = -1;
 
 		int goodId = idSplitDigiAndNum(edf->Electrodes()[i]->Label());
@@ -242,7 +242,7 @@ void InsermLibrary::eegContainer::GetElectrodes(EEGFormat::IFile* edf)
 			/*cout << result << " et " << resId << endl;*/
 			electrodes[electrodes.size() - 1].id.push_back(resId);
 			electrodes[electrodes.size() - 1].idOrigFile.push_back(i);
-			flatElectrodes.push_back(result + to_string(resId));
+            flatElectrodes.push_back(result + std::to_string(resId));
 		}
 		else
 		{
@@ -253,12 +253,12 @@ void InsermLibrary::eegContainer::GetElectrodes(EEGFormat::IFile* edf)
 			electrodes[electrodes.size() - 1].label = result;
 			electrodes[electrodes.size() - 1].id.push_back(resId);
 			electrodes[electrodes.size() - 1].idOrigFile.push_back(i);
-			flatElectrodes.push_back(result + to_string(resId));
+            flatElectrodes.push_back(result + std::to_string(resId));
 		}
 	}
 }
 
-int InsermLibrary::eegContainer::idSplitDigiAndNum(string myString)
+int InsermLibrary::eegContainer::idSplitDigiAndNum(std::string myString)
 {
 	for (int j = 0; j < myString.size(); j++)
 	{
