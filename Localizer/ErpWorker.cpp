@@ -5,7 +5,8 @@ ErpWorker::ErpWorker(std::vector<std::string>& eegFiles, std::vector<std::string
 	m_eegFiles = std::vector<std::string>(eegFiles);
 	m_provFiles = std::vector<std::string>(provFiles);
 
-	m_loca = new LOCA(std::vector<FrequencyBandAnalysisOpt>(), nullptr, new InsermLibrary::picOption(picOption));
+    std::vector<FrequencyBandAnalysisOpt> vec;
+    m_loca = new LOCA(vec, nullptr, new InsermLibrary::picOption(picOption));
 }
 
 ErpWorker::~ErpWorker()

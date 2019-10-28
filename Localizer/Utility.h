@@ -17,6 +17,7 @@
 #include <QGroupBox>
 #include <QCheckBox>
 #include <QFrame>
+#include <cmath>
 
 using namespace std;
 
@@ -102,7 +103,7 @@ namespace InsermLibrary
 
 	void saveTxtFile(vector<QString> data, string pathFile);
 
-	void deblankString(std::string &myString);
+    //void deblankString(std::string &myString);
 	
 	string GetCurrentWorkingDir();
 

@@ -34,7 +34,9 @@ void InsermLibrary::LOCA::eeg2erp(eegContainer *myeegContainer, PROV *myprovFile
 	string monoErpOutput = outputErpFolder.append(myeegContainer->RootFileName());
 
 	deleteAndNullify1D(m_triggerContainer);
-	m_triggerContainer = new TriggerContainer(myeegContainer->Triggers(), myeegContainer->SamplingFrequency());
+    std::vector<EEGFormat::ITrigger> triggers = myeegContainer->Triggers();
+    int samplingFrequency = myeegContainer->SamplingFrequency();
+    m_triggerContainer = new TriggerContainer(triggers, samplingFrequency);
 	m_triggerContainer->ProcessEventsForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
 
 	vec3<float> bigDataMono = vec3<float>(m_triggerContainer->ProcessedTriggerCount(), vec2<float>(myeegContainer->flatElectrodes.size(), vec1<float>(windowSam[1] - windowSam[0])));
@@ -153,7 +155,9 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 	m_idCurrentLoca = idCurrentLoca;
 	m_currentLoca = nullptr;
 
-	m_triggerContainer = new TriggerContainer(myeegContainer->Triggers(), myeegContainer->SamplingFrequency());
+    std::vector<EEGFormat::ITrigger> triggers = myeegContainer->Triggers();
+    int samplingFrequency = myeegContainer->SamplingFrequency();
+    m_triggerContainer = new TriggerContainer(triggers, samplingFrequency);
 	for (int i = 0; i < m_analysisOpt.size(); i++)
 	{
 		FrequencyBand currentFrequencyBand(m_analysisOpt[i].Band);
@@ -173,7 +177,9 @@ void InsermLibrary::LOCA::LocaFrequency(eegContainer *myeegContainer, int idCurr
 
 void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContainer, std::string freqFolder, FrequencyBandAnalysisOpt a)
 {
-	m_triggerContainer = new TriggerContainer(myeegContainer->Triggers(), myeegContainer->SamplingFrequency());
+    std::vector<EEGFormat::ITrigger> triggers = myeegContainer->Triggers();
+    int samplingFrequency = myeegContainer->SamplingFrequency();
+    m_triggerContainer = new TriggerContainer(triggers, samplingFrequency);
 
 	//We generate file.pos and file_dsX.pos if we find a prov file 
 	//with the exact same name as the experiment.	

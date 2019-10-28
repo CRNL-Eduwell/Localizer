@@ -102,7 +102,7 @@ int *InsermLibrary::PROV::getBiggestWindowSam(int samplingFreq)
 {
 	int window_sam[2]{ 0,0 };
 	int *window_ms = getBiggestWindowMs();
-	window_sam[0] = round((samplingFreq * window_ms[0]) / 1000);
+    window_sam[0] = round((samplingFreq * window_ms[0]) / 1000);
 	window_sam[1] = round((samplingFreq * window_ms[1]) / 1000);
 	delete window_ms;
 

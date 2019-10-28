@@ -75,12 +75,12 @@ void InsermLibrary::eegContainer::SaveFrequencyData(EEGFormat::FileType FileType
 	std::string frequencyFolder = "_f" + to_string(frequencyBand[0]) + "f" + to_string(frequencyBand[frequencyBand.size() - 1]);
 	std::string rootFrequencyFolder = rootFileFolder + "/" + patientName + frequencyFolder + "/";
 
-	struct stat info;
-	if (stat(rootFrequencyFolder.c_str(), &info) != 0)
-	{
-		cout << "Creating freQ FOLDER" << endl;
-		_mkdir(rootFrequencyFolder.c_str());
-	}
+//	struct stat info;
+//	if (stat(rootFrequencyFolder.c_str(), &info) != 0)
+//	{
+//		cout << "Creating freQ FOLDER" << endl;
+//		_mkdir(rootFrequencyFolder.c_str());
+//	}
 
 	for (int i = 0; i < 6; i++)
 	{

@@ -27,10 +27,10 @@ void InsermLibrary::saveTxtFile(vector<QString> data, string pathFile)
 	fichier.close();
 }
 
-void InsermLibrary::deblankString(std::string &myString)
-{
-	myString.erase(remove_if(myString.begin(), myString.end(), isspace), myString.end());
-}
+//void InsermLibrary::deblankString(std::string &myString)
+//{
+//	myString.erase(remove_if(myString.begin(), myString.end(), isspace), myString.end());
+//}
 
 string InsermLibrary::GetCurrentWorkingDir()
 {

@@ -308,8 +308,12 @@ void form::Save()
 	if (rootSplit[rootSplit.size() - 1] == chgCodeSplit[rootSplit.size() - 1])
 	{
 		chgCodeSplit.erase(chgCodeSplit.begin(), chgCodeSplit.begin() + rootSplit.size());
-		for each (std::string var in chgCodeSplit)
-			prov->changeCodeFilePath += ("/" + var);
+//		for each (std::string var in chgCodeSplit)
+//			prov->changeCodeFilePath += ("/" + var);
+        for(int i = 0;i<chgCodeSplit.size();i++)
+        {
+            prov->changeCodeFilePath += ("/" + chgCodeSplit[i]);
+        }
 	}
 
 	prov->invertmapsinfo = m_currentProv->invertmapsinfo;

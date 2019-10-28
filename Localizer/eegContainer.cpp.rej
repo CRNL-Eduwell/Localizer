@@ -1,9 +1,0 @@
-diff a/Localizer/eegContainer.cpp b/Localizer/eegContainer.cpp	(rejected hunks)
-@@ -58,7 +58,6 @@
- 	sampInfo.downsampledFrequency = downsampFrequency;
- 	sampInfo.downsampFactor = sampInfo.samplingFrequency / sampInfo.downsampledFrequency; //verifier si bonne fr�quence d'�chantillonage ( non 2^n factor)
- 	sampInfo.nbSample = Data().size() > 0 ? Data()[0].size() : 0;
--	originalFilePath = m_file->DefaultFilePath();
- 	//==
- 	calculateSmoothing();
- 	//== get triggers after last beginningCode that indicates beginning of expe

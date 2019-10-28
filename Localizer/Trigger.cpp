@@ -25,7 +25,7 @@ InsermLibrary::Trigger::~Trigger()
 void InsermLibrary::Trigger::UpdateFrequency(int newFrequency)
 {
 	if (newFrequency <= 0)
-		throw new std::exception("Error : Sampling Frequency of a trigger must be bigger than zero");
+        throw new std::runtime_error("Error : Sampling Frequency of a trigger must be bigger than zero");
 
 	float Factor = (float)newFrequency / m_samplingFrequency;
 	

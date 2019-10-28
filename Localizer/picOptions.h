@@ -5,6 +5,7 @@
 #include "ui_picOptions.h"
 #include "Utility.h"
 #include "optionsParameters.h"
+#include <cmath>
 
 using namespace std;
 using namespace InsermLibrary;

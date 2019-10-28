@@ -664,8 +664,11 @@ void Localizer::ProcessMicromedFileConcatenation(QList<QString> files, QString d
 		trcFiles.push_back(files[i].toStdString());
 	}
 
-	thread = new QThread;
-	worker = new ConcatenationWorker(trcFiles, directoryPath.toStdString(), fileName.toStdString());
+    thread = new QThread;
+    std::string directoryPathString = directoryPath.toStdString();
+    std::string fileNameString = fileName.toStdString();
+
+    worker = new ConcatenationWorker(trcFiles, directoryPathString, fileNameString);
 
 	//Update info
 	connect(worker, &IWorker::sendLogInfo, this, [&](QString info) { emit DisplayLog(info); });

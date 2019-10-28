@@ -5,6 +5,7 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <cmath>
 #include "Utility.h"
 #include "PROVParameters.h"
 
