@@ -10,23 +10,20 @@
 #include <QString>
 #include <QObject>
 
-using namespace std;
-using namespace InsermLibrary;
-
 class patientFolder;
 class locaFolder;
 class frequencyFolder;
 
 struct picData
 {
-	string pathToPic;
+	std::string pathToPic;
 	int sortingWeight;
 };
 
 class analyzedDataFolder
 {
 public :
-	analyzedDataFolder(frequencyFolder *freq, string rootPath);
+	analyzedDataFolder(frequencyFolder *freq, std::string rootPath);
 	~analyzedDataFolder();
 	inline std::string typeDrawing() const { return m_typeDrawing; };
 
@@ -52,8 +49,8 @@ public:
 	inline std::vector<analyzedDataFolder> dataFolders() const { return m_dataFolders; };
 	inline std::string frequencyName() const { return m_frequencyName; };
 	std::string fullFrequencyName();
-	std::string filePath(FileExt wantedFile);
-	std::vector<std::string> FilePaths(FileExt wantedFile);
+	std::string filePath(InsermLibrary::FileExt wantedFile);
+	std::vector<std::string> FilePaths(InsermLibrary::FileExt wantedFile);
 	inline std::string rootFrequencyFolder() const { return m_rootFrequencyFolder; };
 	bool hasTrialMap();
 	bool hasEnvBar();
@@ -88,8 +85,8 @@ public:
 	inline std::vector<frequencyFolder> frequencyFolders() const { return m_freqFolder; };
 	inline std::string localizerName() const { return m_locaName; };
 	std::string fullLocalizerName();
-	FileExt fileExtention();
-	std::string filePath(FileExt wantedFile);
+	InsermLibrary::FileExt fileExtention();
+	std::string filePath(InsermLibrary::FileExt wantedFile);
 	inline std::string rootLocaFolder() const { return m_rootLocaFolder; };
 
 private :

@@ -1,6 +1,9 @@
 #include "singleFile.h"
 
-singleFile::singleFile(string path, int nbFreqBands)
+using namespace std; //nettoye tes conneries gros con , flo du 28/10/2019
+using namespace InsermLibrary;//nettoye tes conneries gros con , flo du 28/10/2019 2 secondes plus tard
+
+singleFile::singleFile(std::string path, int nbFreqBands)
 {
 	getFileData(path);
 	for (int i = 0; i < nbFreqBands; i++)
@@ -12,7 +15,7 @@ singleFile::~singleFile()
 
 }
 
-string singleFile::filePath(FileExt wantedFile)
+std::string singleFile::filePath(InsermLibrary::FileExt wantedFile)
 {
 	switch (wantedFile)
 	{

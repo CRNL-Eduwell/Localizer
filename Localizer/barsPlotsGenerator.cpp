@@ -1,6 +1,8 @@
 #include "barsPlotsGenerator.h"
 
 using namespace InsermLibrary::DrawbarsPlots;
+using namespace std;//nettoye tes conneries gros con , flo du 28/10/2019
+using namespace InsermLibrary;//nettoye tes conneries gros con , flo du 28/10/2019
 
 baseCanvas::baseCanvas(PROV *myprovFile, int width, int heigth)
 {

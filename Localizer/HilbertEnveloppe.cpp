@@ -1,5 +1,6 @@
 #include "HilbertEnveloppe.h"
 
+using namespace InsermLibrary;
 using Framework::Filtering::Linear::Convolution;
 
 void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, vector<int> FrequencyBand)
@@ -135,7 +136,7 @@ void Algorithm::Strategy::HilbertEnveloppe::CalculateSmoothingCoefficients(int S
 	}
 }
 
-void Algorithm::Strategy::HilbertEnveloppe::HilbertDownSampSumData(DataContainer* DataContainer, int threadId, int freqId)
+void Algorithm::Strategy::HilbertEnveloppe::HilbertDownSampSumData(InsermLibrary::DataContainer* DataContainer, int threadId, int freqId)
 {
 	if (freqId == 0)
 	{

@@ -24,6 +24,8 @@
 #include "optionsPerf.h"
 #include "optionsStats.h"
 #include "chooseElec.h"
+#include "ConnectCleaner.h"
+
 #include "picOptions.h"
 #include "form.h"
 #include "AboutDycog.h"
@@ -41,8 +43,6 @@
 #include "FileConverterWorker.h"
 #include "ErpWorker.h"
 #include "ConcatenationWorker.h"
-
-using namespace std;
 
 class Localizer : public QMainWindow
 {
@@ -95,7 +95,7 @@ private:
 	bool m_isPatFolder = false;
 	//userOption userOpt;
 	patientFolder* currentPat = nullptr;
-	vector<singleFile> currentFiles;
+	std::vector<singleFile> currentFiles;
 	//==Thread and Worker
 	QReadWriteLock m_lockLoop;  
 	QThread* thread = nullptr;

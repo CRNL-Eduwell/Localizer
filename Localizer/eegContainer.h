@@ -17,11 +17,6 @@
 #include <thread>
 #include <mutex> 
 
-#include <direct.h>
-
-using namespace std;
-using namespace InsermLibrary;
-
 namespace InsermLibrary
 {
 	class eegContainer

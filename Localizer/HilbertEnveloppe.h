@@ -15,13 +15,13 @@ namespace Algorithm
 		public:
 			HilbertEnveloppe() { };
 			~HilbertEnveloppe() { };
-			virtual void Process(eegContainer* Container, vector<int> FrequencyBand);
+			virtual void Process(InsermLibrary::eegContainer* Container, std::vector<int> FrequencyBand);
 
 		private:
-			void InitOutputDataStructure(eegContainer* EegContainer);
+			void InitOutputDataStructure(InsermLibrary::eegContainer* EegContainer);
 			void CalculateSmoothingCoefficients(int SamplingFrequency, int DownsamplingFactor);
-			void HilbertDownSampSumData(DataContainer* DataContainer, int threadId, int freqId);
-			void MeanConvolveData(DataContainer *DataContainer, int threadId);
+			void HilbertDownSampSumData(InsermLibrary::DataContainer* DataContainer, int threadId, int freqId);
+			void MeanConvolveData(InsermLibrary::DataContainer *DataContainer, int threadId);
 
 		private:
 			float m_smoothingSample[6];

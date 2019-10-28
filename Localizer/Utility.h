@@ -18,8 +18,6 @@
 #include <QCheckBox>
 #include <QFrame>
 
-using namespace std;
-
 namespace InsermLibrary
 {
 	enum FileExt { NO_EXT = -1, TRC, EEG_ELAN, ENT_ELAN, POS_ELAN, POS_DS_ELAN, SM0_ELAN, SM250_ELAN, SM500_ELAN, SM1000_ELAN, SM2500_ELAN, SM5000_ELAN, EDF };
@@ -28,9 +26,9 @@ namespace InsermLibrary
 	/*	vector<string> v = split<string>("Hello, there; World", ";,");	*/
 	/********************************************************************/
 	template<typename T>
-	vector<T> split(const T & str, const T & delimiters)
+	std::vector<T> split(const T & str, const T & delimiters)
 	{
-		vector<T> v;
+		std::vector<T> v;
 		typename T::size_type start = 0;
 		auto pos = str.find_first_of(delimiters, start);
 		while (pos != T::npos) {
@@ -90,21 +88,21 @@ namespace InsermLibrary
 	}
 
 	template<class T>
-	using vec1 = vector<T>; /**< templated std vector alias */
+	using vec1 = std::vector<T>; /**< templated std vector alias */
 
 	template<class T>
-	using vec2 = vector<vec1<T>>; /**< templated std vector of std vector alias */
+	using vec2 = std::vector<vec1<T>>; /**< templated std vector of std vector alias */
 
 	template<class T>
-	using vec3 = vector<vec2<T>>; /**< templated std vector of std vector of std vector alias */
+	using vec3 = std::vector<vec2<T>>; /**< templated std vector of std vector of std vector alias */
 
-	vector<string> readTxtFile(string path);
+	std::vector<std::string> readTxtFile(std::string path);
 
-	void saveTxtFile(vector<QString> data, string pathFile);
+	void saveTxtFile(std::vector<QString> data, std::string pathFile);
 
 	void deblankString(std::string &myString);
 	
-	string GetCurrentWorkingDir();
+	std::string GetCurrentWorkingDir();
 
 	template<typename T> 
 	void OutputArrayToCsv1D(T* array, int sizeArray, std::string filePath)

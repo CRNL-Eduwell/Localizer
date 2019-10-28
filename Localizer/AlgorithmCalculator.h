@@ -11,7 +11,7 @@ namespace Algorithm
 	class AlgorithmCalculator
 	{
 	public:
-		static void ExecuteAlgorithm(Algorithm::Strategy::AlgorithmType algo, eegContainer* EegContainer, const std::vector<int>& FrequencyBand);
+		static void ExecuteAlgorithm(Algorithm::Strategy::AlgorithmType algo, InsermLibrary::eegContainer* EegContainer, const std::vector<int>& FrequencyBand);
 
 	private:
 		static AlgorithmStrategyFactory m_factory;

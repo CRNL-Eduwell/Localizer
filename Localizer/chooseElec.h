@@ -10,7 +10,7 @@ class chooseElec : public QDialog
 	Q_OBJECT
 
 public:
-	chooseElec(eegContainer* eegCont, QWidget *parent = 0);
+	chooseElec(InsermLibrary::eegContainer* eegCont, QWidget *parent = 0);
 	~chooseElec();
 	void fillUIBipoles();
 	void connectSignals();
@@ -21,7 +21,7 @@ public slots :
 	void checkOnEnter(QListWidgetItem * item);
 
 private:
-	eegContainer* containerEeg = nullptr;
+	InsermLibrary::eegContainer* containerEeg = nullptr;
 	Ui::FormElec ui;
 };
 

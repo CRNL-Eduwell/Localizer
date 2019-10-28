@@ -9,8 +9,6 @@
 #include <QString>
 #include <QObject>
 
-using namespace InsermLibrary;
-
 struct singleFileFreq
 {
 	std::string sm0eeg;
@@ -28,9 +26,9 @@ public:
 	~singleFile();
 	inline std::vector<singleFileFreq> frequencyFolders() const { return m_freqFiles; };
 	inline std::string patientName() const { return m_patientName; };
-	std::string filePath(FileExt wantedFile);
+	std::string filePath(InsermLibrary::FileExt wantedFile);
 	inline std::string rootFolder() const { return m_rootFolder; };
-	FileExt fileExtention();
+	InsermLibrary::FileExt fileExtention();
 
 private :
 	void getFileData(std::string path);

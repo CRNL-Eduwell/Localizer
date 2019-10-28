@@ -44,24 +44,24 @@ namespace InsermLibrary
 	private:
 		int m_row;
 		int m_col;
-		string m_name;
-		string m_path;
-		string m_sort;
+		std::string m_name;
+		std::string m_path;
+		std::string m_sort;
 		int m_epochWindow[2];
 		int m_baseLineWindow[2];
 	};
 
 	struct EventBLOC
 	{
-		vector<int> eventCode;
-		string eventLabel;
+		std::vector<int> eventCode;
+		std::string eventLabel;
 	};
 
 	struct BLOC
 	{
 		displayBLOC dispBloc;
 		EventBLOC mainEventBloc;
-		vector<EventBLOC> secondaryEvents;
+		std::vector<EventBLOC> secondaryEvents;
 	};
 }
 #endif
