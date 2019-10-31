@@ -21,7 +21,7 @@ public:
 	inline InsermLibrary::LOCA* GetLoca() { return m_loca; }
 
 protected:
-	eegContainer* GetEegContainer(std::string currentFilePath, bool shouldExtractData, int nbFreqBand);
+    InsermLibrary::eegContainer* GetEegContainer(std::string currentFilePath, bool shouldExtractData, int nbFreqBand);
 
 private:
 
@@ -31,7 +31,7 @@ public slots:
 signals:
 	void sendLogInfo(QString);
 	void finished();
-	void sendContainerPointer(eegContainer *eegCont);
+    void sendContainerPointer(InsermLibrary::eegContainer *eegCont);
 	void incrementAdavnce(int divider);
 
 public:

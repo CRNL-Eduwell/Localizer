@@ -3,6 +3,7 @@
 
 #include "ui_displayprov.h"
 
+#include <QCoreApplication>
 #include <QtWidgets/QDialog>
 #include <QString>
 #include <QList>

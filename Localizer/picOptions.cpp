@@ -24,9 +24,9 @@ void picOptions::connectSignals()
 	connect(ui.pushButton, &QPushButton::clicked, this, [&] { close(); });
 }
 
-picOption picOptions::getPicOption()
+InsermLibrary::picOption picOptions::getPicOption()
 {
-	picOption picOpt;
+    InsermLibrary::picOption picOpt;
 	picOpt.sizeTrialmap.setWidth(atoi(ui.widthTrialLE->text().toStdString().c_str()));
 	picOpt.sizeTrialmap.setHeight(atoi(ui.heigthTrialLE->text().toStdString().c_str()));
 	picOpt.sizePlotmap.setWidth(atoi(ui.widthPlotLE->text().toStdString().c_str()));

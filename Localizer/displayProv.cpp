@@ -17,7 +17,7 @@ void displayProv::getProvList()
 {
 	prov.clear();
 
-	QString rootProvFolder("./Resources/Config/Prov");
+    QString rootProvFolder(QCoreApplication::applicationDirPath() + "/Resources/Config/Prov");
 
 	QDir currentDir(rootProvFolder);
 	currentDir.setFilter(QDir::Files);

@@ -13,9 +13,6 @@
 #include "Utility.h"
 #include "optionsParameters.h"
 
-using namespace std;
-using namespace InsermLibrary;
-
 namespace InsermLibrary
 {
 	class Stats
@@ -29,7 +26,7 @@ namespace InsermLibrary
 		static vec1<PVALUECOORD> loadPValues(vec3<float> &pValues3D, vec3<int> &pSign3D);
 		static vec1<PVALUECOORD> loadPValues(vec3<float> &pValues3D, vec3<int> &pSign3D, float pLimit);
 		static void exportStatsData(eegContainer *myEegContainer, PROV *myprovFile, vec1<PVALUECOORD> pValues, 
-									string outputFolder, bool isBar);
+                                    std::string outputFolder, bool isBar);
 	private:
 		static vec1<float> getBaselineBlocWilcoxon(int currentChanel, int lowTrial, int numberSubTrial, int samplingFreq,
 												   displayBLOC dispBloc, vec3<float> &bigdata);

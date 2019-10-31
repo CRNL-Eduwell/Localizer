@@ -6,6 +6,11 @@ InsermLibrary::ITxtFile::ITxtFile(const std::string& filePath)
 	m_rawTextFileData = ReadTxtFile(filePath);
 }
 
+InsermLibrary::ITxtFile::~ITxtFile()
+{
+
+}
+
 std::vector<std::string> InsermLibrary::ITxtFile::ReadTxtFile(const std::string& pathFile)
 {
 	std::stringstream buffer;

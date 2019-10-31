@@ -3,13 +3,14 @@
 #include <iostream>
 #include "ITxtFile.h"
 #include "FrequencyBand.h"
+#include <QCoreApplication>
 
 namespace InsermLibrary
 {
 	class FrequencyFile : public ITxtFile
 	{
 	public:
-		FrequencyFile(const std::string& filePath = "./Resources/Config/frequencyBand.txt");
+        FrequencyFile(const std::string& filePath = QCoreApplication::applicationDirPath().toStdString() +  "/Resources/Config/frequencyBand.txt");
 		inline const std::vector<FrequencyBand>& FrequencyBands() 
 		{
 			return m_frequencyBands;

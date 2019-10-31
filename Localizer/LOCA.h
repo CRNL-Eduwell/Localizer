@@ -2,6 +2,7 @@
 #define _LOCA_H
 
 #include <QtWidgets/QMainWindow>	
+#include <QCoreApplication>
 #include <iostream>	
 #include <vector>
 #include <ostream>
@@ -21,10 +22,6 @@
 #include "TriggerContainer.h"
 #include "FrequencyBand.h"
 #include "AlgorithmCalculator.h"
-
-using namespace InsermLibrary;
-using namespace InsermLibrary::DrawCard;
-using namespace InsermLibrary::DrawbarsPlots;
 
 namespace InsermLibrary
 {
@@ -57,7 +54,7 @@ namespace InsermLibrary
 		void barplot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
 		std::string getMapsFolderBar(std::string freqFolder, PROV *myprovFile);
 		std::string prepareFolderAndPathsBar(std::string freqFolder, int dsSampFreq);
-		vector<PVALUECOORD> calculateStatisticKruskall(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+        std::vector<PVALUECOORD> calculateStatisticKruskall(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
 		//==
 		void env2plot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
 		std::string getMapsFolderPlot(std::string freqFolder, PROV *myprovFile);
@@ -68,7 +65,7 @@ namespace InsermLibrary
 		std::string getMapsFolderTrial(PROV *myprovFile, std::string freqFolder);
 		std::string prepareFolderAndPathsTrial(std::string freqFolder, int dsSampFreq);
 		bool shouldPerformStatTrial(std::string locaName);
-		vector<PVALUECOORD> calculateStatisticWilcoxon(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+        std::vector<PVALUECOORD> calculateStatisticWilcoxon(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
 
 	signals:
 		void sendLogInfo(QString);

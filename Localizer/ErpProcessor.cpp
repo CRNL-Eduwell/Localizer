@@ -39,7 +39,7 @@ void ErpProcessor::ValidateFiles()
 
 QStringList ErpProcessor::GetProvList()
 {
-	QString rootProvFolder("./Resources/Config/Prov");
+    QString rootProvFolder(QCoreApplication::applicationDirPath() + "/Resources/Config/Prov");
 	QDir currentDir(rootProvFolder);
 	currentDir.setFilter(QDir::Files);
 	currentDir.setNameFilters(QStringList() << "*.prov");

@@ -1,5 +1,7 @@
 #include "localizer.h"
 
+using namespace InsermLibrary;
+
 Localizer::Localizer(QWidget *parent) : QMainWindow(parent)
 {
 	ui.setupUi(this);
@@ -162,7 +164,7 @@ void Localizer::LoadTreeView(patientFolder *pat)
 	SetLabelCount(0);
 }
 
-void Localizer::LoadTreeView(vector<singleFile> currentFiles)
+void Localizer::LoadTreeView(std::vector<singleFile> currentFiles)
 {
 	DeactivateUIForSingleFiles();
 	disconnect(ui.processButton, 0, 0, 0);
@@ -215,10 +217,10 @@ void Localizer::PreparePatientFolder()
 	QModelIndex rootIndex = ui.FileTreeView->rootIndex();
 	int ExamCount = m_localFileSystemModel->rowCount(rootIndex);
 
-	std::vector<pair<int, bool>> sortedIdToKeep;
+    std::vector<std::pair<int, bool>> sortedIdToKeep;
 	for (int i = 0; i < ExamCount; i++)
 	{
-		sortedIdToKeep.push_back(make_pair(i, false));
+        sortedIdToKeep.push_back(std::make_pair(i, false));
 	}
 	QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
 	for (int i = 0; i < selectedRows.size(); i++)
@@ -232,7 +234,7 @@ void Localizer::PreparePatientFolder()
 			}
 		}
 	}
-	std::sort(sortedIdToKeep.begin(), sortedIdToKeep.end(), [&](pair<int, bool> a, pair<int, bool> b)
+    std::sort(sortedIdToKeep.begin(), sortedIdToKeep.end(), [&](std::pair<int, bool> a, std::pair<int, bool> b)
 	{
 		return a.first < b.first;
 	});

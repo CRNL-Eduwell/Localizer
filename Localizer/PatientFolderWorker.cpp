@@ -2,6 +2,8 @@
 
 //at this point, patient folder has had the non wanted folder removed 
 
+using namespace InsermLibrary;
+
 PatientFolderWorker::PatientFolderWorker(patientFolder currentPatient, std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption statOption, picOption picOption)
 {
 	m_patient = new patientFolder(currentPatient);
@@ -18,7 +20,7 @@ PatientFolderWorker::~PatientFolderWorker()
 
 void PatientFolderWorker::Process()
 {
-	stringstream TimeDisp;
+    std::stringstream TimeDisp;
 	eegContainer *myContainer = nullptr;
 	std::time_t t = std::time(nullptr);
 
@@ -32,13 +34,13 @@ void PatientFolderWorker::Process()
 		{
 			emit sendLogInfo("Number of Bip : " + QString::number(myContainer->BipoleCount()));
 			//==
-			stringstream().swap(TimeDisp);
+            std::stringstream().swap(TimeDisp);
 			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
 			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
 			//==
 			m_loca->LocaSauron(myContainer, i, &m_patient->localizerFolder()[i]);
 			//==
-			stringstream().swap(TimeDisp);
+            std::stringstream().swap(TimeDisp);
 			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
 			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
 			//==
@@ -71,7 +73,7 @@ eegContainer* PatientFolderWorker::ExtractData(locaFolder currentLoca, bool extr
 		if (bipCreated == 0)
 			return nullptr;
 
-		m_electrodeToDeleteMemory = vector<int>(myContainer->idElecToDelete);
+        m_electrodeToDeleteMemory = std::vector<int>(myContainer->idElecToDelete);
 	}
 
 	myContainer->DeleteElectrodes(m_electrodeToDeleteMemory);

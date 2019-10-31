@@ -15,16 +15,16 @@ class SingleFilesWorker : public IWorker
 	Q_OBJECT
 
 public:
-	SingleFilesWorker(std::vector<singleFile>& singleFiles, std::vector<FrequencyBandAnalysisOpt>& FrequencyBands);
+    SingleFilesWorker(std::vector<singleFile>& singleFiles, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& FrequencyBands);
 	~SingleFilesWorker();
 	void Process();
 
 private:
-	eegContainer* ExtractData(singleFile currentFile, bool extractOriginalData, int idFile, int nbFreqBand);
+    InsermLibrary::eegContainer* ExtractData(singleFile currentFile, bool extractOriginalData, int idFile, int nbFreqBand);
 
 private:
 	std::vector<singleFile> m_currentFiles;
-	std::vector<FrequencyBandAnalysisOpt> m_frequencyBands;
+    std::vector<InsermLibrary::FrequencyBandAnalysisOpt> m_frequencyBands;
 };
 
 #endif

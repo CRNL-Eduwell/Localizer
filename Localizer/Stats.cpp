@@ -1,5 +1,8 @@
 #include "Stats.h"
 
+using namespace std;
+using namespace InsermLibrary;
+
 void InsermLibrary::Stats::pValuesWilcoxon(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata, TriggerContainer* triggerContainer, int samplingFreq, PROV *myprovFile)
 {
 	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();

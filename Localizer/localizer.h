@@ -54,19 +54,19 @@ public:
 
 private:
 	void ReSetupGUI();
-	void LoadFrequencyBandsUI(const std::vector<FrequencyBand>& FrequencyBands);
+    void LoadFrequencyBandsUI(const std::vector<InsermLibrary::FrequencyBand>& FrequencyBands);
 	void DeactivateUIForSingleFiles();
 	void connectSignals();
 	void connectMenuBar();
 	void loadPatientFolder();
 	void loadSingleFile();
 	void LoadTreeView(patientFolder *pat);
-	void LoadTreeView(vector<singleFile> currentFiles);
+    void LoadTreeView(std::vector<singleFile> currentFiles);
 	void LoadTreeViewUI(QString initialFolder);
 	void PreparePatientFolder();
 	void PrepareSingleFiles();
 	void InitProgressBar();
-	std::vector<FrequencyBandAnalysisOpt> GetUIAnalysisOption();
+    std::vector<InsermLibrary::FrequencyBandAnalysisOpt> GetUIAnalysisOption();
 	int GetNbElement(QModelIndexList selectedIndexes);
 
 private slots:
@@ -82,7 +82,7 @@ private slots:
 	void DisplayLog(QString info, Qt::GlobalColor color = Qt::GlobalColor::black);
 	void UpdateProgressBar(int divider);
 	void CancelAnalysis();
-	void receiveContainerPointer(eegContainer *eegCont);
+    void receiveContainerPointer(InsermLibrary::eegContainer *eegCont);
 
 signals:
 	void bipDone(int);
@@ -91,7 +91,7 @@ private:
 	//==Visualisation
 	QFileSystemModel *m_localFileSystemModel = nullptr;
 	//==Data for analysis
-	FrequencyFile *m_frequencyFile = nullptr;
+    InsermLibrary::FrequencyFile *m_frequencyFile = nullptr;
 	bool m_isPatFolder = false;
 	//userOption userOpt;
 	patientFolder* currentPat = nullptr;

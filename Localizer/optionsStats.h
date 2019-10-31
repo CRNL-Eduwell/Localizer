@@ -1,6 +1,7 @@
 #ifndef OPTIONSTAT_H
 #define OPTIONSTAT_H
 
+#include <QCoreApplication>
 #include <QtWidgets/QDialog>
 #include <QString>
 
@@ -38,8 +39,8 @@ private:
 	std::vector<QString> wantedLocaWil;
 	bool toggle = false;
 	displayProv *prov = nullptr;
-	QString kwFilePath = "./Resources/Config/statKW.txt";
-	QString wilFilePath = "./Resources/Config/statWil.txt";
+    QString kwFilePath = QCoreApplication::applicationDirPath() + "/Resources/Config/statKW.txt";
+    QString wilFilePath = QCoreApplication::applicationDirPath() + "/Resources/Config/statWil.txt";
 	Ui::FormStat ui;
 };
 

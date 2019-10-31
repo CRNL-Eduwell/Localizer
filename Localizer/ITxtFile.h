@@ -12,6 +12,7 @@ namespace InsermLibrary
 	{
 	public:
 		ITxtFile(const std::string& filePath);
+        virtual ~ITxtFile() = 0;
 		virtual void Save() = 0;
 		virtual void Load() = 0;
 	private:

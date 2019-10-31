@@ -14,16 +14,16 @@ class PatientFolderWorker : public IWorker
 	Q_OBJECT
 
 public:
-	PatientFolderWorker(patientFolder currentPatient, std::vector<FrequencyBandAnalysisOpt>& FrequencyBands, statOption statOption, picOption picOption);
+    PatientFolderWorker(patientFolder currentPatient, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& FrequencyBands, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption);
 	~PatientFolderWorker();
 	void Process();
 
 private:
-	eegContainer* ExtractData(locaFolder currentLoca, bool extractOriginalData, int idFile, int nbFreqBand);
+    InsermLibrary::eegContainer* ExtractData(locaFolder currentLoca, bool extractOriginalData, int idFile, int nbFreqBand);
 
 private:
 	patientFolder* m_patient = nullptr;
-	std::vector<FrequencyBandAnalysisOpt> m_frequencyBands;
+    std::vector<InsermLibrary::FrequencyBandAnalysisOpt> m_frequencyBands;
 };
 
 #endif

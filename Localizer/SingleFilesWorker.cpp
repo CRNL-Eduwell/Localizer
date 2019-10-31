@@ -1,5 +1,7 @@
 #include "SingleFilesWorker.h"
 
+using namespace InsermLibrary;
+
 SingleFilesWorker::SingleFilesWorker(std::vector<singleFile>& singleFiles, std::vector<FrequencyBandAnalysisOpt>& FrequencyBands)
 {
 	m_currentFiles = std::vector<singleFile>(singleFiles);
@@ -15,7 +17,7 @@ SingleFilesWorker::~SingleFilesWorker()
 
 void SingleFilesWorker::Process()
 {
-	stringstream TimeDisp;
+    std::stringstream TimeDisp;
 	std::time_t t = std::time(nullptr);
 	eegContainer *myContainer = nullptr;
 	
@@ -28,13 +30,13 @@ void SingleFilesWorker::Process()
 		{
 			emit sendLogInfo("Number of Bip : " + QString::number(myContainer->BipoleCount()));
 			//==
-			stringstream().swap(TimeDisp);
+            std::stringstream().swap(TimeDisp);
 			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
 			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
 			//==
 			m_loca->LocaFrequency(myContainer, i);
 			//==
-			stringstream().swap(TimeDisp);
+            std::stringstream().swap(TimeDisp);
 			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
 			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
 			//==
@@ -65,7 +67,7 @@ eegContainer* SingleFilesWorker::ExtractData(singleFile currentFile, bool extrac
 	if (idFile > -1)
 		bipCreated = -1; //Since we loop one or multiple file we need to recheck each time the good/bad elec
 
-	m_electrodeToDeleteMemory = vector<int>(myContainer->idElecToDelete);
+    m_electrodeToDeleteMemory = std::vector<int>(myContainer->idElecToDelete);
 
 	myContainer->DeleteElectrodes(m_electrodeToDeleteMemory);
 	myContainer->GetElectrodes();

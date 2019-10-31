@@ -3,6 +3,7 @@
 
 #include "ui_ErpProcessor.h"
 #include "../../EEGFormat/EEGFormat/Utility.h"
+#include <QCoreApplication>
 #include <QDir>
 #include <QList>
 #include <QComboBox>
