@@ -56,13 +56,13 @@ eegContainer* SingleFilesWorker::ExtractData(singleFile currentFile, bool extrac
 	std::string currentFilePath = currentFile.filePath(currentExtention);
 	eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData, nbFreqBand);
 
-	emit sendContainerPointer(myContainer);
-	while (bipCreated == -1) //While bipole not created 
-	{
-		QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
-	}
-	if (bipCreated == 0)
-		return nullptr;
+    emit sendContainerPointer(myContainer);
+
+    //system loop that will exit when the list of elec is validated
+    QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+
+    if (bipCreated == 0)
+        return nullptr;
 
 	if (idFile > -1)
 		bipCreated = -1; //Since we loop one or multiple file we need to recheck each time the good/bad elec

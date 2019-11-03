@@ -66,10 +66,10 @@ eegContainer* PatientFolderWorker::ExtractData(locaFolder currentLoca, bool extr
 	if (promptToDelete)
 	{
 		emit sendContainerPointer(myContainer);
-		while (bipCreated == -1) //While bipole not created 
-		{
-			QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
-		}
+
+        //system loop that will exit when the list of elec is validated
+        QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+
 		if (bipCreated == 0)
 			return nullptr;
 

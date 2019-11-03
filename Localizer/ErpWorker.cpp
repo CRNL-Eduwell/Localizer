@@ -35,18 +35,15 @@ void ErpWorker::Process()
 	emit finished();
 }
 
-//TODO
 eegContainer* ErpWorker::ExtractData(std::string currentFile, int idFile)
 {
 	eegContainer *myContainer = GetEegContainer(currentFile, true, 0);
 
-	emit sendContainerPointer(myContainer);
-	while (bipCreated == -1) //While bipole not created 
-	{
-		QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);	//check if list of elec validated
-	}
-	if (bipCreated == 0)
-		return nullptr;
+    emit sendContainerPointer(myContainer);
+    //system loop that will exit when the list of elec is validated
+    QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+    if (bipCreated == 0)
+        return nullptr;
 
 	if (idFile > -1)
 		bipCreated = -1; //Since we loop one or multiple file we need to recheck each time the good/bad elec
