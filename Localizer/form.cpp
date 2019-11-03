@@ -68,7 +68,7 @@ void form::InitProvListUi(QStringList provList)
 		currentPROV->setText(provList[i].split(".prov", QString::SplitBehavior::SkipEmptyParts)[0]);
 		currentPROV->setFlags(currentPROV->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable);
 	}
-	connect(ui.tableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(ManageChangeItem(QTableWidgetItem*)));
+    connect(ui.tableWidget, &QTableWidget::itemChanged, this, &form::ManageChangeItem);
 }
 
 void form::DefineHorizontalHeader(QTableWidget *tabWidget)

@@ -17,10 +17,10 @@ picOptions::~picOptions()
 
 void picOptions::connectSignals()
 {
-	connect(ui.widthTrialLE, SIGNAL(editingFinished()), this, SLOT(width2HeigthTrialRatio()));
-	connect(ui.heigthTrialLE, SIGNAL(editingFinished()), this, SLOT(heigth2WidthTrialRatio()));
-	connect(ui.widthPlotLE, SIGNAL(editingFinished()), this, SLOT(width2HeigthPlotRatio()));
-	connect(ui.heigthPlotLE, SIGNAL(editingFinished()), this, SLOT(heigth2WidthPlotRatio()));
+    connect(ui.widthTrialLE, &QLineEdit::editingFinished, this, &picOptions::width2HeigthTrialRatio);
+    connect(ui.heigthTrialLE, &QLineEdit::editingFinished, this, &picOptions::heigth2WidthTrialRatio);
+    connect(ui.widthPlotLE, &QLineEdit::editingFinished, this, &picOptions::width2HeigthPlotRatio);
+    connect(ui.heigthPlotLE, &QLineEdit::editingFinished, this, &picOptions::heigth2WidthPlotRatio);
 	connect(ui.pushButton, &QPushButton::clicked, this, [&] { close(); });
 }
 

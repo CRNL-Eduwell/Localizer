@@ -32,17 +32,17 @@ void optionsStats::connectSignals()
 {
 	connect(ui.addKW, &QPushButton::clicked, this, [&] { toggle = true; });
 	connect(ui.removeKW, &QPushButton::clicked, this, [&] { toggle = true; });
-	connect(ui.addKW, SIGNAL(clicked()), this, SLOT(openProvWindow()));
-	connect(ui.removeKW, SIGNAL(clicked()), this, SLOT(deleteProvFromList()));
-	connect(ui.pValueLE_KW, SIGNAL(editingFinished()), this, SLOT(pValueKruskall()));
-	connect(ui.pCheckBoxKW, SIGNAL(clicked()), this, SLOT(updateKWOpt()));
+    connect(ui.addKW, &QPushButton::clicked, this, &optionsStats::openProvWindow);
+    connect(ui.removeKW, &QPushButton::clicked, this, &optionsStats::deleteProvFromList);
+    connect(ui.pValueLE_KW, &QLineEdit::editingFinished, this, &optionsStats::pValueKruskall);
+    connect(ui.pCheckBoxKW, &QPushButton::clicked, this, &optionsStats::updateKWOpt);
 	//==
 	connect(ui.addtestWil, &QPushButton::clicked, this, [&] { toggle = false; });
 	connect(ui.removeWil, &QPushButton::clicked, this, [&] { toggle = false; });
-	connect(ui.addtestWil, SIGNAL(clicked()), this, SLOT(openProvWindow()));
-	connect(ui.removeWil, SIGNAL(clicked()), this, SLOT(deleteProvFromList()));
-	connect(ui.pValueLE_Wil, SIGNAL(editingFinished()), this, SLOT(pValueWilcoxon()));
-	connect(ui.pCheckBoxWil, SIGNAL(clicked()), this, SLOT(updateWilOpt()));
+    connect(ui.addtestWil, &QPushButton::clicked, this, &optionsStats::openProvWindow);
+    connect(ui.removeWil, &QPushButton::clicked, this, &optionsStats::deleteProvFromList);
+    connect(ui.pValueLE_Wil, &QLineEdit::editingFinished, this, &optionsStats::pValueWilcoxon);
+    connect(ui.pCheckBoxWil, &QPushButton::clicked, this, &optionsStats::updateWilOpt);
 	//==
 	connect(ui.okPushButton, &QPushButton::clicked, this, &optionsStats::saveListsandClose);
 }

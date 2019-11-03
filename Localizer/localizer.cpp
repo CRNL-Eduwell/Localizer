@@ -78,7 +78,7 @@ void Localizer::connectSignals()
 	connect((DeselectableTreeView*)ui.FileTreeView, &DeselectableTreeView::ResetNbFolder, this, [&]() { SetLabelCount(0); });
 
 	connect(ui.AllBandsCheckBox, &QCheckBox::clicked, this, &Localizer::ToggleAllBands);
-	connect(ui.cancelButton, SIGNAL(clicked()), this, SLOT(CancelAnalysis()));
+    connect(ui.cancelButton, &QPushButton::clicked, this, &Localizer::CancelAnalysis);
 }
 
 void Localizer::connectMenuBar()
@@ -160,7 +160,7 @@ void Localizer::LoadTreeView(patientFolder *pat)
 	//==[Event connected to model of treeview]
 	connect(ui.FileTreeView, &QTreeView::clicked, this, &Localizer::ModelClicked);
 	//==[Event for rest of UI]
-	connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processFolderAnalysis()));
+    connect(ui.processButton, &QPushButton::clicked, this, &Localizer::processFolderAnalysis);
 	SetLabelCount(0);
 }
 
@@ -176,7 +176,7 @@ void Localizer::LoadTreeView(std::vector<singleFile> currentFiles)
 		//==[Event connected to model of treeview]
 		connect(ui.FileTreeView, &QTreeView::clicked, this, &Localizer::ModelClicked);
 		//==[Event for rest of UI]
-		connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processSingleAnalysis()));
+        connect(ui.processButton, &QPushButton::clicked, this, &Localizer::processSingleAnalysis);
 		SetLabelCount(0);
 	}
 	else
@@ -486,19 +486,19 @@ void Localizer::processFolderAnalysis()
 			worker = new PatientFolderWorker(*currentPat, analysisOptions, optstat, optpic);
 
 			//=== Event update displayer
-			connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-			connect(worker->GetLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-			connect(worker->GetLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
+            connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
+            connect(worker->GetLoca(), &LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+            connect(worker->GetLoca(), &LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
 			//=== 
-			connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
+            connect(worker, &IWorker::sendContainerPointer, this, &Localizer::receiveContainerPointer);
 			connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
 
 			//=== Event From worker and thread
-			connect(thread, SIGNAL(started()), worker, SLOT(Process()));
-			connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
-			connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-			connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+            connect(thread, &QThread::started, worker, &IWorker::Process);
+            connect(worker, &IWorker::finished, thread, &QThread::quit);
+            connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
+            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
 			connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
 			//=== Launch Thread and lock possible second launch
@@ -533,19 +533,19 @@ void Localizer::processSingleAnalysis()
 			worker = new SingleFilesWorker(currentFiles, analysisOptions);
 
 			//=== Event update displayer
-			connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-			connect(worker->GetLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-			connect(worker->GetLoca(), SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
+            connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
+            connect(worker->GetLoca(), &LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+            connect(worker->GetLoca(), &LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
 			//=== 
-			connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
-			connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
+            connect(worker, &IWorker::sendContainerPointer, this, &Localizer::receiveContainerPointer);
+            connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
 
 			//=== Event From worker and thread
-			connect(thread, SIGNAL(started()), worker, SLOT(Process()));
-			connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
-			connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-			connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+            connect(thread, &QThread::started, worker, &IWorker::Process);
+            connect(worker, &IWorker::finished, thread, &QThread::quit);
+            connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
+            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
 			connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
 			//=== Launch Thread and lock possible second launch
@@ -569,7 +569,7 @@ void Localizer::processERPAnalysis(QList<QString> exams)
 	QModelIndexList indexes = ui.FileTreeView->selectionModel()->selectedRows();
 	if (indexes.size() != exams.size())
 	{
-		DisplayLog("Not the same number of eeg files and exam files, aborting Erp Processing", Qt::GlobalColor::red);
+        DisplayColoredLog("Not the same number of eeg files and exam files, aborting Erp Processing", Qt::GlobalColor::red);
 		return;
 	}
 
@@ -590,19 +590,19 @@ void Localizer::processERPAnalysis(QList<QString> exams)
 	worker = new ErpWorker(files, provFiles, opt);
 
 	//=== Event update displayer
-	connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-	connect(worker->GetLoca(), SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
-	connect(worker, SIGNAL(incrementAdavnce(int)), this, SLOT(UpdateProgressBar(int)));
+    connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
+    connect(worker->GetLoca(), &LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+    connect(worker, &IWorker::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
 	//=== 
-	connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
-	connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
+    connect(worker, &IWorker::sendContainerPointer, this, &Localizer::receiveContainerPointer);
+    connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
 
 	//=== Event From worker and thread
-	connect(thread, SIGNAL(started()), worker, SLOT(Process()));
-	connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
-	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+    connect(thread, &QThread::started, worker, &IWorker::Process);
+    connect(worker, &IWorker::finished, thread, &QThread::quit);
+    connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
+    connect(thread, &QThread::finished, thread, &QThread::deleteLater);
 	connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
 	//=== Launch Thread and lock possible second launch
@@ -616,7 +616,7 @@ void Localizer::processFileConvertion(QList<QString> newFileType)
 	QModelIndexList indexes = ui.FileTreeView->selectionModel()->selectedRows();
 	if (indexes.size() != newFileType.size())
 	{
-		DisplayLog("Not the same number of eeg files and selected new types, aborting File Convertion", Qt::GlobalColor::red);
+        DisplayColoredLog("Not the same number of eeg files and selected new types, aborting File Convertion", Qt::GlobalColor::red);
 		return;
 	}
 
@@ -637,17 +637,17 @@ void Localizer::processFileConvertion(QList<QString> newFileType)
 	worker = new FileConverterWorker(files, provFiles);
 
 	//=== Event update displayer
-	connect(worker, SIGNAL(sendLogInfo(QString)), this, SLOT(DisplayLog(QString)));
+    connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
 
 	//=== 
-	connect(worker, SIGNAL(sendContainerPointer(eegContainer*)), this, SLOT(receiveContainerPointer(eegContainer*)));
-	connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
+    connect(worker, &IWorker::sendContainerPointer, this, &Localizer::receiveContainerPointer);
+    connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
 
 	//=== Event From worker and thread
-	connect(thread, SIGNAL(started()), worker, SLOT(Process()));
-	connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
-	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+    connect(thread, &QThread::started, worker, &IWorker::Process);
+    connect(worker, &IWorker::finished, thread, &QThread::quit);
+    connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
+    connect(thread, &QThread::finished, thread, &QThread::deleteLater);
 	connect(worker, &IWorker::finished, this, [&] { ui.progressBar->setValue(100); });
 	connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
@@ -676,10 +676,10 @@ void Localizer::ProcessMicromedFileConcatenation(QList<QString> files, QString d
 	connect(worker, &IWorker::sendLogInfo, this, [&](QString info) { emit DisplayLog(info); });
 
 	//=== Event From worker and thread
-	connect(thread, SIGNAL(started()), worker, SLOT(Process()));
-	connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
-	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+    connect(thread, &QThread::started, worker, &IWorker::Process);
+    connect(worker, &IWorker::finished, thread, &QThread::quit);
+    connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
+    connect(thread, &QThread::finished, thread, &QThread::deleteLater);
 	connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
 	//=== Launch Thread and lock possible second launch
@@ -688,10 +688,16 @@ void Localizer::ProcessMicromedFileConcatenation(QList<QString> files, QString d
 	isAlreadyRunning = true;
 }
 
-void Localizer::DisplayLog(QString messageToDisplay, Qt::GlobalColor color)
+void Localizer::DisplayLog(QString messageToDisplay)
+{
+    ui.messageDisplayer->append(messageToDisplay);
+}
+
+void Localizer::DisplayColoredLog(QString messageToDisplay, QColor color)
 {
 	ui.messageDisplayer->setTextColor(color);
-	ui.messageDisplayer->append(messageToDisplay);
+    DisplayLog(messageToDisplay);
+    ui.messageDisplayer->setTextColor(Qt::GlobalColor::black);
 }
 
 void Localizer::UpdateProgressBar(int divider)
@@ -719,7 +725,6 @@ void Localizer::receiveContainerPointer(eegContainer *eegCont)
 {
 	chooseElec *elecWin = new chooseElec(eegCont, 0);
 	int res = elecWin->exec();
-	//eegCont->bipolarizeData();
 	emit bipDone(res);
 	delete elecWin;
 }

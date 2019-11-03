@@ -50,9 +50,9 @@ void displayProv::displayProvList(std::vector<QString> currentList)
 
 void displayProv::connectSignals()
 {
-	connect(ui.listWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkMultipleItems(QListWidgetItem *)));
-	connect(ui.listWidget, SIGNAL(itemActivated(QListWidgetItem *)), this, SLOT(checkOnEnter(QListWidgetItem *)));
-	connect(ui.pushButton, SIGNAL(clicked()), this, SLOT(sendListAndClose()));
+    connect(ui.listWidget, &QListWidget::itemChanged, this, &displayProv::checkMultipleItems);
+    connect(ui.listWidget, &QListWidget::itemActivated, this, &displayProv::checkOnEnter);
+    connect(ui.pushButton, &QPushButton::clicked, this, &displayProv::sendListAndClose);
 }
 
 void displayProv::checkMultipleItems(QListWidgetItem * item)

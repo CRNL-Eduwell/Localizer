@@ -79,7 +79,8 @@ private slots:
 	void processERPAnalysis(QList<QString> examCorrespondance);
 	void processFileConvertion(QList<QString> newFileType);
 	void ProcessMicromedFileConcatenation(QList<QString> files, QString directoryPath, QString fileName);
-	void DisplayLog(QString info, Qt::GlobalColor color = Qt::GlobalColor::black);
+    void DisplayLog(QString info);
+    void DisplayColoredLog(QString info, QColor color = QColor(Qt::GlobalColor::black));
 	void UpdateProgressBar(int divider);
 	void CancelAnalysis();
     void receiveContainerPointer(InsermLibrary::eegContainer *eegCont);

@@ -28,9 +28,9 @@ void chooseElec::fillUIBipoles()
 
 void chooseElec::connectSignals()
 {
-	connect(ui.listWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkMultipleItems(QListWidgetItem *)));
-	connect(ui.listWidget, SIGNAL(itemActivated(QListWidgetItem *)), this, SLOT(checkOnEnter(QListWidgetItem *)));
-	connect(ui.pushButton, SIGNAL(clicked()), this, SLOT(createBipoles()));
+    connect(ui.listWidget, &QListWidget::itemChanged, this, &chooseElec::checkMultipleItems);
+    connect(ui.listWidget, &QListWidget::itemActivated, this, &chooseElec::checkOnEnter);
+    connect(ui.pushButton, &QPushButton::clicked, this, &chooseElec::createBipoles);
 }
 
 void chooseElec::createBipoles()

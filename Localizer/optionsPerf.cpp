@@ -19,9 +19,9 @@ void optionsPerf::getPerfLoca(std::vector<QString> &locaPerf)
 
 void optionsPerf::connectSignals()
 {
-	connect(ui.addProv, SIGNAL(clicked()), this, SLOT(openProvWindow()));
-	connect(ui.removeProv, SIGNAL(clicked()), this, SLOT(deleteProvFromList()));
-	connect(ui.ValidatePushButton, SIGNAL(clicked()), this, SLOT(saveListandClose()));
+    connect(ui.addProv, &QPushButton::clicked, this, &optionsPerf::openProvWindow);
+    connect(ui.removeProv, &QPushButton::clicked, this, &optionsPerf::deleteProvFromList);
+    connect(ui.ValidatePushButton, &QPushButton::clicked, this, &optionsPerf::saveListandClose);
 }
 
 void optionsPerf::displayLoca(std::vector<QString> wantedLoca)
@@ -50,7 +50,7 @@ void optionsPerf::readList()
 void optionsPerf::openProvWindow()
 {
 	prov = new displayProv(wantedLoca);
-	connect(prov, SIGNAL(sendProvList(vector<QString>)), this, SLOT(getProvList(vector<QString>)));
+    connect(prov, &displayProv::sendProvList, this, &optionsPerf::getProvList);
 	prov->exec();
 	delete prov;
 	displayLoca(wantedLoca);
