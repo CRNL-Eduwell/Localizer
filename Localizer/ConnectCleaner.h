@@ -26,7 +26,7 @@ public slots:
 private:
 	void FillSelectedList(const std::vector<std::string> & labels);
 	void FillCorrectedList(const std::vector<std::string> & labels);
-	void connectSignals();
+	void ConnectSignals();
 
 private:
 	std::vector<std::string> m_ElectrodesLabel;
