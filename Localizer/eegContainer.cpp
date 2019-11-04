@@ -80,7 +80,7 @@ void InsermLibrary::eegContainer::SaveFrequencyData(EEGFormat::FileType FileType
     if(!EEGFormat::Utility::IsValidDirectory(rootFrequencyFolder.c_str()))
     {
         std::cout << "Creating freQ FOLDER" << std::endl;
-        boost::filesystem::create_directory(rootFrequencyFolder.c_str());
+		CREATE_DIRECTORY(rootFrequencyFolder.c_str());
     }
 
 	for (int i = 0; i < 6; i++)
