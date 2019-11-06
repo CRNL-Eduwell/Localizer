@@ -192,6 +192,13 @@ void Localizer::LoadTreeViewUI(QString initialFolder)
 	m_localFileSystemModel->setReadOnly(true);
 	m_localFileSystemModel->setRootPath(initialFolder);
 
+    //TODO:
+    //temporary fix to show only directories of experiments
+    //remove when the way to explore the file system for the localizers is better and does
+    //not rely on the same number of element in the ui and on the business side to delete and have the correct data
+    m_localFileSystemModel->setFilter(QDir::Dirs|QDir::Drives|QDir::NoDotAndDotDot|QDir::AllDirs);
+    //END TODO
+
 	//set model in treeview
 	ui.FileTreeView->setModel(m_localFileSystemModel);
 	//Show only what is under this path
@@ -723,7 +730,8 @@ void Localizer::CancelAnalysis()
 
 void Localizer::receiveContainerPointer(eegContainer *eegCont)
 {
-    ConnectCleaner *elecWin = new ConnectCleaner(eegCont, 0);
+    std::string connectCleanerFilePath = currentPat->rootFolder() + "/" + currentPat->patientName() + ".ccf";
+    ConnectCleaner *elecWin = new ConnectCleaner(eegCont, connectCleanerFilePath.c_str(), 0);
 	int res = elecWin->exec();
 	emit bipDone(res);
 	delete elecWin;

@@ -23,7 +23,6 @@
 #include "singleFile.h"
 #include "optionsPerf.h"
 #include "optionsStats.h"
-#include "chooseElec.h"
 #include "ConnectCleaner.h"
 
 #include "picOptions.h"

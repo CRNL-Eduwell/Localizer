@@ -1,29 +1,32 @@
 #include "ConnectCleaner.h"
 
-ConnectCleaner::ConnectCleaner(InsermLibrary::eegContainer* eegCont, QWidget *parent) : QDialog(parent)
+ConnectCleaner::ConnectCleaner(InsermLibrary::eegContainer* eegCont, QString connectCleanerFilePath, QWidget *parent) : QDialog(parent)
 {
     containerEeg = eegCont;
-	m_ElectrodesLabel = std::vector<std::string>(eegCont->flatElectrodes);
+    m_ElectrodesLabel = std::vector<std::string>(eegCont->flatElectrodes);
+    m_connectCleanerFilePath = connectCleanerFilePath;
+
 	ui.setupUi(this);
     connect(ui.ValidateButton, &QPushButton::clicked, this, &ConnectCleaner::CreateBipoles);
+    connect(ui.ExportButton, &QPushButton::clicked, this, [&]{ m_cleanConnectFile->Save(); });
     FillList(m_ElectrodesLabel);
 }
 
 ConnectCleaner::~ConnectCleaner()
 {
-
+    deleteAndNullify1D(m_cleanConnectFile);
 }
 
 void ConnectCleaner::FillList(const std::vector<std::string> & labels)
 {
     //Create Electrode list from file and/or labels
-    CleanConnectFile file(labels);
+    m_cleanConnectFile = new CleanConnectFile(m_connectCleanerFilePath, labels);
 
     //Connect model to detect click
-    connect(file.Model(), &QStandardItemModel::itemChanged, this, &ConnectCleaner::CheckMultipleItems);
+    connect(m_cleanConnectFile->Model(), &QStandardItemModel::itemChanged, this, &ConnectCleaner::CheckMultipleItems);
 
     //Put Model in view
-    ui.SelectElectrodeList->setModel(file.Model());
+    ui.SelectElectrodeList->setModel(m_cleanConnectFile->Model());
     ui.SelectElectrodeList->resizeColumnsToContents();
     ui.SelectElectrodeList->resizeRowsToContents();
     ui.SelectElectrodeList->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Stretch);

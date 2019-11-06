@@ -21,7 +21,7 @@ class ConnectCleaner : public QDialog
 	Q_OBJECT
 
 public:
-	ConnectCleaner(InsermLibrary::eegContainer* eegCont, QWidget *parent = 0);
+    ConnectCleaner(InsermLibrary::eegContainer* eegCont, QString connectCleanerFilePath, QWidget *parent = 0);
 	~ConnectCleaner();
 
 private:
@@ -37,6 +37,8 @@ private:
 	std::vector<std::string> m_ElectrodesLabel;
 	Ui::ConnectCleanerForm ui;
     bool m_lockMultiple = false;
+    QString m_connectCleanerFilePath = "";
+    CleanConnectFile *m_cleanConnectFile = nullptr;
 };
 
 #endif
