@@ -41,9 +41,9 @@ RESOURCES += \
 
 FORMS += \
     Localizer/AboutDycog.ui \
+    Localizer/ConnectCleaner.ui \
     Localizer/ErpProcessor.ui \
     Localizer/FileConverterProcessor.ui \
-    Localizer/chooseelec.ui \
     Localizer/displayprov.ui \
     Localizer/form.ui \
     Localizer/localizer.ui \
@@ -55,7 +55,9 @@ HEADERS += \
     Localizer/AboutDycog.h \
     Localizer/AlgorithmCalculator.h \
     Localizer/AlgorithmStrategyFactory.h \
+    Localizer/CleanConnectFile.h \
     Localizer/ConcatenationWorker.h \
+    Localizer/ConnectCleaner.h \
     Localizer/DataContainer.h \
     Localizer/DeselectableTreeView.h \
     Localizer/ErpProcessor.h \
@@ -79,7 +81,6 @@ HEADERS += \
     Localizer/TriggerContainer.h \
     Localizer/Utility.h \
     Localizer/barsPlotsGenerator.h \
-    Localizer/chooseElec.h \
     Localizer/displayProv.h \
     Localizer/eegContainer.h \
     Localizer/eegContainerParameters.h \
@@ -97,7 +98,9 @@ SOURCES += \
     Localizer/AboutDycog.cpp \
     Localizer/AlgorithmCalculator.cpp \
     Localizer/AlgorithmStrategyFactory.cpp \
+    Localizer/CleanConnectFile.cpp \
     Localizer/ConcatenationWorker.cpp \
+    Localizer/ConnectCleaner.cpp \
     Localizer/DataContainer.cpp \
     Localizer/DeselectableTreeView.cpp \
     Localizer/ErpProcessor.cpp \
@@ -118,7 +121,6 @@ SOURCES += \
     Localizer/TriggerContainer.cpp \
     Localizer/Utility.cpp \
     Localizer/barsPlotsGenerator.cpp \
-    Localizer/chooseElec.cpp \
     Localizer/displayProv.cpp \
     Localizer/eegContainer.cpp \
     Localizer/form.cpp \

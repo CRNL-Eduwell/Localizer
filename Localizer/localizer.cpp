@@ -723,7 +723,7 @@ void Localizer::CancelAnalysis()
 
 void Localizer::receiveContainerPointer(eegContainer *eegCont)
 {
-	ConnectCleaner *elecWin = new ConnectCleaner(eegCont, 0);
+    ConnectCleaner *elecWin = new ConnectCleaner(eegCont, 0);
 	int res = elecWin->exec();
 	emit bipDone(res);
 	delete elecWin;
