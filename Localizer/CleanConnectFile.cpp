@@ -27,17 +27,18 @@ void CleanConnectFile::Save()
     std::ofstream eventsFileStream(m_FileInfo.absoluteFilePath().toStdString());
     for(int i = 0; i < m_ItemModel->rowCount(); i++)
     {
-        QString checkState = QVariant(m_ItemModel->item(i, 0)->checkState()).toString();
+        Qt::CheckState checkState = m_ItemModel->item(i, 0)->checkState();
+        QString checkStateLabel = QVariant(checkState).toString();
         QString uncorrectedLabel = m_ItemModel->item(i, 0)->text();
         QString correctLabel = m_ItemModel->item(i, 1)->text();
 
         if(checkState == Qt::CheckState::Checked)
         {
-            eventsFileStream << checkState.toStdString() << std::setw(20) << uncorrectedLabel.toStdString() << std::setw(20) << correctLabel.toStdString() << std::endl;
+            eventsFileStream << checkStateLabel.toStdString() << std::setw(20) << uncorrectedLabel.toStdString() << std::setw(20) << correctLabel.toStdString() << std::endl;
         }
         else
         {
-            eventsFileStream << checkState.toStdString() << std::setw(20) << uncorrectedLabel.toStdString() << std::setw(20) << uncorrectedLabel.toStdString() << std::endl;
+            eventsFileStream << checkStateLabel.toStdString()  << std::setw(20) << uncorrectedLabel.toStdString() << std::setw(20) << uncorrectedLabel.toStdString() << std::endl;
         }
     }
     eventsFileStream.close();
