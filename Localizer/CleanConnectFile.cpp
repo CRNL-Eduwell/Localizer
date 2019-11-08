@@ -22,6 +22,27 @@ CleanConnectFile::~CleanConnectFile()
 
 }
 
+void CleanConnectFile::Save()
+{
+    std::ofstream eventsFileStream(m_FileInfo.absoluteFilePath().toStdString());
+    for(int i = 0; i < m_ItemModel->rowCount(); i++)
+    {
+        QString checkState = QVariant(m_ItemModel->item(i, 0)->checkState()).toString();
+        QString uncorrectedLabel = m_ItemModel->item(i, 0)->text();
+        QString correctLabel = m_ItemModel->item(i, 1)->text();
+
+        if(checkState == Qt::CheckState::Checked)
+        {
+            eventsFileStream << checkState.toStdString() << std::setw(20) << uncorrectedLabel.toStdString() << std::setw(20) << correctLabel.toStdString() << std::endl;
+        }
+        else
+        {
+            eventsFileStream << checkState.toStdString() << std::setw(20) << uncorrectedLabel.toStdString() << std::setw(20) << uncorrectedLabel.toStdString() << std::endl;
+        }
+    }
+    eventsFileStream.close();
+}
+
 void CleanConnectFile::Load(QString filePath, std::vector<std::string> & uncorrectedLabels, std::vector<Qt::CheckState> & states, std::vector<std::string> & correctedLabels)
 {
     std::vector<std::string> rawFile = EEGFormat::Utility::ReadTextFile(filePath.toStdString());
@@ -42,6 +63,7 @@ void CleanConnectFile::Load(QString filePath, std::vector<std::string> & uncorre
 
 void CleanConnectFile::LoadDataInModel(const std::vector<std::string> & labels, std::vector<Qt::CheckState> states, std::vector<std::string> correctedLabels)
 {
+    bool ShouldCorrectNaming = states.size() == 0 || correctedLabels.size() == 0;
     //Check if this is data from a connect cleaner file or the default states
     if(states.size() == 0)
         states = std::vector<Qt::CheckState>(labels.size(), Qt::CheckState::Checked);
@@ -57,23 +79,25 @@ void CleanConnectFile::LoadDataInModel(const std::vector<std::string> & labels, 
         check_item->setCheckState(states[i]);
         check_item->setFlags(check_item->flags() | Qt::ItemIsUserCheckable); //Allow to intercept enter key for modification
         check_item->setFlags(check_item->flags() ^ Qt::ItemIsEditable); // Item not editable since we have correctedLabel_item
-        QStandardItem *correctedLabel_item = new QStandardItem(QString::fromStdString(correctedLabels[i]));
 
+        QStandardItem *correctedLabel_item = new QStandardItem(CorrectElectrodeNaming(correctedLabels[i], ShouldCorrectNaming));
         m_ItemModel->setItem(static_cast<int>(i), 0, check_item);
         m_ItemModel->setItem(static_cast<int>(i), 1, correctedLabel_item);
     }
 }
 
-void CleanConnectFile::Save()
+QString CleanConnectFile::CorrectElectrodeNaming(std::string label, bool shouldCorrect)
 {
-    std::ofstream eventsFileStream(m_FileInfo.absoluteFilePath().toStdString());
-    for(int i = 0; i < m_ItemModel->rowCount(); i++)
+    std::string fixedLabel = std::string(label);
+    if(shouldCorrect)
     {
-        QString checkState = QVariant(m_ItemModel->item(i, 0)->checkState()).toString();
-        QString uncorrectedLabel = m_ItemModel->item(i, 0)->text();
-        QString correctLabel = m_ItemModel->item(i, 1)->text();
-
-        eventsFileStream << checkState.toStdString() << std::setw(10) << uncorrectedLabel.toStdString() << std::setw(10) << correctLabel.toStdString() << std::endl;
+        EEGFormat::Utility::FixElectrodeName(fixedLabel);
+        QString correctedLabel = QString::fromStdString(fixedLabel);
+        if (correctedLabel.contains(QRegExp("^[A-Z]+\'*[0-9]{1,2}$")))
+        {
+            return correctedLabel;
+        }
+        return QString::fromStdString("BAD LABELING");
     }
-    eventsFileStream.close();
+    return QString::fromStdString(fixedLabel);
 }

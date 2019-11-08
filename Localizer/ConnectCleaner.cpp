@@ -7,7 +7,7 @@ ConnectCleaner::ConnectCleaner(InsermLibrary::eegContainer* eegCont, QString con
     m_connectCleanerFilePath = connectCleanerFilePath;
 
 	ui.setupUi(this);
-    connect(ui.ValidateButton, &QPushButton::clicked, this, &ConnectCleaner::CreateBipoles);
+    connect(ui.ValidateButton, &QPushButton::clicked, this, &ConnectCleaner::ValidateConnect);
     connect(ui.ExportButton, &QPushButton::clicked, this, [&]{ m_cleanConnectFile->Save(); });
     FillList(m_ElectrodesLabel);
 }
@@ -72,7 +72,7 @@ void ConnectCleaner::CheckMultipleItems(QStandardItem *item)
     m_lockMultiple = false;
 }
 
-void ConnectCleaner::CreateBipoles()
+void ConnectCleaner::ValidateConnect()
 {
     QStandardItemModel *qsim = dynamic_cast<QStandardItemModel*>(ui.SelectElectrodeList->model());
     for (int i = 0; i < qsim->rowCount(); i++)
@@ -80,6 +80,11 @@ void ConnectCleaner::CreateBipoles()
         if (qsim->item(i, 0)->checkState() == Qt::CheckState::Unchecked)
         {
             containerEeg->idElecToDelete.push_back(i);
+        }
+        else if(qsim->item(i, 0)->checkState() == Qt::CheckState::Checked)
+        {
+            containerEeg->flatElectrodes[i] = qsim->item(i, 1)->text().toStdString();
+            containerEeg->electrodes[i].label = QString(qsim->item(i, 1)->text()).remove(QRegExp("[0-9]+")).toStdString();
         }
     }
     containerEeg = nullptr;

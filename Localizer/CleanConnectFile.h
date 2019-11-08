@@ -9,6 +9,8 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QStandardItemModel>
+#include <QRegExp>
+#include <QString>
 
 class CleanConnectFile
 {
@@ -26,7 +28,7 @@ private:
     void LoadDataInModel(const std::vector<std::string> & labels,
                          std::vector<Qt::CheckState> states = std::vector<Qt::CheckState>(),
                          std::vector<std::string> correctedLabels = std::vector<std::string>());
-
+    QString CorrectElectrodeNaming(std::string label, bool shouldCorrect);
 private:
     QFileInfo m_FileInfo;
     QStandardItemModel* m_ItemModel;

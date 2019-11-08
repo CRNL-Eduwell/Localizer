@@ -29,8 +29,15 @@ private:
     void keyPressEvent(QKeyEvent *);
 
 private slots:
+    /**
+     * @brief When Multiple elements are selected, change all of their state according
+     * to the one being modified either by mouse click or key press
+     */
     void CheckMultipleItems(QStandardItem *item);
-    void CreateBipoles();
+    /**
+     * @brief Get the id of unwanted electrodes and correct the labeling of wanted one
+     */
+    void ValidateConnect();
 
 private:
     InsermLibrary::eegContainer *containerEeg = nullptr;
