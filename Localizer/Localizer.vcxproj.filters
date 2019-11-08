@@ -146,9 +146,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_displayProv.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="chooseElec.cpp">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_chooseElec.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -329,23 +326,14 @@
     <ClCompile Include="GeneratedFiles\Release\moc_ConnectCleaner.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="ElectrodeCleanerEdit.cpp">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_ElectrodeCleanerEdit.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_ElectrodeCleanerEdit.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="ElectrodeCleanerEdit2.cpp">
+    <ClCompile Include="CleanConnectFile.cpp">
       <Filter>Source Files\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_ElectrodeCleanerEdit2.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_ElectrodeCleanerEdit2.cpp">
-      <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -374,12 +362,6 @@
       <Filter>Form Files</Filter>
     </CustomBuild>
     <CustomBuild Include="displayProv.h">
-      <Filter>Header Files\GUI</Filter>
-    </CustomBuild>
-    <CustomBuild Include="chooseelec.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="chooseElec.h">
       <Filter>Header Files\GUI</Filter>
     </CustomBuild>
     <CustomBuild Include="picOptions.h">
@@ -445,12 +427,6 @@
     <CustomBuild Include="ConnectCleaner.h">
       <Filter>Header Files\GUI</Filter>
     </CustomBuild>
-    <CustomBuild Include="ElectrodeCleanerEdit.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="ElectrodeCleanerEdit.h">
-      <Filter>Header Files\GUI</Filter>
-    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility.h">
@@ -466,9 +442,6 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_displayprov.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_chooseelec.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_picOptions.h">
@@ -549,8 +522,8 @@
     <ClInclude Include="GeneratedFiles\ui_ConnectCleaner.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_ElectrodeCleanerEdit.h">
-      <Filter>Generated Files</Filter>
+    <ClInclude Include="CleanConnectFile.h">
+      <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

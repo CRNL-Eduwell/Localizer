@@ -22,3 +22,7 @@ Release
 ipch
 *sdf
 .vs/
+
+#VS Project Files
+Localizer/GeneratedFiles/
+Localizer.VC.db
