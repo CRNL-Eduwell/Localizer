@@ -48,17 +48,17 @@ class Localizer : public QMainWindow
 	Q_OBJECT
 
 public:
-	Localizer(QWidget *parent = 0);
+    Localizer(QWidget *parent = nullptr);
 	~Localizer();
 
 private:
 	void ReSetupGUI();
     void LoadFrequencyBandsUI(const std::vector<InsermLibrary::FrequencyBand>& FrequencyBands);
 	void DeactivateUIForSingleFiles();
-	void connectSignals();
-	void connectMenuBar();
-	void loadPatientFolder();
-	void loadSingleFile();
+    void ConnectSignals();
+    void ConnectMenuBar();
+    void LoadPatientFolder();
+    void LoadSingleFile();
 	void LoadTreeView(patientFolder *pat);
     void LoadTreeView(std::vector<singleFile> currentFiles);
 	void LoadTreeViewUI(QString initialFolder);
@@ -73,19 +73,20 @@ private slots:
 	void ModelClicked(const QModelIndex &current);
 	void ShowFileTreeContextMenu(QPoint point);
 	void ToggleAllBands();
-	void processFolderAnalysis();
-	void processSingleAnalysis();
-	void processERPAnalysis(QList<QString> examCorrespondance);
-	void processFileConvertion(QList<QString> newFileType);
+    void ProcessFolderAnalysis();
+    void ProcessSingleAnalysis();
+    void ProcessERPAnalysis(QList<QString> examCorrespondance);
+    void ProcessFileConvertion(QList<QString> newFileType);
 	void ProcessMicromedFileConcatenation(QList<QString> files, QString directoryPath, QString fileName);
     void DisplayLog(QString info);
     void DisplayColoredLog(QString info, QColor color = QColor(Qt::GlobalColor::black));
 	void UpdateProgressBar(int divider);
 	void CancelAnalysis();
-    void receiveContainerPointer(InsermLibrary::eegContainer *eegCont);
+    void StartElectrodeListExtract();
+    void ReceiveElectrodeList(std::vector<std::string> ElectrodeList);
 
 signals:
-	void bipDone(int);
+    void MontageDone(int);
 
 private:
 	//==Visualisation

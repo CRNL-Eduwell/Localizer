@@ -7,7 +7,7 @@ SingleFilesWorker::SingleFilesWorker(std::vector<singleFile>& singleFiles, std::
 	m_currentFiles = std::vector<singleFile>(singleFiles);
 	m_frequencyBands = std::vector<FrequencyBandAnalysisOpt>(FrequencyBands);
 
-	m_loca = new LOCA(m_frequencyBands, nullptr, nullptr);
+	m_Loca = new LOCA(m_frequencyBands, nullptr, nullptr);
 }
 
 SingleFilesWorker::~SingleFilesWorker()
@@ -34,7 +34,7 @@ void SingleFilesWorker::Process()
 			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
 			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
 			//==
-			m_loca->LocaFrequency(myContainer, i);
+			m_Loca->LocaFrequency(myContainer, i);
 			//==
             std::stringstream().swap(TimeDisp);
 			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
@@ -50,29 +50,16 @@ void SingleFilesWorker::Process()
 
 eegContainer* SingleFilesWorker::ExtractData(singleFile currentFile, bool extractOriginalData, int idFile, int nbFreqBand)
 {
-	FileExt currentExtention = currentFile.fileExtention();
-	if (currentExtention == NO_EXT)
-		return nullptr;
-	std::string currentFilePath = currentFile.filePath(currentExtention);
-	eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData, nbFreqBand);
-
-    emit sendContainerPointer(myContainer);
-
-    //system loop that will exit when the list of elec is validated
-    QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
-
-    if (bipCreated == 0)
+    FileExt currentExtention = currentFile.fileExtention();
+    if (currentExtention == NO_EXT)
         return nullptr;
+    std::string currentFilePath = currentFile.filePath(currentExtention);
 
-	if (idFile > -1)
-		bipCreated = -1; //Since we loop one or multiple file we need to recheck each time the good/bad elec
+    eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData, nbFreqBand);
+    myContainer->DeleteElectrodes(m_IndexToDelete);
+    myContainer->GetElectrodes();
+    myContainer->BipolarizeElectrodes();
 
-    m_electrodeToDeleteMemory = std::vector<int>(myContainer->idElecToDelete);
-
-	myContainer->DeleteElectrodes(m_electrodeToDeleteMemory);
-	myContainer->GetElectrodes();
-	myContainer->BipolarizeElectrodes();
-
-	emit sendLogInfo(QString::fromStdString("Bipole created !"));
-	return myContainer;
+    emit sendLogInfo(QString::fromStdString("Bipole created !"));
+    return myContainer;
 }

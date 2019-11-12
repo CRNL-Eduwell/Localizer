@@ -22,8 +22,8 @@ private:
     InsermLibrary::eegContainer* ExtractData(locaFolder currentLoca, bool extractOriginalData, int idFile, int nbFreqBand);
 
 private:
-	patientFolder* m_patient = nullptr;
-    std::vector<InsermLibrary::FrequencyBandAnalysisOpt> m_frequencyBands;
+    patientFolder* m_Patient = nullptr;
+    std::vector<InsermLibrary::FrequencyBandAnalysisOpt> m_FrequencyBands;
 };
 
 #endif

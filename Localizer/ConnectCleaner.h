@@ -7,7 +7,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "eegContainer.h"
 #include "CleanConnectFile.h"
 #include <QTableView>
 #include <QHeaderView>
@@ -21,8 +20,12 @@ class ConnectCleaner : public QDialog
 	Q_OBJECT
 
 public:
-    ConnectCleaner(InsermLibrary::eegContainer* eegCont, QString connectCleanerFilePath, QWidget *parent = 0);
+    ConnectCleaner(std::vector<std::string> ElectrodeList, QString connectCleanerFilePath, QWidget *parent = nullptr);
 	~ConnectCleaner();
+
+    inline std::vector<int> IndexToDelete() { return m_indexToDelete; }
+    inline std::vector<std::string> UncorrectedLabels() { return m_ElectrodesLabel; }
+    inline std::vector<std::string> CorrectedLabel() { return m_CorrectedElectrodesLabel; }
 
 private:
     void FillList(const std::vector<std::string> & labels);
@@ -40,8 +43,9 @@ private slots:
     void ValidateConnect();
 
 private:
-    InsermLibrary::eegContainer *containerEeg = nullptr;
 	std::vector<std::string> m_ElectrodesLabel;
+    std::vector<std::string> m_CorrectedElectrodesLabel;
+    std::vector<int> m_indexToDelete;
 	Ui::ConnectCleanerForm ui;
     bool m_lockMultiple = false;
     QString m_connectCleanerFilePath = "";

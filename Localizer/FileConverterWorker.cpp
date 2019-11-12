@@ -2,8 +2,8 @@
 
 FileConverterWorker::FileConverterWorker(std::vector<std::string>& eegFiles, std::vector<std::string>& convertionType)
 {
-	m_eegFiles = std::vector<std::string>(eegFiles);
-	m_convertionType = std::vector<std::string>(convertionType);
+    m_EegFiles = std::vector<std::string>(eegFiles);
+    m_ConvertionType = std::vector<std::string>(convertionType);
 }
 
 FileConverterWorker::~FileConverterWorker()
@@ -13,12 +13,12 @@ FileConverterWorker::~FileConverterWorker()
 
 void FileConverterWorker::Process()
 {
-	int fileCount = m_eegFiles.size();
+    int fileCount = m_EegFiles.size();
 	for (int i = 0; i < fileCount; i++)
 	{
-		EEGFormat::IFile* current = CreateGenericFile(m_eegFiles[i].c_str(), true);
-		std::string oldType = EEGFormat::Utility::GetFileExtension(m_eegFiles[i]);
-		std::string newType = m_convertionType[i];
+        EEGFormat::IFile* current = CreateGenericFile(m_EegFiles[i].c_str(), true);
+        std::string oldType = EEGFormat::Utility::GetFileExtension(m_EegFiles[i]);
+        std::string newType = m_ConvertionType[i];
 		std::transform(newType.begin(), newType.end(), newType.begin(), ::tolower);
 		std::string outputDirectory = EEGFormat::Utility::GetDirectoryPath(current->DefaultFilePath());
 		std::string fileName = EEGFormat::Utility::GetFileName(current->DefaultFilePath(), false);

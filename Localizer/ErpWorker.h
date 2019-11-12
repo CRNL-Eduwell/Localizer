@@ -1,8 +1,6 @@
 #ifndef ERPWORKER_H
 #define ERPWORKER_H
 
-#include <QCoreApplication>
-
 #include "IWorker.h"
 #include "optionsParameters.h" //pour stat et pic options, a separer
 #include <QCoreApplication>
@@ -17,11 +15,11 @@ public:
 	void Process();
 
 private:
-    InsermLibrary::eegContainer* ExtractData(std::string currentFile, int idFile);
+    InsermLibrary::eegContainer* ExtractData(std::string currentFile);
 
 private:
-	std::vector<std::string> m_eegFiles;
-	std::vector<std::string> m_provFiles;
+    std::vector<std::string> m_EegFiles;
+    std::vector<std::string> m_ProvFiles;
 };
 
 #endif

@@ -16,9 +16,9 @@ public:
 	void Process();
 
 private:
-	std::vector<std::string> m_eegFiles;
-	std::string m_directoryPath = "";
-	std::string m_fileName = "";
+    std::vector<std::string> m_EegFiles;
+    std::string m_DirectoryPath = "";
+    std::string m_FileName = "";
 };
 
 #endif

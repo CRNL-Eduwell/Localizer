@@ -18,8 +18,8 @@ public:
 	void Process();
 
 private:
-	std::vector<std::string> m_eegFiles;
-	std::vector<std::string> m_convertionType;
+    std::vector<std::string> m_EegFiles;
+    std::vector<std::string> m_ConvertionType;
 };
 
 #endif

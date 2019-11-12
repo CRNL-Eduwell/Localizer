@@ -1,12 +1,11 @@
 #include "ConnectCleaner.h"
 
-ConnectCleaner::ConnectCleaner(InsermLibrary::eegContainer* eegCont, QString connectCleanerFilePath, QWidget *parent) : QDialog(parent)
+ConnectCleaner::ConnectCleaner(std::vector<std::string> ElectrodeList, QString connectCleanerFilePath, QWidget *parent) : QDialog(parent)
 {
-    containerEeg = eegCont;
-    m_ElectrodesLabel = std::vector<std::string>(eegCont->flatElectrodes);
+    m_ElectrodesLabel = std::vector<std::string>(ElectrodeList);
     m_connectCleanerFilePath = connectCleanerFilePath;
 
-	ui.setupUi(this);
+    ui.setupUi(this);
     connect(ui.ValidateButton, &QPushButton::clicked, this, &ConnectCleaner::ValidateConnect);
     connect(ui.ExportButton, &QPushButton::clicked, this, [&]{ m_cleanConnectFile->Save(); });
     FillList(m_ElectrodesLabel);
@@ -14,7 +13,11 @@ ConnectCleaner::ConnectCleaner(InsermLibrary::eegContainer* eegCont, QString con
 
 ConnectCleaner::~ConnectCleaner()
 {
-    deleteAndNullify1D(m_cleanConnectFile);
+    if(m_cleanConnectFile != nullptr)
+    {
+        delete m_cleanConnectFile;
+        m_cleanConnectFile = nullptr;
+    }
 }
 
 void ConnectCleaner::FillList(const std::vector<std::string> & labels)
@@ -74,19 +77,21 @@ void ConnectCleaner::CheckMultipleItems(QStandardItem *item)
 
 void ConnectCleaner::ValidateConnect()
 {
+    m_indexToDelete = std::vector<int>();
+    m_CorrectedElectrodesLabel = std::vector<std::string>();
+
     QStandardItemModel *qsim = dynamic_cast<QStandardItemModel*>(ui.SelectElectrodeList->model());
     for (int i = 0; i < qsim->rowCount(); i++)
     {
         if (qsim->item(i, 0)->checkState() == Qt::CheckState::Unchecked)
         {
-            containerEeg->idElecToDelete.push_back(i);
+            m_indexToDelete.push_back(i);
         }
         else if(qsim->item(i, 0)->checkState() == Qt::CheckState::Checked)
         {
-            containerEeg->flatElectrodes[i] = qsim->item(i, 1)->text().toStdString();
-            containerEeg->electrodes[i].label = QString(qsim->item(i, 1)->text()).remove(QRegExp("[0-9]+")).toStdString();
+            std::string label = qsim->item(i, 1)->text().toStdString();
+            m_CorrectedElectrodesLabel.push_back(label);
         }
     }
-    containerEeg = nullptr;
     done(1);
 }

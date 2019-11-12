@@ -7,7 +7,6 @@
 #include <QThread>
 
 #include "Wrapper.h"
-#include "eegContainer.h"
 
 #include "LOCA.h"
 
@@ -18,31 +17,26 @@ class IWorker : public QObject
 public:
 	IWorker();
 	~IWorker();
-	inline InsermLibrary::LOCA* GetLoca() { return m_loca; }
+    inline InsermLibrary::LOCA* GetLoca() { return m_Loca; }
 
 protected:
     InsermLibrary::eegContainer* GetEegContainer(std::string currentFilePath, bool shouldExtractData, int nbFreqBand);
 
-private:
-
 public slots:
 	virtual void Process() = 0;
+    void ExtractElectrodeList(std::string currentFilePath);
+    void SetExternalParameters(std::vector<int> IndexToDelete, std::vector<std::string> CorrectedLabels );
 
 signals:
-	void sendLogInfo(QString);
 	void finished();
-    void sendContainerPointer(InsermLibrary::eegContainer *eegCont);
+    void sendLogInfo(QString);
 	void incrementAdavnce(int divider);
-
-public:
-	int bipCreated = -1;
+    void sendElectrodeList(std::vector<std::string> ElectrodeList);
 
 protected:
-	std::vector<int> m_electrodeToDeleteMemory;
-	InsermLibrary::LOCA *m_loca = nullptr;
-
-private:
-
+    InsermLibrary::LOCA *m_Loca = nullptr;
+    std::vector<int> m_IndexToDelete;
+    std::vector<std::string> m_CorrectedLabels;
 };
 
 

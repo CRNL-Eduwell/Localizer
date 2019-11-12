@@ -6,7 +6,7 @@ Localizer::Localizer(QWidget *parent) : QMainWindow(parent)
 {
 	ui.setupUi(this);
 	ReSetupGUI();
-	connectSignals();
+    ConnectSignals();
 
 	inputArguments = QCoreApplication::arguments();
 	if (inputArguments.count() > 1)
@@ -51,8 +51,7 @@ void Localizer::ReSetupGUI()
 void Localizer::LoadFrequencyBandsUI(const std::vector<FrequencyBand>& FrequencyBands)
 {
 	ui.FrequencyListWidget->clear();
-	int FrequencyCount = FrequencyBands.size();
-	for (int i = 0; i < FrequencyCount; i++)
+    for (size_t i = 0; i < FrequencyBands.size(); i++)
 	{
 		QString Label = QString::fromStdString(FrequencyBands[i].Label());
 
@@ -69,25 +68,25 @@ void Localizer::DeactivateUIForSingleFiles()
 	ui.TrialmatCheckBox->setEnabled(false);
 }
 
-void Localizer::connectSignals()
+void Localizer::ConnectSignals()
 {
-	connectMenuBar();
+    ConnectMenuBar();
 
 	ui.FileTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(ui.FileTreeView, &QTreeView::customContextMenuRequested, this, &Localizer::ShowFileTreeContextMenu);
-	connect((DeselectableTreeView*)ui.FileTreeView, &DeselectableTreeView::ResetNbFolder, this, [&]() { SetLabelCount(0); });
+    connect(ui.FileTreeView, &DeselectableTreeView::ResetNbFolder, this, [&]() { SetLabelCount(0); });
 
 	connect(ui.AllBandsCheckBox, &QCheckBox::clicked, this, &Localizer::ToggleAllBands);
     connect(ui.cancelButton, &QPushButton::clicked, this, &Localizer::CancelAnalysis);
 }
 
-void Localizer::connectMenuBar()
+void Localizer::ConnectMenuBar()
 {
 	//===Fichier
 	QAction* openPatFolder = ui.menuFiles->actions().at(0);
-	connect(openPatFolder, &QAction::triggered, this, [&] { loadPatientFolder(); });
+    connect(openPatFolder, &QAction::triggered, this, [&] { LoadPatientFolder(); });
 	QAction* openSingleFile = ui.menuFiles->actions().at(1);
-	connect(openSingleFile, &QAction::triggered, this, [&] { loadSingleFile(); });
+    connect(openSingleFile, &QAction::triggered, this, [&] { LoadSingleFile(); });
 	//===Outils
 	QAction* openTRCSecator = ui.menuTools->actions().at(0);
 	connect(openTRCSecator, &QAction::triggered, this, [&] { QMessageBox::information(this, "Secator", "Something"); });
@@ -111,7 +110,7 @@ void Localizer::connectMenuBar()
 	});
 }
 
-void Localizer::loadPatientFolder()
+void Localizer::LoadPatientFolder()
 {
 	QFileDialog *fileDial = new QFileDialog(this);
 	fileDial->setFileMode(QFileDialog::FileMode::DirectoryOnly);
@@ -129,7 +128,7 @@ void Localizer::loadPatientFolder()
 	}
 }
 
-void Localizer::loadSingleFile()
+void Localizer::LoadSingleFile()
 {
 	QFileDialog *fileDial = new QFileDialog(this);
 	fileDial->setFileMode(QFileDialog::FileMode::ExistingFile);
@@ -150,9 +149,9 @@ void Localizer::loadSingleFile()
 
 void Localizer::LoadTreeView(patientFolder *pat)
 {
-	disconnect(ui.processButton, 0, 0, 0);
+    disconnect(ui.processButton, nullptr, nullptr, nullptr);
 	if (ui.FileTreeView->selectionModel() != nullptr)
-		disconnect(ui.FileTreeView->selectionModel(), 0, 0, 0);
+        disconnect(ui.FileTreeView->selectionModel(), nullptr, nullptr, nullptr);
 
 	QString initialFolder = pat->rootFolder().c_str();
 	LoadTreeViewUI(initialFolder);
@@ -160,14 +159,14 @@ void Localizer::LoadTreeView(patientFolder *pat)
 	//==[Event connected to model of treeview]
 	connect(ui.FileTreeView, &QTreeView::clicked, this, &Localizer::ModelClicked);
 	//==[Event for rest of UI]
-    connect(ui.processButton, &QPushButton::clicked, this, &Localizer::processFolderAnalysis);
+    connect(ui.processButton, &QPushButton::clicked, this, &Localizer::ProcessFolderAnalysis);
 	SetLabelCount(0);
 }
 
 void Localizer::LoadTreeView(std::vector<singleFile> currentFiles)
 {
 	DeactivateUIForSingleFiles();
-	disconnect(ui.processButton, 0, 0, 0);
+    disconnect(ui.processButton, nullptr, nullptr, nullptr);
 	if (currentFiles.size() > 0)
 	{
 		QString initialFolder = currentFiles[0].rootFolder().c_str();
@@ -176,7 +175,7 @@ void Localizer::LoadTreeView(std::vector<singleFile> currentFiles)
 		//==[Event connected to model of treeview]
 		connect(ui.FileTreeView, &QTreeView::clicked, this, &Localizer::ModelClicked);
 		//==[Event for rest of UI]
-        connect(ui.processButton, &QPushButton::clicked, this, &Localizer::processSingleAnalysis);
+        connect(ui.processButton, &QPushButton::clicked, this, &Localizer::ProcessSingleAnalysis);
 		SetLabelCount(0);
 	}
 	else
@@ -230,9 +229,9 @@ void Localizer::PreparePatientFolder()
         sortedIdToKeep.push_back(std::make_pair(i, false));
 	}
 	QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
-	for (int i = 0; i < selectedRows.size(); i++)
+    for (int i = 0; i < selectedRows.size(); i++)
 	{
-		for (int j = 0; j < sortedIdToKeep.size(); j++)
+        for (size_t j = 0; j < sortedIdToKeep.size(); j++)
 		{
 			if (selectedRows[i].row() == sortedIdToKeep[j].first)
 			{
@@ -305,7 +304,7 @@ std::vector<FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
 	}
 	std::vector<FrequencyBandAnalysisOpt> analysisOpt = std::vector<FrequencyBandAnalysisOpt>(indexes.size());
 
-	for (int i = 0; i < indexes.size(); i++)
+    for (size_t i = 0; i < indexes.size(); i++)
 	{
 		//	- env2plot and / or trial mat
 		analysisOpt[i].analysisParameters.eeg2env2 = ui.Eeg2envCheckBox->isChecked();
@@ -322,8 +321,7 @@ std::vector<FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
 		});
 		if (it != frequencyBands.end())
 		{
-			int index = distance(it, frequencyBands.begin());
-			analysisOpt[i].Band = FrequencyBand(frequencyBands[indexes[i]]);
+            analysisOpt[i].Band = FrequencyBand(*it);
 		}
 	}
 
@@ -395,7 +393,7 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 			if (!isAlreadyRunning)
 			{
 				ErpProcessor* erpWindow = new ErpProcessor(files, this);
-				connect(erpWindow, &ErpProcessor::SendExamCorrespondance, this, &Localizer::processERPAnalysis);
+                connect(erpWindow, &ErpProcessor::SendExamCorrespondance, this, &Localizer::ProcessERPAnalysis);
 				erpWindow->exec();
 				delete erpWindow;
 			}
@@ -416,7 +414,7 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 			if (!isAlreadyRunning)
 			{
 				FileConverterProcessor* fileWindow = new FileConverterProcessor(files, this);
-				connect(fileWindow, &FileConverterProcessor::SendExamCorrespondance, this, &Localizer::processFileConvertion);
+                connect(fileWindow, &FileConverterProcessor::SendExamCorrespondance, this, &Localizer::ProcessFileConvertion);
 				fileWindow->exec();
 				delete fileWindow;
 			}
@@ -473,7 +471,7 @@ void Localizer::ToggleAllBands()
 	}
 }
 
-void Localizer::processFolderAnalysis()
+void Localizer::ProcessFolderAnalysis()
 {
 	if (currentPat != nullptr)
 	{
@@ -497,12 +495,11 @@ void Localizer::processFolderAnalysis()
             connect(worker->GetLoca(), &LOCA::sendLogInfo, this, &Localizer::DisplayLog);
             connect(worker->GetLoca(), &LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
-			//=== 
-            connect(worker, &IWorker::sendContainerPointer, this, &Localizer::receiveContainerPointer);
-			connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
+            //New ping pong order
+            connect(thread, &QThread::started, this, &Localizer::StartElectrodeListExtract);
+            connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
+            connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
-			//=== Event From worker and thread
-            connect(thread, &QThread::started, worker, &IWorker::Process);
             connect(worker, &IWorker::finished, thread, &QThread::quit);
             connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
             connect(thread, &QThread::finished, thread, &QThread::deleteLater);
@@ -524,7 +521,7 @@ void Localizer::processFolderAnalysis()
 	}
 }
 
-void Localizer::processSingleAnalysis()
+void Localizer::ProcessSingleAnalysis()
 {
 	if (currentFiles.size() > 0)
 	{
@@ -544,12 +541,12 @@ void Localizer::processSingleAnalysis()
             connect(worker->GetLoca(), &LOCA::sendLogInfo, this, &Localizer::DisplayLog);
             connect(worker->GetLoca(), &LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
-			//=== 
-            connect(worker, &IWorker::sendContainerPointer, this, &Localizer::receiveContainerPointer);
-            connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
+            //New ping pong order
+            connect(thread, &QThread::started, this, &Localizer::StartElectrodeListExtract);
+            connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
+            connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
 			//=== Event From worker and thread
-            connect(thread, &QThread::started, worker, &IWorker::Process);
             connect(worker, &IWorker::finished, thread, &QThread::quit);
             connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
             connect(thread, &QThread::finished, thread, &QThread::deleteLater);
@@ -571,7 +568,7 @@ void Localizer::processSingleAnalysis()
 	}
 }
 
-void Localizer::processERPAnalysis(QList<QString> exams)
+void Localizer::ProcessERPAnalysis(QList<QString> exams)
 {
 	QModelIndexList indexes = ui.FileTreeView->selectionModel()->selectedRows();
 	if (indexes.size() != exams.size())
@@ -601,12 +598,12 @@ void Localizer::processERPAnalysis(QList<QString> exams)
     connect(worker->GetLoca(), &LOCA::sendLogInfo, this, &Localizer::DisplayLog);
     connect(worker, &IWorker::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
-	//=== 
-    connect(worker, &IWorker::sendContainerPointer, this, &Localizer::receiveContainerPointer);
-    connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
+    //New ping pong order
+    connect(thread, &QThread::started, this, &Localizer::StartElectrodeListExtract);
+    connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
+    connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
 	//=== Event From worker and thread
-    connect(thread, &QThread::started, worker, &IWorker::Process);
     connect(worker, &IWorker::finished, thread, &QThread::quit);
     connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
     connect(thread, &QThread::finished, thread, &QThread::deleteLater);
@@ -618,7 +615,7 @@ void Localizer::processERPAnalysis(QList<QString> exams)
 	isAlreadyRunning = true;
 }
 
-void Localizer::processFileConvertion(QList<QString> newFileType)
+void Localizer::ProcessFileConvertion(QList<QString> newFileType)
 {
 	QModelIndexList indexes = ui.FileTreeView->selectionModel()->selectedRows();
 	if (indexes.size() != newFileType.size())
@@ -646,12 +643,12 @@ void Localizer::processFileConvertion(QList<QString> newFileType)
 	//=== Event update displayer
     connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
 
-	//=== 
-    connect(worker, &IWorker::sendContainerPointer, this, &Localizer::receiveContainerPointer);
-    connect(this, &Localizer::bipDone, worker, [=](int status) { worker->bipCreated = status; });
+    //New ping pong order
+    connect(thread, &QThread::started, this, &Localizer::StartElectrodeListExtract);
+    connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
+    connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
 	//=== Event From worker and thread
-    connect(thread, &QThread::started, worker, &IWorker::Process);
     connect(worker, &IWorker::finished, thread, &QThread::quit);
     connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
     connect(thread, &QThread::finished, thread, &QThread::deleteLater);
@@ -728,11 +725,37 @@ void Localizer::CancelAnalysis()
 	}
 }
 
-void Localizer::receiveContainerPointer(eegContainer *eegCont)
+void Localizer::StartElectrodeListExtract()
+{
+    if(currentPat->localizerFolder().size() == 0)
+    {
+        throw new std::runtime_error("Error, there is no localizer folder in this patient");
+    }
+    FileExt currentExtention = currentPat->localizerFolder()[0].fileExtention();
+    if (currentExtention == NO_EXT)
+    {
+        throw new std::runtime_error("Error, no supported file extention detected");
+    }
+    std::string currentFilePath = currentPat->localizerFolder()[0].filePath(currentExtention);
+
+    worker->ExtractElectrodeList(currentFilePath);
+}
+
+void Localizer::ReceiveElectrodeList(std::vector<std::string> ElectrodeList)
 {
     std::string connectCleanerFilePath = currentPat->rootFolder() + "/" + currentPat->patientName() + ".ccf";
-    ConnectCleaner *elecWin = new ConnectCleaner(eegCont, connectCleanerFilePath.c_str(), 0);
-	int res = elecWin->exec();
-	emit bipDone(res);
-	delete elecWin;
+    ConnectCleaner *elecWin = new ConnectCleaner(ElectrodeList, connectCleanerFilePath.c_str(), nullptr);
+    int res = elecWin->exec();
+    if(res == 1)
+    {
+        std::cout << "Windows closed and validated" << std::endl;
+        worker->SetExternalParameters(elecWin->IndexToDelete(), elecWin->CorrectedLabel());
+        MontageDone(res);
+    }
+    else
+    {
+        std::cout << "Windows closed and aborting process" << std::endl;
+        CancelAnalysis();
+    }
+    delete elecWin;
 }
