@@ -748,13 +748,11 @@ void Localizer::ReceiveElectrodeList(std::vector<std::string> ElectrodeList)
     int res = elecWin->exec();
     if(res == 1)
     {
-        std::cout << "Windows closed and validated" << std::endl;
         worker->SetExternalParameters(elecWin->IndexToDelete(), elecWin->CorrectedLabel());
         MontageDone(res);
     }
     else
     {
-        std::cout << "Windows closed and aborting process" << std::endl;
         CancelAnalysis();
     }
     delete elecWin;

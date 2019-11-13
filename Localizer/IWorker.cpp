@@ -10,13 +10,6 @@ IWorker::~IWorker()
     deleteAndNullify1D(m_Loca);
 }
 
-InsermLibrary::eegContainer* IWorker::GetEegContainer(std::string currentFilePath, bool shouldExtractData, int nbFreqBand)
-{	
-	emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFilePath));
-	EEGFormat::IFile* file = CreateGenericFile(currentFilePath.c_str(), shouldExtractData);
-    return new InsermLibrary::eegContainer(file, 64, nbFreqBand);;
-}
-
 void IWorker::SetExternalParameters(std::vector<int> IndexToDelete, std::vector<std::string> CorrectedLabels )
 {
     m_IndexToDelete = std::vector<int>(IndexToDelete);
@@ -30,8 +23,41 @@ void IWorker::ExtractElectrodeList(std::string currentFilePath)
     std::vector<std::string> ElectrodesList = std::vector<std::string>(file->ElectrodeCount());
     for(size_t i = 0; i < ElectrodesList.size(); i++)
     {
-        ElectrodesList[i] = std::string(file->Electrode(i)->Label());
+        //===[ Tips ]===
+        //Use the char* value for the label so that the string is terminated
+        //and does not keep the extra allocated char as white spaces
+        ElectrodesList[i] = std::string(file->Electrode(i)->Label().c_str());
     }
     DeleteGenericFile(file);
     sendElectrodeList(ElectrodesList);
+}
+
+InsermLibrary::eegContainer* IWorker::GetEegContainer(std::string currentFilePath, bool shouldExtractData, int nbFreqBand)
+{
+    emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFilePath));
+    EEGFormat::IFile* file = CreateGenericFile(currentFilePath.c_str(), shouldExtractData);
+    CorrectElectrodeLabels(file);
+    return new InsermLibrary::eegContainer(file, 64, nbFreqBand);;
+}
+
+void IWorker::CorrectElectrodeLabels(EEGFormat::IFile* file)
+{
+    if(m_CorrectedLabels.size() == 0)
+        return;
+
+    std::vector<EEGFormat::IElectrode*> ElectrodeList = file->Electrodes();
+    size_t ElectrodeCount = ElectrodeList.size();
+    if(m_CorrectedLabels.size() != ElectrodeList.size())
+    {
+        emit sendLogInfo("There is not the same number of electrode to correct than in the file, aborting label correction");
+        return;
+    }
+
+    for(size_t i = 0; i < ElectrodeCount; i++)
+    {
+        ElectrodeList[i]->Label(m_CorrectedLabels[i]);
+    }
+
+    file->Electrodes(ElectrodeList);
+    emit sendLogInfo("Electrodes label have been corrected");
 }

@@ -19,7 +19,7 @@ public:
 	void Process();
 
 private:
-    InsermLibrary::eegContainer* ExtractData(locaFolder currentLoca, bool extractOriginalData, int idFile, int nbFreqBand);
+    InsermLibrary::eegContainer* ExtractData(locaFolder currentLoca, bool extractOriginalData, int nbFreqBand);
 
 private:
     patientFolder* m_Patient = nullptr;

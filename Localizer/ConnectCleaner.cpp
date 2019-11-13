@@ -87,11 +87,8 @@ void ConnectCleaner::ValidateConnect()
         {
             m_indexToDelete.push_back(i);
         }
-        else if(qsim->item(i, 0)->checkState() == Qt::CheckState::Checked)
-        {
-            std::string label = qsim->item(i, 1)->text().toStdString();
-            m_CorrectedElectrodesLabel.push_back(label);
-        }
+        std::string label = qsim->item(i, 1)->text().toStdString();
+        m_CorrectedElectrodesLabel.push_back(label);
     }
     done(1);
 }

@@ -56,7 +56,8 @@ void CleanConnectFile::Load(QString filePath, std::vector<std::string> & uncorre
             continue;
         }
 
-        states.push_back(static_cast<Qt::CheckState>(QVariant(rawLine[0].c_str()).toBool()));
+        Qt::CheckState state = QVariant(rawLine[0].c_str()).toBool() == true ? Qt::CheckState::Checked : Qt::CheckState::Unchecked;
+        states.push_back(state);
         uncorrectedLabels.push_back(rawLine[1]);
         correctedLabels.push_back(rawLine[2]);
     }
