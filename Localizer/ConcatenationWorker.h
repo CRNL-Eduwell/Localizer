@@ -14,6 +14,7 @@ public:
 	ConcatenationWorker(std::vector<std::string>& trcFiles, std::string& directoryPath, std::string& fileName);
 	~ConcatenationWorker();
 	void Process();
+    void ExtractElectrodeList(){}
 
 private:
     std::vector<std::string> m_EegFiles;

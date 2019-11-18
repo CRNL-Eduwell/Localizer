@@ -18,23 +18,25 @@ public:
 	IWorker();
 	~IWorker();
     inline InsermLibrary::LOCA* GetLoca() { return m_Loca; }
-    void ExtractElectrodeList(std::string currentFilePath);
     void SetExternalParameters(std::vector<int> IndexToDelete, std::vector<std::string> CorrectedLabels );
 
 protected:
+    std::vector<std::string> ExtractElectrodeListFromFile(std::string currentFilePath);
     InsermLibrary::eegContainer* GetEegContainer(std::string currentFilePath, bool shouldExtractData, int nbFreqBand);
+    std::string GetCurrentTime();
 
 private :
     void CorrectElectrodeLabels(EEGFormat::IFile* file);
 
 public slots:
 	virtual void Process() = 0;
+    virtual void ExtractElectrodeList() = 0;
 
 signals:
 	void finished();
     void sendLogInfo(QString);
 	void incrementAdavnce(int divider);
-    void sendElectrodeList(std::vector<std::string> ElectrodeList);
+    void sendElectrodeList(std::vector<std::string> ElectrodeList, std::string ConnectCleanerFile);
 
 protected:
     InsermLibrary::LOCA *m_Loca = nullptr;

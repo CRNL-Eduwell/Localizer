@@ -13,7 +13,7 @@ public:
     ErpWorker(std::vector<std::string>& eegFiles, std::vector<std::string>& provFiles, InsermLibrary::picOption picOption);
 	~ErpWorker();
 	void Process();
-
+    void ExtractElectrodeList(){}
 private:
     InsermLibrary::eegContainer* ExtractData(std::string currentFile);
 

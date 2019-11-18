@@ -54,6 +54,23 @@ void PatientFolderWorker::Process()
 	emit finished();
 }
 
+void PatientFolderWorker::ExtractElectrodeList()
+{
+    if(m_Patient->localizerFolder().size() == 0)
+    {
+        throw new std::runtime_error("Error, there is no localizer folder in this patient");
+    }
+    FileExt currentExtention = m_Patient->localizerFolder()[0].fileExtention();
+    if (currentExtention == NO_EXT)
+    {
+        throw new std::runtime_error("Error, no supported file extention detected");
+    }
+    std::string currentFilePath = m_Patient->localizerFolder()[0].filePath(currentExtention);
+    std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(currentFilePath);
+    std::string connectCleanerFilePath = m_Patient->rootFolder() + "/" + m_Patient->patientName() + ".ccf";
+    emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
+}
+
 eegContainer* PatientFolderWorker::ExtractData(locaFolder currentLoca, bool extractOriginalData, int nbFreqBand)
 {
     FileExt currentExtention = currentLoca.fileExtention();

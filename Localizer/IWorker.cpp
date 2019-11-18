@@ -2,7 +2,8 @@
 
 IWorker::IWorker()
 {
-
+    qRegisterMetaType<std::string>("std::string");
+    qRegisterMetaType<std::vector<std::string>>("std::vector<std::string>");
 }
 
 IWorker::~IWorker()
@@ -16,7 +17,7 @@ void IWorker::SetExternalParameters(std::vector<int> IndexToDelete, std::vector<
     m_CorrectedLabels = std::vector<std::string>(CorrectedLabels);
 }
 
-void IWorker::ExtractElectrodeList(std::string currentFilePath)
+std::vector<std::string> IWorker::ExtractElectrodeListFromFile(std::string currentFilePath)
 {
     emit sendLogInfo(QString::fromStdString("  => Extracting Electrodes from : " + currentFilePath));
     EEGFormat::IFile* file = CreateGenericFile(currentFilePath.c_str(), false);
@@ -29,7 +30,16 @@ void IWorker::ExtractElectrodeList(std::string currentFilePath)
         ElectrodesList[i] = std::string(file->Electrode(i)->Label().c_str());
     }
     DeleteGenericFile(file);
-    sendElectrodeList(ElectrodesList);
+    return ElectrodesList;
+}
+
+std::string IWorker::GetCurrentTime()
+{
+    std::stringstream TimeDisp;
+    std::time_t t = std::time(nullptr);
+    //std::stringstream().swap(TimeDisp);
+    TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
+    return TimeDisp.str();
 }
 
 InsermLibrary::eegContainer* IWorker::GetEegContainer(std::string currentFilePath, bool shouldExtractData, int nbFreqBand)

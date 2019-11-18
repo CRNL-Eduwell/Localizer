@@ -3,6 +3,8 @@
 
 #include "Utility.h"
 #include "../../EEGFormat/EEGFormat/Utility.h"
+#include <iostream>
+#include <string>
 
 #include <QtWidgets/QMainWindow>
 #include <QCoreApplication>
@@ -82,8 +84,7 @@ private slots:
     void DisplayColoredLog(QString info, QColor color = QColor(Qt::GlobalColor::black));
 	void UpdateProgressBar(int divider);
 	void CancelAnalysis();
-    void StartElectrodeListExtract();
-    void ReceiveElectrodeList(std::vector<std::string> ElectrodeList);
+    void ReceiveElectrodeList(std::vector<std::string> ElectrodeList, std::string ConnectCleanerFile);
 
 signals:
     void MontageDone(int);

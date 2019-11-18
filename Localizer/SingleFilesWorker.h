@@ -18,11 +18,13 @@ public:
     SingleFilesWorker(std::vector<singleFile>& singleFiles, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& FrequencyBands);
 	~SingleFilesWorker();
 	void Process();
+    void ExtractElectrodeList();
 
 private:
-    InsermLibrary::eegContainer* ExtractData(singleFile currentFile, bool extractOriginalData, int idFile, int nbFreqBand);
+    InsermLibrary::eegContainer* ExtractData(singleFile currentFile, bool extractOriginalData, int nbFreqBand);
 
 private:
+    int m_CurrentProcessId = 0;
 	std::vector<singleFile> m_currentFiles;
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> m_frequencyBands;
 };

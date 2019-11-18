@@ -17,6 +17,7 @@ public:
     PatientFolderWorker(patientFolder currentPatient, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& FrequencyBands, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption);
 	~PatientFolderWorker();
 	void Process();
+    void ExtractElectrodeList();
 
 private:
     InsermLibrary::eegContainer* ExtractData(locaFolder currentLoca, bool extractOriginalData, int nbFreqBand);

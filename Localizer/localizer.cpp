@@ -195,7 +195,7 @@ void Localizer::LoadTreeViewUI(QString initialFolder)
     //temporary fix to show only directories of experiments
     //remove when the way to explore the file system for the localizers is better and does
     //not rely on the same number of element in the ui and on the business side to delete and have the correct data
-    m_localFileSystemModel->setFilter(QDir::Dirs|QDir::Drives|QDir::NoDotAndDotDot|QDir::AllDirs);
+    //m_localFileSystemModel->setFilter(QDir::Dirs|QDir::Drives|QDir::NoDotAndDotDot|QDir::AllDirs);
     //END TODO
 
 	//set model in treeview
@@ -219,62 +219,92 @@ void Localizer::LoadTreeViewUI(QString initialFolder)
 
 void Localizer::PreparePatientFolder()
 {
-	//Get row id's and sort them because they can be selected in whatever order
-	QModelIndex rootIndex = ui.FileTreeView->rootIndex();
-	int ExamCount = m_localFileSystemModel->rowCount(rootIndex);
+    //Create data structure used by the processing part
+    if (currentFiles.size() > 0)
+        currentFiles.clear();
+    deleteAndNullify1D(currentPat);
+    currentPat = new patientFolder(m_localFileSystemModel->rootPath().toStdString());
 
-    std::vector<std::pair<int, bool>> sortedIdToKeep;
-	for (int i = 0; i < ExamCount; i++)
-	{
-        sortedIdToKeep.push_back(std::make_pair(i, false));
-	}
-	QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
+    //check which elements to keep and delete since the ui can show single files with folders
+    std::vector<bool> deleteMe = std::vector<bool>(currentPat->localizerFolder().size(), true);
+    QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
     for (int i = 0; i < selectedRows.size(); i++)
-	{
-        for (size_t j = 0; j < sortedIdToKeep.size(); j++)
-		{
-			if (selectedRows[i].row() == sortedIdToKeep[j].first)
-			{
-				sortedIdToKeep[j].second = true;
-				continue;
-			}
-		}
-	}
-    std::sort(sortedIdToKeep.begin(), sortedIdToKeep.end(), [&](std::pair<int, bool> a, std::pair<int, bool> b)
-	{
-		return a.first < b.first;
-	});
+    {
+        bool isRoot = selectedRows[i].parent() == ui.FileTreeView->rootIndex();
+        QFileInfo info = m_localFileSystemModel->fileInfo(selectedRows[i]);
+        if(isRoot && info.isDir())
+        {
+            for(size_t j = 0; j < currentPat->localizerFolder().size(); j++)
+            {
+                std::string internalPath = currentPat->localizerFolder()[j].rootLocaFolder();
+                std::string uiPath = info.absoluteFilePath().toStdString();
+                if (internalPath.find(uiPath) != std::string::npos)
+                {
+                    deleteMe[j] = false;
+                }
+            }
+        }
+    }
 
-	//Create data structure
-	if (currentFiles.size() > 0)
-		currentFiles.clear();
-	deleteAndNullify1D(currentPat);
-	currentPat = new patientFolder(m_localFileSystemModel->rootPath().toStdString());
-
-	//Remove unwanted exam
-	for (int i = ExamCount - 1; i >= 0; i--)
-	{
-		if (sortedIdToKeep[i].second == false)
-		{
-			currentPat->localizerFolder().erase(currentPat->localizerFolder().begin() + sortedIdToKeep[i].first);
-		}
-	}
+    int ExamCount = static_cast<int>(deleteMe.size());
+    for (int i = ExamCount - 1; i >= 0; i--)
+    {
+        if (deleteMe[static_cast<size_t>(i)])
+        {
+            currentPat->localizerFolder().erase(currentPat->localizerFolder().begin() + i);
+        }
+    }
 }
+
+//void Localizer::PrepareSingleFiles()
+//{
+//	//Create data structure
+//	deleteAndNullify1D(currentPat);
+//	if (currentFiles.size() > 0)
+//		currentFiles.clear();
+
+//	int nbFrequencyBands = ui.FrequencyListWidget->selectionModel()->selectedRows().size();
+//	QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
+//	for (int i = 0; i < selectedRows.size(); i++)
+//	{
+//		std::string currentFile = m_localFileSystemModel->filePath(selectedRows[i]).toStdString();
+//		currentFiles.push_back(singleFile(currentFile, nbFrequencyBands));
+//	}
+//}
 
 void Localizer::PrepareSingleFiles()
 {
-	//Create data structure
-	deleteAndNullify1D(currentPat);
-	if (currentFiles.size() > 0)
-		currentFiles.clear();
+    QStringList extention;
+    extention << "trc" << "eeg" << "vhdr" << "edf";
 
-	int nbFrequencyBands = ui.FrequencyListWidget->selectionModel()->selectedRows().size();
-	QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
-	for (int i = 0; i < selectedRows.size(); i++)
-	{
-		std::string currentFile = m_localFileSystemModel->filePath(selectedRows[i]).toStdString();
-		currentFiles.push_back(singleFile(currentFile, nbFrequencyBands));
-	}
+    //Create data structure
+    deleteAndNullify1D(currentPat);
+    if (currentFiles.size() > 0)
+        currentFiles.clear();
+
+    int nbFrequencyBands = 0;
+    for (int i = 0; i < ui.FrequencyListWidget->count(); i++)
+    {
+        if (ui.FrequencyListWidget->item(i)->checkState() == Qt::CheckState::Checked)
+            nbFrequencyBands++;
+    }
+
+    QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
+    for (int i = 0; i < selectedRows.size(); i++)
+    {
+        bool isRoot = selectedRows[i].parent() == ui.FileTreeView->rootIndex();
+        QFileInfo info = m_localFileSystemModel->fileInfo(selectedRows[i]);
+        if(isRoot && info.isFile())
+        {
+            if(extention.contains(info.suffix().toLower()))
+            {
+                //if is eeg file , get path and create singlefile and put in currentFiles vector
+                std::cout << "Add " << info.absoluteFilePath().toStdString() << std::to_string(nbFrequencyBands) << std::endl;
+                singleFile file(info.absoluteFilePath().toStdString(), nbFrequencyBands);
+                currentFiles.push_back(file);
+            }
+        }
+    }
 }
 
 void Localizer::InitProgressBar()
@@ -343,10 +373,10 @@ int Localizer::GetNbElement(QModelIndexList selectedIndexes)
 			else
 				nbElementSelected--;
 		}
-		//else
-		//{
-		//	ui.FileTreeView->selectionModel()->setCurrentIndex(selectedIndexes[i], QItemSelectionModel::Deselect);
-		//}
+        //else
+        //{
+        //	ui.FileTreeView->selectionModel()->setCurrentIndex(selectedIndexes[i], QItemSelectionModel::Deselect);
+        //}
 	}
 	return nbElementSelected;
 }
@@ -486,29 +516,29 @@ void Localizer::ProcessFolderAnalysis()
 			std::vector<FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
 
 			//Should probably senbd back the struct here and not keep a global variable
-			PreparePatientFolder();
-			thread = new QThread;
-			worker = new PatientFolderWorker(*currentPat, analysisOptions, optstat, optpic);
+            PreparePatientFolder();
+            thread = new QThread;
+            worker = new PatientFolderWorker(*currentPat, analysisOptions, optstat, optpic);
 
-			//=== Event update displayer
+            //=== Event update displayer
             connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
             connect(worker->GetLoca(), &LOCA::sendLogInfo, this, &Localizer::DisplayLog);
             connect(worker->GetLoca(), &LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
             //New ping pong order
-            connect(thread, &QThread::started, this, &Localizer::StartElectrodeListExtract);
+            connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
             connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
             connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
             connect(worker, &IWorker::finished, thread, &QThread::quit);
             connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
             connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-			connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
+            connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
-			//=== Launch Thread and lock possible second launch
-			worker->moveToThread(thread);
-			thread->start();
-			isAlreadyRunning = true;
+            //=== Launch Thread and lock possible second launch
+            worker->moveToThread(thread);
+            thread->start();
+            isAlreadyRunning = true;
 		}
 		else
 		{
@@ -536,26 +566,26 @@ void Localizer::ProcessSingleAnalysis()
 			thread = new QThread;
 			worker = new SingleFilesWorker(currentFiles, analysisOptions);
 
-			//=== Event update displayer
+            //=== Event update displayer
             connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
             connect(worker->GetLoca(), &LOCA::sendLogInfo, this, &Localizer::DisplayLog);
             connect(worker->GetLoca(), &LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
             //New ping pong order
-            connect(thread, &QThread::started, this, &Localizer::StartElectrodeListExtract);
+            connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
             connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
             connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
-			//=== Event From worker and thread
+            //=== Event From worker and thread
             connect(worker, &IWorker::finished, thread, &QThread::quit);
             connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
             connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-			connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
+            connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
-			//=== Launch Thread and lock possible second launch
-			worker->moveToThread(thread);
-			thread->start();
-			isAlreadyRunning = true;
+            //=== Launch Thread and lock possible second launch
+            worker->moveToThread(thread);
+            thread->start();
+            isAlreadyRunning = true;
 		}
 		else
 		{
@@ -599,7 +629,7 @@ void Localizer::ProcessERPAnalysis(QList<QString> exams)
     connect(worker, &IWorker::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
     //New ping pong order
-    connect(thread, &QThread::started, this, &Localizer::StartElectrodeListExtract);
+    connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
     connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
     connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
@@ -644,7 +674,7 @@ void Localizer::ProcessFileConvertion(QList<QString> newFileType)
     connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
 
     //New ping pong order
-    connect(thread, &QThread::started, this, &Localizer::StartElectrodeListExtract);
+    connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
     connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
     connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
@@ -725,26 +755,9 @@ void Localizer::CancelAnalysis()
 	}
 }
 
-void Localizer::StartElectrodeListExtract()
+void Localizer::ReceiveElectrodeList(std::vector<std::string> ElectrodeList, std::string ConnectCleanerFile)
 {
-    if(currentPat->localizerFolder().size() == 0)
-    {
-        throw new std::runtime_error("Error, there is no localizer folder in this patient");
-    }
-    FileExt currentExtention = currentPat->localizerFolder()[0].fileExtention();
-    if (currentExtention == NO_EXT)
-    {
-        throw new std::runtime_error("Error, no supported file extention detected");
-    }
-    std::string currentFilePath = currentPat->localizerFolder()[0].filePath(currentExtention);
-
-    worker->ExtractElectrodeList(currentFilePath);
-}
-
-void Localizer::ReceiveElectrodeList(std::vector<std::string> ElectrodeList)
-{
-    std::string connectCleanerFilePath = currentPat->rootFolder() + "/" + currentPat->patientName() + ".ccf";
-    ConnectCleaner *elecWin = new ConnectCleaner(ElectrodeList, connectCleanerFilePath.c_str(), nullptr);
+    ConnectCleaner *elecWin = new ConnectCleaner(ElectrodeList, ConnectCleanerFile.c_str(), nullptr);
     int res = elecWin->exec();
     if(res == 1)
     {
