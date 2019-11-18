@@ -61,8 +61,8 @@ private:
     void ConnectMenuBar();
     void LoadPatientFolder();
     void LoadSingleFile();
-	void LoadTreeView(patientFolder *pat);
-    void LoadTreeView(std::vector<singleFile> currentFiles);
+    void LoadTreeViewFolder(QString rootFolder);
+    void LoadTreeViewFiles(QString rootFolder);
 	void LoadTreeViewUI(QString initialFolder);
 	void PreparePatientFolder();
 	void PrepareSingleFiles();

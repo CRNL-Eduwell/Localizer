@@ -35,9 +35,9 @@ void SingleFilesWorker::Process()
         deleteAndNullify1D(myContainer);
     }
 
+    m_CurrentProcessId++;
     if(m_CurrentProcessId < m_currentFiles.size())
     {
-        m_CurrentProcessId++;
         ExtractElectrodeList();
     }
     else
