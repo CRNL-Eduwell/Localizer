@@ -191,13 +191,6 @@ void Localizer::LoadTreeViewUI(QString initialFolder)
 	m_localFileSystemModel->setReadOnly(true);
 	m_localFileSystemModel->setRootPath(initialFolder);
 
-    //TODO:
-    //temporary fix to show only directories of experiments
-    //remove when the way to explore the file system for the localizers is better and does
-    //not rely on the same number of element in the ui and on the business side to delete and have the correct data
-    //m_localFileSystemModel->setFilter(QDir::Dirs|QDir::Drives|QDir::NoDotAndDotDot|QDir::AllDirs);
-    //END TODO
-
 	//set model in treeview
 	ui.FileTreeView->setModel(m_localFileSystemModel);
 	//Show only what is under this path
@@ -256,22 +249,6 @@ void Localizer::PreparePatientFolder()
     }
 }
 
-//void Localizer::PrepareSingleFiles()
-//{
-//	//Create data structure
-//	deleteAndNullify1D(currentPat);
-//	if (currentFiles.size() > 0)
-//		currentFiles.clear();
-
-//	int nbFrequencyBands = ui.FrequencyListWidget->selectionModel()->selectedRows().size();
-//	QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
-//	for (int i = 0; i < selectedRows.size(); i++)
-//	{
-//		std::string currentFile = m_localFileSystemModel->filePath(selectedRows[i]).toStdString();
-//		currentFiles.push_back(singleFile(currentFile, nbFrequencyBands));
-//	}
-//}
-
 void Localizer::PrepareSingleFiles()
 {
     QStringList extention;
@@ -299,7 +276,6 @@ void Localizer::PrepareSingleFiles()
             if(extention.contains(info.suffix().toLower()))
             {
                 //if is eeg file , get path and create singlefile and put in currentFiles vector
-                std::cout << "Add " << info.absoluteFilePath().toStdString() << std::to_string(nbFrequencyBands) << std::endl;
                 singleFile file(info.absoluteFilePath().toStdString(), nbFrequencyBands);
                 currentFiles.push_back(file);
             }
