@@ -1,6 +1,6 @@
 #include "displayProv.h"
 
-displayProv::displayProv(vector<QString> currentList, QWidget *parent) : QDialog(parent)
+displayProv::displayProv(std::vector<QString> currentList, QWidget *parent) : QDialog(parent)
 {
 	ui.setupUi(this);
 	getProvList();
@@ -17,7 +17,7 @@ void displayProv::getProvList()
 {
 	prov.clear();
 
-	QString rootProvFolder("./Resources/Config/Prov");
+    QString rootProvFolder(QCoreApplication::applicationDirPath() + "/Resources/Config/Prov");
 
 	QDir currentDir(rootProvFolder);
 	currentDir.setFilter(QDir::Files);
@@ -31,7 +31,7 @@ void displayProv::getProvList()
 	prov.erase(unique(prov.begin(), prov.end()), prov.end());
 }
 
-void displayProv::displayProvList(vector<QString> currentList)
+void displayProv::displayProvList(std::vector<QString> currentList)
 {
 	ui.listWidget->clear();
 
@@ -50,9 +50,9 @@ void displayProv::displayProvList(vector<QString> currentList)
 
 void displayProv::connectSignals()
 {
-	connect(ui.listWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkMultipleItems(QListWidgetItem *)));
-	connect(ui.listWidget, SIGNAL(itemActivated(QListWidgetItem *)), this, SLOT(checkOnEnter(QListWidgetItem *)));
-	connect(ui.pushButton, SIGNAL(clicked()), this, SLOT(sendListAndClose()));
+    connect(ui.listWidget, &QListWidget::itemChanged, this, &displayProv::checkMultipleItems);
+    connect(ui.listWidget, &QListWidget::itemActivated, this, &displayProv::checkOnEnter);
+    connect(ui.pushButton, &QPushButton::clicked, this, &displayProv::sendListAndClose);
 }
 
 void displayProv::checkMultipleItems(QListWidgetItem * item)
@@ -83,7 +83,7 @@ void displayProv::checkOnEnter(QListWidgetItem * item)
 
 void displayProv::sendListAndClose()
 {
-	vector<QString> provWanted;
+	std::vector<QString> provWanted;
 	for (int i = 0; i < prov.size(); i++)
 	{
 		if (ui.listWidget->item(i)->checkState() == Qt::CheckState::Checked)

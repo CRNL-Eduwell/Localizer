@@ -68,7 +68,7 @@ void form::InitProvListUi(QStringList provList)
 		currentPROV->setText(provList[i].split(".prov", QString::SplitBehavior::SkipEmptyParts)[0]);
 		currentPROV->setFlags(currentPROV->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable);
 	}
-	connect(ui.tableWidget, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(ManageChangeItem(QTableWidgetItem*)));
+    connect(ui.tableWidget, &QTableWidget::itemChanged, this, &form::ManageChangeItem);
 }
 
 void form::DefineHorizontalHeader(QTableWidget *tabWidget)
@@ -308,8 +308,12 @@ void form::Save()
 	if (rootSplit[rootSplit.size() - 1] == chgCodeSplit[rootSplit.size() - 1])
 	{
 		chgCodeSplit.erase(chgCodeSplit.begin(), chgCodeSplit.begin() + rootSplit.size());
-		for each (std::string var in chgCodeSplit)
-			prov->changeCodeFilePath += ("/" + var);
+//		for each (std::string var in chgCodeSplit)
+//			prov->changeCodeFilePath += ("/" + var);
+        for(int i = 0;i<chgCodeSplit.size();i++)
+        {
+            prov->changeCodeFilePath += ("/" + chgCodeSplit[i]);
+        }
 	}
 
 	prov->invertmapsinfo = m_currentProv->invertmapsinfo;

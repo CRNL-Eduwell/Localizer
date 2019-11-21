@@ -1,98 +1,107 @@
 #ifndef LOCALIZER_H
 #define LOCALIZER_H
 
+#include "Utility.h"
+#include "../../EEGFormat/EEGFormat/Utility.h"
+#include <iostream>
+#include <string>
+
 #include <QtWidgets/QMainWindow>
+#include <QCoreApplication>
 #include <QCheckBox>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QKeyEvent>
 #include <QShortcut>
-
 #include <QtUiTools>
 #include <QUiLoader>
+#include <QListWidgetItem>
 
-#include "Utility.h"
+//==Ui headers
+#include "ui_localizer.h"
+#include "DeselectableTreeView.h"
 #include "optionsParameters.h"
 #include "patientFolder.h"
 #include "singleFile.h"
 #include "optionsPerf.h"
 #include "optionsStats.h"
-#include "freqwidget.h"
-#include "chooseElec.h"
+#include "ConnectCleaner.h"
+
 #include "picOptions.h"
 #include "form.h"
 #include "AboutDycog.h"
-#include "concatenator.h"
-#include "Worker.h"
+#include "ErpProcessor.h"
+#include "FileConverterProcessor.h"
 #include "LOCA.h"
-#include "ui_localizer.h"
-#include <QCoreApplication>
-
-using namespace std;
+//==Tools & files headers
+#include "FrequencyFile.h"
+#include "FrequencyBand.h"
+#include "FrequencyBandAnalysisOpt.h"
+//==Workers
+#include "IWorker.h"
+#include "PatientFolderWorker.h"
+#include "SingleFilesWorker.h"
+#include "FileConverterWorker.h"
+#include "ErpWorker.h"
+#include "ConcatenationWorker.h"
 
 class Localizer : public QMainWindow
 {
 	Q_OBJECT
 
 public:
-	Localizer(QWidget *parent = 0);
+    Localizer(QWidget *parent = nullptr);
 	~Localizer();
 
 private:
-	void reSetupGUI();
-	void getUIelement();
-	void deactivateUISingleFiles();
-	void connectSignals();
-	void connectMenuBar();
-	void loadPatientFolder();
-	void loadSingleFile();
-	void loadWidgetListTRC(patientFolder *pat);
-	void loadWidgetListTRC(vector<singleFile> currentFiles);
-	void updateGUIFrame(locaFolder currentLoca);
-	void updateGUIFrame(singleFile currentFiles);
-	void updateQFrame(string fileLooked, QFrame *frameFile);
-	void reInitStructFolder();
-	void reInitStructFiles();
-	void reInitProgressBar(userOption *optionUser);
-	void getUIAnalysisOption(patientFolder *pat);
-	void getUIAnalysisOption(vec1<singleFile> &files);
-	void getAnalysisCheckBox(vector<locaAnalysisOption> &anaOption);
-	void deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, patientFolder *pat);
-	void deleteUncheckedFiles(vector<locaAnalysisOption> &anaOption, vec1<singleFile> &files);
+	void ReSetupGUI();
+    void LoadFrequencyBandsUI(const std::vector<InsermLibrary::FrequencyBand>& FrequencyBands);
+	void DeactivateUIForSingleFiles();
+    void ConnectSignals();
+    void ConnectMenuBar();
+    void LoadPatientFolder();
+    void LoadSingleFile();
+    void LoadTreeViewFolder(QString rootFolder);
+    void LoadTreeViewFiles(QString rootFolder);
+	void LoadTreeViewUI(QString initialFolder);
+	void PreparePatientFolder();
+	void PrepareSingleFiles();
+	void InitProgressBar();
+    std::vector<InsermLibrary::FrequencyBandAnalysisOpt> GetUIAnalysisOption();
+	int GetNbElement(QModelIndexList selectedIndexes);
 
 private slots:
-	void updateGUIClick(QListWidgetItem *);
-	void eventUpdateGUI(QListWidgetItem *, QListWidgetItem *);
-	void checkMultipleItems(QListWidgetItem * item);
-	void checkOnEnter(QListWidgetItem * item);
-	void linkFreqCheckBox();
-	void processFolderAnalysis();
-	void processSingleAnalysis();
-	void processERPAnalysis();
-	void processConvertToElan();
-	void displayLog(QString info);
-	void updateProgressBar(int divider);
-	void cancelAnalysis();
-	void receiveContainerPointer(eegContainer *eegCont);
-	void UpdateFolderPostAna();
-	void UpdateSinglePostAna();
-
-	void loadConcat();
+	void SetLabelCount(int count);
+	void ModelClicked(const QModelIndex &current);
+	void ShowFileTreeContextMenu(QPoint point);
+	void ToggleAllBands();
+    void ProcessFolderAnalysis();
+    void ProcessSingleAnalysis();
+    void ProcessERPAnalysis(QList<QString> examCorrespondance);
+    void ProcessFileConvertion(QList<QString> newFileType);
+	void ProcessMicromedFileConcatenation(QList<QString> files, QString directoryPath, QString fileName);
+    void DisplayLog(QString info);
+    void DisplayColoredLog(QString info, QColor color = QColor(Qt::GlobalColor::black));
+	void UpdateProgressBar(int divider);
+	void CancelAnalysis();
+    void ReceiveElectrodeList(std::vector<std::string> ElectrodeList, std::string ConnectCleanerFile);
 
 signals:
-	void bipDone(int);
+    void MontageDone(int);
 
 private:
+	//==Visualisation
+	QFileSystemModel *m_localFileSystemModel = nullptr;
 	//==Data for analysis
-	userOption userOpt;
+    InsermLibrary::FrequencyFile *m_frequencyFile = nullptr;
+	bool m_isPatFolder = false;
+	//userOption userOpt;
 	patientFolder* currentPat = nullptr;
-	patientFolder* savePat = nullptr;
-	vector<singleFile> currentFiles;
-	vector<singleFile> saveFiles;
+	std::vector<singleFile> currentFiles;
 	//==Thread and Worker
 	QReadWriteLock m_lockLoop;  
 	QThread* thread = nullptr;
-	Worker* worker = nullptr;
+	IWorker* worker = nullptr;
 	bool isAlreadyRunning = false;
 	//==UI
 	float nbDoneTask = 0;
@@ -101,10 +110,8 @@ private:
 	optionsStats *optStat = nullptr;
 	optionsPerf *optPerf = nullptr;
 	form *optLoca = nullptr;
-	concatenator *concatFiles = nullptr;
-	uiUserElement* uiElement = nullptr;
-	Ui::LocalizerClass ui;
 
+	Ui::LocalizerClass ui;
 	QStringList inputArguments;
 };
 

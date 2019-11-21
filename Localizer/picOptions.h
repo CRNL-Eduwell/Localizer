@@ -5,9 +5,7 @@
 #include "ui_picOptions.h"
 #include "Utility.h"
 #include "optionsParameters.h"
-
-using namespace std;
-using namespace InsermLibrary;
+#include <cmath>
 
 class picOptions : public QDialog
 {
@@ -17,7 +15,7 @@ public:
 	picOptions(QWidget *parent = 0);
 	~picOptions();
 	void connectSignals();
-	void getPicOption(picOption *picOpt);
+    InsermLibrary::picOption getPicOption();
 
 private slots:
 	void width2HeigthTrialRatio();

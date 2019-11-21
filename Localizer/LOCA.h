@@ -2,11 +2,14 @@
 #define _LOCA_H
 
 #include <QtWidgets/QMainWindow>	
+#include <QCoreApplication>
 #include <iostream>	
+#include <vector>
 #include <ostream>
 #include <iomanip>
 #include <algorithm>
 #include <iterator>
+#include "../../Framework/Framework/Measure.h"
 #include "Utility.h"
 #include "eegContainer.h"
 #include "patientFolder.h"
@@ -14,12 +17,11 @@
 #include "Stats.h"
 #include "mapsGenerator.h"
 #include "barsPlotsGenerator.h"
+#include "FrequencyBandAnalysisOpt.h"
 #include "optionsParameters.h"
-
-using namespace std;
-using namespace InsermLibrary;
-using namespace InsermLibrary::DrawCard;
-using namespace InsermLibrary::DrawbarsPlots;
+#include "TriggerContainer.h"
+#include "FrequencyBand.h"
+#include "AlgorithmCalculator.h"
 
 namespace InsermLibrary
 {
@@ -28,56 +30,54 @@ namespace InsermLibrary
 		Q_OBJECT
 
 	public:
-		LOCA(userOption *userOpt);
+		LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption* statOption, picOption* picOption);
 		~LOCA();
 		void eeg2erp(eegContainer *myeegContainer, PROV *myprovFile);
 		void LocaSauron(eegContainer *myeegContainer, int idCurrentLoca, locaFolder *currentLoca);
 		void LocaFrequency(eegContainer *myeegContainer, int idCurrentLoca);
-		static void checkShannonCompliance(int p_samplingFrequency, frequency & p_freq);
+
 	private:
-		void toBeNamedCorrectlyFunction(eegContainer *myeegContainer, int idCurrentFreq, string freqFolder, analysisOption a);
+		void toBeNamedCorrectlyFunction(eegContainer *myeegContainer, std::string freqFolder, FrequencyBandAnalysisOpt a);
 		//==
-		void createPosFile(eegContainer *myeegContainer);
-		void createConfFile(eegContainer *myeegContainer);
-		void renameTriggers(TRIGGINFO *eegTriggers, TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
-		//==
-		void processEvents(eegContainer *myeegContainer, PROV *myprovFile);
-		void processEventsDown(eegContainer *myeegContainer, PROV *myprovFile);
-		void pairStimResp(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
-		void deleteUnsignificativEvents(TRIGGINFO *downsampledEegTriggers, PROV *myprovFile);
-		void sortTrials(TRIGGINFO *eegTriggersTemp, PROV *myprovFile, int downSampFreq);
-		void swapStimResp(TRIGGINFO *eegTriggers, PROV *myprovFile);
-		//==
-		string createIfFreqFolderExistNot(eegContainer *myeegContainer, frequency currentFreq);
-		vector<PROV> loadProvCurrentLoca();
-		bool shouldPerformBarPlot(string locaName);
-		bool isBarPlot(string provFile);
-		//==
-		void barplot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, string freqFolder);
-		string getMapsFolderBar(string freqFolder, PROV *myprovFile);
-		string prepareFolderAndPathsBar(string freqFolder, int dsSampFreq);
-		vector<PVALUECOORD> calculateStatisticKruskall(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, string freqFolder);
-		//==
-		void env2plot(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, string freqFolder);
-		string getMapsFolderPlot(string freqFolder, PROV *myprovFile);
-		string prepareFolderAndPathsPlot(string freqFolder, int dsSampFreq);
+		void CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt, eegContainer *myeegContainer, TriggerContainer *triggerContainer, PROV *myprovFile);
+		void CreateFile(EEGFormat::FileType outputType, std::string filePath, std::vector<Trigger> & triggers);
+		void CreateConfFile(eegContainer *myeegContainer);
+		void RelinkAnalysisFileAnUglyWay(const std::string& rootPath, const std::string& fileNameBase, const std::string& frequencySuffix, const std::string& downsamplingFactor);
 
 		//==
-		void timeTrialmatrices(eegContainer *myeegContainer, int idCurrentFreqfrequency, PROV *myprovFile, string freqFolder);
-		string getMapsFolderTrial(PROV *myprovFile, string freqFolder);
-		string prepareFolderAndPathsTrial(string freqFolder, int dsSampFreq);
-		bool shouldPerformStatTrial(string locaName);
-		vector<PVALUECOORD> calculateStatisticWilcoxon(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, string freqFolder);
+		std::string createIfFreqFolderExistNot(eegContainer *myeegContainer, FrequencyBand currentFreq);
+		PROV* LoadProvForTask();
+		std::vector<PROV> LoadAllProvForTask();
+		bool shouldPerformBarPlot(std::string locaName);
+		bool isBarPlot(std::string provFile);
+		//==
+		void barplot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+		std::string getMapsFolderBar(std::string freqFolder, PROV *myprovFile);
+		std::string prepareFolderAndPathsBar(std::string freqFolder, int dsSampFreq);
+        std::vector<PVALUECOORD> calculateStatisticKruskall(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+		//==
+		void env2plot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+		std::string getMapsFolderPlot(std::string freqFolder, PROV *myprovFile);
+		std::string prepareFolderAndPathsPlot(std::string freqFolder, int dsSampFreq);
+
+		//==
+		void timeTrialmatrices(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+		std::string getMapsFolderTrial(PROV *myprovFile, std::string freqFolder);
+		std::string prepareFolderAndPathsTrial(std::string freqFolder, int dsSampFreq);
+		bool shouldPerformStatTrial(std::string locaName);
+        std::vector<PVALUECOORD> calculateStatisticWilcoxon(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
 
 	signals:
 		void sendLogInfo(QString);
 		void incrementAdavnce(int divider);
 
 	private:
-		TRIGGINFO *triggCatEla = nullptr, *triggCatEla2 = nullptr;
-		locaFolder *currentLoca = nullptr;
-		int idCurrentLoca = -1;
-		userOption *userOpt = nullptr;
+		locaFolder *m_currentLoca = nullptr; //Only contains a link to filesystem information about current localizer, do not delete in destructor
+		int m_idCurrentLoca = -1;
+		TriggerContainer *m_triggerContainer = nullptr;
+		std::vector<FrequencyBandAnalysisOpt> m_analysisOpt;
+		statOption* m_statOption;
+		picOption* m_picOption;
 	};
 }
 

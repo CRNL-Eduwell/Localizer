@@ -17,21 +17,23 @@ picOptions::~picOptions()
 
 void picOptions::connectSignals()
 {
-	connect(ui.widthTrialLE, SIGNAL(editingFinished()), this, SLOT(width2HeigthTrialRatio()));
-	connect(ui.heigthTrialLE, SIGNAL(editingFinished()), this, SLOT(heigth2WidthTrialRatio()));
-	connect(ui.widthPlotLE, SIGNAL(editingFinished()), this, SLOT(width2HeigthPlotRatio()));
-	connect(ui.heigthPlotLE, SIGNAL(editingFinished()), this, SLOT(heigth2WidthPlotRatio()));
+    connect(ui.widthTrialLE, &QLineEdit::editingFinished, this, &picOptions::width2HeigthTrialRatio);
+    connect(ui.heigthTrialLE, &QLineEdit::editingFinished, this, &picOptions::heigth2WidthTrialRatio);
+    connect(ui.widthPlotLE, &QLineEdit::editingFinished, this, &picOptions::width2HeigthPlotRatio);
+    connect(ui.heigthPlotLE, &QLineEdit::editingFinished, this, &picOptions::heigth2WidthPlotRatio);
 	connect(ui.pushButton, &QPushButton::clicked, this, [&] { close(); });
 }
 
-void picOptions::getPicOption(picOption *picOpt)
+InsermLibrary::picOption picOptions::getPicOption()
 {
-	picOpt->sizeTrialmap.setWidth(atoi(ui.widthTrialLE->text().toStdString().c_str()));
-	picOpt->sizeTrialmap.setHeight(atoi(ui.heigthTrialLE->text().toStdString().c_str()));
-	picOpt->sizePlotmap.setWidth(atoi(ui.widthPlotLE->text().toStdString().c_str()));
-	picOpt->sizePlotmap.setHeight(atoi(ui.heigthPlotLE->text().toStdString().c_str()));
-	picOpt->interpolationtrialmap.setWidth(atoi(ui.horizInterpoLE->text().toStdString().c_str()));
-	picOpt->interpolationtrialmap.setHeight(atoi(ui.vertiInterpoLE->text().toStdString().c_str()));
+    InsermLibrary::picOption picOpt;
+	picOpt.sizeTrialmap.setWidth(atoi(ui.widthTrialLE->text().toStdString().c_str()));
+	picOpt.sizeTrialmap.setHeight(atoi(ui.heigthTrialLE->text().toStdString().c_str()));
+	picOpt.sizePlotmap.setWidth(atoi(ui.widthPlotLE->text().toStdString().c_str()));
+	picOpt.sizePlotmap.setHeight(atoi(ui.heigthPlotLE->text().toStdString().c_str()));
+	picOpt.interpolationtrialmap.setWidth(atoi(ui.horizInterpoLE->text().toStdString().c_str()));
+	picOpt.interpolationtrialmap.setHeight(atoi(ui.vertiInterpoLE->text().toStdString().c_str()));
+	return picOpt;
 }
 
 void picOptions::width2HeigthTrialRatio()

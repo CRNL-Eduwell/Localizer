@@ -1,6 +1,8 @@
 #include "barsPlotsGenerator.h"
 
 using namespace InsermLibrary::DrawbarsPlots;
+using namespace std;//nettoye tes conneries gros con , flo du 28/10/2019
+using namespace InsermLibrary;//nettoye tes conneries gros con , flo du 28/10/2019
 
 baseCanvas::baseCanvas(PROV *myprovFile, int width, int heigth)
 {
@@ -91,7 +93,7 @@ drawBars::~drawBars()
 
 }
 
-void drawBars::drawDataOnTemplate(vec3<float> &bigData, TRIGGINFO *triggCatEla, vec1<PVALUECOORD> significantValue, 
+void drawBars::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* triggerContainer, vec1<PVALUECOORD> significantValue,
 								  eegContainer* myeegContainer)
 {
 	int idCurrentElecDrawn = 0, nbFigureDrawn = 0, countBipole = 0;
@@ -99,16 +101,18 @@ void drawBars::drawDataOnTemplate(vec3<float> &bigData, TRIGGINFO *triggCatEla, 
 	QPixmap *pixmap = nullptr;
 	QColor drawRectColor;
 
-	int *windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency);
+	int *windowSam = myprovFile->getBiggestWindowSam(myeegContainer->DownsampledFrequency());
 	int nbRow = myprovFile->nbRow();
 
 	QString tifName = "";
 	vec1<float> erp = vec1<float>(nbRow);							vec1<float> lim = vec1<float>(nbRow);
 	vec1<float> erpP = vec1<float>(nbRow);							vec1<float> erpM = vec1<float>(nbRow);
 	vec1<float> erpPMax = vec1<float>(nbRow);						vec1<float> erpMMax = vec1<float>(nbRow);
-	vec1<bool> sizeSigCheck = vec1<bool>(significantValue.size());  vec2<float> data = vec2<float>(triggCatEla->triggers.size(), 
+	vec1<bool> sizeSigCheck = vec1<bool>(significantValue.size());  vec2<float> data = vec2<float>(triggerContainer->ProcessedTriggerCount(), 
 																					   vec1<float>(windowSam[1] - windowSam[0]));
 
+	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
+	std::vector<Trigger> Triggers = triggerContainer->ProcessedTriggers();
 	for (int i = 0; i < myeegContainer->electrodes.size(); i++)
 	{
 		idCurrentElecDrawn = i % nbElecPerFigure; 
@@ -138,11 +142,11 @@ void drawBars::drawDataOnTemplate(vec3<float> &bigData, TRIGGINFO *triggCatEla, 
 		{
 			if (j + 1 < myeegContainer->electrodes[i].id.size())
 			{
-				if (myeegContainer->bipoles[countBipole].positivLabel ==
+				if (myeegContainer->BipolePositivLabel(countBipole) ==
 					myeegContainer->electrodes[i].label + to_string(myeegContainer->electrodes[i].id[j + 1]))
 				{
 					//Extract Data
-					for (int k = 0; k < triggCatEla->triggers.size() ; k++)
+					for (int k = 0; k < triggerContainer->ProcessedTriggerCount(); k++)
 					{
 						for (int l = 0; l < windowSam[1] - windowSam[0]; l++)
 						{
@@ -154,12 +158,11 @@ void drawBars::drawDataOnTemplate(vec3<float> &bigData, TRIGGINFO *triggCatEla, 
 					//Loop accross conditions
 					for (int k = 0; k < nbRow; k++)
 					{
-						int lowTrigg = triggCatEla->subGroupStimTrials[k];
-						int highTrigg = triggCatEla->subGroupStimTrials[k + 1] - 1;
+						int lowTrigg = SubGroupStimTrials[k];
+						int highTrigg = SubGroupStimTrials[k + 1] - 1;
 						int currentMainCode = myprovFile->visuBlocs[k].mainEventBloc.eventCode[0];
 
-						if (triggCatEla->triggers[lowTrigg].trigger.code == currentMainCode &&
-							triggCatEla->triggers[highTrigg].trigger.code == currentMainCode)
+						if (Triggers[lowTrigg].MainCode() == currentMainCode && Triggers[highTrigg].MainCode() == currentMainCode)
 						{
 							vec1<float> dataCond = vec1<float>(highTrigg - lowTrigg);
 							for (int l = 0; l < (highTrigg - lowTrigg); l++)
@@ -324,7 +327,7 @@ drawPlots::~drawPlots()
 }
 
 //0 for mono, 1 for bipo , 2 for env2plot
-void drawPlots::drawDataOnTemplate(vec3<float> &bigData, TRIGGINFO *triggCatEla, eegContainer* myeegContainer, int card2Draw)
+void drawPlots::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* triggerContainer, eegContainer* myeegContainer, int card2Draw)
 {
 	int idCurrentElecDrawn = 0, nbFigureDrawn = 0, countBipole = 0;
 	QPainter *painter = nullptr;
@@ -333,9 +336,9 @@ void drawPlots::drawDataOnTemplate(vec3<float> &bigData, TRIGGINFO *triggCatEla,
 	int *windowSam = nullptr; 
 	
 	if (card2Draw == 2)
-		windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.downsampledFrequency); 
+		windowSam = myprovFile->getBiggestWindowSam(myeegContainer->DownsampledFrequency());
 	else
-		windowSam = myprovFile->getBiggestWindowSam(myeegContainer->sampInfo.samplingFrequency);
+		windowSam = myprovFile->getBiggestWindowSam(myeegContainer->SamplingFrequency());
 	
 	int nbRow = myprovFile->nbRow();
 
@@ -345,12 +348,15 @@ void drawPlots::drawDataOnTemplate(vec3<float> &bigData, TRIGGINFO *triggCatEla,
 	vec1<float> sem = vec1<float>(windowSam[1] - windowSam[0]);
 	vec1<float> lim = vec1<float>(windowSam[1] - windowSam[0]);
 
-	vec2<float> data = vec2<float>(triggCatEla->triggers.size(), vec1<float>(windowSam[1] - windowSam[0]));
+	vec2<float> data = vec2<float>(triggerContainer->ProcessedTriggerCount(), vec1<float>(windowSam[1] - windowSam[0]));
 	vec2<float> m_erp = vec2<float>(nbRow, vec1<float>(windowSam[1] - windowSam[0]));
 	vec2<float> m_lim = vec2<float>(nbRow, vec1<float>(windowSam[1] - windowSam[0]));
 	vec2<float> m_erpP = vec2<float>(nbRow, vec1<float>(windowSam[1] - windowSam[0]));
 	vec2<float> m_erpM = vec2<float>(nbRow, vec1<float>(windowSam[1] - windowSam[0]));
 
+
+	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
+	std::vector<Trigger> Triggers = triggerContainer->ProcessedTriggers();
 	for (int i = 0; i < myeegContainer->electrodes.size(); i++)
 	{
 		idCurrentElecDrawn = i % nbElecPerFigure;
@@ -398,14 +404,14 @@ void drawPlots::drawDataOnTemplate(vec3<float> &bigData, TRIGGINFO *triggCatEla,
 				}
 				else
 				{
-					goIn = myeegContainer->bipoles[countBipole].positivLabel ==
-		  				   myeegContainer->electrodes[i].label + to_string(myeegContainer->electrodes[i].id[j + 1]);
+					goIn = myeegContainer->BipolePositivLabel(countBipole) ==
+						myeegContainer->electrodes[i].label + to_string(myeegContainer->electrodes[i].id[j + 1]);
 				}
 
 				if (goIn)
 				{
 					//Extract Data
-					for (int k = 0; k < triggCatEla->triggers.size(); k++)
+					for (int k = 0; k < triggerContainer->ProcessedTriggerCount(); k++)
 					{
 						for (int l = 0; l < windowSam[1] - windowSam[0]; l++)
 						{
@@ -417,12 +423,11 @@ void drawPlots::drawDataOnTemplate(vec3<float> &bigData, TRIGGINFO *triggCatEla,
 					//Loop accross conditions
 					for (int k = 0; k < nbRow; k++)
 					{
-						int lowTrigg = triggCatEla->subGroupStimTrials[k];
-						int highTrigg = triggCatEla->subGroupStimTrials[k + 1] - 1;
+						int lowTrigg = SubGroupStimTrials[k];
+						int highTrigg = SubGroupStimTrials[k + 1] - 1;
 						int currentMainCode = myprovFile->visuBlocs[k].mainEventBloc.eventCode[0];
 
-						if (triggCatEla->triggers[lowTrigg].trigger.code == currentMainCode &&
-							triggCatEla->triggers[highTrigg].trigger.code == currentMainCode)
+						if (Triggers[lowTrigg].MainCode() == currentMainCode && Triggers[highTrigg].MainCode() == currentMainCode)
 						{
 							vec2<float> dataCond = vec2<float>(highTrigg - lowTrigg, vec1<float>(windowSam[1] - windowSam[0]));
 							for (int l = 0; l < dataCond.size(); l++)

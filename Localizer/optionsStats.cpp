@@ -1,5 +1,7 @@
 #include "optionsStats.h"
 
+using namespace InsermLibrary;
+
 optionsStats::optionsStats(QWidget *parent) : QDialog(parent)
 {
 	ui.setupUi(this);
@@ -12,38 +14,40 @@ optionsStats::~optionsStats()
 
 }
 
-void optionsStats::getStatOption(statOption *statOpt)
+statOption optionsStats::getStatOption()
 {
-	statOpt->kruskall = ui.pCheckBoxKW->isChecked();
-	statOpt->FDRkruskall = ui.FDRCheckBoxKW->isChecked();
-	statOpt->pKruskall = atof(&ui.pValueLE_KW->text().toStdString()[0]);
-	statOpt->locaKruskall = vector<QString>(wantedLocaKW);
-	statOpt->wilcoxon = ui.pCheckBoxWil->isChecked();
-	statOpt->FDRwilcoxon = ui.FDRCheckBoxWil->isChecked();
-	statOpt->pWilcoxon = atof(&ui.pValueLE_Wil->text().toStdString()[0]);
-	statOpt->locaWilcoxon = vector<QString>(wantedLocaWil);
+	statOption statOpt;
+	statOpt.kruskall = ui.pCheckBoxKW->isChecked();
+	statOpt.FDRkruskall = ui.FDRCheckBoxKW->isChecked();
+	statOpt.pKruskall = atof(&ui.pValueLE_KW->text().toStdString()[0]);
+	statOpt.locaKruskall = std::vector<QString>(wantedLocaKW);
+	statOpt.wilcoxon = ui.pCheckBoxWil->isChecked();
+	statOpt.FDRwilcoxon = ui.FDRCheckBoxWil->isChecked();
+	statOpt.pWilcoxon = atof(&ui.pValueLE_Wil->text().toStdString()[0]);
+	statOpt.locaWilcoxon = std::vector<QString>(wantedLocaWil);
+	return statOpt;
 }
 
 void optionsStats::connectSignals()
 {
 	connect(ui.addKW, &QPushButton::clicked, this, [&] { toggle = true; });
 	connect(ui.removeKW, &QPushButton::clicked, this, [&] { toggle = true; });
-	connect(ui.addKW, SIGNAL(clicked()), this, SLOT(openProvWindow()));
-	connect(ui.removeKW, SIGNAL(clicked()), this, SLOT(deleteProvFromList()));
-	connect(ui.pValueLE_KW, SIGNAL(editingFinished()), this, SLOT(pValueKruskall()));
-	connect(ui.pCheckBoxKW, SIGNAL(clicked()), this, SLOT(updateKWOpt()));
+    connect(ui.addKW, &QPushButton::clicked, this, &optionsStats::openProvWindow);
+    connect(ui.removeKW, &QPushButton::clicked, this, &optionsStats::deleteProvFromList);
+    connect(ui.pValueLE_KW, &QLineEdit::editingFinished, this, &optionsStats::pValueKruskall);
+    connect(ui.pCheckBoxKW, &QPushButton::clicked, this, &optionsStats::updateKWOpt);
 	//==
 	connect(ui.addtestWil, &QPushButton::clicked, this, [&] { toggle = false; });
 	connect(ui.removeWil, &QPushButton::clicked, this, [&] { toggle = false; });
-	connect(ui.addtestWil, SIGNAL(clicked()), this, SLOT(openProvWindow()));
-	connect(ui.removeWil, SIGNAL(clicked()), this, SLOT(deleteProvFromList()));
-	connect(ui.pValueLE_Wil, SIGNAL(editingFinished()), this, SLOT(pValueWilcoxon()));
-	connect(ui.pCheckBoxWil, SIGNAL(clicked()), this, SLOT(updateWilOpt()));
+    connect(ui.addtestWil, &QPushButton::clicked, this, &optionsStats::openProvWindow);
+    connect(ui.removeWil, &QPushButton::clicked, this, &optionsStats::deleteProvFromList);
+    connect(ui.pValueLE_Wil, &QLineEdit::editingFinished, this, &optionsStats::pValueWilcoxon);
+    connect(ui.pCheckBoxWil, &QPushButton::clicked, this, &optionsStats::updateWilOpt);
 	//==
 	connect(ui.okPushButton, &QPushButton::clicked, this, &optionsStats::saveListsandClose);
 }
 
-void optionsStats::displayLoca(QListWidget *uiList, vector<QString> wantedLoca)
+void optionsStats::displayLoca(QListWidget *uiList, std::vector<QString> wantedLoca)
 {
 	uiList->clear();
 
@@ -59,13 +63,13 @@ void optionsStats::readList()
 	wantedLocaKW.clear();
 	wantedLocaWil.clear();
 
-	vector<string> locaFromFileKW = readTxtFile(kwFilePath.toStdString());
+	std::vector<std::string> locaFromFileKW = readTxtFile(kwFilePath.toStdString());
 	for (int i = 0; i < locaFromFileKW.size(); i++)
 	{
 		wantedLocaKW.push_back(locaFromFileKW[i].c_str());
 	}
 
-	vector<string> locaFromFileWil = readTxtFile(wilFilePath.toStdString());
+	std::vector<std::string> locaFromFileWil = readTxtFile(wilFilePath.toStdString());
 	for (int i = 0; i < locaFromFileWil.size(); i++)
 	{
 		wantedLocaWil.push_back(locaFromFileWil[i].c_str());
@@ -122,12 +126,12 @@ void optionsStats::deleteProvFromList()
 
 }
 
-void optionsStats::getProvList(vector<QString> provList)
+void optionsStats::getProvList(std::vector<QString> provList)
 {
 	if(toggle)
-		wantedLocaKW = vector<QString>(provList);
+		wantedLocaKW = std::vector<QString>(provList);
 	else
-		wantedLocaWil = vector<QString>(provList);
+		wantedLocaWil = std::vector<QString>(provList);
 }
 
 void optionsStats::saveListsandClose()

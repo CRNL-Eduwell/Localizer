@@ -5,10 +5,9 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <cmath>
 #include "Utility.h"
 #include "PROVParameters.h"
-
-using namespace std;
 
 namespace InsermLibrary
 {
@@ -16,13 +15,13 @@ namespace InsermLibrary
 	{
 	public:
 		PROV();
-		PROV(string provFilePath);
+        PROV(std::string provFilePath);
 		~PROV();
 		//==
 		int nbCol();
 		int nbRow();
-		vector<int> getMainCodes();
-		vector<vector<int>> getSecondaryCodes();
+        std::vector<int> getMainCodes();
+        std::vector<std::vector<int>> getSecondaryCodes();
 		int *getBiggestWindowMs();
 		int *getBiggestWindowSam(int samplingFreq);
 		int *getWindowMs(int idBloc);
@@ -39,18 +38,18 @@ namespace InsermLibrary
 		void saveFile();
 		void saveFile(std::string rootFolder, std::string fileName);
 	private:
-		void extractProvBloc(string provFilePath);
-		vector<string> asciiDataProv(string provFilePath);
+        void extractProvBloc(std::string provFilePath);
+        std::vector<std::string> asciiDataProv(std::string provFilePath);
 		void getRightOrderBloc();
 	public:
-		vector<int> rightOrderBlocs;
-		vector<BLOC> visuBlocs;
+        std::vector<int> rightOrderBlocs;
+        std::vector<BLOC> visuBlocs;
 		invertMap invertmaps;
-		string changeCodeFilePath = "";
-		string invertmapsinfo = "";
+        std::string changeCodeFilePath = "";
+        std::string invertmapsinfo = "";
 
 	private:
-		string m_filePath = "";
+        std::string m_filePath = "";
 	};
 }
 

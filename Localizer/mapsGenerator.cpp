@@ -1,6 +1,8 @@
 #include "mapsGenerator.h"
 
 using namespace InsermLibrary::DrawCard;
+using namespace std;//nettoye tes conneries gros con , flo du 28/10/2019
+using namespace InsermLibrary;//nettoye tes conneries gros con , flo du 28/10/2019
 
 mapsGenerator::mapsGenerator(int width, int heigth)
 {

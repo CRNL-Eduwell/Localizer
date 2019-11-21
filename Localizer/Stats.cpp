@@ -1,26 +1,28 @@
 #include "Stats.h"
 
-void InsermLibrary::Stats::pValuesWilcoxon(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata, 
-										   TRIGGINFO *triggCatEla, int samplingFreq, PROV *myprovFile)
+using namespace std;
+using namespace InsermLibrary;
+
+void InsermLibrary::Stats::pValuesWilcoxon(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata, TriggerContainer* triggerContainer, int samplingFreq, PROV *myprovFile)
 {
+	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
 	for (int i = 0; i < bigdata.size(); i++)
 	{
 		vec2<float> p_valueBig;
 		vec2<int> p_signeBig;
 		for (int j = 0; j < myprovFile->visuBlocs.size() - 1; j++)
 		{
-			int lowTrial = triggCatEla->subGroupStimTrials[j];
-			int highTrial = triggCatEla->subGroupStimTrials[j + 1];
+			int lowTrial = SubGroupStimTrials[j];
+			int highTrial = SubGroupStimTrials[j + 1];
 			int numberSubTrial = highTrial - lowTrial;
 
-			vec1<float> baseLine = getBaselineBlocWilcoxon(i, lowTrial, numberSubTrial, samplingFreq, 
-															  myprovFile->visuBlocs[j].dispBloc,bigdata);
+			vec1<float> baseLine = getBaselineBlocWilcoxon(i, lowTrial, numberSubTrial, samplingFreq, myprovFile->visuBlocs[j].dispBloc, bigdata);
 			vec2<float> eegDataBig = getEegDataBlocWilcoxon(i, lowTrial, numberSubTrial, samplingFreq, j, myprovFile, bigdata);
 
 			vec1<float> p_value;
 			for (int l = 0; l < eegDataBig.size(); l++)
 			{
-				p_value.push_back(wilcoxon(baseLine, eegDataBig[l]));
+				p_value.push_back(Framework::Calculations::Stats::wilcoxon(baseLine, eegDataBig[l]));
 			}
 			p_valueBig.push_back(p_value);
 
@@ -31,14 +33,13 @@ void InsermLibrary::Stats::pValuesWilcoxon(vec3<float> &pValue3D, vec3<int> &pSi
 	}
 }
 
-void InsermLibrary::Stats::pValuesKruskall(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata,
-										   TRIGGINFO *triggCatEla, int samplingFreq, PROV *myprovFile)
+void InsermLibrary::Stats::pValuesKruskall(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata, TriggerContainer* triggerContainer, int samplingFreq, PROV *myprovFile)
 {
 	int *windowSam = myprovFile->getBiggestWindowSam(samplingFreq);
 	for (int i = 0; i < bigdata[0].size(); i++)
 	{
-		vec1<float> baseLineData = getBaselineKruskall(bigdata, triggCatEla, i, windowSam);
-		vec2<float> eegDataBig = getEEGDataKruskall(bigdata, triggCatEla, i, windowSam);
+		vec1<float> baseLineData = getBaselineKruskall(bigdata, triggerContainer, i, windowSam);
+		vec2<float> eegDataBig = getEEGDataKruskall(bigdata, triggerContainer, i, windowSam);
 		pValue3D.push_back(getPValuesKruskall(baseLineData, eegDataBig));
 		pSign3D.push_back(getEegSignKruskall(baseLineData, eegDataBig));
 	}
@@ -145,16 +146,16 @@ void InsermLibrary::Stats::exportStatsData(eegContainer *myEegContainer, PROV *m
 {
 	ofstream fichierSt(outputFolder + "/statLoca.csv", ios::out);
 	fichierSt << " " << ";";
-	for (int i = 0; i < myEegContainer->bipoles.size(); i++)
+	for (int i = 0; i < myEegContainer->BipoleCount(); i++)
 	{
-		fichierSt << myEegContainer->flatElectrodes[myEegContainer->bipoles[i].positivElecId] << ";";
+		fichierSt << myEegContainer->flatElectrodes[myEegContainer->Bipole(i).first] << ";";
 	}
 	fichierSt << endl;
 
 	for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
 	{
 		fichierSt << myprovFile->visuBlocs[j].mainEventBloc.eventLabel << ";";
-		for (int i = 0; i < myEegContainer->bipoles.size(); i++)
+		for (int i = 0; i < myEegContainer->BipoleCount(); i++)
 		{
 			vector<int> indexes;
 			for (int z = 0; z < pValues.size(); z++)
@@ -282,11 +283,13 @@ vec1<int> InsermLibrary::Stats::getEegSignBlocWilcoxon(vec1<float> &baseLine, ve
 	return valueSigne;
 }
 
-vec1<float> InsermLibrary::Stats::getBaselineKruskall(vec3<float> &bigdata, TRIGGINFO *triggCatEla, int currentChanel,
-																									 int* windowSam)
+vec1<float> InsermLibrary::Stats::getBaselineKruskall(vec3<float> &bigdata, TriggerContainer* triggerContainer, int currentChanel, int* windowSam)
 {
-	int lowTrial = triggCatEla->subGroupStimTrials[triggCatEla->subGroupStimTrials.size() - 2];
-	int highTrial = triggCatEla->subGroupStimTrials[triggCatEla->subGroupStimTrials.size() - 1];
+	int SubGroupCount = triggerContainer->SubGroupStimTrials().size();
+	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
+
+	int lowTrial = SubGroupStimTrials[SubGroupCount - 2];
+	int highTrial = SubGroupStimTrials[SubGroupCount - 1];
 	int numberSubTrial = highTrial - lowTrial;
 
 	vec1<float> baseLineData;
@@ -305,13 +308,16 @@ vec1<float> InsermLibrary::Stats::getBaselineKruskall(vec3<float> &bigdata, TRIG
 	return baseLineData;
 }
 
-vec2<float> InsermLibrary::Stats::getEEGDataKruskall(vec3<float> &bigdata, TRIGGINFO *triggCatEla, int currentChanel, int* windowSam)
+vec2<float> InsermLibrary::Stats::getEEGDataKruskall(vec3<float> &bigdata, TriggerContainer* triggerContainer, int currentChanel, int* windowSam)
 {
+	int SubGroupCount = triggerContainer->SubGroupStimTrials().size();
+	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
+
 	vec2<float> eegDataBig;
-	for (int j = 0; j < triggCatEla->subGroupStimTrials.size() - 2; j++)
+	for (int j = 0; j < SubGroupCount - 2; j++)
 	{
-		int lowTrial = triggCatEla->subGroupStimTrials[j];
-		int highTrial = triggCatEla->subGroupStimTrials[j + 1];
+		int lowTrial = SubGroupStimTrials[j];
+		int highTrial = SubGroupStimTrials[j + 1];
 		int numberSubTrial = highTrial - lowTrial;
 
 		vec1<float> eegData;
@@ -347,7 +353,7 @@ vec2<float> InsermLibrary::Stats::getPValuesKruskall(vec1<float> &baseLineData, 
 		nbSamplePerGroup[0] = eegData[j].size();
 		nbSamplePerGroup[1] = eegData[j].size();
 
-		kruskal_wallis(dataArray, 2, nbSamplePerGroup, &H, &p, 1);
+		Framework::Calculations::Stats::kruskal_wallis(dataArray, 2, nbSamplePerGroup, &H, &p, 1);
 		pValue.push_back(p);
 	}
 	pValueBig.push_back(pValue);

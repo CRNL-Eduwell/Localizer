@@ -5,7 +5,7 @@ InsermLibrary::PROV::PROV()
 
 }
 
-InsermLibrary::PROV::PROV(string provFilePath)
+InsermLibrary::PROV::PROV(std::string provFilePath)
 {
 	m_filePath = provFilePath;
 	extractProvBloc(m_filePath);
@@ -52,9 +52,9 @@ int InsermLibrary::PROV::nbRow()
 	return max;
 }
 
-vector<int> InsermLibrary::PROV::getMainCodes()
+std::vector<int> InsermLibrary::PROV::getMainCodes()
 {
-	vector<int> mainEventsCode;
+    std::vector<int> mainEventsCode;
 	for (int m = 0; m < visuBlocs.size(); m++)
 	{
 		if (find(mainEventsCode.begin(), mainEventsCode.end(), visuBlocs[m].mainEventBloc.eventCode[0]) == mainEventsCode.end())
@@ -65,12 +65,12 @@ vector<int> InsermLibrary::PROV::getMainCodes()
 	return mainEventsCode;
 }
 
-vector<vector<int>> InsermLibrary::PROV::getSecondaryCodes()
+std::vector<std::vector<int>> InsermLibrary::PROV::getSecondaryCodes()
 {
-	vector<vector<int>> respEventsCode;
+    std::vector<std::vector<int>> respEventsCode;
 	for (int m = 0; m < visuBlocs.size(); m++)
 	{
-		vector<int> blocCodes;
+        std::vector<int> blocCodes;
 		for (int j = 0; j < visuBlocs[m].secondaryEvents.size(); j++)
 		{
 			for (int n = 0; n < visuBlocs[m].secondaryEvents[j].eventCode.size(); n++)
@@ -91,8 +91,8 @@ int *InsermLibrary::PROV::getBiggestWindowMs()
 	int window_ms[2]{ 0,0 }; 
 	for (int i = 0; i < visuBlocs.size(); i++)
 	{
-		window_ms[0] = min(window_ms[0], visuBlocs[i].dispBloc.windowMin());
-		window_ms[1] = max(window_ms[1], visuBlocs[i].dispBloc.windowMax());
+        window_ms[0] = std::min(window_ms[0], visuBlocs[i].dispBloc.windowMin());
+        window_ms[1] = std::max(window_ms[1], visuBlocs[i].dispBloc.windowMax());
 	}
 
 	return new int[2]{ window_ms[0], window_ms[1] };
@@ -102,7 +102,7 @@ int *InsermLibrary::PROV::getBiggestWindowSam(int samplingFreq)
 {
 	int window_sam[2]{ 0,0 };
 	int *window_ms = getBiggestWindowMs();
-	window_sam[0] = round((samplingFreq * window_ms[0]) / 1000);
+    window_sam[0] = round((samplingFreq * window_ms[0]) / 1000);
 	window_sam[1] = round((samplingFreq * window_ms[1]) / 1000);
 	delete window_ms;
 
@@ -195,11 +195,11 @@ void InsermLibrary::PROV::saveFile()
 {
 	if (m_filePath != "")
 	{
-		ofstream provStream(m_filePath, ios::out);
+        std::ofstream provStream(m_filePath, std::ios::out);
 
 		provStream << "ROW" << ";" << "COL" << ";" << "Name" << ";" << "Path" << ";" << "Window" << ";"
 				   << "Baseline" << ";" << "Main Event" << ";" << "Main Event Label" << ";"
-				   << "Secondary Events" << ";" << "Secondary Events Label" << ";" << "Sort" << endl;
+                   << "Secondary Events" << ";" << "Secondary Events Label" << ";" << "Sort" << std::endl;
 		for (int i = 0; i < visuBlocs.size(); i++)
 		{
 			provStream << visuBlocs[i].dispBloc.row() << ";"
@@ -212,25 +212,25 @@ void InsermLibrary::PROV::saveFile()
 				<< visuBlocs[i].mainEventBloc.eventLabel << ";"
 				<< visuBlocs[i].secondaryEvents[0].eventCode[0] << ";"
 				<< visuBlocs[i].secondaryEvents[0].eventLabel << ";"
-				<< visuBlocs[i].dispBloc.sort() << endl;
+                << visuBlocs[i].dispBloc.sort() << std::endl;
 		}
 
 		if (changeCodeFilePath == "")
 		{
-			provStream << "NO_CHANGE_CODE" << endl;
+            provStream << "NO_CHANGE_CODE" << std::endl;
 		}
 		else
 		{
-			provStream << changeCodeFilePath << endl;
+            provStream << changeCodeFilePath << std::endl;
 		}
 
 		if (invertmaps.epochWindow[0] == invertmaps.epochWindow[1] == invertmaps.baseLineWindow[0] == invertmaps.baseLineWindow[1] == 0)
 		{
-			provStream << "NO_INVERT" << endl;
+            provStream << "NO_INVERT" << std::endl;
 		}
 		else
 		{
-			provStream << invertmaps.epochWindow[0] << ":" << invertmaps.epochWindow[1] << "|" << invertmaps.baseLineWindow[0] << ":" << invertmaps.baseLineWindow[1] << endl;
+            provStream << invertmaps.epochWindow[0] << ":" << invertmaps.epochWindow[1] << "|" << invertmaps.baseLineWindow[0] << ":" << invertmaps.baseLineWindow[1] << std::endl;
 		}
 
 		provStream.close();
@@ -242,11 +242,11 @@ void InsermLibrary::PROV::saveFile(std::string rootFolder, std::string fileName)
 	std::string filePath = rootFolder + "/" + fileName + ".prov";
 	if (filePath != "")
 	{
-		ofstream provStream(filePath, ios::out);
+        std::ofstream provStream(filePath, std::ios::out);
 
 		provStream << "ROW" << ";" << "COL" << ";" << "Name" << ";" << "Path" << ";" << "Window" << ";"
 			<< "Baseline" << ";" << "Main Event" << ";" << "Main Event Label" << ";"
-			<< "Secondary Events" << ";" << "Secondary Events Label" << ";" << "Sort" << endl;
+            << "Secondary Events" << ";" << "Secondary Events Label" << ";" << "Sort" << std::endl;
 		for (int i = 0; i < visuBlocs.size(); i++)
 		{
 			provStream << visuBlocs[i].dispBloc.row() << ";"
@@ -259,25 +259,25 @@ void InsermLibrary::PROV::saveFile(std::string rootFolder, std::string fileName)
 				<< visuBlocs[i].mainEventBloc.eventLabel << ";"
 				<< visuBlocs[i].secondaryEvents[0].eventCode[0] << ";"
 				<< visuBlocs[i].secondaryEvents[0].eventLabel << ";"
-				<< visuBlocs[i].dispBloc.sort() << endl;
+                << visuBlocs[i].dispBloc.sort() << std::endl;
 		}
 
 		if (changeCodeFilePath == "")
 		{
-			provStream << "NO_CHANGE_CODE" << endl;
+            provStream << "NO_CHANGE_CODE" << std::endl;
 		}
 		else
 		{
-			provStream << changeCodeFilePath << endl;
+            provStream << changeCodeFilePath << std::endl;
 		}
 
 		if (invertmaps.epochWindow[0] == invertmaps.epochWindow[1] == invertmaps.baseLineWindow[0] == invertmaps.baseLineWindow[1] == 0)
 		{
-			provStream << "NO_INVERT" << endl;
+            provStream << "NO_INVERT" << std::endl;
 		}
 		else
 		{
-			provStream << invertmaps.epochWindow[0] << ":" << invertmaps.epochWindow[1] << "|" << invertmaps.baseLineWindow[0] << ":" << invertmaps.baseLineWindow[1] << endl;
+            provStream << invertmaps.epochWindow[0] << ":" << invertmaps.epochWindow[1] << "|" << invertmaps.baseLineWindow[0] << ":" << invertmaps.baseLineWindow[1] << std::endl;
 		}
 
 		provStream.close();
@@ -286,17 +286,17 @@ void InsermLibrary::PROV::saveFile(std::string rootFolder, std::string fileName)
 
 //=== PRIVATE
 
-void InsermLibrary::PROV::extractProvBloc(string provFilePath)
+void InsermLibrary::PROV::extractProvBloc(std::string provFilePath)
 {
-	string rootFolder = GetCurrentWorkingDir();
+    std::string rootFolder = GetCurrentWorkingDir();
 
-	vector<string> myAsciiData = asciiDataProv(provFilePath);
+    std::vector<std::string> myAsciiData = asciiDataProv(provFilePath);
 	int nbVisuBloc = (int)myAsciiData.size() - 3; //First line is legend, last line is possible changePath 
 
 	for (int i = 0; i < nbVisuBloc; i++)
 	{
 		BLOC currentBloc;
-		vector<string> currentAsciiBloc = split<string>(myAsciiData[i + 1], ";"); // First line is legend, don't care
+        std::vector<std::string> currentAsciiBloc = split<std::string>(myAsciiData[i + 1], ";"); // First line is legend, don't care
 		for (int j = 0; j < currentAsciiBloc.size(); j++)
 		{
 			switch (j)
@@ -311,11 +311,11 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 				currentBloc.dispBloc.name(currentAsciiBloc[2]);
 				break;
 			case 3:
-				currentBloc.dispBloc.path(string(rootFolder + currentAsciiBloc[3]));
+                currentBloc.dispBloc.path(std::string(rootFolder + currentAsciiBloc[3]));
 				break;
 			case 4:
 			{
-				vector<string> currentEpochWin = split<string>(currentAsciiBloc[4], ":");
+                std::vector<std::string> currentEpochWin = split<std::string>(currentAsciiBloc[4], ":");
 				if (currentEpochWin.size() == 2)
 				{
 					currentBloc.dispBloc.window(atoi(&(currentEpochWin[0])[0]), atoi(&(currentEpochWin[1])[0]));
@@ -323,13 +323,13 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 				else
 				{
 					currentBloc.dispBloc.window(0, 0);
-					cout << "Attention, probleme de fenetre" << endl;
+                    std::cout << "Attention, probleme de fenetre" << std::endl;
 				}
 				break;
 			}
 			case 5:
 			{
-				vector<string> currentBaseLineWin = split<string>(currentAsciiBloc[5], ":");
+                std::vector<std::string> currentBaseLineWin = split<std::string>(currentAsciiBloc[5], ":");
 				if (currentBaseLineWin.size() == 2)
 				{
 					currentBloc.dispBloc.baseLine(atoi(&(currentBaseLineWin[0])[0]), atoi(&(currentBaseLineWin[1])[0]));
@@ -337,13 +337,13 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 				else
 				{
 					currentBloc.dispBloc.baseLine(0, 0);
-					cout << "Attention, probleme de fenetre baseline" << endl;
+                    std::cout << "Attention, probleme de fenetre baseline" << std::endl;
 				}
 				break;
 			}
 			case 6:
 			{
-				vector<string> mainEventSplit = split<string>(currentAsciiBloc[6], "_");
+                std::vector<std::string> mainEventSplit = split<std::string>(currentAsciiBloc[6], "_");
 				for (int k = 0; k < mainEventSplit.size(); k++)
 				{
 					currentBloc.mainEventBloc.eventCode.push_back(atoi(&(mainEventSplit[k])[0]));
@@ -355,11 +355,11 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 				break;
 			case 8:
 			{
-				vector<string> secondaryEventsSplit = split<string>(currentAsciiBloc[8], ":");
+                std::vector<std::string> secondaryEventsSplit = split<std::string>(currentAsciiBloc[8], ":");
 				for (int k = 0; k < secondaryEventsSplit.size(); k++)
 				{
 					EventBLOC currentSecondaryBloc;
-					vector<string> secondaryEventsSecondSplit = split<string>(secondaryEventsSplit[k], ":");
+                    std::vector<std::string> secondaryEventsSecondSplit = split<std::string>(secondaryEventsSplit[k], ":");
 					for (int l = 0; l < secondaryEventsSecondSplit.size(); l++)
 					{
 						currentSecondaryBloc.eventCode.push_back(atoi(&(secondaryEventsSecondSplit[l])[0]));
@@ -377,7 +377,7 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 				currentBloc.dispBloc.sort(currentAsciiBloc[10]);
 				break;
 			default:
-				cout << "Attention, probleme" << endl;
+                std::cout << "Attention, probleme" << std::endl;
 				break;
 			}
 		}
@@ -387,7 +387,7 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 
 	if (myAsciiData[nbVisuBloc + 1] != "NO_CHANGE_CODE")
 	{
-		changeCodeFilePath = string(rootFolder + myAsciiData[nbVisuBloc + 1]);
+        changeCodeFilePath = std::string(rootFolder + myAsciiData[nbVisuBloc + 1]);
 	}
 	else
 	{
@@ -397,12 +397,12 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 	if (myAsciiData[nbVisuBloc + 2] != "NO_INVERT")
 	{
 		invertmapsinfo = myAsciiData[nbVisuBloc + 2];
-		vector<string>splitInvertWin = split<string>(invertmapsinfo, "|");
+        std::vector<std::string>splitInvertWin = split<std::string>(invertmapsinfo, "|");
 
-		vector<string>splitInvertEpochWin = split<string>(splitInvertWin[0], ":");
+        std::vector<std::string>splitInvertEpochWin = split<std::string>(splitInvertWin[0], ":");
 		invertmaps.epochWindow[0] = atoi(&splitInvertEpochWin[0][0]);
 		invertmaps.epochWindow[1] = atoi(&splitInvertEpochWin[1][0]);
-		vector<string>splitInvertBaseLineWin = split<string>(splitInvertWin[1], ":");
+        std::vector<std::string>splitInvertBaseLineWin = split<std::string>(splitInvertWin[1], ":");
 		invertmaps.baseLineWindow[0] = atoi(&splitInvertBaseLineWin[0][0]);
 		invertmaps.baseLineWindow[1] = atoi(&splitInvertBaseLineWin[1][0]);
 	}
@@ -416,10 +416,10 @@ void InsermLibrary::PROV::extractProvBloc(string provFilePath)
 	}
 }
 
-vector<string> InsermLibrary::PROV::asciiDataProv(string provFilePath)
+std::vector<std::string> InsermLibrary::PROV::asciiDataProv(std::string provFilePath)
 {
-	stringstream buffer;																																																      //
-	ifstream provFile(provFilePath, ios::binary);																						   											                                                  //
+    std::stringstream buffer;																																																      //
+    std::ifstream provFile(provFilePath, std::ios::binary);																						   											                                                  //
 	if (provFile)																																																						      //
 	{																																																									      //
 		buffer << provFile.rdbuf();																																																		      //
@@ -427,9 +427,9 @@ vector<string> InsermLibrary::PROV::asciiDataProv(string provFilePath)
 	}																																																									      //
 	else																																																								      //
 	{ 																																																									      //
-		cout << " Error opening Prov File @ " << provFilePath << endl;																																					      //
+        std::cout << " Error opening Prov File @ " << provFilePath << std::endl;																																					      //
 	}
-	return split<string>(buffer.str(), "\r\n");
+    return split<std::string>(buffer.str(), "\r\n");
 }
 
 //Get the right order of bloc in case prov file is in disorder

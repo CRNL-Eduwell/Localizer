@@ -1,0 +1,529 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;cxx;c;def</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{79007639-39bd-4a68-8459-bdd3c29ebcd8}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{80fb71fe-f55a-48f9-ad42-8365274589e2}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Header Files\GUI">
+      <UniqueIdentifier>{cd16a60f-9c5c-4799-8e52-9b4fa62f853a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI">
+      <UniqueIdentifier>{326a294d-bf31-43d0-ae47-63765b93539e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools">
+      <UniqueIdentifier>{c9b2494b-4517-43ac-bba1-07182c2896b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Tools">
+      <UniqueIdentifier>{f25f48c4-bf89-4a83-827e-b69c9c2a9dfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Draw">
+      <UniqueIdentifier>{788f93d2-a5c1-4110-a586-3d8c1fd8a59c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Draw">
+      <UniqueIdentifier>{bcd67d41-b8ef-45dd-8dda-0ccc821e6d4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\QtUiElement">
+      <UniqueIdentifier>{5ee193b2-a244-4220-a545-2bd4359d6d8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\QtUiElement">
+      <UniqueIdentifier>{f8a199f8-bb29-4fbf-8a98-70b2f3b6edfa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Workers">
+      <UniqueIdentifier>{1cb6765c-d854-4171-9847-1b316b68c6f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Workers">
+      <UniqueIdentifier>{ebfb0042-c55c-4872-8d3c-bfadb1503e5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\DataBrowse">
+      <UniqueIdentifier>{ca7a1018-2147-41d5-8809-696a8646df14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\EegFiles">
+      <UniqueIdentifier>{5a977d77-da83-4e96-ac30-cb962d934b1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OptFiles">
+      <UniqueIdentifier>{270b326f-b4ca-4cc4-a0bd-7aa083f98093}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PROV">
+      <UniqueIdentifier>{806a7b7e-7325-4c89-87dc-95a7465771d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PROV">
+      <UniqueIdentifier>{cfb90fb8-b953-48df-b8b0-49f668238067}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DataBrowse">
+      <UniqueIdentifier>{1bc11de0-0f03-45bd-93bf-b69873a36cb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\EegFiles">
+      <UniqueIdentifier>{5a1e4684-1961-4028-8283-30fdf6dd55aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OptFiles">
+      <UniqueIdentifier>{6db3647d-f132-4679-9953-9173dac3141a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Algorithm">
+      <UniqueIdentifier>{dcbe9a53-ae36-4f02-95d3-7071ac7ac50c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Algorithm\Strategy">
+      <UniqueIdentifier>{63fe25ad-5c94-40d8-a16e-0934d2b53caf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Algorithm">
+      <UniqueIdentifier>{b8ae76a1-91f9-4bfd-804f-718a023a359b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Algorithm\Strategy">
+      <UniqueIdentifier>{87136f4a-524b-409d-895e-a0e7bb09bfef}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_localizer.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_optionsStats.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_optionsStats.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_localizer.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_localizer.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="localizer.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="optionsStats.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_optionsPerf.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_optionsPerf.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="optionsPerf.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="displayProv.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_displayProv.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_displayProv.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_chooseElec.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_chooseElec.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="picOptions.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_picOptions.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_picOptions.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="LOCA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_LOCA.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_LOCA.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="eegContainer.cpp">
+      <Filter>Source Files\EegFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="patientFolder.cpp">
+      <Filter>Source Files\DataBrowse</Filter>
+    </ClCompile>
+    <ClCompile Include="singleFile.cpp">
+      <Filter>Source Files\DataBrowse</Filter>
+    </ClCompile>
+    <ClCompile Include="mapsGenerator.cpp">
+      <Filter>Source Files\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="barsPlotsGenerator.cpp">
+      <Filter>Source Files\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_form.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_form.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="PROV.cpp">
+      <Filter>Source Files\PROV</Filter>
+    </ClCompile>
+    <ClCompile Include="form.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_AboutDycog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_AboutDycog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="AboutDycog.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TriggerContainer.cpp">
+      <Filter>Source Files\EegFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="Trigger.cpp">
+      <Filter>Source Files\EegFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="DataContainer.cpp">
+      <Filter>Source Files\EegFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="Stats.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_DeselectableTreeView.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_DeselectableTreeView.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="DeselectableTreeView.cpp">
+      <Filter>Source Files\GUI\QtUiElement</Filter>
+    </ClCompile>
+    <ClCompile Include="ITxtFile.cpp">
+      <Filter>Source Files\OptFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="FrequencyFile.cpp">
+      <Filter>Source Files\OptFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_IWorker.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_IWorker.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="PatientFolderWorker.cpp">
+      <Filter>Source Files\Workers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_PatientFolderWorker.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_PatientFolderWorker.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="IWorker.cpp">
+      <Filter>Source Files\Workers</Filter>
+    </ClCompile>
+    <ClCompile Include="SingleFilesWorker.cpp">
+      <Filter>Source Files\Workers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_SingleFilesWorker.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_SingleFilesWorker.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ErpProcessor.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ErpProcessor.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ErpProcessor.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ErpWorker.cpp">
+      <Filter>Source Files\Workers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ErpWorker.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ErpWorker.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="FileConverterWorker.cpp">
+      <Filter>Source Files\Workers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_FileConverterWorker.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_FileConverterWorker.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_FileConverterProcessor.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_FileConverterProcessor.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="FileConverterProcessor.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="FrequencyBand.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="ConcatenationWorker.cpp">
+      <Filter>Source Files\Workers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ConcatenationWorker.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ConcatenationWorker.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="HilbertEnveloppe.cpp">
+      <Filter>Source Files\Algorithm\Strategy</Filter>
+    </ClCompile>
+    <ClCompile Include="AlgorithmStrategyFactory.cpp">
+      <Filter>Source Files\Algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="AlgorithmCalculator.cpp">
+      <Filter>Source Files\Algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ConnectCleaner.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="ConnectCleaner.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ConnectCleaner.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ElectrodeCleanerEdit.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ElectrodeCleanerEdit.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="CleanConnectFile.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="localizer.qrc">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="optionsStats.h">
+      <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="localizer.h">
+      <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="optionsPerf.h">
+      <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="localizer.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="optionsPerf.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="optionsStats.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="displayprov.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="displayProv.h">
+      <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="picOptions.h">
+      <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="picOptions.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="LOCA.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="form.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="form.h">
+      <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="AboutDycog.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="AboutDycog.h">
+      <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DeselectableTreeView.h">
+      <Filter>Header Files\GUI\QtUiElement</Filter>
+    </CustomBuild>
+    <CustomBuild Include="IWorker.h">
+      <Filter>Header Files\Workers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="PatientFolderWorker.h">
+      <Filter>Header Files\Workers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="SingleFilesWorker.h">
+      <Filter>Header Files\Workers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ErpProcessor.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ErpProcessor.h">
+      <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ErpWorker.h">
+      <Filter>Header Files\Workers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="FileConverterWorker.h">
+      <Filter>Header Files\Workers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="FileConverterProcessor.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="FileConverterProcessor.h">
+      <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ConcatenationWorker.h">
+      <Filter>Header Files\Workers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="IAlgorithmStrategy.h">
+      <Filter>Header Files\Algorithm\Strategy</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ConnectCleaner.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ConnectCleaner.h">
+      <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Utility.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_localizer.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_optionsPerf.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_optionsStats.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_displayprov.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_picOptions.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="eegContainer.h">
+      <Filter>Header Files\EegFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="eegContainerParameters.h">
+      <Filter>Header Files\EegFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="patientFolder.h">
+      <Filter>Header Files\DataBrowse</Filter>
+    </ClInclude>
+    <ClInclude Include="singleFile.h">
+      <Filter>Header Files\DataBrowse</Filter>
+    </ClInclude>
+    <ClInclude Include="mapsGenerator.h">
+      <Filter>Header Files\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="barsPlotsGenerator.h">
+      <Filter>Header Files\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="optionsParameters.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_form.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PROV.h">
+      <Filter>Header Files\PROV</Filter>
+    </ClInclude>
+    <ClInclude Include="PROVParameters.h">
+      <Filter>Header Files\PROV</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_AboutDycog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TriggerContainer.h">
+      <Filter>Header Files\EegFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Trigger.h">
+      <Filter>Header Files\EegFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="DataContainer.h">
+      <Filter>Header Files\EegFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Stats.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="ITxtFile.h">
+      <Filter>Header Files\OptFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="FrequencyFile.h">
+      <Filter>Header Files\OptFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_ErpProcessor.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_FileConverterProcessor.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FrequencyBand.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="FrequencyBandAnalysisOpt.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="HilbertEnveloppe.h">
+      <Filter>Header Files\Algorithm\Strategy</Filter>
+    </ClInclude>
+    <ClInclude Include="AlgorithmCalculator.h">
+      <Filter>Header Files\Algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="AlgorithmStrategyFactory.h">
+      <Filter>Header Files\Algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_ConnectCleaner.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CleanConnectFile.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
