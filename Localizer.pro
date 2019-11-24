@@ -44,8 +44,8 @@ FORMS += \
     Localizer/ConnectCleaner.ui \
     Localizer/ErpProcessor.ui \
     Localizer/FileConverterProcessor.ui \
+    Localizer/ProtocolWindow.ui \
     Localizer/displayprov.ui \
-    Localizer/form.ui \
     Localizer/localizer.ui \
     Localizer/optionsPerf.ui \
     Localizer/optionsStats.ui \
@@ -75,6 +75,8 @@ HEADERS += \
     Localizer/PROV.h \
     Localizer/PROVParameters.h \
     Localizer/PatientFolderWorker.h \
+    Localizer/ProtocolFile.h \
+    Localizer/ProtocolWindow.h \
     Localizer/SingleFilesWorker.h \
     Localizer/Stats.h \
     Localizer/Trigger.h \
@@ -84,7 +86,6 @@ HEADERS += \
     Localizer/displayProv.h \
     Localizer/eegContainer.h \
     Localizer/eegContainerParameters.h \
-    Localizer/form.h \
     Localizer/localizer.h \
     Localizer/mapsGenerator.h \
     Localizer/optionsParameters.h \
@@ -115,6 +116,8 @@ SOURCES += \
     Localizer/LOCA.cpp \
     Localizer/PROV.cpp \
     Localizer/PatientFolderWorker.cpp \
+    Localizer/ProtocolFile.cpp \
+    Localizer/ProtocolWindow.cpp \
     Localizer/SingleFilesWorker.cpp \
     Localizer/Stats.cpp \
     Localizer/Trigger.cpp \
@@ -123,7 +126,6 @@ SOURCES += \
     Localizer/barsPlotsGenerator.cpp \
     Localizer/displayProv.cpp \
     Localizer/eegContainer.cpp \
-    Localizer/form.cpp \
     Localizer/localizer.cpp \
     Localizer/main.cpp \
     Localizer/mapsGenerator.cpp \
