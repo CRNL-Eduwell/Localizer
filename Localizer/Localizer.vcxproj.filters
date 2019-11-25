@@ -146,12 +146,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_displayProv.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_chooseElec.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_chooseElec.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="picOptions.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
@@ -193,9 +187,6 @@
     </ClCompile>
     <ClCompile Include="PROV.cpp">
       <Filter>Source Files\PROV</Filter>
-    </ClCompile>
-    <ClCompile Include="form.cpp">
-      <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_AboutDycog.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -326,14 +317,20 @@
     <ClCompile Include="GeneratedFiles\Release\moc_ConnectCleaner.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_ElectrodeCleanerEdit.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_ElectrodeCleanerEdit.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="CleanConnectFile.cpp">
       <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ProtocolWindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ProtocolWindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ProtocolWindow.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ProtocolFile.cpp">
+      <Filter>Source Files\OptFiles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -372,12 +369,6 @@
     </CustomBuild>
     <CustomBuild Include="LOCA.h">
       <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="form.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="form.h">
-      <Filter>Header Files\GUI</Filter>
     </CustomBuild>
     <CustomBuild Include="AboutDycog.ui">
       <Filter>Form Files</Filter>
@@ -427,6 +418,12 @@
     <CustomBuild Include="ConnectCleaner.h">
       <Filter>Header Files\GUI</Filter>
     </CustomBuild>
+    <CustomBuild Include="ProtocolWindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ProtocolWindow.h">
+      <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility.h">
@@ -467,9 +464,6 @@
     </ClInclude>
     <ClInclude Include="optionsParameters.h">
       <Filter>Header Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_form.h">
-      <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="PROV.h">
       <Filter>Header Files\PROV</Filter>
@@ -524,6 +518,12 @@
     </ClInclude>
     <ClInclude Include="CleanConnectFile.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_ProtocolWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProtocolFile.h">
+      <Filter>Header Files\OptFiles</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
