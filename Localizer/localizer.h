@@ -28,7 +28,7 @@
 #include "ConnectCleaner.h"
 
 #include "picOptions.h"
-#include "form.h"
+#include "ProtocolWindow.h"
 #include "AboutDycog.h"
 #include "ErpProcessor.h"
 #include "FileConverterProcessor.h"
@@ -109,7 +109,7 @@ private:
 	picOptions *picOpt = nullptr;
 	optionsStats *optStat = nullptr;
 	optionsPerf *optPerf = nullptr;
-	form *optLoca = nullptr;
+	ProtocolWindow *optLoca = nullptr;
 
 	Ui::LocalizerClass ui;
 	QStringList inputArguments;
