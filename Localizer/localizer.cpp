@@ -447,6 +447,7 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
                 QMessageBox::information(this, "Error", "Process already running");
             }
         });
+        processConcatenationAction->setEnabled(false); //TODO : Temporary, until the concatenation worker is verified with the new eegformat lib
     }
 
     if (sender() == ui.FileTreeView)
