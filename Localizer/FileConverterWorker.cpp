@@ -13,8 +13,8 @@ FileConverterWorker::~FileConverterWorker()
 
 void FileConverterWorker::Process()
 {
-    int fileCount = m_EegFiles.size();
-	for (int i = 0; i < fileCount; i++)
+    size_t fileCount = m_EegFiles.size();
+    for (size_t i = 0; i < fileCount; i++)
 	{
         EEGFormat::IFile* current = CreateGenericFile(m_EegFiles[i].c_str(), true);
         std::string oldType = EEGFormat::Utility::GetFileExtension(m_EegFiles[i]);
@@ -62,4 +62,16 @@ void FileConverterWorker::Process()
 	}
 
 	emit finished();
+}
+
+void FileConverterWorker::ExtractElectrodeList()
+{
+    if(m_EegFiles.size() == 0)
+    {
+        throw new std::runtime_error("Error, there should be at least one file to convert");
+    }
+    std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(m_EegFiles[0]);
+    //std::string connectCleanerFilePath = m_Patient->rootFolder() + "/" + m_Patient->patientName() + ".ccf";
+    std::string connectCleanerFilePath = ""; //TODO : demander a Benoit si on fait un fichier de nettoyage lors de la conversion aussi
+    emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
 }

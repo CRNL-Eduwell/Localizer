@@ -16,7 +16,7 @@ public:
 	FileConverterWorker(std::vector<std::string>& eegFiles, std::vector<std::string>& convertionType);
 	~FileConverterWorker();
 	void Process();
-    void ExtractElectrodeList(){}
+    void ExtractElectrodeList();
 
 private:
     std::vector<std::string> m_EegFiles;
