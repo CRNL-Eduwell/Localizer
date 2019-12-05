@@ -80,13 +80,8 @@ void Localizer::ConnectMenuBar()
     //===Fichier
     QAction* openPatFolder = ui.menuFiles->actions().at(0);
     connect(openPatFolder, &QAction::triggered, this, [&] { LoadPatientFolder(); });
-    QAction* openSingleFile = ui.menuFiles->actions().at(1);
-    connect(openSingleFile, &QAction::triggered, this, [&] { LoadSingleFile(); });
-    //===Outils
-    QAction* openTRCSecator = ui.menuTools->actions().at(0);
-    connect(openTRCSecator, &QAction::triggered, this, [&] { QMessageBox::information(this, "Secator", "Something"); });
-    QAction* openConcatenator = ui.menuTools->actions().at(1);
-    connect(openConcatenator, &QAction::triggered, this, [&] { QMessageBox::information(this, "Error", "Deactivated, need to be deleted"); });
+    QAction* openSpecificFolder = ui.menuFiles->actions().at(1);
+    connect(openSpecificFolder, &QAction::triggered, this, [&] { LoadSpecificFolder(); });
     //===Configuration
     QAction* openPerfMenu = ui.menuConfiguration->actions().at(0);
     connect(openPerfMenu, &QAction::triggered, this, [&] { optPerf->exec(); });
@@ -118,7 +113,7 @@ void Localizer::LoadPatientFolder()
     }
 }
 
-void Localizer::LoadSingleFile()
+void Localizer::LoadSpecificFolder()
 {
     QFileDialog *fileDial = new QFileDialog(this);
     fileDial->setFileMode(QFileDialog::FileMode::AnyFile);
