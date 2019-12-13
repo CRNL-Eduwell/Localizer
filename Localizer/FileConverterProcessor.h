@@ -14,7 +14,7 @@ class FileConverterProcessor : public QDialog
 	Q_OBJECT
 
 public:
-	FileConverterProcessor(QList<QString> fileList, QWidget *parent = 0);
+    FileConverterProcessor(QList<QString> fileList, QWidget *parent = nullptr);
 	~FileConverterProcessor();
 
 private slots:

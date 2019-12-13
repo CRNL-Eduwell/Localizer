@@ -10,7 +10,7 @@ void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, 
 	int NumberOfElement = EegContainer->BipoleCount();
 	int NumberOfFrequencyBins = FrequencyBand.size();
 	DataContainer dataCont = DataContainer(EegContainer->SamplingFrequency(), EegContainer->DownsampledFrequency(), NumberOfSample, FrequencyBand);
-	CalculateSmoothingCoefficients(EegContainer->SamplingFrequency(), EegContainer->DownsampledFrequency());
+    CalculateSmoothingCoefficients(EegContainer->DownsampledFrequency());
 	InitOutputDataStructure(EegContainer);
 
 	std::vector<EEGFormat::IFile*> FrequencyBandFiles = EegContainer->elanFrequencyBand;
@@ -128,11 +128,11 @@ void Algorithm::Strategy::HilbertEnveloppe::InitOutputDataStructure(eegContainer
 	}
 }
 
-void Algorithm::Strategy::HilbertEnveloppe::CalculateSmoothingCoefficients(int SamplingFrequency, int DownsamplingFactor)
+void Algorithm::Strategy::HilbertEnveloppe::CalculateSmoothingCoefficients(int DownsampledFrequency)
 {
 	for (int i = 0; i < 6; i++)
 	{
-		m_smoothingSample[i] = ((SamplingFrequency * m_smoothingMilliSec[i]) / 1000) / DownsamplingFactor;
+        m_smoothingSample[i] = (DownsampledFrequency * m_smoothingMilliSec[i]) / 1000;
 	}
 }
 
@@ -184,9 +184,9 @@ void Algorithm::Strategy::HilbertEnveloppe::MeanConvolveData(DataContainer* Data
 		DataContainer->convoData[0][threadId][i] = DataContainer->meanData[threadId][i];
 	}
 
-	Convolution::MovingAverage(&DataContainer->meanData[threadId][0], &DataContainer->convoData[1][threadId][0], DataContainer->NbSampleDownsampled(), m_smoothingSample[1]);
-	Convolution::MovingAverage(&DataContainer->meanData[threadId][0], &DataContainer->convoData[2][threadId][0], DataContainer->NbSampleDownsampled(), m_smoothingSample[2]);
-	Convolution::MovingAverage(&DataContainer->meanData[threadId][0], &DataContainer->convoData[3][threadId][0], DataContainer->NbSampleDownsampled(), m_smoothingSample[3]);
-	Convolution::MovingAverage(&DataContainer->meanData[threadId][0], &DataContainer->convoData[4][threadId][0], DataContainer->NbSampleDownsampled(), m_smoothingSample[4]);
-	Convolution::MovingAverage(&DataContainer->meanData[threadId][0], &DataContainer->convoData[5][threadId][0], DataContainer->NbSampleDownsampled(), m_smoothingSample[5]);
+    Convolution::MovingAverage(&DataContainer->convoData[1][threadId][0], &DataContainer->meanData[threadId][0], DataContainer->NbSampleDownsampled(), m_smoothingSample[1]);
+    Convolution::MovingAverage(&DataContainer->convoData[2][threadId][0], &DataContainer->meanData[threadId][0], DataContainer->NbSampleDownsampled(), m_smoothingSample[2]);
+    Convolution::MovingAverage(&DataContainer->convoData[3][threadId][0], &DataContainer->meanData[threadId][0], DataContainer->NbSampleDownsampled(), m_smoothingSample[3]);
+    Convolution::MovingAverage(&DataContainer->convoData[4][threadId][0], &DataContainer->meanData[threadId][0], DataContainer->NbSampleDownsampled(), m_smoothingSample[4]);
+    Convolution::MovingAverage(&DataContainer->convoData[5][threadId][0], &DataContainer->meanData[threadId][0], DataContainer->NbSampleDownsampled(), m_smoothingSample[5]);
 }

@@ -195,33 +195,38 @@ void InsermLibrary::LOCA::toBeNamedCorrectlyFunction(eegContainer *myeegContaine
 		EEGFormat::Utility::DeleteAndNullify(mainTask);
 	}
 
-	std::vector<PROV> provFiles = LoadAllProvForTask();
-	for (int i = 0; i < provFiles.size(); i++)
+    std::vector<PROV> provFiles = LoadAllProvForTask();
+    for (size_t i = 0; i < provFiles.size(); i++)
 	{
 		m_triggerContainer->ProcessEventsForExperiment(&provFiles[i], 99);
+        if(m_triggerContainer->ProcessedTriggerCount() == 0)
+        {
+            emit sendLogInfo("No Trigger found for this experiment, aborting maps generation");
+            continue;
+        }
 
 		if (a.env2plot)
 		{
 			if (shouldPerformBarPlot(m_currentLoca->localizerName()) || isBarPlot(provFiles[i].filePath()))
 			{
 				barplot(myeegContainer, &provFiles[i], freqFolder);
-				emit incrementAdavnce(provFiles.size());
+                emit incrementAdavnce(static_cast<int>(provFiles.size()));
 			}
 			else
 			{
 				if (provFiles[i].invertmapsinfo == "")
 				{
 					env2plot(myeegContainer, &provFiles[i], freqFolder);
-					emit incrementAdavnce(provFiles.size());
-				}
+                    emit incrementAdavnce(static_cast<int>(provFiles.size()));
+                }
 			}
 		}
 
 		if (a.trialmat && (isBarPlot(provFiles[i].filePath()) == false || provFiles.size() == 1))
 		{
 			timeTrialmatrices(myeegContainer, &provFiles[i], freqFolder);
-			emit incrementAdavnce(provFiles.size());
-		}
+            emit incrementAdavnce(static_cast<int>(provFiles.size()));
+        }
 	}
 
 	deleteAndNullify1D(m_triggerContainer);

@@ -19,7 +19,7 @@ ErpWorker::~ErpWorker()
 void ErpWorker::Process()
 {
     std::string provFolderPath = QCoreApplication::applicationDirPath().toStdString() + "/Resources/Config/Prov/";
-    for (int i = 0; i < m_EegFiles.size(); i++)
+    for (size_t i = 0; i < m_EegFiles.size(); i++)
 	{
         eegContainer *myContainer = ExtractData(m_EegFiles[i]);
         PROV *myprovFile = new PROV(provFolderPath + m_ProvFiles[i]);
@@ -29,7 +29,6 @@ void ErpWorker::Process()
 		deleteAndNullify1D(myprovFile);
         emit incrementAdavnce(1);
 	}
-
 
 	emit sendLogInfo("End of ERP Analysis");
 	emit finished();
@@ -44,5 +43,13 @@ eegContainer* ErpWorker::ExtractData(std::string currentFile)
 
     emit sendLogInfo(QString::fromStdString("Bipole created !"));
     return myContainer;
+}
+
+void ErpWorker::ExtractElectrodeList()
+{
+    std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(m_EegFiles[0]);
+    //std::string connectCleanerFilePath = m_Patient->rootFolder() + "/" + m_Patient->patientName() + ".ccf";
+    std::string connectCleanerFilePath = ""; //TODO : demander a Benoit si on fait un fichier de nettoyage lors de la conversion aussi
+    emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
 }
 

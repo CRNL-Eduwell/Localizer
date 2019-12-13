@@ -60,7 +60,7 @@ private:
     void ConnectSignals();
     void ConnectMenuBar();
     void LoadPatientFolder();
-    void LoadSingleFile();
+    void LoadSpecificFolder();
     void LoadTreeViewFolder(QString rootFolder);
     void LoadTreeViewFiles(QString rootFolder);
 	void LoadTreeViewUI(QString initialFolder);

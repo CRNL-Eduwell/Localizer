@@ -31,7 +31,7 @@ void ConcatenationWorker::Process()
 	EEGFormat::MicromedFile* firstTRC = nullptr;
 	bool firstFileFound = false;
 	int concatenationCount = 0;
-    for (int i = 0; i < m_EegFiles.size(); i++)
+    for (size_t i = 0; i < m_EegFiles.size(); i++)
 	{
         if (!firstFileFound && EEGFormat::Utility::IsValidFile(m_EegFiles[i]))
 		{
@@ -67,4 +67,16 @@ void ConcatenationWorker::Process()
 	}
 
     emit sendLogInfo("Concatenation Process is over.");
+}
+
+void ConcatenationWorker::ExtractElectrodeList()
+{
+    if(m_EegFiles.size() == 0)
+    {
+        throw new std::runtime_error("Error, there should be at least one file to concatenateÒ");
+    }
+    std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(m_EegFiles[0]);
+    //std::string connectCleanerFilePath = m_Patient->rootFolder() + "/" + m_Patient->patientName() + ".ccf";
+    std::string connectCleanerFilePath = ""; //TODO : demander a Benoit si on fait un fichier de nettoyage lors de la conversion aussi
+    emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
 }
