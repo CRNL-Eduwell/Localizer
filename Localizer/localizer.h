@@ -64,7 +64,7 @@ private:
     void LoadTreeViewFolder(QString rootFolder);
     void LoadTreeViewFiles(QString rootFolder);
 	void LoadTreeViewUI(QString initialFolder);
-	void PreparePatientFolder();
+    int PreparePatientFolder();
 	void PrepareSingleFiles();
 	void InitProgressBar();
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> GetUIAnalysisOption();

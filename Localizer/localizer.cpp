@@ -191,8 +191,11 @@ void Localizer::LoadTreeViewUI(QString initialFolder)
     ui.FileTreeView->header()->hide();
 }
 
-void Localizer::PreparePatientFolder()
+int Localizer::PreparePatientFolder()
 {
+    QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
+    if(selectedRows.size() == 0) return -1;
+
     //Create data structure used by the processing part
     if (currentFiles.size() > 0)
         currentFiles.clear();
@@ -201,7 +204,7 @@ void Localizer::PreparePatientFolder()
 
     //check which elements to keep and delete since the ui can show single files with folders
     std::vector<bool> deleteMe = std::vector<bool>(currentPat->localizerFolder().size(), true);
-    QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
+
     for (int i = 0; i < selectedRows.size(); i++)
     {
         bool isRoot = selectedRows[i].parent() == ui.FileTreeView->rootIndex();
@@ -228,6 +231,8 @@ void Localizer::PreparePatientFolder()
             currentPat->localizerFolder().erase(currentPat->localizerFolder().begin() + i);
         }
     }
+
+    return 0;
 }
 
 void Localizer::PrepareSingleFiles()
@@ -471,33 +476,40 @@ void Localizer::ProcessFolderAnalysis()
         std::vector<FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
 
         //Should probably senbd back the struct here and not keep a global variable
-        PreparePatientFolder();
-        thread = new QThread;
-        worker = new PatientFolderWorker(*currentPat, analysisOptions, optstat, optpic);
+        int result = PreparePatientFolder();
+        if(result != -1)
+        {
+            thread = new QThread;
+            worker = new PatientFolderWorker(*currentPat, analysisOptions, optstat, optpic);
 
-        //=== Event update displayer
-        connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
-        connect(worker->GetLoca(), &LOCA::sendLogInfo, this, &Localizer::DisplayLog);
-        connect(worker->GetLoca(), &LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
+            //=== Event update displayer
+            connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
+            connect(worker->GetLoca(), &LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+            connect(worker->GetLoca(), &LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
-        //New ping pong order
-        connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
-        connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
-        connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
+            //New ping pong order
+            connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
+            connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
+            connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
-        connect(worker, &IWorker::finished, thread, &QThread::quit);
-        connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
-        connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-        connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
+            connect(worker, &IWorker::finished, thread, &QThread::quit);
+            connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
+            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+            connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
-        //=== Launch Thread and lock possible second launch
-        worker->moveToThread(thread);
-        thread->start();
-        isAlreadyRunning = true;
+            //=== Launch Thread and lock possible second launch
+            worker->moveToThread(thread);
+            thread->start();
+            isAlreadyRunning = true;
+        }
+        else
+        {
+            QMessageBox::critical(this, "No Folder Selected", "You need to select at least one folder in the user interface");
+        }
     }
     else
     {
-        QMessageBox::information(this, "Error", "Analysis already running");
+        QMessageBox::critical(this, "Analysis already running", "Please wait until the current analysis if finished");
     }
 }
 
