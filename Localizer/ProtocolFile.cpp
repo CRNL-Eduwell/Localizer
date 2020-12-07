@@ -5,7 +5,7 @@ ProtocolFile::ProtocolFile(const QString & filePath)
     m_FileInfo = QFileInfo(filePath);
     if(m_FileInfo.exists())
     {
-        m_Prov = new InsermLibrary::PROV(m_FileInfo.absoluteFilePath().toStdString());
+		m_Prov = new InsermLibrary::PROV(m_FileInfo.absoluteFilePath().toStdString());
         LoadProtocolInModel(*m_Prov);
     }
     else
@@ -61,17 +61,20 @@ void ProtocolFile::Save()
     if(m_Prov != nullptr)
     {
         newProv.changeCodeFilePath = "";
-        std::vector<std::string> rootSplit = EEGFormat::Utility::Split<std::string>(InsermLibrary::GetCurrentWorkingDir(), "\\/");
-        std::vector<std::string> chgCodeSplit = EEGFormat::Utility::Split<std::string>(m_Prov->changeCodeFilePath, "\\/");
+		if (m_Prov->changeCodeFilePath != "")
+		{
+			std::vector<std::string> rootSplit = EEGFormat::Utility::Split<std::string>(InsermLibrary::GetCurrentWorkingDir(), "\\/");
+			std::vector<std::string> chgCodeSplit = EEGFormat::Utility::Split<std::string>(m_Prov->changeCodeFilePath, "\\/");
 
-        if (rootSplit[rootSplit.size() - 1] == chgCodeSplit[rootSplit.size() - 1])
-        {
-            chgCodeSplit.erase(chgCodeSplit.begin(), chgCodeSplit.begin() + static_cast<int>(rootSplit.size()));
-            for(size_t i = 0;i < chgCodeSplit.size(); i++)
-            {
-                newProv.changeCodeFilePath += ("/" + chgCodeSplit[i]);
-            }
-        }
+			if (rootSplit[rootSplit.size() - 1] == chgCodeSplit[rootSplit.size() - 1])
+			{
+				chgCodeSplit.erase(chgCodeSplit.begin(), chgCodeSplit.begin() + static_cast<int>(rootSplit.size()));
+				for (size_t i = 0; i < chgCodeSplit.size(); i++)
+				{
+					newProv.changeCodeFilePath += ("/" + chgCodeSplit[i]);
+				}
+			}
+		}
 
         newProv.invertmapsinfo = m_Prov->invertmapsinfo;
         newProv.invertmaps.baseLineWindow[0] = m_Prov->invertmaps.baseLineWindow[0];

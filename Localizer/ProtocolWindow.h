@@ -44,7 +44,7 @@ private slots:
     void SaveAllProtocols();
 
 private:
-    QList<ProtocolFile> files;
+    QList<ProtocolFile*> files;
 	QStringList m_listHeaderProv;
     bool m_dataChanged = false;
     QString m_provFolder = QCoreApplication::applicationDirPath() + "/Resources/Config/Prov";

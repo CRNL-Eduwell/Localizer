@@ -54,7 +54,7 @@ QStringList ProtocolWindow::GetFilesFromRootFolder(QString fileExt)
 
 void ProtocolWindow::LoadProtocolsInUI(QStringList protocols)
 {
-    files = QList<ProtocolFile>();
+    files = QList<ProtocolFile*>();
     for(int i = 0; i < protocols.size(); i++)
     {
         QString protocolLabel = protocols[i];
@@ -63,11 +63,11 @@ void ProtocolWindow::LoadProtocolsInUI(QStringList protocols)
         currentPROV->setFlags(currentPROV->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable);
 
         QString currentPath = m_provFolder + "/" + protocols[i];
-        files.push_back(ProtocolFile(currentPath));
+        files.push_back(new ProtocolFile(currentPath));
     }
 
     //Put Model in view
-    ui.tableView->setModel(files[0].Model());
+    ui.tableView->setModel(files[0]->Model());
     ui.tableView->resizeColumnsToContents();
     ui.tableView->resizeRowsToContents();
 
@@ -92,7 +92,7 @@ void ProtocolWindow::ShowLocaListContextMenu(QPoint point)
             currentPROV->setFlags(currentPROV->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable);
 
             QString currentPath = m_provFolder + "/" + localizerName + ".prov";
-            files.push_back(ProtocolFile(currentPath));
+            files.push_back(new ProtocolFile(currentPath));
         }
     });
     QAction* removeLocalizerAction = contextMenu->addAction("Remove localizer", [this]
@@ -117,7 +117,7 @@ void ProtocolWindow::UpdateProtocolOnRowChanged(const QModelIndex current, const
         QMessageBox::StandardButton reply = QMessageBox::question(this, "Data was modified", "Do you want to save the modifications to this experiment parameters ? ", QMessageBox::Yes | QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            files[previous.row()].Save();
+            files[previous.row()]->Save();
         }
         m_dataChanged = false;
     }
@@ -126,7 +126,7 @@ void ProtocolWindow::UpdateProtocolOnRowChanged(const QModelIndex current, const
     if (currentItem.count() == 1)
     {
         //Set new model, connect to item change, and update view
-        ui.tableView->setModel(files[current.row()].Model());
+        ui.tableView->setModel(files[current.row()]->Model());
         connect(dynamic_cast<QStandardItemModel*>(ui.tableView->model()), &QStandardItemModel::itemChanged, this, &ProtocolWindow::ManageChangeItem);
         ui.tableView->update();
     }
@@ -231,7 +231,7 @@ void ProtocolWindow::SaveAllProtocols()
 {
     for(int i = 0; i < files.size(); i++)
     {
-        files[i].Save();
+        files[i]->Save();
     }
     m_dataChanged = false;
 }
