@@ -31,14 +31,18 @@ Localizer::~Localizer()
 
 void Localizer::ReSetupGUI()
 {
+	m_GeneralOptionsFile = new GeneralOptionsFile();
+	m_GeneralOptionsFile->Load();
     m_frequencyFile = new FrequencyFile();
     m_frequencyFile->Load();
+	//==
     LoadFrequencyBandsUI(m_frequencyFile->FrequencyBands());
-
+	//==
     optPerf = new optionsPerf();
     optStat = new optionsStats();
     picOpt = new picOptions();
     optLoca = new ProtocolWindow();
+	generalOptionsWindow = new GeneralOptionsWindow();
 
     ui.progressBar->reset();
 }
@@ -91,6 +95,8 @@ void Localizer::ConnectMenuBar()
     connect(openPicMenu, &QAction::triggered, this, [&] { picOpt->exec(); });
     QAction* openLocaMenu = ui.menuConfiguration->actions().at(3);
     connect(openLocaMenu, &QAction::triggered, this, [&] { optLoca->exec(); });
+	QAction* openFilePriorityMenu = ui.menuConfiguration->actions().at(4);
+	connect(openFilePriorityMenu, &QAction::triggered, this, [&] { generalOptionsWindow->exec(); });
     //===Aide
     QAction* openAbout = ui.menuHelp->actions().at(0);
     connect(openAbout, &QAction::triggered, this, [&]
@@ -491,6 +497,8 @@ void Localizer::ProcessFolderAnalysis()
             connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
             connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
             connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
+
+			//New ping pong test
 
             connect(worker, &IWorker::finished, thread, &QThread::quit);
             connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);

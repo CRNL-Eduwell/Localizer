@@ -326,6 +326,18 @@
     <ClCompile Include="ProtocolFile.cpp">
       <Filter>Source Files\OptFiles</Filter>
     </ClCompile>
+    <ClCompile Include="GeneralOptionsFile.cpp">
+      <Filter>Source Files\OptFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_GeneralOptionsWindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_GeneralOptionsWindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneralOptionsWindow.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="localizer.qrc">
@@ -416,6 +428,12 @@
       <Filter>Form Files</Filter>
     </CustomBuild>
     <CustomBuild Include="ProtocolWindow.h">
+      <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GeneralOptionsWindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GeneralOptionsWindow.h">
       <Filter>Header Files\GUI</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -518,6 +536,12 @@
     </ClInclude>
     <ClInclude Include="ProtocolFile.h">
       <Filter>Header Files\OptFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneralOptionsFile.h">
+      <Filter>Header Files\OptFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_GeneralOptionsWindow.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
