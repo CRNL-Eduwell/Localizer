@@ -43,5 +43,37 @@ void InsermLibrary::GeneralOptionsFile::Load()
 
 void InsermLibrary::GeneralOptionsFile::Save()
 {
-	throw new std::logic_error("Error : Save General Options File not implemented yet");
+	std::ofstream optionFileStream(m_originalFilePath, std::ios::out);
+	for (int i = 0; i < m_fileExtensions.size(); i++)
+	{
+		switch (m_fileExtensions[i])
+		{
+			case InsermLibrary::FileExt::TRC:
+			{
+				optionFileStream << "Micromed";
+				break;
+			}
+			case InsermLibrary::FileExt::EEG_ELAN:
+			{
+				optionFileStream << "Elan";
+				break;
+			}
+			case InsermLibrary::FileExt::BRAINVISION:
+			{
+				optionFileStream << "BrainVision";
+				break;
+			}
+			case InsermLibrary::FileExt::EDF:
+			{
+				optionFileStream << "Edf";
+				break;
+			}
+		}
+
+		if (i < m_fileExtensions.size() - 1)
+		{
+			optionFileStream << "-";
+		}
+	}
+	optionFileStream.close();
 }

@@ -25,29 +25,20 @@ class GeneralOptionsWindow : public QDialog
 	Q_OBJECT
 
 public:
-	GeneralOptionsWindow(QWidget *parent = nullptr);
+	GeneralOptionsWindow(InsermLibrary::GeneralOptionsFile *file, QWidget *parent = nullptr);
     ~GeneralOptionsWindow();
 
 private:
-	//void ConnectSignals();
-	//void InitUiParameters();
-	//QStringList GetFilesFromRootFolder(QString fileExt);
- //   void LoadProtocolsInUI(QStringList protocols);
+	void ConnectSignals();
+	void LoadFileTypeInUi(std::vector<InsermLibrary::FileExt> fileTypes);
 
 private slots:
-    //void ShowLocaListContextMenu(QPoint point);
-    //void UpdateProtocolOnRowChanged(const QModelIndex current, const QModelIndex previous);
-    //void ShowProvTabContextMenu(QPoint point);
-    //void AddConditionToExperiment(const QModelIndex index);
-    //void RemoveConditionFromExperiment();
-    //void ManageChangeItem(QStandardItem* item);
-    //void SaveAllProtocols();
+	void MoveElementUp();
+	void MoveElementDown();
 
 private:
- //   QList<ProtocolFile*> files;
-	//QStringList m_listHeaderProv;
- //   bool m_dataChanged = false;
- //   QString m_provFolder = QCoreApplication::applicationDirPath() + "/Resources/Config/Prov";
+	InsermLibrary::GeneralOptionsFile *m_GeneralOptionsFile = nullptr;
+	QString generalOptionsPath = QCoreApplication::applicationDirPath() + "/Resources/Config/generalOptions.txt";
 	Ui::FormFileType ui;
 };
 
