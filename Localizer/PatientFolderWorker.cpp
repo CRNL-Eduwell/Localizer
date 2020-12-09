@@ -4,11 +4,11 @@
 
 using namespace InsermLibrary;
 
-PatientFolderWorker::PatientFolderWorker(patientFolder currentPatient, std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption statOption, picOption picOption)
+PatientFolderWorker::PatientFolderWorker(patientFolder currentPatient, std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption statOption, picOption picOption, std::vector<InsermLibrary::FileExt> filePriority)
 {
     m_Patient = new patientFolder(currentPatient);
     m_FrequencyBands = std::vector<FrequencyBandAnalysisOpt>(analysisOpt);
-
+	filePriority = std::vector<InsermLibrary::FileExt>(filePriority);
     m_Loca = new LOCA(m_FrequencyBands, new InsermLibrary::statOption(statOption), new InsermLibrary::picOption(picOption));
 }
 
@@ -69,6 +69,31 @@ void PatientFolderWorker::ExtractElectrodeList()
     std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(currentFilePath);
     std::string connectCleanerFilePath = m_Patient->rootFolder() + "/" + m_Patient->patientName() + ".ccf";
     emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
+}
+
+void PatientFolderWorker::ExtractElectrodeList2()
+{
+	if (m_Patient->localizerFolder().size() == 0)
+	{
+		sendLogInfo("Error, there is no localizer folder in this patient, aborting analysis.\n");
+		emit finished();
+	}
+
+	for (int i = 0; i < filePriority.size(); i++)
+	{
+		std::string currentFilePath = m_Patient->localizerFolder()[0].filePath(filePriority[i]);
+		if (EEGFormat::Utility::DoesFileExist(currentFilePath))
+		{
+			std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(currentFilePath);
+			std::string connectCleanerFilePath = m_Patient->rootFolder() + "/" + m_Patient->patientName() + ".ccf";
+			emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
+			return;
+		}
+	}
+
+	//if we arrive at this point, no compatible file has been detected, aborting loca 
+	sendLogInfo("No Compatible file format detected, aborting analysis.\n");
+	emit finished();
 }
 
 eegContainer* PatientFolderWorker::ExtractData(locaFolder currentLoca, bool extractOriginalData, int nbFreqBand)

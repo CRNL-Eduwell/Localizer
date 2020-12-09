@@ -480,13 +480,14 @@ void Localizer::ProcessFolderAnalysis()
         //UI
         InitProgressBar();
         std::vector<FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
+		std::vector<InsermLibrary::FileExt> filePriority = std::vector<InsermLibrary::FileExt>(m_GeneralOptionsFile->FileExtensionsFavorite());
 
         //Should probably senbd back the struct here and not keep a global variable
         int result = PreparePatientFolder();
         if(result != -1)
         {
             thread = new QThread;
-            worker = new PatientFolderWorker(*currentPat, analysisOptions, optstat, optpic);
+            worker = new PatientFolderWorker(*currentPat, analysisOptions, optstat, optpic, filePriority);
 
             //=== Event update displayer
             connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
