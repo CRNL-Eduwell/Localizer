@@ -18,14 +18,14 @@ public:
 	~PatientFolderWorker();
 	void Process();
     void ExtractElectrodeList();
-	void ExtractElectrodeList2();
+
 private:
     InsermLibrary::eegContainer* ExtractData(locaFolder currentLoca, bool extractOriginalData, int nbFreqBand);
 
 private:
     patientFolder* m_Patient = nullptr;
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> m_FrequencyBands;
-	std::vector<InsermLibrary::FileExt> filePriority;
+	std::vector<InsermLibrary::FileExt> m_filePriority;
 };
 
 #endif

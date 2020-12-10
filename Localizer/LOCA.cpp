@@ -256,8 +256,8 @@ void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt,
 		}
 		case EEGFormat::FileType::BrainVision:
 		{
-			std::string eventFilePath = fileNameBase + ".vmkr";
-			std::string downsampledEventsFilePath = fileNameBase + "_ds" + to_string(myeegContainer->DownsamplingFactor()) + ".vmkr";
+			std::string eventFilePath = fileNameBase + ".vmrk";
+			std::string downsampledEventsFilePath = fileNameBase + "_ds" + to_string(myeegContainer->DownsamplingFactor()) + ".vmrk";
 			std::vector<Trigger> triggers = triggerContainer->GetTriggerForExperiment(myprovFile, 99);
 			std::vector<Trigger> triggersDownsampled = triggerContainer->GetTriggerForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
 			CreateFile(outputType, eventFilePath, triggers);

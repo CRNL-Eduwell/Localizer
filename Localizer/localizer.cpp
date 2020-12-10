@@ -499,8 +499,7 @@ void Localizer::ProcessFolderAnalysis()
             connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
             connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
-			//New ping pong test
-
+			//=== Event From worker and thread
             connect(worker, &IWorker::finished, thread, &QThread::quit);
             connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
             connect(thread, &QThread::finished, thread, &QThread::deleteLater);
