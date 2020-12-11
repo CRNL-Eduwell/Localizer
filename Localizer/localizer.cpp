@@ -42,7 +42,6 @@ void Localizer::ReSetupGUI()
     optStat = new optionsStats();
     picOpt = new picOptions();
     optLoca = new ProtocolWindow();
-	generalOptionsWindow = new GeneralOptionsWindow(m_GeneralOptionsFile);
 
     ui.progressBar->reset();
 }
@@ -96,7 +95,12 @@ void Localizer::ConnectMenuBar()
     QAction* openLocaMenu = ui.menuConfiguration->actions().at(3);
     connect(openLocaMenu, &QAction::triggered, this, [&] { optLoca->exec(); });
 	QAction* openFilePriorityMenu = ui.menuConfiguration->actions().at(4);
-	connect(openFilePriorityMenu, &QAction::triggered, this, [&] { generalOptionsWindow->exec(); });
+	connect(openFilePriorityMenu, &QAction::triggered, this, [&] 
+	{ 	
+		generalOptionsWindow = new GeneralOptionsWindow(m_GeneralOptionsFile);
+		generalOptionsWindow->setAttribute(Qt::WA_DeleteOnClose);
+		generalOptionsWindow->show(); 
+	});
     //===Aide
     QAction* openAbout = ui.menuHelp->actions().at(0);
     connect(openAbout, &QAction::triggered, this, [&]
