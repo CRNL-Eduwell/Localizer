@@ -115,6 +115,8 @@ std::string locaFolder::filePath(FileExt wantedFile)
 		return m_dsPosFile;
 	case EDF:
 		return m_edfFile;
+	case BRAINVISION:
+		return m_brainVisionFile;
 	case NO_EXT:
 		return "";
 	default:
@@ -132,7 +134,7 @@ void locaFolder::getLocaName(std::string rootLocaFolder)
 void locaFolder::retrieveFiles(std::string rootLocaFolder)
 {
 	QDir currentDir(rootLocaFolder.c_str());
-	currentDir.setNameFilters(QStringList() << "*.trc" << "*.eeg" << "*.eeg.ent" << "*.pos" << "*.edf");
+	currentDir.setNameFilters(QStringList() << "*.trc" << "*.eeg" << "*.eeg.ent" << "*.pos" << "*.edf" << "*.vhdr");
 
 	QRegExp rxTRC((fullLocalizerName() + ".trc").c_str(), Qt::CaseSensitivity::CaseInsensitive);
 	QRegExp rxEeg((fullLocalizerName() + ".eeg").c_str(), Qt::CaseSensitivity::CaseInsensitive);
@@ -140,6 +142,7 @@ void locaFolder::retrieveFiles(std::string rootLocaFolder)
 	QRegExp rxPos((fullLocalizerName() + "_raw.pos").c_str(), Qt::CaseSensitivity::CaseInsensitive);
 	QRegExp rxDsPos((fullLocalizerName() + "_ds" + "(\\d+)" + ".pos").c_str(), Qt::CaseSensitivity::CaseInsensitive);
 	QRegExp rxEdf((fullLocalizerName() + ".edf").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+	QRegExp rxBrainVision((fullLocalizerName() + ".vhdr").c_str(), Qt::CaseSensitivity::CaseInsensitive);
 
 	QStringList fileFound = currentDir.entryList();
 	for (int i = 0; i < fileFound.size(); i++)
@@ -161,6 +164,9 @@ void locaFolder::retrieveFiles(std::string rootLocaFolder)
 
 		if (rxEdf.exactMatch(fileFound[i]))
 			m_edfFile = rootLocaFolder + fileFound[i].toStdString();
+
+		if (rxBrainVision.exactMatch(fileFound[i]))
+			m_brainVisionFile = rootLocaFolder + fileFound[i].toStdString();
 	}
 }
 

@@ -101,6 +101,7 @@ private:
 	std::string m_posFile = "";
 	std::string m_dsPosFile = "";
 	std::string m_edfFile = "";
+	std::string m_brainVisionFile = "";
     std::vector<frequencyFolder> m_freqFolder;
 	//===
 	std::string m_locaName = "";

@@ -24,16 +24,16 @@ macx{
 
 ####################################### INCLUDEPATH
 INCLUDEPATH += "/usr/local/Cellar/boost/1.70.0/include"
-INCLUDEPATH += "/usr/local/Cellar/fftw/3.3.8_1/include"
-INCLUDEPATH += "/Users/fsipp/Documents/Arbeit/Repository/C++/EEGFormat/EEGFormat"
-INCLUDEPATH += "/Users/fsipp/Documents/Arbeit/Repository/C++/Framework/Framework"
-INCLUDEPATH += "/Users/fsipp/Documents/Arbeit/Repository/C++/Localizer/Localizer"
+INCLUDEPATH += "/usr/local/Cellar/fftw/3.3.8_2/include"
+INCLUDEPATH += "/Users/florian/Documents/Arbeit/Repository/C++/EEGFormat/EEGFormat"
+INCLUDEPATH += "/Users/florian/Documents/Arbeit/Repository/C++/Framework/Framework"
+INCLUDEPATH += "/Users/florian/Documents/Arbeit/Repository/C++/Localizer/Localizer"
 
 ####################################### LIBRAIRIES
 LIBS += -L"/usr/local/Cellar/boost/1.70.0/lib" -lboost_filesystem
-LIBS += -L"/usr/local/Cellar/fftw/3.3.8_1/lib" -lfftw3f.3 -lfftw3f_threads.3
-LIBS += -L"/Users/fsipp/Documents/Arbeit/Repository/C++/EEGFormat/EEGFormat" -lEEGFormat
-LIBS += -L"/Users/fsipp/Documents/Arbeit/Repository/C++/Framework/Framework" -lFramework
+LIBS += -L"/usr/local/Cellar/fftw/3.3.8_2/lib" -lfftw3f.3 -lfftw3f_threads.3
+LIBS += -L"/Users/florian/Documents/Arbeit/Repository/C++/EEGFormat/EEGFormat" -lEEGFormat
+LIBS += -L"/Users/florian/Documents/Arbeit/Repository/C++/Framework/Framework" -lFramework
 
 ####################################### PROJECT FILES
 RESOURCES += \

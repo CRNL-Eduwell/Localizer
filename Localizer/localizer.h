@@ -26,7 +26,7 @@
 #include "optionsPerf.h"
 #include "optionsStats.h"
 #include "ConnectCleaner.h"
-
+#include "GeneralOptionsWindow.h"
 #include "picOptions.h"
 #include "ProtocolWindow.h"
 #include "AboutDycog.h"
@@ -34,6 +34,7 @@
 #include "FileConverterProcessor.h"
 #include "LOCA.h"
 //==Tools & files headers
+#include "GeneralOptionsFile.h"
 #include "FrequencyFile.h"
 #include "FrequencyBand.h"
 #include "FrequencyBandAnalysisOpt.h"
@@ -64,7 +65,7 @@ private:
     void LoadTreeViewFolder(QString rootFolder);
     void LoadTreeViewFiles(QString rootFolder);
 	void LoadTreeViewUI(QString initialFolder);
-	void PreparePatientFolder();
+    int PreparePatientFolder();
 	void PrepareSingleFiles();
 	void InitProgressBar();
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> GetUIAnalysisOption();
@@ -93,6 +94,7 @@ private:
 	//==Visualisation
 	QFileSystemModel *m_localFileSystemModel = nullptr;
 	//==Data for analysis
+	InsermLibrary::GeneralOptionsFile *m_GeneralOptionsFile = nullptr;
     InsermLibrary::FrequencyFile *m_frequencyFile = nullptr;
 	bool m_isPatFolder = false;
 	//userOption userOpt;
@@ -110,7 +112,8 @@ private:
 	optionsStats *optStat = nullptr;
 	optionsPerf *optPerf = nullptr;
 	ProtocolWindow *optLoca = nullptr;
-
+	GeneralOptionsWindow *generalOptionsWindow = nullptr;
+	//==
 	Ui::LocalizerClass ui;
 	QStringList inputArguments;
 };

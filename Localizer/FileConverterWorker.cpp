@@ -71,7 +71,18 @@ void FileConverterWorker::ExtractElectrodeList()
         throw new std::runtime_error("Error, there should be at least one file to convert");
     }
     std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(m_EegFiles[0]);
-    //std::string connectCleanerFilePath = m_Patient->rootFolder() + "/" + m_Patient->patientName() + ".ccf";
-    std::string connectCleanerFilePath = ""; //TODO : demander a Benoit si on fait un fichier de nettoyage lors de la conversion aussi
+
+	//==GetDirectory
+	std::string currentDirectoryPath = EEGFormat::Utility::GetDirectoryPath(m_EegFiles[0]);
+	currentDirectoryPath.erase(currentDirectoryPath.end() - 1);
+	std::string directoryPath = EEGFormat::Utility::GetDirectoryPath(currentDirectoryPath);
+	//==GetCurrentFolderName
+	std::string filePath(directoryPath);
+	filePath.erase(filePath.end() - 1);
+	std::replace(filePath.begin(), filePath.end(), '\\', '/');
+	std::size_t slashPos = filePath.rfind('/');
+	std::string patientName = filePath.substr(slashPos + 1, filePath.size() - slashPos);
+
+    std::string connectCleanerFilePath = directoryPath + "/" + patientName + ".ccf";
     emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
 }

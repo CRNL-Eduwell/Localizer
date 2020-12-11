@@ -6,11 +6,12 @@ using namespace InsermLibrary;
 void InsermLibrary::Stats::pValuesWilcoxon(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata, TriggerContainer* triggerContainer, int samplingFreq, PROV *myprovFile)
 {
 	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
+	int ConditionCount = SubGroupStimTrials.size();
 	for (int i = 0; i < bigdata.size(); i++)
 	{
 		vec2<float> p_valueBig;
 		vec2<int> p_signeBig;
-		for (int j = 0; j < myprovFile->visuBlocs.size() - 1; j++)
+		for (int j = 0; j < ConditionCount - 1; j++)
 		{
 			int lowTrial = SubGroupStimTrials[j];
 			int highTrial = SubGroupStimTrials[j + 1];

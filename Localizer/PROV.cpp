@@ -224,7 +224,7 @@ void InsermLibrary::PROV::saveFile()
             provStream << changeCodeFilePath << std::endl;
 		}
 
-		if (invertmaps.epochWindow[0] == invertmaps.epochWindow[1] == invertmaps.baseLineWindow[0] == invertmaps.baseLineWindow[1] == 0)
+		if (invertmaps.epochWindow[0] == 0 && invertmaps.epochWindow[1] == 0 && invertmaps.baseLineWindow[0] == 0 && invertmaps.baseLineWindow[1] == 0)
 		{
             provStream << "NO_INVERT" << std::endl;
 		}
@@ -271,7 +271,7 @@ void InsermLibrary::PROV::saveFile(std::string rootFolder, std::string fileName)
             provStream << changeCodeFilePath << std::endl;
 		}
 
-		if (invertmaps.epochWindow[0] == invertmaps.epochWindow[1] == invertmaps.baseLineWindow[0] == invertmaps.baseLineWindow[1] == 0)
+		if (invertmaps.epochWindow[0] == 0 && invertmaps.epochWindow[1] == 0 && invertmaps.baseLineWindow[0] == 0 && invertmaps.baseLineWindow[1] == 0)
 		{
             provStream << "NO_INVERT" << std::endl;
 		}

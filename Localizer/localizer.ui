@@ -330,6 +330,7 @@
     <addaction name="actionStats"/>
     <addaction name="actionPictures"/>
     <addaction name="actionLocalizers"/>
+    <addaction name="actionFilePriority"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -393,6 +394,11 @@
   <action name="actionLocalizers">
    <property name="text">
     <string>Localizers</string>
+   </property>
+  </action>
+  <action name="actionFilePriority">
+   <property name="text">
+    <string>File Priority</string>
    </property>
   </action>
  </widget>

@@ -256,8 +256,8 @@ void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt,
 		}
 		case EEGFormat::FileType::BrainVision:
 		{
-			std::string eventFilePath = fileNameBase + ".vmkr";
-			std::string downsampledEventsFilePath = fileNameBase + "_ds" + to_string(myeegContainer->DownsamplingFactor()) + ".vmkr";
+			std::string eventFilePath = fileNameBase + ".vmrk";
+			std::string downsampledEventsFilePath = fileNameBase + "_ds" + to_string(myeegContainer->DownsamplingFactor()) + ".vmrk";
 			std::vector<Trigger> triggers = triggerContainer->GetTriggerForExperiment(myprovFile, 99);
 			std::vector<Trigger> triggersDownsampled = triggerContainer->GetTriggerForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
 			CreateFile(outputType, eventFilePath, triggers);
@@ -715,27 +715,24 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, PROV *
 					Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));
 
 			/********************************************************************/
-			/*	 		Add reaction time on map								*/
-			/*	=> If one has not the default value, they should all be there	*/
+			/*	Add reaction time on map, if the calculated position is not		*/
+			/*  inside the map , no need to draw it							 	*/
 			/********************************************************************/
-			if (m_triggerContainer->ProcessedTriggers()[indexBegTrigg + 2].ReactionTimeInMilliSeconds() != -1)
+			painterChanel->setPen(QColor(Qt::black));
+			for (int l = 0; l < numberSubTrial; l++)
 			{
-				painterChanel->setPen(QColor(Qt::black));
-				for (int l = 0; l < numberSubTrial; l++)
+				int xReactionTimeMs = abs(currentWinMs[0]) + m_triggerContainer->ProcessedTriggers()[indexBegTrigg + l].ReactionTimeInMilliSeconds();
+				double xScale = (double)(currentWinMs[1] - currentWinMs[0]) / mGen.MatrixRect.width();
+				double xRt = mGen.MatrixRect.x() + (xReactionTimeMs / xScale);
+
+				int yTrialPosition = mGen.subMatrixes[indexPos].y() + mGen.subMatrixes[indexPos].height();
+				double yRt = yTrialPosition - (((double)mGen.subMatrixes[indexPos].height() / numberSubTrial) * l) - 1;
+
+				if (xRt >= mGen.MatrixRect.x() && xRt <= (mGen.MatrixRect.x() + mGen.MatrixRect.width()))
 				{
-					int xReactionTimeMs = abs(currentWinMs[0]) + m_triggerContainer->ProcessedTriggers()[indexBegTrigg + l].ReactionTimeInMilliSeconds();
-					double xScale = (double)(currentWinMs[1] - currentWinMs[0]) / mGen.MatrixRect.width();
-					double xRt = mGen.MatrixRect.x() + (xReactionTimeMs / xScale);
-
-					int yTrialPosition = mGen.subMatrixes[indexPos].y() + mGen.subMatrixes[indexPos].height();
-					double yRt = yTrialPosition - (((double)mGen.subMatrixes[indexPos].height() / numberSubTrial) * l) - 1;
-
-					if (xRt <= (mGen.MatrixRect.x() + mGen.MatrixRect.width()))
-					{
-						painterChanel->setBrush(Qt::black);
-						painterChanel->drawEllipse(QPoint(xRt, yRt), (int)(0.0034722 * mGen.MatrixRect.width()),
-												  (int)(0.004629629 * mGen.MatrixRect.height()));
-					}
+					painterChanel->setBrush(Qt::black);
+					painterChanel->drawEllipse(QPoint(xRt, yRt), (int)(0.0034722 * mGen.MatrixRect.width()),
+						(int)(0.004629629 * mGen.MatrixRect.height()));
 				}
 			}
 

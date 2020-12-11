@@ -28,7 +28,7 @@ private:
 
 private:
     QFileInfo m_FileInfo;
-    QStandardItemModel* m_ItemModel;
+    QStandardItemModel* m_ItemModel = nullptr;
     InsermLibrary::PROV *m_Prov = nullptr;
 };
 

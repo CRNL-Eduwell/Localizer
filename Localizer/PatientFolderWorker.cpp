@@ -4,11 +4,11 @@
 
 using namespace InsermLibrary;
 
-PatientFolderWorker::PatientFolderWorker(patientFolder currentPatient, std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption statOption, picOption picOption)
+PatientFolderWorker::PatientFolderWorker(patientFolder currentPatient, std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption statOption, picOption picOption, std::vector<InsermLibrary::FileExt> filePriority)
 {
     m_Patient = new patientFolder(currentPatient);
     m_FrequencyBands = std::vector<FrequencyBandAnalysisOpt>(analysisOpt);
-
+	m_filePriority = std::vector<InsermLibrary::FileExt>(filePriority);
     m_Loca = new LOCA(m_FrequencyBands, new InsermLibrary::statOption(statOption), new InsermLibrary::picOption(picOption));
 }
 
@@ -56,33 +56,47 @@ void PatientFolderWorker::Process()
 
 void PatientFolderWorker::ExtractElectrodeList()
 {
-    if(m_Patient->localizerFolder().size() == 0)
-    {
-        throw new std::runtime_error("Error, there is no localizer folder in this patient");
-    }
-    FileExt currentExtention = m_Patient->localizerFolder()[0].fileExtention();
-    if (currentExtention == NO_EXT)
-    {
-        throw new std::runtime_error("Error, no supported file extention detected");
-    }
-    std::string currentFilePath = m_Patient->localizerFolder()[0].filePath(currentExtention);
-    std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(currentFilePath);
-    std::string connectCleanerFilePath = m_Patient->rootFolder() + "/" + m_Patient->patientName() + ".ccf";
-    emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
+	if (m_Patient->localizerFolder().size() == 0)
+	{
+		sendLogInfo("Error, there is no localizer folder in this patient, aborting analysis.\n");
+		emit finished();
+	}
+
+	for (int i = 0; i < m_filePriority.size(); i++)
+	{
+		std::string currentFilePath = m_Patient->localizerFolder()[0].filePath(m_filePriority[i]);
+		if (EEGFormat::Utility::DoesFileExist(currentFilePath))
+		{
+			std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(currentFilePath);
+			std::string connectCleanerFilePath = m_Patient->rootFolder() + "/" + m_Patient->patientName() + ".ccf";
+			emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
+			return;
+		}
+	}
+
+	//if we arrive at this point, no compatible file has been detected, aborting loca 
+	sendLogInfo("No Compatible file format detected, aborting analysis.\n");
+	emit finished();
 }
 
 eegContainer* PatientFolderWorker::ExtractData(locaFolder currentLoca, bool extractOriginalData, int nbFreqBand)
 {
-    FileExt currentExtention = currentLoca.fileExtention();
-    if (currentExtention == NO_EXT)
-        return nullptr;
-    std::string currentFilePath = currentLoca.filePath(currentExtention);
+	for (int i = 0; i < m_filePriority.size(); i++)
+	{
+		std::string currentFilePath = currentLoca.filePath(m_filePriority[i]);
+		if (EEGFormat::Utility::DoesFileExist(currentFilePath))
+		{
+			eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData, nbFreqBand);
+			myContainer->DeleteElectrodes(m_IndexToDelete);
+			myContainer->GetElectrodes();
+			myContainer->BipolarizeElectrodes();
 
-    eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData, nbFreqBand);
-    myContainer->DeleteElectrodes(m_IndexToDelete);
-    myContainer->GetElectrodes();
-    myContainer->BipolarizeElectrodes();
+			emit sendLogInfo(QString::fromStdString("Bipole created !"));
+			return myContainer;
+		}
+	}
 
-    emit sendLogInfo(QString::fromStdString("Bipole created !"));
-    return myContainer;
+	//if we arrive at this point, no compatible file has been detected, aborting 
+	emit sendLogInfo(QString::fromStdString("No Compatible file format detected, aborting file extraction"));
+	return nullptr;
 }

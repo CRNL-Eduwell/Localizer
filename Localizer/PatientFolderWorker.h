@@ -14,7 +14,7 @@ class PatientFolderWorker : public IWorker
 	Q_OBJECT
 
 public:
-    PatientFolderWorker(patientFolder currentPatient, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& FrequencyBands, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption);
+    PatientFolderWorker(patientFolder currentPatient, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& FrequencyBands, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::vector<InsermLibrary::FileExt> filePriority);
 	~PatientFolderWorker();
 	void Process();
     void ExtractElectrodeList();
@@ -25,6 +25,7 @@ private:
 private:
     patientFolder* m_Patient = nullptr;
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> m_FrequencyBands;
+	std::vector<InsermLibrary::FileExt> m_filePriority;
 };
 
 #endif
