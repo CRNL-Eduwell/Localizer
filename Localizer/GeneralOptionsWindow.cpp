@@ -29,7 +29,7 @@ void GeneralOptionsWindow::ConnectSignals()
 {
 	connect(ui.MoveUpButton, &QPushButton::clicked, this, &GeneralOptionsWindow::MoveElementUp);
 	connect(ui.MoveDownButton, &QPushButton::clicked, this, &GeneralOptionsWindow::MoveElementDown);
-	connect(ui.SaveCancelButtonbox, &QDialogButtonBox::accepted, this, [&] {m_GeneralOptionsFile->Save(); close(); });
+	connect(ui.SaveCancelButtonbox, &QDialogButtonBox::accepted, this, [&] {SaveFromModel(); m_GeneralOptionsFile->Save(); close(); });
     connect(ui.SaveCancelButtonbox, &QDialogButtonBox::rejected, this, [&] { close(); });
 }
 
@@ -77,7 +77,6 @@ void GeneralOptionsWindow::MoveElementUp()
 			QListWidgetItem *currentItem = ui.listWidget_fileTypes->takeItem(currentIndex);
 			ui.listWidget_fileTypes->insertItem(currentIndex - 1, currentItem);
 			ui.listWidget_fileTypes->setCurrentRow(currentIndex - 1);
-			std::swap(m_GeneralOptionsFile->FileExtensionsFavorite()[currentIndex], m_GeneralOptionsFile->FileExtensionsFavorite()[currentIndex - 1]);
 		}
 	}
 }
@@ -93,7 +92,32 @@ void GeneralOptionsWindow::MoveElementDown()
 			QListWidgetItem *currentItem = ui.listWidget_fileTypes->takeItem(currentIndex);
 			ui.listWidget_fileTypes->insertItem(currentIndex + 1, currentItem);
 			ui.listWidget_fileTypes->setCurrentRow(currentIndex + 1);
-			std::swap(m_GeneralOptionsFile->FileExtensionsFavorite()[currentIndex], m_GeneralOptionsFile->FileExtensionsFavorite()[currentIndex + 1]);
+		}
+	}
+}
+
+//TODO : file system class encapsulating GeneralOption file for logic, ui separation
+void GeneralOptionsWindow::SaveFromModel()
+{
+	m_GeneralOptionsFile->FileExtensionsFavorite().clear();
+	for (int i = 0; i < ui.listWidget_fileTypes->count();i++)
+	{
+		QString text = ui.listWidget_fileTypes->item(i)->text();
+		if (text.compare("Micromed") == 0)
+		{
+			m_GeneralOptionsFile->FileExtensionsFavorite().push_back(InsermLibrary::FileExt::TRC);
+		}
+		else if (text.compare("Elan") == 0)
+		{
+			m_GeneralOptionsFile->FileExtensionsFavorite().push_back(InsermLibrary::FileExt::EEG_ELAN);
+		}
+		else if (text.compare("BrainVision") == 0)
+		{
+			m_GeneralOptionsFile->FileExtensionsFavorite().push_back(InsermLibrary::FileExt::BRAINVISION);
+		}
+		else if (text.compare("European Data Format") == 0)
+		{
+			m_GeneralOptionsFile->FileExtensionsFavorite().push_back(InsermLibrary::FileExt::EDF);
 		}
 	}
 }

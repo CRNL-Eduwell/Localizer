@@ -20,7 +20,7 @@ InsermLibrary::TriggerContainer::~TriggerContainer()
 std::vector<InsermLibrary::Trigger> InsermLibrary::TriggerContainer::GetTriggerForExperiment(PROV *myprovFile, int flagCode, int downSamplingFactor)
 {
 	std::vector<Trigger> triggers = GetTriggerList(flagCode, downSamplingFactor);
-	if (myprovFile != nullptr)
+	if (myprovFile != nullptr && triggers.size() != 0)
 	{
 		if (myprovFile->changeCodeFilePath != "")
 		{
@@ -51,6 +51,9 @@ std::vector<InsermLibrary::Trigger> InsermLibrary::TriggerContainer::GetTriggerL
 void InsermLibrary::TriggerContainer::ProcessEventsForExperiment(PROV *myprovFile, int flagCode, int downSaplingFactor)
 {
 	m_processedTriggers = GetTriggerList(flagCode, downSaplingFactor);
+	if (m_processedTriggers.size() == 0)
+		return;
+
 	if (myprovFile->changeCodeFilePath != "")
 	{
 		RenameTriggersForExperiment(myprovFile, m_processedTriggers);

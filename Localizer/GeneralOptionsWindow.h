@@ -31,6 +31,7 @@ public:
 private:
 	void ConnectSignals();
 	void LoadFileTypeInUi(std::vector<InsermLibrary::FileExt> fileTypes);
+	void SaveFromModel();
 
 private slots:
 	void MoveElementUp();
