@@ -44,6 +44,7 @@ FORMS += \
     Localizer/ConnectCleaner.ui \
     Localizer/ErpProcessor.ui \
     Localizer/FileConverterProcessor.ui \
+    Localizer/GeneralOptionsWindow.ui \
     Localizer/ProtocolWindow.ui \
     Localizer/displayprov.ui \
     Localizer/localizer.ui \
@@ -67,6 +68,8 @@ HEADERS += \
     Localizer/FrequencyBand.h \
     Localizer/FrequencyBandAnalysisOpt.h \
     Localizer/FrequencyFile.h \
+    Localizer/GeneralOptionsFile.h \
+    Localizer/GeneralOptionsWindow.h \
     Localizer/HilbertEnveloppe.h \
     Localizer/IAlgorithmStrategy.h \
     Localizer/ITxtFile.h \
@@ -110,6 +113,8 @@ SOURCES += \
     Localizer/FileConverterWorker.cpp \
     Localizer/FrequencyBand.cpp \
     Localizer/FrequencyFile.cpp \
+    Localizer/GeneralOptionsFile.cpp \
+    Localizer/GeneralOptionsWindow.cpp \
     Localizer/HilbertEnveloppe.cpp \
     Localizer/ITxtFile.cpp \
     Localizer/IWorker.cpp \
