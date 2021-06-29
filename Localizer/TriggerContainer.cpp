@@ -64,6 +64,9 @@ void InsermLibrary::TriggerContainer::ProcessEventsForExperiment(PROV *myprovFil
 	{
 		DeleteTriggerNotPaired(m_processedTriggers);
 	}
+	if (m_processedTriggers.size() == 0)
+		return;
+
 	m_subGroupStimTrials = SortTrialsForExperiment(m_processedTriggers, myprovFile);
 	if (myprovFile->invertmapsinfo != "")
 	{

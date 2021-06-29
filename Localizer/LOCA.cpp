@@ -112,10 +112,12 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 	for (int i = 0; i < m_analysisOpt.size(); i++)
 	{
 		FrequencyBand currentFrequencyBand(m_analysisOpt[i].Band);
-		currentFrequencyBand.CheckShannonCompliance(myeegContainer->SamplingFrequency());
+		//currentFrequencyBand.CheckShannonCompliance(myeegContainer->SamplingFrequency());
 
 		if (m_analysisOpt[i].analysisParameters.eeg2env2)
 		{
+			currentFrequencyBand.CheckShannonCompliance(myeegContainer->SamplingFrequency());
+
 			Algorithm::AlgorithmCalculator::ExecuteAlgorithm(m_analysisOpt[i].analysisParameters.calculationType, myeegContainer, currentFrequencyBand.FrequencyBins());
 			myeegContainer->SaveFrequencyData(m_analysisOpt[i].analysisParameters.outputType, currentFrequencyBand.FrequencyBins());
 			emit incrementAdavnce(1);
@@ -260,8 +262,12 @@ void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt,
 			std::string downsampledEventsFilePath = fileNameBase + "_ds" + to_string(myeegContainer->DownsamplingFactor()) + ".vmrk";
 			std::vector<Trigger> triggers = triggerContainer->GetTriggerForExperiment(myprovFile, 99);
 			std::vector<Trigger> triggersDownsampled = triggerContainer->GetTriggerForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
-			CreateFile(outputType, eventFilePath, triggers);
-			CreateFile(outputType, downsampledEventsFilePath, triggersDownsampled);
+			
+			//We do not add the datafile indication for the ds.vmrk because we chose not to duplicate said file for each fXX_fYY_dsZ eeg file
+			//and thus we can not make it point toward each of the analysis data file.
+			std::string eventDataFilePath = myeegContainer->RootFileName() + ".eeg";
+			CreateFile(outputType, eventFilePath, triggers, eventDataFilePath);
+			CreateFile(outputType, downsampledEventsFilePath, triggersDownsampled, "");
 
 			std::string frequencySuffix = "f" + std::to_string(analysisOpt.Band.FMin()) + "f" + std::to_string(analysisOpt.Band.FMax());
 			RelinkAnalysisFileAnUglyWay(myeegContainer->RootFileFolder(), myeegContainer->RootFileName(),frequencySuffix, to_string(myeegContainer->DownsamplingFactor()));
@@ -280,7 +286,7 @@ void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt,
 	}
 }
 
-void InsermLibrary::LOCA::CreateFile(EEGFormat::FileType outputType, std::string filePath, std::vector<Trigger> & triggers)
+void InsermLibrary::LOCA::CreateFile(EEGFormat::FileType outputType, std::string filePath, std::vector<Trigger> & triggers, std::string extraFilePath)
 {
 	std::vector<EEGFormat::ITrigger> iTriggers(triggers.size());
 	for (int i = 0; i < iTriggers.size(); i++)
@@ -302,7 +308,7 @@ void InsermLibrary::LOCA::CreateFile(EEGFormat::FileType outputType, std::string
 		}
 		case EEGFormat::FileType::BrainVision:
 		{
-			EEGFormat::BrainVisionFile::SaveMarkers(filePath, iTriggers, std::vector<EEGFormat::INote>());
+			EEGFormat::BrainVisionFile::SaveMarkers(filePath, extraFilePath, iTriggers, std::vector<EEGFormat::INote>());
 			break;
 		}
 		case EEGFormat::FileType::EuropeanDataFormat:

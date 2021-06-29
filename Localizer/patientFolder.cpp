@@ -106,7 +106,7 @@ std::string locaFolder::filePath(FileExt wantedFile)
 	case TRC:
 		return m_trcFile;
 	case EEG_ELAN:
-		return m_eegFile;
+		return m_eegFile == "" ? m_freqFolder[0].FilePaths(InsermLibrary::FileExt::SM0_ELAN)[0] : m_eegFile;
 	case ENT_ELAN:
 		return m_eegEntFile;
 	case POS_ELAN:

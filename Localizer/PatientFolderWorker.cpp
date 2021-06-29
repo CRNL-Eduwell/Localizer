@@ -74,6 +74,15 @@ void PatientFolderWorker::ExtractElectrodeList()
 		}
 	}
 
+	//std::vector<std::string> path = m_Patient->localizerFolder()[0].frequencyFolders()[0].FilePaths(SM0_ELAN);
+	//if (path.size() != 0)
+	//{
+	//	std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(path[0]);
+	//	std::string connectCleanerFilePath = m_Patient->rootFolder() + "/" + m_Patient->patientName() + ".ccf";
+	//	emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
+	//	return;
+	//}
+
 	//if we arrive at this point, no compatible file has been detected, aborting loca 
 	sendLogInfo("No Compatible file format detected, aborting analysis.\n");
 	emit finished();

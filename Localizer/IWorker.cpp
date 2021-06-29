@@ -65,6 +65,8 @@ void IWorker::CorrectElectrodeLabels(EEGFormat::IFile* file)
 
     for(size_t i = 0; i < ElectrodeCount; i++)
     {
+        if (m_CorrectedLabels[i].compare("BAD LABELING") == 0) 
+            continue;
         ElectrodeList[i]->Label(m_CorrectedLabels[i]);
     }
 
