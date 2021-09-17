@@ -13,9 +13,9 @@
 #include <QFileDialog>
 #include <QKeyEvent>
 #include <QShortcut>
-#include <QtUiTools>
-#include <QUiLoader>
 #include <QListWidgetItem>
+#include <QFileSystemModel>
+#include <QReadWriteLock>
 
 //==Ui headers
 #include "ui_localizer.h"
