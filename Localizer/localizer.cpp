@@ -204,7 +204,7 @@ void Localizer::LoadTreeViewUI(QString initialFolder)
 int Localizer::PreparePatientFolder()
 {
     QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
-    if(selectedRows.size() == 0) return -1;
+    if(GetSelectedFolderCount(selectedRows) == 0) return -1;
 
     //Create data structure used by the processing part
     if (currentFiles.size() > 0)
@@ -285,7 +285,7 @@ void Localizer::InitProgressBar()
     nbDoneTask = 0;
     nbTaskToDo = 0;
 
-    int nbFolderSelected = GetNbElement(ui.FileTreeView->selectionModel()->selectedRows());
+    int nbFolderSelected = GetSelectedFolderCount(ui.FileTreeView->selectionModel()->selectedRows());
     int nbFrequencyBands = ui.FrequencyListWidget->selectionModel()->selectedRows().size();
 
     ui.Eeg2envCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo++; //eeg2env, wheter we need to compute or load
@@ -330,7 +330,7 @@ std::vector<FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
     return analysisOpt;
 }
 
-int Localizer::GetNbElement(QModelIndexList selectedIndexes)
+int Localizer::GetSelectedFolderCount(QModelIndexList selectedIndexes)
 {
     int nbElementSelected = 0;
     for (int i = 0; i < selectedIndexes.size(); i++)
@@ -363,7 +363,7 @@ void Localizer::SetLabelCount(int count)
 void Localizer::ModelClicked(const QModelIndex &current)
 {
     QModelIndexList selectedIndexes = ui.FileTreeView->selectionModel()->selectedRows();
-    int nbFolderSelected = GetNbElement(selectedIndexes);
+    int nbFolderSelected = GetSelectedFolderCount(selectedIndexes);
     SetLabelCount(nbFolderSelected);
 }
 

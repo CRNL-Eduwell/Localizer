@@ -69,7 +69,7 @@ private:
 	void PrepareSingleFiles();
 	void InitProgressBar();
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> GetUIAnalysisOption();
-	int GetNbElement(QModelIndexList selectedIndexes);
+	int GetSelectedFolderCount(QModelIndexList selectedIndexes);
 
 private slots:
 	void SetLabelCount(int count);
