@@ -107,7 +107,7 @@ private:
 	bool isAlreadyRunning = false;
 	//==UI
 	float nbDoneTask = 0;
-	int nbTaskToDo = 0;
+	float nbTaskToDo = 0;
 	picOptions *picOpt = nullptr;
 	optionsStats *optStat = nullptr;
 	optionsPerf *optPerf = nullptr;

@@ -286,7 +286,12 @@ void Localizer::InitProgressBar()
     nbTaskToDo = 0;
 
     int nbFolderSelected = GetSelectedFolderCount(ui.FileTreeView->selectionModel()->selectedRows());
-    int nbFrequencyBands = ui.FrequencyListWidget->selectionModel()->selectedRows().size();
+    int nbFrequencyBands = 0;
+    for (int i = 0; i < ui.FrequencyListWidget->count(); i++)
+    {
+        if (ui.FrequencyListWidget->item(i)->checkState() == Qt::CheckState::Checked)
+            nbFrequencyBands++;
+    }
 
     ui.Eeg2envCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo++; //eeg2env, wheter we need to compute or load
     ui.Env2plotCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
@@ -703,7 +708,7 @@ void Localizer::DisplayColoredLog(QString messageToDisplay, QColor color)
 
 void Localizer::UpdateProgressBar(int divider)
 {
-    nbDoneTask = nbDoneTask + ((float)1 / divider);
+    nbDoneTask = nbDoneTask + (1.0f / divider);
     ui.progressBar->setValue((nbDoneTask / nbTaskToDo) * 100);
 }
 

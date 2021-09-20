@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/Localizer">
         <file>Resources/Config/frequencyBand.txt</file>
+        <file>Resources/localizer.ico</file>
     </qresource>
 </RCC>
