@@ -1,8 +1,5 @@
 #include "eegContainer.h"
 
-using Framework::Filtering::Linear::FirBandPass;
-using Framework::Filtering::Linear::Convolution;
-
 InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFrequency, int nbFreqBand)
 {
 	fftwf_init_threads();
@@ -226,7 +223,7 @@ void InsermLibrary::eegContainer::GetElectrodes(EEGFormat::IFile* edf)
         std::string result = "";
 		int resId = -1;
 
-		int goodId = idSplitDigiAndNum(edf->Electrodes()[i]->Label());
+        int goodId = GetIndexFromElectrodeLabel(edf->Electrodes()[i]->Label());
 
 		if (goodId != -1)
 		{
@@ -259,7 +256,7 @@ void InsermLibrary::eegContainer::GetElectrodes(EEGFormat::IFile* edf)
 	}
 }
 
-int InsermLibrary::eegContainer::idSplitDigiAndNum(std::string myString)
+int InsermLibrary::eegContainer::GetIndexFromElectrodeLabel(std::string myString)
 {
 	for (int j = 0; j < myString.size(); j++)
 	{

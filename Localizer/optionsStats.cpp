@@ -1,7 +1,5 @@
 #include "optionsStats.h"
 
-using namespace InsermLibrary;
-
 optionsStats::optionsStats(QWidget *parent) : QDialog(parent)
 {
 	ui.setupUi(this);
@@ -14,9 +12,9 @@ optionsStats::~optionsStats()
 
 }
 
-statOption optionsStats::getStatOption()
+InsermLibrary::statOption optionsStats::getStatOption()
 {
-	statOption statOpt;
+    InsermLibrary::statOption statOpt;
 	statOpt.kruskall = ui.pCheckBoxKW->isChecked();
 	statOpt.FDRkruskall = ui.FDRCheckBoxKW->isChecked();
 	statOpt.pKruskall = atof(&ui.pValueLE_KW->text().toStdString()[0]);
@@ -63,13 +61,13 @@ void optionsStats::readList()
 	wantedLocaKW.clear();
 	wantedLocaWil.clear();
 
-	std::vector<std::string> locaFromFileKW = readTxtFile(kwFilePath.toStdString());
+    std::vector<std::string> locaFromFileKW = InsermLibrary::readTxtFile(kwFilePath.toStdString());
 	for (int i = 0; i < locaFromFileKW.size(); i++)
 	{
 		wantedLocaKW.push_back(locaFromFileKW[i].c_str());
 	}
 
-	std::vector<std::string> locaFromFileWil = readTxtFile(wilFilePath.toStdString());
+    std::vector<std::string> locaFromFileWil = InsermLibrary::readTxtFile(wilFilePath.toStdString());
 	for (int i = 0; i < locaFromFileWil.size(); i++)
 	{
 		wantedLocaWil.push_back(locaFromFileWil[i].c_str());
@@ -136,8 +134,8 @@ void optionsStats::getProvList(std::vector<QString> provList)
 
 void optionsStats::saveListsandClose()
 {
-	saveTxtFile(wantedLocaKW, kwFilePath.toStdString());
-	saveTxtFile(wantedLocaWil, wilFilePath.toStdString());
+    InsermLibrary::saveTxtFile(wantedLocaKW, kwFilePath.toStdString());
+    InsermLibrary::saveTxtFile(wantedLocaWil, wilFilePath.toStdString());
 	close();
 }
 

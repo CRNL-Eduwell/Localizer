@@ -1,14 +1,12 @@
 #include "ErpWorker.h"
 
-using namespace InsermLibrary;
-
-ErpWorker::ErpWorker(std::vector<std::string>& eegFiles, std::vector<std::string>& provFiles, picOption picOption)
+ErpWorker::ErpWorker(std::vector<std::string>& eegFiles, std::vector<std::string>& provFiles, InsermLibrary::picOption picOption)
 {
     m_EegFiles = std::vector<std::string>(eegFiles);
     m_ProvFiles = std::vector<std::string>(provFiles);
 
-    std::vector<FrequencyBandAnalysisOpt> vec;
-    m_Loca = new LOCA(vec, nullptr, new InsermLibrary::picOption(picOption));
+    std::vector<InsermLibrary::FrequencyBandAnalysisOpt> vec;
+    m_Loca = new InsermLibrary::LOCA(vec, nullptr, new InsermLibrary::picOption(picOption));
 }
 
 ErpWorker::~ErpWorker()
@@ -21,8 +19,8 @@ void ErpWorker::Process()
     std::string provFolderPath = QCoreApplication::applicationDirPath().toStdString() + "/Resources/Config/Prov/";
     for (size_t i = 0; i < m_EegFiles.size(); i++)
 	{
-        eegContainer *myContainer = ExtractData(m_EegFiles[i]);
-        PROV *myprovFile = new PROV(provFolderPath + m_ProvFiles[i]);
+        InsermLibrary::eegContainer *myContainer = ExtractData(m_EegFiles[i]);
+        InsermLibrary::PROV *myprovFile = new InsermLibrary::PROV(provFolderPath + m_ProvFiles[i]);
 		if (myprovFile != nullptr)
             m_Loca->eeg2erp(myContainer, myprovFile);
 		deleteAndNullify1D(myContainer);
@@ -34,9 +32,9 @@ void ErpWorker::Process()
 	emit finished();
 }
 
-eegContainer* ErpWorker::ExtractData(std::string currentFile)
+InsermLibrary::eegContainer* ErpWorker::ExtractData(std::string currentFile)
 {
-    eegContainer *myContainer = GetEegContainer(currentFile, true, 0);
+    InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFile, true, 0);
     myContainer->DeleteElectrodes(m_IndexToDelete);
     myContainer->GetElectrodes();
     myContainer->BipolarizeElectrodes();
@@ -48,8 +46,7 @@ eegContainer* ErpWorker::ExtractData(std::string currentFile)
 void ErpWorker::ExtractElectrodeList()
 {
     std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(m_EegFiles[0]);
-    //std::string connectCleanerFilePath = m_Patient->rootFolder() + "/" + m_Patient->patientName() + ".ccf";
-    std::string connectCleanerFilePath = ""; //TODO : demander a Benoit si on fait un fichier de nettoyage lors de la conversion aussi
+    std::string connectCleanerFilePath = "";
     emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
 }
 

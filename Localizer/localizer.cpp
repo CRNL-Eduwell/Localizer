@@ -1,7 +1,5 @@
 #include "localizer.h"
 
-using namespace InsermLibrary;
-
 Localizer::Localizer(QWidget *parent) : QMainWindow(parent)
 {
     ui.setupUi(this);
@@ -31,9 +29,9 @@ Localizer::~Localizer()
 
 void Localizer::ReSetupGUI()
 {
-	m_GeneralOptionsFile = new GeneralOptionsFile();
+    m_GeneralOptionsFile = new InsermLibrary::GeneralOptionsFile();
 	m_GeneralOptionsFile->Load();
-    m_frequencyFile = new FrequencyFile();
+    m_frequencyFile = new InsermLibrary::FrequencyFile();
     m_frequencyFile->Load();
 	//==
     LoadFrequencyBandsUI(m_frequencyFile->FrequencyBands());
@@ -46,7 +44,7 @@ void Localizer::ReSetupGUI()
     ui.progressBar->reset();
 }
 
-void Localizer::LoadFrequencyBandsUI(const std::vector<FrequencyBand>& FrequencyBands)
+void Localizer::LoadFrequencyBandsUI(const std::vector<InsermLibrary::FrequencyBand>& FrequencyBands)
 {
     ui.FrequencyListWidget->clear();
     for (size_t i = 0; i < FrequencyBands.size(); i++)
@@ -300,16 +298,16 @@ void Localizer::InitProgressBar()
     nbTaskToDo *= nbFolderSelected * nbFrequencyBands;
 }
 
-std::vector<FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
+std::vector<InsermLibrary::FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
 {
-    std::vector<FrequencyBand> frequencyBands = m_frequencyFile->FrequencyBands();
+    std::vector<InsermLibrary::FrequencyBand> frequencyBands = m_frequencyFile->FrequencyBands();
     std::vector<int> indexes;
     for (int i = 0; i < ui.FrequencyListWidget->count(); i++)
     {
         if (ui.FrequencyListWidget->item(i)->checkState() == Qt::CheckState::Checked)
             indexes.push_back(i);
     }
-    std::vector<FrequencyBandAnalysisOpt> analysisOpt = std::vector<FrequencyBandAnalysisOpt>(indexes.size());
+    std::vector<InsermLibrary::FrequencyBandAnalysisOpt> analysisOpt = std::vector<InsermLibrary::FrequencyBandAnalysisOpt>(indexes.size());
 
     for (size_t i = 0; i < indexes.size(); i++)
     {
@@ -322,13 +320,13 @@ std::vector<FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
 
         //	- what frequency bands data is
         QString label = ui.FrequencyListWidget->item(indexes[i])->text();
-        std::vector<FrequencyBand>::iterator it = std::find_if(frequencyBands.begin(), frequencyBands.end(), [&](const FrequencyBand &c)
+        std::vector<InsermLibrary::FrequencyBand>::iterator it = std::find_if(frequencyBands.begin(), frequencyBands.end(), [&](const InsermLibrary::FrequencyBand &c)
         {
             return (c.Label() == label.toStdString());
         });
         if (it != frequencyBands.end())
         {
-            analysisOpt[i].Band = FrequencyBand(*it);
+            analysisOpt[i].Band = InsermLibrary::FrequencyBand(*it);
         }
     }
 
@@ -483,12 +481,12 @@ void Localizer::ProcessFolderAnalysis()
     if (!isAlreadyRunning)
     {
         //Data Struct info
-        picOption optpic = picOpt->getPicOption();
-        statOption optstat = optStat->getStatOption();
+        InsermLibrary::picOption optpic = picOpt->getPicOption();
+        InsermLibrary::statOption optstat = optStat->getStatOption();
 
         //UI
         InitProgressBar();
-        std::vector<FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
+        std::vector<InsermLibrary::FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
 		std::vector<InsermLibrary::FileExt> filePriority = std::vector<InsermLibrary::FileExt>(m_GeneralOptionsFile->FileExtensionsFavorite());
 
         //Should probably senbd back the struct here and not keep a global variable
@@ -500,8 +498,8 @@ void Localizer::ProcessFolderAnalysis()
 
             //=== Event update displayer
             connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
-            connect(worker->GetLoca(), &LOCA::sendLogInfo, this, &Localizer::DisplayLog);
-            connect(worker->GetLoca(), &LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
+            connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+            connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
             //New ping pong order
             connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
@@ -535,7 +533,7 @@ void Localizer::ProcessSingleAnalysis()
     if (!isAlreadyRunning)
     {
         InitProgressBar();
-        std::vector<FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
+        std::vector<InsermLibrary::FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
 
         //Should probably senbd back the vector here and not keep a global variable
         PrepareSingleFiles();
@@ -545,8 +543,8 @@ void Localizer::ProcessSingleAnalysis()
 
         //=== Event update displayer
         connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
-        connect(worker->GetLoca(), &LOCA::sendLogInfo, this, &Localizer::DisplayLog);
-        connect(worker->GetLoca(), &LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
+        connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+        connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
         //New ping pong order
         connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
@@ -591,13 +589,13 @@ void Localizer::ProcessERPAnalysis(QList<QString> exams)
     nbDoneTask = 0;
     ui.progressBar->reset();
 
-    picOption opt = picOpt->getPicOption();
+    InsermLibrary::picOption opt = picOpt->getPicOption();
     thread = new QThread;
     worker = new ErpWorker(files, provFiles, opt);
 
     //=== Event update displayer
     connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
-    connect(worker->GetLoca(), &LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+    connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
     connect(worker, &IWorker::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
     //New ping pong order
@@ -638,7 +636,7 @@ void Localizer::ProcessFileConvertion(QList<QString> newFileType)
     nbDoneTask = 0;
     ui.progressBar->reset();
 
-    picOption opt = picOpt->getPicOption();
+    InsermLibrary::picOption opt = picOpt->getPicOption();
     thread = new QThread;
     worker = new FileConverterWorker(files, provFiles);
 

@@ -1,8 +1,6 @@
 #include "GeneralOptionsWindow.h"
 
-using namespace InsermLibrary;
-
-GeneralOptionsWindow::GeneralOptionsWindow(GeneralOptionsFile *file, QWidget *parent) : QDialog(parent)
+GeneralOptionsWindow::GeneralOptionsWindow(InsermLibrary::GeneralOptionsFile *file, QWidget *parent) : QDialog(parent)
 {
 	m_GeneralOptionsFile = file;
 

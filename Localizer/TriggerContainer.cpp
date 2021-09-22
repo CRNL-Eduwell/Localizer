@@ -15,8 +15,8 @@ InsermLibrary::TriggerContainer::~TriggerContainer()
 
 }
 
-//flag = -1 to get the full trigger list
-
+// Return a list of trigger for the wanted experiment
+// Use flagCode = -1 to get the full trigger list
 std::vector<InsermLibrary::Trigger> InsermLibrary::TriggerContainer::GetTriggerForExperiment(PROV *myprovFile, int flagCode, int downSamplingFactor)
 {
 	std::vector<Trigger> triggers = GetTriggerList(flagCode, downSamplingFactor);

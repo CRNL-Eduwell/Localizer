@@ -107,8 +107,6 @@ namespace InsermLibrary
 	std::vector<std::string> readTxtFile(std::string path);
 
 	void saveTxtFile(std::vector<QString> data, std::string pathFile);
-
-    //void deblankString(std::string &myString);
 	
 	std::string GetCurrentWorkingDir();
 

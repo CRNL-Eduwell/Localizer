@@ -1,11 +1,5 @@
 #include "LOCA.h"
 
-using namespace Framework::Calculations::Stats;
-using namespace std;
-using namespace InsermLibrary;
-using namespace InsermLibrary::DrawCard;
-using namespace InsermLibrary::DrawbarsPlots;
-
 InsermLibrary::LOCA::LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption* statOption, picOption* picOption)
 {
 	m_analysisOpt = analysisOpt;
@@ -46,7 +40,7 @@ void InsermLibrary::LOCA::eeg2erp(eegContainer *myeegContainer, PROV *myprovFile
 	vec3<float> bigDataMono = vec3<float>(m_triggerContainer->ProcessedTriggerCount(), vec2<float>(myeegContainer->flatElectrodes.size(), vec1<float>(windowSam[1] - windowSam[0])));
 	vec3<float> bigDataBipo = vec3<float>(m_triggerContainer->ProcessedTriggerCount(), vec2<float>(myeegContainer->BipoleCount(), vec1<float>(windowSam[1] - windowSam[0])));
 
-	cout << "Reading Data Mono ..." << endl;
+    std::cout << "Reading Data Mono ..." << std::endl;
 	for (int i = 0; i < m_triggerContainer->ProcessedTriggerCount(); i++)
 	{
 		for (int j = 0; j < (windowSam[1] - windowSam[0]); j++)
@@ -59,7 +53,7 @@ void InsermLibrary::LOCA::eeg2erp(eegContainer *myeegContainer, PROV *myprovFile
 		}
 	}
 
-	cout << "Reading Data Bipo ..." << endl;
+    std::cout << "Reading Data Bipo ..." << std::endl;
 	for (int i = 0; i < m_triggerContainer->ProcessedTriggerCount(); i++)
 	{
 		for (int k = 0; k < myeegContainer->BipoleCount(); k++)
@@ -72,7 +66,7 @@ void InsermLibrary::LOCA::eeg2erp(eegContainer *myeegContainer, PROV *myprovFile
 		}
 	}
 
-	drawPlots b = drawPlots(myprovFile, monoErpOutput, m_picOption->sizePlotmap);
+    InsermLibrary::DrawbarsPlots::drawPlots b = InsermLibrary::DrawbarsPlots::drawPlots(myprovFile, monoErpOutput, m_picOption->sizePlotmap);
 	b.drawDataOnTemplate(bigDataMono, m_triggerContainer, myeegContainer, 0);
 	emit sendLogInfo("Mono Maps Generated");
 	b.drawDataOnTemplate(bigDataBipo, m_triggerContainer, myeegContainer, 1);
@@ -123,15 +117,15 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 			emit incrementAdavnce(1);
 			emit sendLogInfo("Hilbert Envelloppe Calculated");
 
-			string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
+            std::string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
 			toBeNamedCorrectlyFunction(myeegContainer, freqFolder, m_analysisOpt[i]);
 		}
 		else 
 		{
 			for (int j = 0; j < currentLoca->frequencyFolders().size(); j++)
 			{
-				string fMin = to_string(currentFrequencyBand.FMin());
-				string fMax = to_string(currentFrequencyBand.FMax());
+                std::string fMin = std::to_string(currentFrequencyBand.FMin());
+                std::string fMax = std::to_string(currentFrequencyBand.FMax());
 				std::vector<std::string> sm0Files = currentLoca->frequencyFolders()[j].FilePaths(SM0_ELAN);
 
 				if ((currentLoca->frequencyFolders()[j].frequencyName() == "f" + fMin + "f" + fMax) && (sm0Files.size() > 0))
@@ -143,7 +137,7 @@ void InsermLibrary::LOCA::LocaSauron(eegContainer* myeegContainer, int idCurrent
 						emit incrementAdavnce(1);
 						emit sendLogInfo("Envelloppe File Loaded");
 
-						string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
+                        std::string freqFolder = createIfFreqFolderExistNot(myeegContainer, currentFrequencyBand);
 						toBeNamedCorrectlyFunction(myeegContainer, freqFolder, m_analysisOpt[i]);
 					}
 					else
@@ -249,7 +243,7 @@ void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt,
 		case EEGFormat::FileType::Elan:
 		{
 			std::string eventFilePath = fileNameBase + ".pos";
-			std::string downsampledEventsFilePath = fileNameBase + "_ds" + to_string(myeegContainer->DownsamplingFactor()) + ".pos";
+            std::string downsampledEventsFilePath = fileNameBase + "_ds" + std::to_string(myeegContainer->DownsamplingFactor()) + ".pos";
 			std::vector<Trigger> triggers = triggerContainer->GetTriggerForExperiment(myprovFile, 99);
 			std::vector<Trigger> triggersDownsampled = triggerContainer->GetTriggerForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
 			CreateFile(outputType, eventFilePath, triggers);
@@ -259,7 +253,7 @@ void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt,
 		case EEGFormat::FileType::BrainVision:
 		{
 			std::string eventFilePath = fileNameBase + ".vmrk";
-			std::string downsampledEventsFilePath = fileNameBase + "_ds" + to_string(myeegContainer->DownsamplingFactor()) + ".vmrk";
+            std::string downsampledEventsFilePath = fileNameBase + "_ds" + std::to_string(myeegContainer->DownsamplingFactor()) + ".vmrk";
 			std::vector<Trigger> triggers = triggerContainer->GetTriggerForExperiment(myprovFile, 99);
 			std::vector<Trigger> triggersDownsampled = triggerContainer->GetTriggerForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
 			
@@ -270,7 +264,7 @@ void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt,
 			CreateFile(outputType, downsampledEventsFilePath, triggersDownsampled, "");
 
 			std::string frequencySuffix = "f" + std::to_string(analysisOpt.Band.FMin()) + "f" + std::to_string(analysisOpt.Band.FMax());
-			RelinkAnalysisFileAnUglyWay(myeegContainer->RootFileFolder(), myeegContainer->RootFileName(),frequencySuffix, to_string(myeegContainer->DownsamplingFactor()));
+            RelinkAnalysisFileAnUglyWay(myeegContainer->RootFileFolder(), myeegContainer->RootFileName(),frequencySuffix, std::to_string(myeegContainer->DownsamplingFactor()));
 			break;
 		}
 		case EEGFormat::FileType::EuropeanDataFormat:
@@ -380,17 +374,17 @@ void InsermLibrary::LOCA::CreateConfFile(eegContainer *myeegContainer)
 {
 	std::string outputConfFilePath = myeegContainer->RootFileFolder() + myeegContainer->RootFileName();
 
-	ofstream confFile(outputConfFilePath + ".conf", ios::out);
+    std::ofstream confFile(outputConfFilePath + ".conf", std::ios::out);
 
-	confFile << "nb_channel" << "  " << myeegContainer->flatElectrodes.size() << endl;
-	confFile << "sec_per_page" << "  " << 4 << endl;
-	confFile << "amp_scale_type" << "  " << 1 << endl;
-	confFile << "amp_scale_val" << "  " << 1 << endl;
+    confFile << "nb_channel" << "  " << myeegContainer->flatElectrodes.size() << std::endl;
+    confFile << "sec_per_page" << "  " << 4 << std::endl;
+    confFile << "amp_scale_type" << "  " << 1 << std::endl;
+    confFile << "amp_scale_val" << "  " << 1 << std::endl;
 
-	confFile << "channel_visibility" << endl;
+    confFile << "channel_visibility" << std::endl;
 	for (int i = 0; i < myeegContainer->flatElectrodes.size(); i++)
 	{
-		confFile << 1 << endl;
+        confFile << 1 << std::endl;
 	}
 	/**********************************************************/
 	/* We print the bipole Id as long as the next is from the */
@@ -398,20 +392,20 @@ void InsermLibrary::LOCA::CreateConfFile(eegContainer *myeegContainer)
 	/* one is not from the same Electrode (B'1) we put -1 and */
 	/*				we go again until the end				  */
 	/**********************************************************/
-	confFile << "channel_reference" << endl;
-	confFile << "-1" << endl;
+    confFile << "channel_reference" << std::endl;
+    confFile << "-1" << std::endl;
 
 	for (int i = 0; i < myeegContainer->BipoleCount() - 1; i++)
 	{
 		if (myeegContainer->Bipole(i).second + 1 != myeegContainer->Bipole(i + 1).second)
 		{
 			//-1
-			confFile << myeegContainer->Bipole(i).second << endl;
-			confFile << "-1" << endl;
+            confFile << myeegContainer->Bipole(i).second << std::endl;
+            confFile << "-1" << std::endl;
 		}
 		else
 		{
-			confFile << myeegContainer->Bipole(i).second << endl;
+            confFile << myeegContainer->Bipole(i).second << std::endl;
 		}
 	}
 	confFile.close();
@@ -435,7 +429,7 @@ std::string InsermLibrary::LOCA::createIfFreqFolderExistNot(eegContainer *myeegC
 	return freqFolder;
 }
 
-PROV* InsermLibrary::LOCA::LoadProvForTask()
+InsermLibrary::PROV* InsermLibrary::LOCA::LoadProvForTask()
 {
     std::string MainProvPath = QCoreApplication::applicationDirPath().toStdString() + "/Resources/Config/Prov/" + m_currentLoca->localizerName() + ".prov";
 	if (EEGFormat::Utility::DoesFileExist(MainProvPath))
@@ -448,7 +442,7 @@ PROV* InsermLibrary::LOCA::LoadProvForTask()
 	}
 }
 
-std::vector<PROV> InsermLibrary::LOCA::LoadAllProvForTask()
+std::vector<InsermLibrary::PROV> InsermLibrary::LOCA::LoadAllProvForTask()
 {
     std::string provFolder = QCoreApplication::applicationDirPath().toStdString() + "/Resources/Config/Prov/";
 
@@ -495,7 +489,7 @@ bool InsermLibrary::LOCA::shouldPerformBarPlot(std::string locaName)
 
 bool InsermLibrary::LOCA::isBarPlot(std::string provFile)
 {
-	vec1<string> splitFile = split<std::string>(provFile, "_");
+    vec1<std::string> splitFile = split<std::string>(provFile, "_");
 	std::string toCheck = splitFile[splitFile.size() - 1];
 	transform(toCheck.begin(), toCheck.end(), toCheck.begin(), ::tolower);
 	if (toCheck == "_barplot")
@@ -525,7 +519,7 @@ void InsermLibrary::LOCA::barplot(eegContainer *myeegContainer, PROV *myprovFile
 	vec1<PVALUECOORD> significantValue = calculateStatisticKruskall(eegData3D, myeegContainer, myprovFile, mapsFolder);
 
 	//==
-	drawBars b = drawBars(myprovFile, mapPath, m_picOption->sizePlotmap);
+    InsermLibrary::DrawbarsPlots::drawBars b = InsermLibrary::DrawbarsPlots::drawBars(myprovFile, mapPath, m_picOption->sizePlotmap);
 	b.drawDataOnTemplate(eegData3D, m_triggerContainer, significantValue, myeegContainer);
 
 	delete windowSam;
@@ -539,8 +533,8 @@ std::string InsermLibrary::LOCA::getMapsFolderBar(std::string freqFolder, PROV *
 
 	mapsFolder.append("_bar");
 
-	stringstream streamPValue;
-	streamPValue << fixed << setprecision(2) << m_statOption->pKruskall;
+    std::stringstream streamPValue;
+    streamPValue << std::fixed << std::setprecision(2) << m_statOption->pKruskall;
 	if (m_statOption->kruskall)
 	{
 		if (m_statOption->FDRkruskall)
@@ -562,10 +556,10 @@ std::string InsermLibrary::LOCA::prepareFolderAndPathsBar(std::string mapsFolder
 
 	vec1<std::string> dd = split<std::string>(mapsFolder, "/");
 
-	return std::string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + to_string(dsSampFreq) + "_sm0_bar_");
+    return std::string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + std::to_string(dsSampFreq) + "_sm0_bar_");
 }
 
-vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticKruskall(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder)
+InsermLibrary::vec1<InsermLibrary::PVALUECOORD> InsermLibrary::LOCA::calculateStatisticKruskall(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder)
 {
 	std::vector<PVALUECOORD> significantValue;
 	if (m_statOption->kruskall)
@@ -601,7 +595,7 @@ void InsermLibrary::LOCA::env2plot(eegContainer *myeegContainer, PROV *myprovFil
 	myeegContainer->GetFrequencyBlocDataEvents(eegData3D, 0, m_triggerContainer->ProcessedTriggers(), windowSam);
 
 	//==
-	drawPlots b = drawPlots(myprovFile, mapPath, m_picOption->sizePlotmap);
+    InsermLibrary::DrawbarsPlots::drawPlots b = InsermLibrary::DrawbarsPlots::drawPlots(myprovFile, mapPath, m_picOption->sizePlotmap);
 	b.drawDataOnTemplate(eegData3D, m_triggerContainer, myeegContainer, 2);
 
 	delete windowSam;
@@ -613,7 +607,7 @@ std::string InsermLibrary::LOCA::getMapsFolderPlot(std::string freqFolder, PROV 
 	vec1<std::string> dd = split<std::string>(mapsFolder, "/");
 	mapsFolder.append(dd[dd.size() - 1]);
 
-	vector<std::string> myProv = split<std::string>(myprovFile->filePath(), "/");
+    std::vector<std::string> myProv = split<std::string>(myprovFile->filePath(), "/");
 	return mapsFolder.append("_plots").append(" - " + myProv[myProv.size() - 1]);
 }
 
@@ -624,7 +618,7 @@ std::string InsermLibrary::LOCA::prepareFolderAndPathsPlot(std::string mapsFolde
 
 	vec1<std::string> dd = split<std::string>(mapsFolder, "/");
 
-	return std::string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + to_string(dsSampFreq) + "_sm0_plot_");
+    return std::string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + std::to_string(dsSampFreq) + "_sm0_plot_");
 }
 
 /************/
@@ -632,7 +626,7 @@ std::string InsermLibrary::LOCA::prepareFolderAndPathsPlot(std::string mapsFolde
 /************/
 void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder)
 {
-	vector<PVALUECOORD> significantValue;
+    std::vector<PVALUECOORD> significantValue;
 	//== get some useful information
 	std::string mapsFolder = getMapsFolderTrial(myprovFile, freqFolder);
 	std::string mapPath = prepareFolderAndPathsTrial(mapsFolder, myeegContainer->DownsamplingFactor());
@@ -651,7 +645,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, PROV *
 
 	//== Draw for each plot and according to a template to reduce drawing time
 	std::vector<int> SubGroupStimTrials = m_triggerContainer->SubGroupStimTrials();
-	mapsGenerator mGen(m_picOption->sizeTrialmap.width(), m_picOption->sizeTrialmap.height());
+    InsermLibrary::DrawCard::mapsGenerator mGen(m_picOption->sizeTrialmap.width(), m_picOption->sizeTrialmap.height());
 	mGen.trialmatTemplate(SubGroupStimTrials, myprovFile);
 
 	QPixmap *pixmapChanel = nullptr, *pixmapSubSubMatrix = nullptr;
@@ -663,7 +657,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, PROV *
 		pixmapChanel = new QPixmap(mGen.pixmapTemplate);
 		painterChanel = new QPainter(pixmapChanel);
 
-		float stdRes = Measure::MeanOfStandardDeviation(bigData[i]);
+        float stdRes = Framework::Calculations::Stats::Measure::MeanOfStandardDeviation(bigData[i]);
 		float Maxi = 2.0 * abs(stdRes);
 		float Mini = -2.0 * abs(stdRes);
 		mGen.graduateColorBar(painterChanel, Maxi);
@@ -751,7 +745,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, PROV *
 		//Display Stat
 		if (m_statOption->wilcoxon)
 		{
-			vector<int> allIdCurrentMap = mGen.checkIfNeedDisplayStat(significantValue, i);
+            std::vector<int> allIdCurrentMap = mGen.checkIfNeedDisplayStat(significantValue, i);
 			if (allIdCurrentMap.size() > 0)
 			{
 				vec2<int> idCurrentMap = mGen.checkIfConditionStat(significantValue, allIdCurrentMap, nbRow);
@@ -779,7 +773,7 @@ void InsermLibrary::LOCA::timeTrialmatrices(eegContainer *myeegContainer, PROV *
 std::string InsermLibrary::LOCA::getMapsFolderTrial(PROV *myprovFile, std::string freqFolder)
 {
 	std::string mapsFolder = freqFolder;
-	vec1<std::string> dd = split<string>(mapsFolder, "/");
+    vec1<std::string> dd = split<std::string>(mapsFolder, "/");
 	mapsFolder.append(dd[dd.size() - 1]);
 
 	if (myprovFile->invertmapsinfo == "")
@@ -788,7 +782,7 @@ std::string InsermLibrary::LOCA::getMapsFolderTrial(PROV *myprovFile, std::strin
 		mapsFolder.append("_trials_resp");
 
 	std::stringstream streamPValue;
-	streamPValue << fixed << setprecision(2) << m_statOption->pWilcoxon;
+    streamPValue << std::fixed << std::setprecision(2) << m_statOption->pWilcoxon;
 	if (m_statOption->wilcoxon)
 	{
 		if (m_statOption->FDRwilcoxon)
@@ -810,7 +804,7 @@ std::string InsermLibrary::LOCA::prepareFolderAndPathsTrial(std::string mapsFold
 
 	vec1<std::string> dd = split<std::string>(mapsFolder, "/");
 
-	return std::string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + to_string(dsSampFreq) + "_sm0_trials_");
+    return std::string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + std::to_string(dsSampFreq) + "_sm0_trials_");
 }
 
 bool InsermLibrary::LOCA::shouldPerformStatTrial(std::string locaName)
@@ -826,7 +820,7 @@ bool InsermLibrary::LOCA::shouldPerformStatTrial(std::string locaName)
 	return false;
 }
 
-vec1<PVALUECOORD> InsermLibrary::LOCA::calculateStatisticWilcoxon(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder)
+InsermLibrary::vec1<InsermLibrary::PVALUECOORD> InsermLibrary::LOCA::calculateStatisticWilcoxon(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder)
 {
 	std::vector<PVALUECOORD> significantValue;
 	if (m_statOption->wilcoxon)

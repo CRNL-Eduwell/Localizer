@@ -69,7 +69,7 @@ namespace InsermLibrary
 		}
 		inline long ResponseSample()
 		{
-			m_response.Sample();
+            return m_response.Sample();
 		}
 		inline void ResponseSample(const long& sample)
 		{

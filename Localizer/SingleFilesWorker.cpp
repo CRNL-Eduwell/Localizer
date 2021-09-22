@@ -1,13 +1,11 @@
 #include "SingleFilesWorker.h"
 
-using namespace InsermLibrary;
-
-SingleFilesWorker::SingleFilesWorker(std::vector<singleFile>& singleFiles, std::vector<FrequencyBandAnalysisOpt>& FrequencyBands)
+SingleFilesWorker::SingleFilesWorker(std::vector<singleFile>& singleFiles, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& FrequencyBands)
 {
     m_currentFiles = std::vector<singleFile>(singleFiles);
-    m_frequencyBands = std::vector<FrequencyBandAnalysisOpt>(FrequencyBands);
+    m_frequencyBands = std::vector<InsermLibrary::FrequencyBandAnalysisOpt>(FrequencyBands);
 
-    m_Loca = new LOCA(m_frequencyBands, nullptr, nullptr);
+    m_Loca = new InsermLibrary::LOCA(m_frequencyBands, nullptr, nullptr);
 }
 
 SingleFilesWorker::~SingleFilesWorker()
@@ -19,7 +17,7 @@ void SingleFilesWorker::Process()
 {
     singleFile file = m_currentFiles[m_CurrentProcessId];
     emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + file.rootFolder() + " ==="));
-    eegContainer *myContainer = ExtractData(file, true, static_cast<int>(m_frequencyBands.size()));
+    InsermLibrary::eegContainer *myContainer = ExtractData(file, true, static_cast<int>(m_frequencyBands.size()));
 
     if (myContainer != nullptr)
     {
@@ -36,7 +34,7 @@ void SingleFilesWorker::Process()
     }
 
     m_CurrentProcessId++;
-    if(m_CurrentProcessId < m_currentFiles.size())
+    if(m_CurrentProcessId < static_cast<int>(m_currentFiles.size()))
     {
         ExtractElectrodeList();
     }
@@ -48,14 +46,14 @@ void SingleFilesWorker::Process()
 
 void SingleFilesWorker::ExtractElectrodeList()
 {
-    if(m_CurrentProcessId >= m_currentFiles.size())
+    if(m_CurrentProcessId >= static_cast<int>(m_currentFiles.size()))
     {
         throw new std::runtime_error("Error ExtractElectrodeList : ProcessID is greater than the number of file to process");
     }
 
     singleFile file = m_currentFiles[m_CurrentProcessId];
-    FileExt currentExtention = file.fileExtention();
-    if (currentExtention == NO_EXT)
+    InsermLibrary::FileExt currentExtention = file.fileExtention();
+    if (currentExtention == InsermLibrary::NO_EXT)
     {
         throw new std::runtime_error("Error ExtractElectrodeList : FileExtention is unknown");
     }
@@ -66,14 +64,14 @@ void SingleFilesWorker::ExtractElectrodeList()
     emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
 }
 
-eegContainer* SingleFilesWorker::ExtractData(singleFile currentFile, bool extractOriginalData, int nbFreqBand)
+InsermLibrary::eegContainer* SingleFilesWorker::ExtractData(singleFile currentFile, bool extractOriginalData, int nbFreqBand)
 {
-    FileExt currentExtention = currentFile.fileExtention();
-    if (currentExtention == NO_EXT)
+    InsermLibrary::FileExt currentExtention = currentFile.fileExtention();
+    if (currentExtention == InsermLibrary::NO_EXT)
         return nullptr;
     std::string currentFilePath = currentFile.filePath(currentExtention);
 
-    eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData, nbFreqBand);
+    InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData, nbFreqBand);
     myContainer->DeleteElectrodes(m_IndexToDelete);
     myContainer->GetElectrodes();
     myContainer->BipolarizeElectrodes();

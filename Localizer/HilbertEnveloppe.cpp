@@ -1,15 +1,14 @@
 #include "HilbertEnveloppe.h"
 
-using namespace InsermLibrary;
 using Framework::Filtering::Linear::Convolution;
 
-void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, std::vector<int> FrequencyBand)
+void Algorithm::Strategy::HilbertEnveloppe::Process(InsermLibrary::eegContainer* EegContainer, std::vector<int> FrequencyBand)
 {
     std::thread thr[5];
 	int NumberOfSample = EegContainer->Data().size() > 0 ? EegContainer->Data()[0].size() : 0;
 	int NumberOfElement = EegContainer->BipoleCount();
 	int NumberOfFrequencyBins = FrequencyBand.size();
-	DataContainer dataCont = DataContainer(EegContainer->SamplingFrequency(), EegContainer->DownsampledFrequency(), NumberOfSample, FrequencyBand);
+    InsermLibrary::DataContainer dataCont = InsermLibrary::DataContainer(EegContainer->SamplingFrequency(), EegContainer->DownsampledFrequency(), NumberOfSample, FrequencyBand);
     CalculateSmoothingCoefficients(EegContainer->DownsampledFrequency());
 	InitOutputDataStructure(EegContainer);
 
@@ -107,7 +106,7 @@ void Algorithm::Strategy::HilbertEnveloppe::Process(eegContainer* EegContainer, 
 
 }
 
-void Algorithm::Strategy::HilbertEnveloppe::InitOutputDataStructure(eegContainer* EegContainer)
+void Algorithm::Strategy::HilbertEnveloppe::InitOutputDataStructure(InsermLibrary::eegContainer* EegContainer)
 {
 	std::vector<EEGFormat::IElectrode*> bipolesList;
 	int BipoleCount = EegContainer->BipoleCount();
@@ -176,7 +175,7 @@ void Algorithm::Strategy::HilbertEnveloppe::HilbertDownSampSumData(InsermLibrary
 	}
 }
 
-void Algorithm::Strategy::HilbertEnveloppe::MeanConvolveData(DataContainer* DataContainer, int threadId)
+void Algorithm::Strategy::HilbertEnveloppe::MeanConvolveData(InsermLibrary::DataContainer* DataContainer, int threadId)
 {
 	for (int i = 0; i < DataContainer->NbSampleDownsampled(); i++)
 	{

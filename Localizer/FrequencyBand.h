@@ -14,15 +14,15 @@ namespace InsermLibrary
 		{
 			return m_name;
 		}
-		inline const int FMax() const
+        inline int FMax() const
 		{
 			return m_bins[m_bins.size() - 1];
 		}
-		inline const int Step() const
+        inline int Step() const
 		{
 			return m_bins[1] - m_bins[0];
 		}
-		inline const int FMin() const
+        inline int FMin() const
 		{
 			return m_bins[0];
 		}

@@ -1,15 +1,11 @@
 #include "PatientFolderWorker.h"
 
-//at this point, patient folder has had the non wanted folder removed 
-
-using namespace InsermLibrary;
-
-PatientFolderWorker::PatientFolderWorker(patientFolder currentPatient, std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption statOption, picOption picOption, std::vector<InsermLibrary::FileExt> filePriority)
+PatientFolderWorker::PatientFolderWorker(patientFolder currentPatient, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& analysisOpt, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::vector<InsermLibrary::FileExt> filePriority)
 {
     m_Patient = new patientFolder(currentPatient);
-    m_FrequencyBands = std::vector<FrequencyBandAnalysisOpt>(analysisOpt);
+    m_FrequencyBands = std::vector<InsermLibrary::FrequencyBandAnalysisOpt>(analysisOpt);
 	m_filePriority = std::vector<InsermLibrary::FileExt>(filePriority);
-    m_Loca = new LOCA(m_FrequencyBands, new InsermLibrary::statOption(statOption), new InsermLibrary::picOption(picOption));
+    m_Loca = new InsermLibrary::LOCA(m_FrequencyBands, new InsermLibrary::statOption(statOption), new InsermLibrary::picOption(picOption));
 }
 
 PatientFolderWorker::~PatientFolderWorker()
@@ -21,10 +17,11 @@ PatientFolderWorker::~PatientFolderWorker()
 void PatientFolderWorker::Process()
 {
     std::stringstream TimeDisp;
-	eegContainer *myContainer = nullptr;
+    InsermLibrary::eegContainer *myContainer = nullptr;
 	std::time_t t = std::time(nullptr);
 
-    for (int i = 0; i < m_Patient->localizerFolder().size(); i++)
+    int localizerCount = static_cast<int>(m_Patient->localizerFolder().size());
+    for (int i = 0; i < localizerCount; i++)
 	{
         emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + m_Patient->localizerFolder()[i].rootLocaFolder() + " ==="));
         bool extractData = m_FrequencyBands.size() > 0 ? m_FrequencyBands[0].analysisParameters.eeg2env2 : false; //for now it's the same analysus choice for each band , might change in the future
@@ -62,7 +59,8 @@ void PatientFolderWorker::ExtractElectrodeList()
 		emit finished();
 	}
 
-	for (int i = 0; i < m_filePriority.size(); i++)
+    int filePriorityCount = static_cast<int>(m_filePriority.size());
+    for (int i = 0; i < filePriorityCount; i++)
 	{
 		std::string currentFilePath = m_Patient->localizerFolder()[0].filePath(m_filePriority[i]);
 		if (EEGFormat::Utility::DoesFileExist(currentFilePath))
@@ -74,28 +72,19 @@ void PatientFolderWorker::ExtractElectrodeList()
 		}
 	}
 
-	//std::vector<std::string> path = m_Patient->localizerFolder()[0].frequencyFolders()[0].FilePaths(SM0_ELAN);
-	//if (path.size() != 0)
-	//{
-	//	std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(path[0]);
-	//	std::string connectCleanerFilePath = m_Patient->rootFolder() + "/" + m_Patient->patientName() + ".ccf";
-	//	emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
-	//	return;
-	//}
-
-	//if we arrive at this point, no compatible file has been detected, aborting loca 
 	sendLogInfo("No Compatible file format detected, aborting analysis.\n");
 	emit finished();
 }
 
-eegContainer* PatientFolderWorker::ExtractData(locaFolder currentLoca, bool extractOriginalData, int nbFreqBand)
+InsermLibrary::eegContainer* PatientFolderWorker::ExtractData(locaFolder currentLoca, bool extractOriginalData, int nbFreqBand)
 {
-	for (int i = 0; i < m_filePriority.size(); i++)
+    int filePriorityCount = static_cast<int>(m_filePriority.size());
+    for (int i = 0; i < filePriorityCount; i++)
 	{
 		std::string currentFilePath = currentLoca.filePath(m_filePriority[i]);
 		if (EEGFormat::Utility::DoesFileExist(currentFilePath))
 		{
-			eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData, nbFreqBand);
+            InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData, nbFreqBand);
 			myContainer->DeleteElectrodes(m_IndexToDelete);
 			myContainer->GetElectrodes();
 			myContainer->BipolarizeElectrodes();

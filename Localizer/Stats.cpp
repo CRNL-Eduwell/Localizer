@@ -1,8 +1,5 @@
 #include "Stats.h"
 
-using namespace std;
-using namespace InsermLibrary;
-
 void InsermLibrary::Stats::pValuesWilcoxon(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata, TriggerContainer* triggerContainer, int samplingFreq, PROV *myprovFile)
 {
 	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
@@ -47,7 +44,7 @@ void InsermLibrary::Stats::pValuesKruskall(vec3<float> &pValue3D, vec3<int> &pSi
 	delete windowSam;
 }
 
-vec1<PVALUECOORD> InsermLibrary::Stats::FDR(vec3<float> &pValues3D, vec3<int> &pSign3D, int &copyIndex, float pLimit)
+InsermLibrary::vec1<InsermLibrary::PVALUECOORD> InsermLibrary::Stats::FDR(vec3<float> &pValues3D, vec3<int> &pSign3D, int &copyIndex, float pLimit)
 {
 	int V = pValues3D.size() * pValues3D[0].size() * pValues3D[0][0].size();
 	float CV = log(V) + 0.5772;
@@ -69,13 +66,13 @@ vec1<PVALUECOORD> InsermLibrary::Stats::FDR(vec3<float> &pValues3D, vec3<int> &p
 		}
 	}
 
-	vector<PVALUECOORD> significantValue;
+    std::vector<PVALUECOORD> significantValue;
 	for (int i = 0; i < copyIndex; i++)
 	{
 		significantValue.push_back(preFDRValues[i]);
 	}
 
-	//vérifier si celui la est nécessaire ??
+	//verifier si celui la est necessaire ??
 	std::sort(significantValue.begin(), significantValue.end(),
 		[](PVALUECOORD firstValue, PVALUECOORD secondValue) {
 		return (firstValue.pValue < secondValue.pValue);
@@ -84,11 +81,11 @@ vec1<PVALUECOORD> InsermLibrary::Stats::FDR(vec3<float> &pValues3D, vec3<int> &p
 	return significantValue;
 }
 
-vec1<PVALUECOORD> InsermLibrary::Stats::loadPValues(vec3<float> &pValues3D, vec3<int> &pSign3D)
+InsermLibrary::vec1<InsermLibrary::PVALUECOORD> InsermLibrary::Stats::loadPValues(vec3<float> &pValues3D, vec3<int> &pSign3D)
 {
 	int compteur = 0;
 	PVALUECOORD tempPValue;
-	vector<PVALUECOORD> pValues;
+    std::vector<PVALUECOORD> pValues;
 
 	for (int i = 0; i < pValues3D.size(); i++)
 	{
@@ -111,11 +108,11 @@ vec1<PVALUECOORD> InsermLibrary::Stats::loadPValues(vec3<float> &pValues3D, vec3
 	return pValues;
 }
 
-vec1<PVALUECOORD> InsermLibrary::Stats::loadPValues(vec3<float> &pValues3D, vec3<int> &pSign3D, float pLimit)
+InsermLibrary::vec1<InsermLibrary::PVALUECOORD> InsermLibrary::Stats::loadPValues(vec3<float> &pValues3D, vec3<int> &pSign3D, float pLimit)
 {
 	int compteur = 0;
 	PVALUECOORD tempPValue;
-	vector<PVALUECOORD> pValues;
+    std::vector<PVALUECOORD> pValues;
 
 	for (int i = 0; i < pValues3D.size(); i++)
 	{
@@ -142,23 +139,22 @@ vec1<PVALUECOORD> InsermLibrary::Stats::loadPValues(vec3<float> &pValues3D, vec3
 	return pValues;
 }
 
-void InsermLibrary::Stats::exportStatsData(eegContainer *myEegContainer, PROV *myprovFile, vec1<PVALUECOORD> pValues, 
-										   string outputFolder, bool isBar)
+void InsermLibrary::Stats::exportStatsData(eegContainer *myEegContainer, PROV *myprovFile, vec1<PVALUECOORD> pValues, std::string outputFolder, bool isBar)
 {
-	ofstream fichierSt(outputFolder + "/statLoca.csv", ios::out);
+    std::ofstream fichierSt(outputFolder + "/statLoca.csv", std::ios::out);
 	fichierSt << " " << ";";
 	for (int i = 0; i < myEegContainer->BipoleCount(); i++)
 	{
 		fichierSt << myEegContainer->flatElectrodes[myEegContainer->Bipole(i).first] << ";";
 	}
-	fichierSt << endl;
+    fichierSt << std::endl;
 
 	for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
 	{
 		fichierSt << myprovFile->visuBlocs[j].mainEventBloc.eventLabel << ";";
 		for (int i = 0; i < myEegContainer->BipoleCount(); i++)
 		{
-			vector<int> indexes;
+            std::vector<int> indexes;
 			for (int z = 0; z < pValues.size(); z++)
 			{
 				if (isBar == false)
@@ -187,12 +183,12 @@ void InsermLibrary::Stats::exportStatsData(eegContainer *myEegContainer, PROV *m
 				fichierSt << "FALSE" << ";";
 			}
 		}
-		fichierSt << endl;	
+        fichierSt << std::endl;
 	}
 	fichierSt.close();
 }
 
-vec1<float> InsermLibrary::Stats::getBaselineBlocWilcoxon(int currentChanel, int lowTrial, int numberSubTrial, 
+InsermLibrary::vec1<float> InsermLibrary::Stats::getBaselineBlocWilcoxon(int currentChanel, int lowTrial, int numberSubTrial,
 														  int samplingFreq, displayBLOC dispBloc, vec3<float> &bigdata)
 {
 	vec1<float> baseLine;
@@ -213,7 +209,7 @@ vec1<float> InsermLibrary::Stats::getBaselineBlocWilcoxon(int currentChanel, int
 	return baseLine;
 }
 
-vec2<float> InsermLibrary::Stats::getEegDataBlocWilcoxon(int currentChanel, int lowTrial, int numberSubTrial, 
+InsermLibrary::vec2<float> InsermLibrary::Stats::getEegDataBlocWilcoxon(int currentChanel, int lowTrial, int numberSubTrial,
 														 int samplingFreq, int idBloc, PROV *myprovFile, 
 														 vec3<float> &bigdata)
 {
@@ -252,7 +248,7 @@ vec2<float> InsermLibrary::Stats::getEegDataBlocWilcoxon(int currentChanel, int 
 	return eegDataBig;
 }
 
-vec1<int> InsermLibrary::Stats::getEegSignBlocWilcoxon(vec1<float> &baseLine, vec2<float> &eegDataBig)
+InsermLibrary::vec1<int> InsermLibrary::Stats::getEegSignBlocWilcoxon(vec1<float> &baseLine, vec2<float> &eegDataBig)
 {
 	vec1<int> valueSigne;
 	for (int i = 0; i < eegDataBig.size(); i++)
@@ -284,7 +280,7 @@ vec1<int> InsermLibrary::Stats::getEegSignBlocWilcoxon(vec1<float> &baseLine, ve
 	return valueSigne;
 }
 
-vec1<float> InsermLibrary::Stats::getBaselineKruskall(vec3<float> &bigdata, TriggerContainer* triggerContainer, int currentChanel, int* windowSam)
+InsermLibrary::vec1<float> InsermLibrary::Stats::getBaselineKruskall(vec3<float> &bigdata, TriggerContainer* triggerContainer, int currentChanel, int* windowSam)
 {
 	int SubGroupCount = triggerContainer->SubGroupStimTrials().size();
 	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
@@ -309,7 +305,7 @@ vec1<float> InsermLibrary::Stats::getBaselineKruskall(vec3<float> &bigdata, Trig
 	return baseLineData;
 }
 
-vec2<float> InsermLibrary::Stats::getEEGDataKruskall(vec3<float> &bigdata, TriggerContainer* triggerContainer, int currentChanel, int* windowSam)
+InsermLibrary::vec2<float> InsermLibrary::Stats::getEEGDataKruskall(vec3<float> &bigdata, TriggerContainer* triggerContainer, int currentChanel, int* windowSam)
 {
 	int SubGroupCount = triggerContainer->SubGroupStimTrials().size();
 	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
@@ -339,7 +335,7 @@ vec2<float> InsermLibrary::Stats::getEEGDataKruskall(vec3<float> &bigdata, Trigg
 	return eegDataBig;
 }
 
-vec2<float> InsermLibrary::Stats::getPValuesKruskall(vec1<float> &baseLineData, vec2<float> &eegData)
+InsermLibrary::vec2<float> InsermLibrary::Stats::getPValuesKruskall(vec1<float> &baseLineData, vec2<float> &eegData)
 {
 	vec1<float> pValue;
 	vec2<float> pValueBig;
@@ -362,7 +358,7 @@ vec2<float> InsermLibrary::Stats::getPValuesKruskall(vec1<float> &baseLineData, 
 	return pValueBig;
 }
 
-vec2<int> InsermLibrary::Stats::getEegSignKruskall(vec1<float> &baseLineData, vec2<float> &eegData)
+InsermLibrary::vec2<int> InsermLibrary::Stats::getEegSignKruskall(vec1<float> &baseLineData, vec2<float> &eegData)
 {
 	vec2<int> valueSignBig;
 	vec1<int> valueSign;
