@@ -180,27 +180,28 @@ void InsermLibrary::DrawCard::mapsGenerator::drawMapTitle(QPainter *painter, std
 
 InsermLibrary::vec2<float> InsermLibrary::DrawCard::mapsGenerator::horizontalInterpolation(vec2<float> chanelToInterpol, int interpolationFactor, int idBegTrigg, int nbSubTrials)
 {
-	int nbSampleWin = chanelToInterpol[0].size() - 1;
+    vec2<float> eegDataInterpolated;
+    for (int i = 0; i < nbSubTrials; i++)
+    {
+        int subTrialIndex = idBegTrigg + i;
+        int subTrialSampleCount = chanelToInterpol[subTrialIndex].size();
 
-	vec2<float> eegDataInterpolated;
-	for (int i = 0; i < nbSubTrials; i++)
-	{
         std::vector<float> eegDataOneTrial;
-		for (int j = 0; j < nbSampleWin; j++)
-		{
-			float beginValue = chanelToInterpol[idBegTrigg + i][j];
-			float endValue = chanelToInterpol[idBegTrigg + i][j + 1];
+        for (int j = 0; j < subTrialSampleCount; j++)
+        {
+            float beginValue = chanelToInterpol[subTrialIndex][j];
+            float endValue = chanelToInterpol[subTrialIndex][j + 1];
 
-			for (int k = 0; k < interpolationFactor; k++)
-			{
-				float coeff = (float)k / interpolationFactor;
-				eegDataOneTrial.push_back(((1 - coeff) * beginValue) + (coeff * endValue));
-			}
-		}
-		eegDataInterpolated.push_back(eegDataOneTrial);
-	}
+            for (int k = 0; k < interpolationFactor; k++)
+            {
+                float coeff = (float)k / interpolationFactor;
+                eegDataOneTrial.push_back(((1 - coeff) * beginValue) + (coeff * endValue));
+            }
+        }
+        eegDataInterpolated.push_back(eegDataOneTrial);
+    }
 
-	return eegDataInterpolated;
+    return eegDataInterpolated;
 }
 
 InsermLibrary::vec2<float> InsermLibrary::DrawCard::mapsGenerator::verticalInterpolation(InsermLibrary::vec2<float> chanelToInterpol, int interpolationFactor)
