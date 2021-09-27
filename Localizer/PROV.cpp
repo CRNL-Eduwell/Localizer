@@ -102,8 +102,8 @@ int *InsermLibrary::PROV::getBiggestWindowSam(int samplingFreq)
 {
 	int window_sam[2]{ 0,0 };
 	int *window_ms = getBiggestWindowMs();
-    window_sam[0] = round((samplingFreq * window_ms[0]) / 1000);
-	window_sam[1] = round((samplingFreq * window_ms[1]) / 1000);
+    window_sam[0] = floorf(((float)samplingFreq * window_ms[0]) / 1000);
+    window_sam[1] = floorf(((float)samplingFreq * window_ms[1]) / 1000);
 	delete window_ms;
 
 	return new int[2]{ window_sam[0], window_sam[1] };
@@ -118,8 +118,8 @@ int *InsermLibrary::PROV::getWindowSam(int samplingFreq, int idBloc)
 {
 	int window_sam[2]{ 0,0 };
 	int *window_ms = getWindowMs(idBloc);
-	window_sam[0] = round((samplingFreq * window_ms[0]) / 1000);
-	window_sam[1] = round((samplingFreq * window_ms[1]) / 1000);
+    window_sam[0] = floorf(((float)samplingFreq * window_ms[0]) / 1000);
+    window_sam[1] = floorf(((float)samplingFreq * window_ms[1]) / 1000);
 	delete window_ms;
 
 	return new int[2]{ window_sam[0], window_sam[1] };
