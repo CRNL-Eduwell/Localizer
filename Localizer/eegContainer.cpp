@@ -1,6 +1,6 @@
 #include "eegContainer.h"
 
-InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFrequency, int nbFreqBand)
+InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFrequency)
 {
 	fftwf_init_threads();
 	fftwf_plan_with_nthreads(5);

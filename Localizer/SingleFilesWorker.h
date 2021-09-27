@@ -21,7 +21,7 @@ public:
     void ExtractElectrodeList();
 
 private:
-    InsermLibrary::eegContainer* ExtractData(singleFile currentFile, bool extractOriginalData, int nbFreqBand);
+    InsermLibrary::eegContainer* ExtractData(singleFile currentFile, bool extractOriginalData);
 
 private:
     int m_CurrentProcessId = 0;

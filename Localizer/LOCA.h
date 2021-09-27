@@ -32,12 +32,12 @@ namespace InsermLibrary
 	public:
 		LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption* statOption, picOption* picOption);
 		~LOCA();
-		void eeg2erp(eegContainer *myeegContainer, PROV *myprovFile);
-		void LocaSauron(eegContainer *myeegContainer, int idCurrentLoca, locaFolder *currentLoca);
-		void LocaFrequency(eegContainer *myeegContainer, int idCurrentLoca);
+        void Eeg2erp(eegContainer *myeegContainer, PROV *myprovFile);
+        void Localize(eegContainer *myeegContainer, int idCurrentLoca, locaFolder *currentLoca);
+        void LocalizeMapsOnly(eegContainer *myeegContainer, int idCurrentLoca);
 
 	private:
-		void toBeNamedCorrectlyFunction(eegContainer *myeegContainer, std::string freqFolder, FrequencyBandAnalysisOpt a);
+        void GenerateMapsAndFigures(eegContainer *myeegContainer, std::string freqFolder, FrequencyBandAnalysisOpt a);
 		//==
 		void CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt, eegContainer *myeegContainer, TriggerContainer *triggerContainer, PROV *myprovFile);
 		void CreateFile(EEGFormat::FileType outputType, std::string filePath, std::vector<Trigger> & triggers, std::string extraFilePath = "");
@@ -45,27 +45,27 @@ namespace InsermLibrary
 		void RelinkAnalysisFileAnUglyWay(const std::string& rootPath, const std::string& fileNameBase, const std::string& frequencySuffix, const std::string& downsamplingFactor);
 
 		//==
-		std::string createIfFreqFolderExistNot(eegContainer *myeegContainer, FrequencyBand currentFreq);
+        std::string CreateFrequencyFolder(eegContainer *myeegContainer, FrequencyBand currentFreq);
 		PROV* LoadProvForTask();
 		std::vector<PROV> LoadAllProvForTask();
-		bool shouldPerformBarPlot(std::string locaName);
-		bool isBarPlot(std::string provFile);
+        bool ShouldPerformBarPlot(std::string locaName);
+        bool IsBarPlot(std::string provFile);
 		//==
-		void barplot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
-		std::string getMapsFolderBar(std::string freqFolder, PROV *myprovFile);
-		std::string prepareFolderAndPathsBar(std::string freqFolder, int dsSampFreq);
-        std::vector<PVALUECOORD> calculateStatisticKruskall(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+        void Barplot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+        std::string GetBarplotMapsFolder(std::string freqFolder, PROV *myprovFile);
+        std::string PrepareFolderAndPathsBar(std::string freqFolder, int dsSampFreq);
+        std::vector<PVALUECOORD> ProcessKruskallStatistic(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
 		//==
-		void env2plot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
-		std::string getMapsFolderPlot(std::string freqFolder, PROV *myprovFile);
-		std::string prepareFolderAndPathsPlot(std::string freqFolder, int dsSampFreq);
+        void Env2plot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+        std::string GetEnv2PlotMapsFolder(std::string freqFolder, PROV *myprovFile);
+        std::string PrepareFolderAndPathsPlot(std::string freqFolder, int dsSampFreq);
 
 		//==
-		void timeTrialmatrices(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
-		std::string getMapsFolderTrial(PROV *myprovFile, std::string freqFolder);
-		std::string prepareFolderAndPathsTrial(std::string freqFolder, int dsSampFreq);
-		bool shouldPerformStatTrial(std::string locaName);
-        std::vector<PVALUECOORD> calculateStatisticWilcoxon(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+        void TimeTrialMatrices(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+        std::string GetTrialmatFolder(PROV *myprovFile, std::string freqFolder);
+        std::string PrepareFolderAndPathsTrial(std::string freqFolder, int dsSampFreq);
+        bool ShouldPerformTrialmatStats(std::string locaName);
+        std::vector<PVALUECOORD> ProcessWilcoxonStatistic(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
 
 	signals:
 		void sendLogInfo(QString);

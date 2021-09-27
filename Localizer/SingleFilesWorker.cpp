@@ -17,7 +17,7 @@ void SingleFilesWorker::Process()
 {
     singleFile file = m_currentFiles[m_CurrentProcessId];
     emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + file.rootFolder() + " ==="));
-    InsermLibrary::eegContainer *myContainer = ExtractData(file, true, static_cast<int>(m_frequencyBands.size()));
+    InsermLibrary::eegContainer *myContainer = ExtractData(file, true);
 
     if (myContainer != nullptr)
     {
@@ -25,7 +25,7 @@ void SingleFilesWorker::Process()
         //==
         emit sendLogInfo(GetCurrentTime().c_str());
         //==
-        m_Loca->LocaFrequency(myContainer, m_CurrentProcessId);
+        m_Loca->LocalizeMapsOnly(myContainer, m_CurrentProcessId);
         //==
         emit sendLogInfo(GetCurrentTime().c_str());
         //==
@@ -64,14 +64,14 @@ void SingleFilesWorker::ExtractElectrodeList()
     emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
 }
 
-InsermLibrary::eegContainer* SingleFilesWorker::ExtractData(singleFile currentFile, bool extractOriginalData, int nbFreqBand)
+InsermLibrary::eegContainer* SingleFilesWorker::ExtractData(singleFile currentFile, bool extractOriginalData)
 {
     InsermLibrary::FileExt currentExtention = currentFile.fileExtention();
     if (currentExtention == InsermLibrary::NO_EXT)
         return nullptr;
     std::string currentFilePath = currentFile.filePath(currentExtention);
 
-    InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData, nbFreqBand);
+    InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData);
     myContainer->DeleteElectrodes(m_IndexToDelete);
     myContainer->GetElectrodes();
     myContainer->BipolarizeElectrodes();

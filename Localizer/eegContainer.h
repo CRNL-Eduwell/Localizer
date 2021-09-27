@@ -20,7 +20,7 @@ namespace InsermLibrary
 	class eegContainer
 	{
 	public:
-		eegContainer(EEGFormat::IFile* file, int downsampFrequency, int nbFreqBand);
+        eegContainer(EEGFormat::IFile* file, int downsampFrequency);
 		~eegContainer();		
 
 		//===[ Getter / Setter ]===

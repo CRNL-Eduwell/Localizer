@@ -20,7 +20,7 @@ public:
     void ExtractElectrodeList();
 
 private:
-    InsermLibrary::eegContainer* ExtractData(locaFolder currentLoca, bool extractOriginalData, int nbFreqBand);
+    InsermLibrary::eegContainer* ExtractData(locaFolder currentLoca, bool extractOriginalData);
 
 private:
     patientFolder* m_Patient = nullptr;

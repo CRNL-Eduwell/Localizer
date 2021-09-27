@@ -25,7 +25,7 @@ void PatientFolderWorker::Process()
 	{
         emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + m_Patient->localizerFolder()[i].rootLocaFolder() + " ==="));
         bool extractData = m_FrequencyBands.size() > 0 ? m_FrequencyBands[0].analysisParameters.eeg2env2 : false; //for now it's the same analysus choice for each band , might change in the future
-        myContainer = ExtractData(m_Patient->localizerFolder()[i], extractData, m_FrequencyBands.size());
+        myContainer = ExtractData(m_Patient->localizerFolder()[i], extractData);
 
 		if (myContainer != nullptr)
 		{
@@ -35,7 +35,7 @@ void PatientFolderWorker::Process()
 			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
 			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
 			//==
-            m_Loca->LocaSauron(myContainer, i, &m_Patient->localizerFolder()[i]);
+            m_Loca->Localize(myContainer, i, &m_Patient->localizerFolder()[i]);
 			//==
             std::stringstream().swap(TimeDisp);
 			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
@@ -76,7 +76,7 @@ void PatientFolderWorker::ExtractElectrodeList()
 	emit finished();
 }
 
-InsermLibrary::eegContainer* PatientFolderWorker::ExtractData(locaFolder currentLoca, bool extractOriginalData, int nbFreqBand)
+InsermLibrary::eegContainer* PatientFolderWorker::ExtractData(locaFolder currentLoca, bool extractOriginalData)
 {
     int filePriorityCount = static_cast<int>(m_filePriority.size());
     for (int i = 0; i < filePriorityCount; i++)
@@ -84,7 +84,7 @@ InsermLibrary::eegContainer* PatientFolderWorker::ExtractData(locaFolder current
 		std::string currentFilePath = currentLoca.filePath(m_filePriority[i]);
 		if (EEGFormat::Utility::DoesFileExist(currentFilePath))
 		{
-            InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData, nbFreqBand);
+            InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData);
 			myContainer->DeleteElectrodes(m_IndexToDelete);
 			myContainer->GetElectrodes();
 			myContainer->BipolarizeElectrodes();

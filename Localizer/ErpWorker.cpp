@@ -22,7 +22,7 @@ void ErpWorker::Process()
         InsermLibrary::eegContainer *myContainer = ExtractData(m_EegFiles[i]);
         InsermLibrary::PROV *myprovFile = new InsermLibrary::PROV(provFolderPath + m_ProvFiles[i]);
 		if (myprovFile != nullptr)
-            m_Loca->eeg2erp(myContainer, myprovFile);
+            m_Loca->Eeg2erp(myContainer, myprovFile);
 		deleteAndNullify1D(myContainer);
 		deleteAndNullify1D(myprovFile);
         emit incrementAdavnce(1);
@@ -34,7 +34,7 @@ void ErpWorker::Process()
 
 InsermLibrary::eegContainer* ErpWorker::ExtractData(std::string currentFile)
 {
-    InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFile, true, 0);
+    InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFile, true);
     myContainer->DeleteElectrodes(m_IndexToDelete);
     myContainer->GetElectrodes();
     myContainer->BipolarizeElectrodes();
