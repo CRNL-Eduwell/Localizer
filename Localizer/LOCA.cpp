@@ -641,7 +641,8 @@ void InsermLibrary::LOCA::TimeTrialMatrices(eegContainer *myeegContainer, PROV *
         float stdRes = Framework::Calculations::Stats::Measure::MeanOfStandardDeviation(bigData[i]);
 		float Maxi = 2.0 * abs(stdRes);
 		float Mini = -2.0 * abs(stdRes);
-        mGen.graduateColorBar(painterChanel, std::fmax(abs(Maxi), abs(Mini)));
+        float AbsMax = std::fmax(abs(Maxi), abs(Mini));
+        mGen.graduateColorBar(painterChanel, AbsMax);
 
 		int interpolFactorX = m_picOption->interpolationtrialmap.width();	
 		int interpolFactorY = m_picOption->interpolationtrialmap.height();
@@ -660,15 +661,14 @@ void InsermLibrary::LOCA::TimeTrialMatrices(eegContainer *myeegContainer, PROV *
 			vec1<int> colorX[512], colorY[512];
 			if (interpolFactorX > 1)
 			{
-                vec2<float> dataInterpolatedHoriz = mGen.horizontalInterpolation(bigData[i], interpolFactorX,
-                                                                                 indexBegTrigg, numberSubTrial);
+                vec2<float> dataInterpolatedHoriz = mGen.horizontalInterpolation(bigData[i], interpolFactorX, indexBegTrigg, numberSubTrial);
                 vec2<float> dataInterpolatedVerti = mGen.verticalInterpolation(dataInterpolatedHoriz, interpolFactorY);
-                mGen.eegData2ColorMap(colorX, colorY, dataInterpolatedVerti, std::fmax(abs(Maxi), abs(Mini)));
+                mGen.eegData2ColorMap(colorX, colorY, dataInterpolatedVerti, AbsMax);
                 subsubMatrixHeigth = interpolFactorY * (numberSubTrial - 1);
 			}
 			else
 			{
-                mGen.eegData2ColorMap(colorX, colorY, bigData[i], Maxi);
+                mGen.eegData2ColorMap(colorX, colorY, bigData[i], AbsMax);
 				subsubMatrixHeigth = numberSubTrial;
 			}
 
