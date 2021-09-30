@@ -37,8 +37,7 @@ std::string IWorker::GetCurrentTime()
 {
     std::stringstream TimeDisp;
     std::time_t t = std::time(nullptr);
-    //std::stringstream().swap(TimeDisp);
-    TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
+    TimeDisp << std::put_time(std::localtime(&t), "%c");
     return TimeDisp.str();
 }
 

@@ -721,6 +721,9 @@ void Localizer::CancelAnalysis()
         }
         isAlreadyRunning = false;
         QMessageBox::information(this, "Canceled", "Analysis has been canceled by the user");
+        DisplayLog("");
+        DisplayLog("Analysis has been canceled by the user");
+        DisplayLog("");
         m_lockLoop.unlock();
     }
 }

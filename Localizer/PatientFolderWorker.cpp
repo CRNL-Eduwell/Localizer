@@ -16,10 +16,7 @@ PatientFolderWorker::~PatientFolderWorker()
 
 void PatientFolderWorker::Process()
 {
-    std::stringstream TimeDisp;
     InsermLibrary::eegContainer *myContainer = nullptr;
-	std::time_t t = std::time(nullptr);
-
     int localizerCount = static_cast<int>(m_Patient->localizerFolder().size());
     for (int i = 0; i < localizerCount; i++)
 	{
@@ -29,19 +26,17 @@ void PatientFolderWorker::Process()
 
 		if (myContainer != nullptr)
 		{
-			emit sendLogInfo("Number of Bip : " + QString::number(myContainer->BipoleCount()));
-			//==
-            std::stringstream().swap(TimeDisp);
-			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
-			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
-			//==
+            emit sendLogInfo("Number of Bipole for analysis : " + QString::number(myContainer->BipoleCount()));
+
+            emit sendLogInfo("");
+            emit sendLogInfo(QString::fromStdString("Begin time : ") + GetCurrentTime().c_str());
+            emit sendLogInfo("");
             m_Loca->Localize(myContainer, i, &m_Patient->localizerFolder()[i]);
-			//==
-            std::stringstream().swap(TimeDisp);
-			TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
-			emit sendLogInfo(QString::fromStdString(TimeDisp.str()));
-			//==
-			sendLogInfo("End of Loca number " + QString::number(i) + "\n");
+            emit sendLogInfo("");
+            emit sendLogInfo(QString::fromStdString("End time : ") + GetCurrentTime().c_str());
+            emit sendLogInfo("");
+
+            sendLogInfo("End of processing for experiment " + QString::number(i+1) + " out of " + QString::number(localizerCount) + "\n");
 			deleteAndNullify1D(myContainer);
 		}
 	}

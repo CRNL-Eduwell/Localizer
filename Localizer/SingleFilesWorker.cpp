@@ -21,15 +21,17 @@ void SingleFilesWorker::Process()
 
     if (myContainer != nullptr)
     {
-        emit sendLogInfo("Number of Bip : " + QString::number(myContainer->BipoleCount()));
-        //==
-        emit sendLogInfo(GetCurrentTime().c_str());
-        //==
+        emit sendLogInfo("Number of Bipole for analysis : " + QString::number(myContainer->BipoleCount()));
+
+        emit sendLogInfo("");
+        emit sendLogInfo(QString::fromStdString("Begin time : ") + GetCurrentTime().c_str());
+        emit sendLogInfo("");
         m_Loca->LocalizeMapsOnly(myContainer, m_CurrentProcessId);
-        //==
-        emit sendLogInfo(GetCurrentTime().c_str());
-        //==
-        sendLogInfo("End of File number " + QString::number(m_CurrentProcessId) + "\n");
+        emit sendLogInfo("");
+        emit sendLogInfo(QString::fromStdString("End time : ") + GetCurrentTime().c_str());
+        emit sendLogInfo("");
+
+        sendLogInfo("End of processing for file " + QString::number(m_CurrentProcessId+1) + " out of " + QString::number(static_cast<int>(m_currentFiles.size())) + "\n");
         deleteAndNullify1D(myContainer);
     }
 
