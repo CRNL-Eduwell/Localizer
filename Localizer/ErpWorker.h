@@ -2,7 +2,7 @@
 #define ERPWORKER_H
 
 #include "IWorker.h"
-#include "optionsParameters.h" //pour stat et pic options, a separer
+#include "optionsParameters.h"
 #include <QCoreApplication>
 
 class ErpWorker : public IWorker

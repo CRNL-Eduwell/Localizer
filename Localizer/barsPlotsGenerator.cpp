@@ -1,22 +1,18 @@
 #include "barsPlotsGenerator.h"
 
-using namespace InsermLibrary::DrawbarsPlots;
-using namespace std;//nettoye tes conneries gros con , flo du 28/10/2019
-using namespace InsermLibrary;//nettoye tes conneries gros con , flo du 28/10/2019
-
-baseCanvas::baseCanvas(PROV *myprovFile, int width, int heigth)
+InsermLibrary::DrawbarsPlots::baseCanvas::baseCanvas(InsermLibrary::PROV *myprovFile, int width, int heigth)
 {
 	Width = width;
 	Heigth = heigth;
 	drawTemplate(myprovFile);
 }
 
-baseCanvas::~baseCanvas()
+InsermLibrary::DrawbarsPlots::baseCanvas::~baseCanvas()
 {
 
 }
 
-void baseCanvas::drawTemplate(PROV *myprovFile)
+void InsermLibrary::DrawbarsPlots::baseCanvas::drawTemplate(InsermLibrary::PROV *myprovFile)
 {
 	//570 = 0.296875 * Width (Scr width = 1920)
 	int nbRow = myprovFile->nbRow();
@@ -80,7 +76,7 @@ void baseCanvas::drawTemplate(PROV *myprovFile)
 	}
 }
 
-drawBars::drawBars(PROV *myprovFile, string outputFolder, QSize size) : baseCanvas(myprovFile, 
+InsermLibrary::DrawbarsPlots::drawBars::drawBars(InsermLibrary::PROV *myprovFile, std::string outputFolder, QSize size) : baseCanvas(myprovFile,
 																				   size.width(), 
 																				   size.height())
 {
@@ -88,12 +84,12 @@ drawBars::drawBars(PROV *myprovFile, string outputFolder, QSize size) : baseCanv
 	picOutputFolder = outputFolder;
 }
 
-drawBars::~drawBars()
+InsermLibrary::DrawbarsPlots::drawBars::~drawBars()
 {
 
 }
 
-void drawBars::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* triggerContainer, vec1<PVALUECOORD> significantValue,
+void InsermLibrary::DrawbarsPlots::drawBars::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* triggerContainer, vec1<PVALUECOORD> significantValue,
 								  eegContainer* myeegContainer)
 {
 	int idCurrentElecDrawn = 0, nbFigureDrawn = 0, countBipole = 0;
@@ -143,7 +139,7 @@ void drawBars::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* trigge
 			if (j + 1 < myeegContainer->electrodes[i].id.size())
 			{
 				if (myeegContainer->BipolePositivLabel(countBipole) ==
-					myeegContainer->electrodes[i].label + to_string(myeegContainer->electrodes[i].id[j + 1]))
+                    myeegContainer->electrodes[i].label + std::to_string(myeegContainer->electrodes[i].id[j + 1]))
 				{
 					//Extract Data
 					for (int k = 0; k < triggerContainer->ProcessedTriggerCount(); k++)
@@ -185,8 +181,8 @@ void drawBars::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* trigge
 						}
 						else
 						{
-							cout << "ATTENTION, PLEASE : NO EVENT WITH TYPE = "
-								<< myprovFile->visuBlocs[k].mainEventBloc.eventCode[0] << endl;
+                            std::cout << "ATTENTION, PLEASE : NO EVENT WITH TYPE = "
+                                << myprovFile->visuBlocs[k].mainEventBloc.eventCode[0] << std::endl;
 						}
 					}
 
@@ -204,7 +200,7 @@ void drawBars::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* trigge
 
 					float maxP = *(max_element(erpPMax.begin(), erpPMax.begin() + nbRow));
 					float maxM = *(max_element(erpMMax.begin(), erpMMax.begin() + nbRow));
-					float maxCurveLegend = max(maxP, maxM);
+                    float maxCurveLegend = std::max(maxP, maxM);
 
 					painter->setPen(QColor(255, 0, 255, 255)); //pink petant
 					painter->drawText((Width * 0.04) + ((0.296875 * Width) * (i % 3)), (Heigth * 0.107) + (Heigth * 0.0203) + 
@@ -213,7 +209,7 @@ void drawBars::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* trigge
 
 				   // 20 => (0.01041666 * Width) Scr width 1920
 					float widthRect = (0.01041666 * Width);
-					float scaleFactor = widthRect / max((maxP / maxCurveLegend), (maxM / maxCurveLegend));
+                    float scaleFactor = widthRect / std::max((maxP / maxCurveLegend), (maxM / maxCurveLegend));
 
 					//450 = (0.234375 * Width) Scr width 1920
 					int coeffEsp = ceil((0.234375 * Width) / nbRow);
@@ -264,7 +260,7 @@ void drawBars::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* trigge
 									//if barplot is positiv , we need to move y up
 									//otherwise it's just above the 0 line
 									float y_Krus = y + (-scaleFactor * (erp[k] + lim[k])) - (0.00351802990325 * Heigth);
-									y_Krus = min(y_Krus, (float)y - ((float)0.00351802990325 * Heigth));
+                                    y_Krus = std::min(y_Krus, (float)y - ((float)0.00351802990325 * Heigth));
 
 									painter->setPen(QColor(255, 0, 255, 255)); //pink petant
 									painter->drawLine(x_Krus, y_Krus, x_Krus + (0.00989583 * Width), y_Krus);
@@ -289,7 +285,7 @@ void drawBars::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* trigge
 	delete windowSam;
 }
 
-QString drawBars::createPicPath(string picFolder, eegContainer* myeegContainer, int idElec)
+QString InsermLibrary::DrawbarsPlots::drawBars::createPicPath(std::string picFolder, eegContainer* myeegContainer, int idElec)
 {
 	QString tifName = QString::fromStdString(picOutputFolder.c_str());
 	if (myeegContainer->electrodes[idElec].label != "")
@@ -313,7 +309,7 @@ QString drawBars::createPicPath(string picFolder, eegContainer* myeegContainer, 
 	return tifName.append(".jpg");
 }
 
-drawPlots::drawPlots(PROV *myprovFile, string outputFolder, QSize size) : baseCanvas(myprovFile,
+InsermLibrary::DrawbarsPlots::drawPlots::drawPlots(InsermLibrary::PROV *myprovFile, std::string outputFolder, QSize size) : baseCanvas(myprovFile,
 																					 size.width(),
 																					 size.height())
 {
@@ -321,13 +317,13 @@ drawPlots::drawPlots(PROV *myprovFile, string outputFolder, QSize size) : baseCa
 	picOutputFolder = outputFolder;
 }
 
-drawPlots::~drawPlots()
+InsermLibrary::DrawbarsPlots::drawPlots::~drawPlots()
 {
 
 }
 
 //0 for mono, 1 for bipo , 2 for env2plot
-void drawPlots::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* triggerContainer, eegContainer* myeegContainer, int card2Draw)
+void InsermLibrary::DrawbarsPlots::drawPlots::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* triggerContainer, eegContainer* myeegContainer, int card2Draw)
 {
 	int idCurrentElecDrawn = 0, nbFigureDrawn = 0, countBipole = 0;
 	QPainter *painter = nullptr;
@@ -400,12 +396,12 @@ void drawPlots::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* trigg
 				if (card2Draw == 0)
 				{
 					goIn = myeegContainer->flatElectrodes[countBipole] ==
-						   myeegContainer->electrodes[i].label + to_string(myeegContainer->electrodes[i].id[j]);
+                           myeegContainer->electrodes[i].label + std::to_string(myeegContainer->electrodes[i].id[j]);
 				}
 				else
 				{
 					goIn = myeegContainer->BipolePositivLabel(countBipole) ==
-						myeegContainer->electrodes[i].label + to_string(myeegContainer->electrodes[i].id[j + 1]);
+                        myeegContainer->electrodes[i].label + std::to_string(myeegContainer->electrodes[i].id[j + 1]);
 				}
 
 				if (goIn)
@@ -461,8 +457,8 @@ void drawPlots::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* trigg
 						}
 						else
 						{
-							cout << "ATTENTION, PLEASE : NO EVENT WITH TYPE = "
-								<< myprovFile->visuBlocs[k].mainEventBloc.eventCode[0] << endl;
+                            std::cout << "ATTENTION, PLEASE : NO EVENT WITH TYPE = "
+                                << myprovFile->visuBlocs[k].mainEventBloc.eventCode[0] << std::endl;
 						}
 					}
 
@@ -501,7 +497,7 @@ void drawPlots::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* trigg
 
 					float maxP = *(max_element(erpPMax.begin(), erpPMax.begin() + nbRow));
 					float maxM = *(max_element(erpMMax.begin(), erpMMax.begin() + nbRow));
-					float maxCurveLegend = max(maxP, maxM);
+                    float maxCurveLegend = std::max(maxP, maxM);
 
 					painter->setPen(QColor(255, 0, 255, 255)); //pink petant
 					painter->drawText((Width * 0.04) + ((0.296875 * Width) * (i % 3)), (Heigth * 0.107) + (Heigth * 0.0203) +
@@ -574,20 +570,20 @@ void drawPlots::drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* trigg
 	delete windowSam;
 }
 
-QString drawPlots::createPicPath(string picFolder, eegContainer* myeegContainer, int cards2Draw, int nbFigureDrawn)
+QString InsermLibrary::DrawbarsPlots::drawPlots::createPicPath(std::string picFolder, eegContainer* myeegContainer, int cards2Draw, int nbFigureDrawn)
 {
 	QString tifName = QString::fromStdString(picOutputFolder.c_str());
 
 	switch (cards2Draw)
 	{
 	case 0:
-		tifName.append("_erp_mono_f").append(to_string(nbFigureDrawn).c_str());
+        tifName.append("_erp_mono_f").append(std::to_string(nbFigureDrawn).c_str());
 		break;
 	case 1:
-		tifName.append("_erp_bipo_f").append(to_string(nbFigureDrawn).c_str());
+        tifName.append("_erp_bipo_f").append(std::to_string(nbFigureDrawn).c_str());
 		break;
 	case 2:
-		tifName.append("f").append(to_string(nbFigureDrawn).c_str());
+        tifName.append("f").append(std::to_string(nbFigureDrawn).c_str());
 		break;
 	}
 

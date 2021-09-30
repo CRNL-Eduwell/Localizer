@@ -1,13 +1,11 @@
 #include "SingleFilesWorker.h"
 
-using namespace InsermLibrary;
-
-SingleFilesWorker::SingleFilesWorker(std::vector<singleFile>& singleFiles, std::vector<FrequencyBandAnalysisOpt>& FrequencyBands)
+SingleFilesWorker::SingleFilesWorker(std::vector<singleFile>& singleFiles, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& FrequencyBands)
 {
     m_currentFiles = std::vector<singleFile>(singleFiles);
-    m_frequencyBands = std::vector<FrequencyBandAnalysisOpt>(FrequencyBands);
+    m_frequencyBands = std::vector<InsermLibrary::FrequencyBandAnalysisOpt>(FrequencyBands);
 
-    m_Loca = new LOCA(m_frequencyBands, nullptr, nullptr);
+    m_Loca = new InsermLibrary::LOCA(m_frequencyBands, nullptr, nullptr);
 }
 
 SingleFilesWorker::~SingleFilesWorker()
@@ -19,24 +17,26 @@ void SingleFilesWorker::Process()
 {
     singleFile file = m_currentFiles[m_CurrentProcessId];
     emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + file.rootFolder() + " ==="));
-    eegContainer *myContainer = ExtractData(file, true, static_cast<int>(m_frequencyBands.size()));
+    InsermLibrary::eegContainer *myContainer = ExtractData(file, true);
 
     if (myContainer != nullptr)
     {
-        emit sendLogInfo("Number of Bip : " + QString::number(myContainer->BipoleCount()));
-        //==
-        emit sendLogInfo(GetCurrentTime().c_str());
-        //==
-        m_Loca->LocaFrequency(myContainer, m_CurrentProcessId);
-        //==
-        emit sendLogInfo(GetCurrentTime().c_str());
-        //==
-        sendLogInfo("End of File number " + QString::number(m_CurrentProcessId) + "\n");
+        emit sendLogInfo("Number of Bipole for analysis : " + QString::number(myContainer->BipoleCount()));
+
+        emit sendLogInfo("");
+        emit sendLogInfo(QString::fromStdString("Begin time : ") + GetCurrentTime().c_str());
+        emit sendLogInfo("");
+        m_Loca->LocalizeMapsOnly(myContainer, m_CurrentProcessId);
+        emit sendLogInfo("");
+        emit sendLogInfo(QString::fromStdString("End time : ") + GetCurrentTime().c_str());
+        emit sendLogInfo("");
+
+        sendLogInfo("End of processing for file " + QString::number(m_CurrentProcessId+1) + " out of " + QString::number(static_cast<int>(m_currentFiles.size())) + "\n");
         deleteAndNullify1D(myContainer);
     }
 
     m_CurrentProcessId++;
-    if(m_CurrentProcessId < m_currentFiles.size())
+    if(m_CurrentProcessId < static_cast<int>(m_currentFiles.size()))
     {
         ExtractElectrodeList();
     }
@@ -48,14 +48,14 @@ void SingleFilesWorker::Process()
 
 void SingleFilesWorker::ExtractElectrodeList()
 {
-    if(m_CurrentProcessId >= m_currentFiles.size())
+    if(m_CurrentProcessId >= static_cast<int>(m_currentFiles.size()))
     {
         throw new std::runtime_error("Error ExtractElectrodeList : ProcessID is greater than the number of file to process");
     }
 
     singleFile file = m_currentFiles[m_CurrentProcessId];
-    FileExt currentExtention = file.fileExtention();
-    if (currentExtention == NO_EXT)
+    InsermLibrary::FileExt currentExtention = file.fileExtention();
+    if (currentExtention == InsermLibrary::NO_EXT)
     {
         throw new std::runtime_error("Error ExtractElectrodeList : FileExtention is unknown");
     }
@@ -66,14 +66,14 @@ void SingleFilesWorker::ExtractElectrodeList()
     emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
 }
 
-eegContainer* SingleFilesWorker::ExtractData(singleFile currentFile, bool extractOriginalData, int nbFreqBand)
+InsermLibrary::eegContainer* SingleFilesWorker::ExtractData(singleFile currentFile, bool extractOriginalData)
 {
-    FileExt currentExtention = currentFile.fileExtention();
-    if (currentExtention == NO_EXT)
+    InsermLibrary::FileExt currentExtention = currentFile.fileExtention();
+    if (currentExtention == InsermLibrary::NO_EXT)
         return nullptr;
     std::string currentFilePath = currentFile.filePath(currentExtention);
 
-    eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData, nbFreqBand);
+    InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData);
     myContainer->DeleteElectrodes(m_IndexToDelete);
     myContainer->GetElectrodes();
     myContainer->BipolarizeElectrodes();

@@ -5,7 +5,7 @@
 #include "ITxtFile.h"
 #include <QCoreApplication>
 
-//Make an update where generalOptionsFile is a qt model interface and create a model class to handle this like ProtocolFile.cs
+//TODO : update so that generalOptionsFile is a qt model interface and create a model class to handle this
 namespace InsermLibrary
 {
 	class GeneralOptionsFile : public ITxtFile

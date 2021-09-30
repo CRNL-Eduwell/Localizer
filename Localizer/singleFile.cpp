@@ -1,8 +1,5 @@
 #include "singleFile.h"
 
-using namespace std; //nettoye tes conneries gros con , flo du 28/10/2019
-using namespace InsermLibrary;//nettoye tes conneries gros con , flo du 28/10/2019 2 secondes plus tard
-
 singleFile::singleFile(std::string path, int nbFreqBands)
 {
 	getFileData(path);
@@ -19,46 +16,46 @@ std::string singleFile::filePath(InsermLibrary::FileExt wantedFile)
 {
 	switch (wantedFile)
 	{
-	case TRC:
+    case InsermLibrary::FileExt::TRC:
 		return m_trcFile;
 		break;
-	case EEG_ELAN:
+    case InsermLibrary::FileExt::EEG_ELAN:
 		return m_eegFile;
 		break;
-	case ENT_ELAN:
+    case InsermLibrary::FileExt::ENT_ELAN:
 		return m_eegEntFile;
 		break;
-	case POS_ELAN:
+    case InsermLibrary::FileExt::POS_ELAN:
 		return m_posFile;
 		break;
-	case POS_DS_ELAN:
+    case InsermLibrary::FileExt::POS_DS_ELAN:
 		return m_dsPosFile;
 		break;
-	case EDF:
+    case InsermLibrary::FileExt::EDF:
 		return m_edfFile;
 		break;
-	case NO_EXT:
+    case InsermLibrary::FileExt::NO_EXT:
 		return "";
 		break;
 	}
 	return "";
 }
 
-FileExt singleFile::fileExtention()
+InsermLibrary::FileExt singleFile::fileExtention()
 {
 	if (m_trcFile != "")
-		return TRC;
+        return InsermLibrary::FileExt::TRC;
 	else if (m_eegFile != "")
-		return EEG_ELAN;
+        return InsermLibrary::FileExt::EEG_ELAN;
 	else if (m_edfFile != "")
-		return EDF;
+        return InsermLibrary::FileExt::EDF;
 	else
-		return NO_EXT;
+        return InsermLibrary::FileExt::NO_EXT;
 }
 
-void singleFile::getFileData(string path)
+void singleFile::getFileData(std::string path)
 {
-	vector<string> splitExt = split<string>(path, "\\/.");
+    std::vector<std::string> splitExt = InsermLibrary::split<std::string>(path, "\\/.");
 	if (path[0] == '/' && path[1] == '/') //In case this is a newtork ressource
 	{
 		m_rootFolder = "//";

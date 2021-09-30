@@ -3,11 +3,11 @@
 std::vector<std::string> InsermLibrary::readTxtFile(std::string pathFile)
 {
 	std::stringstream buffer;
-	std::ifstream file(pathFile);
-	if (file)
+    std::ifstream fileStream(pathFile);
+    if (fileStream)
 	{
-		buffer << file.rdbuf();
-		file.close();
+        buffer << fileStream.rdbuf();
+        fileStream.close();
 		return(split<std::string>(buffer.str(), "\r\n"));
 	}
 	else
@@ -19,18 +19,15 @@ std::vector<std::string> InsermLibrary::readTxtFile(std::string pathFile)
 
 void InsermLibrary::saveTxtFile(std::vector<QString> data, std::string pathFile)
 {
-	std::ofstream fichier(pathFile, std::ios::out);
-	for (int i = 0; i < data.size(); i++)
-	{
-		fichier << data[i].toStdString() << std::endl;
-	}
-	fichier.close();
-}
+    int elementCount = static_cast<int>(data.size());
 
-//void InsermLibrary::deblankString(std::string &myString)
-//{
-//	myString.erase(remove_if(myString.begin(), myString.end(), isspace), myString.end());
-//}
+    std::ofstream fileStream(pathFile, std::ios::out);
+    for (int i = 0; i < elementCount; i++)
+	{
+        fileStream << data[i].toStdString() << std::endl;
+	}
+    fileStream.close();
+}
 
 std::string InsermLibrary::GetCurrentWorkingDir()
 {

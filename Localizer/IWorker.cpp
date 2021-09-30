@@ -37,17 +37,16 @@ std::string IWorker::GetCurrentTime()
 {
     std::stringstream TimeDisp;
     std::time_t t = std::time(nullptr);
-    //std::stringstream().swap(TimeDisp);
-    TimeDisp << std::put_time(std::localtime(&t), "%c") << "\n";
+    TimeDisp << std::put_time(std::localtime(&t), "%c");
     return TimeDisp.str();
 }
 
-InsermLibrary::eegContainer* IWorker::GetEegContainer(std::string currentFilePath, bool shouldExtractData, int nbFreqBand)
+InsermLibrary::eegContainer* IWorker::GetEegContainer(std::string currentFilePath, bool shouldExtractData)
 {
     emit sendLogInfo(QString::fromStdString("  => Reading : " + currentFilePath));
     EEGFormat::IFile* file = CreateGenericFile(currentFilePath.c_str(), shouldExtractData);
     CorrectElectrodeLabels(file);
-    return new InsermLibrary::eegContainer(file, 64, nbFreqBand);;
+    return new InsermLibrary::eegContainer(file, 64);
 }
 
 void IWorker::CorrectElectrodeLabels(EEGFormat::IFile* file)
@@ -65,6 +64,8 @@ void IWorker::CorrectElectrodeLabels(EEGFormat::IFile* file)
 
     for(size_t i = 0; i < ElectrodeCount; i++)
     {
+        if (m_CorrectedLabels[i].compare("BAD LABELING") == 0) 
+            continue;
         ElectrodeList[i]->Label(m_CorrectedLabels[i]);
     }
 

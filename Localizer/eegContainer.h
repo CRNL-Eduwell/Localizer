@@ -8,8 +8,6 @@
 #include "../../EEGFormat/EEGFormat/Wrapper.h"
 #include "eegContainerParameters.h"
 #include "DataContainer.h"
-#include "FirBandPass.h"	
-#include "Convolution.h"
 #include "Trigger.h"
 
 #include <iostream>
@@ -22,7 +20,7 @@ namespace InsermLibrary
 	class eegContainer
 	{
 	public:
-		eegContainer(EEGFormat::IFile* file, int downsampFrequency, int nbFreqBand);
+        eegContainer(EEGFormat::IFile* file, int downsampFrequency);
 		~eegContainer();		
 
 		//===[ Getter / Setter ]===
@@ -42,7 +40,6 @@ namespace InsermLibrary
 		{
 			return m_downsampledFrequency;
 		}
-		//verifier si bonne fréquence d'échantillonage ( non 2^n factor)
 		inline int DownsamplingFactor()
 		{
 			return m_originalSamplingFrequency / m_downsampledFrequency;
@@ -81,7 +78,7 @@ namespace InsermLibrary
 		//First is positiv, second is negativ Electrode ID
 		inline std::pair<int,int> Bipole(const int& i)
 		{
-			if (i >= 0 && i < m_bipoles.size())
+            if (i >= 0 && i < static_cast<int>(m_bipoles.size()))
 			{
 				return m_bipoles[i];
 			}
@@ -89,7 +86,7 @@ namespace InsermLibrary
 		}
 		inline std::string BipolePositivLabel(const int& i)
 		{
-			if (i >= 0 && i < m_bipoles.size())
+            if (i >= 0 && i < static_cast<int>(m_bipoles.size()))
 			{
 				return flatElectrodes[m_bipoles[i].first];
 			}
@@ -97,7 +94,7 @@ namespace InsermLibrary
 		}
 		inline std::string BipoleNegativLabel(const int& i)
 		{
-			if (i >= 0 && i < m_bipoles.size())
+            if (i >= 0 && i < static_cast<int>(m_bipoles.size()))
 			{
 				return flatElectrodes[m_bipoles[i].second];
 			}
@@ -119,16 +116,13 @@ namespace InsermLibrary
 
 	private:
 		void GetElectrodes(EEGFormat::IFile* edf);
-        int idSplitDigiAndNum(std::string myString);
+        int GetIndexFromElectrodeLabel(std::string myString);
 
 	public :
-		////[IdNbFrequency][sm0-sm5000][channels][sample]
-		//std::vector<std::vector<EEGFormat::IFile*>> elanFrequencyBand;
-		//[sm0-sm5000][channels][sample]
 		std::vector<EEGFormat::IFile*> elanFrequencyBand;
         std::vector<elecContainer> electrodes;
         std::vector<std::string> flatElectrodes;
-        std::vector<int> idElecToDelete;
+
 	private:
 		int m_originalSamplingFrequency = 0;
 		int m_downsampledFrequency = 0;

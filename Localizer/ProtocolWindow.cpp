@@ -1,7 +1,5 @@
 #include "ProtocolWindow.h"
 
-using namespace InsermLibrary;
-
 ProtocolWindow::ProtocolWindow(QWidget *parent) : QDialog(parent)
 {
     ui.setupUi(this);
@@ -76,7 +74,6 @@ void ProtocolWindow::LoadProtocolsInUI(QStringList protocols)
 
 void ProtocolWindow::ShowLocaListContextMenu(QPoint point)
 {
-    QModelIndex index = ui.listWidget_loca->indexAt(point);
     QMenu* contextMenu = new QMenu();
     connect(contextMenu, &QMenu::aboutToHide, contextMenu, &QMenu::deleteLater);
     QObject* senderObject = sender();

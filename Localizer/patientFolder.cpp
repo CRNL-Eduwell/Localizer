@@ -1,7 +1,5 @@
 #include "patientFolder.h"
 
-using namespace InsermLibrary;
-
 patientFolder::patientFolder(patientFolder *pat)
 {
 	this->m_rootFolder = pat->m_rootFolder;
@@ -14,7 +12,7 @@ patientFolder::patientFolder(patientFolder *pat)
 
 patientFolder::patientFolder(std::string rootPath)
 {
-	std::vector<std::string> splitExt = split<std::string>(rootPath, "\\/");
+    std::vector<std::string> splitExt = InsermLibrary::split<std::string>(rootPath, "\\/");
 	if (rootPath[0] == '/' && rootPath[1] == '/') //In case this is a newtork ressource
 	{
 		m_rootFolder = "//";
@@ -43,7 +41,7 @@ std::string patientFolder::patientName()
 
 void patientFolder::getPatientInfo(std::string rootPath)
 {
-	std::vector<std::string> splitPath = split<std::string>(rootPath, "_\\/");
+    std::vector<std::string> splitPath = InsermLibrary::split<std::string>(rootPath, "_\\/");
 	m_hospital = splitPath[splitPath.size() - 3];
 	m_year = splitPath[splitPath.size() - 2];
 	m_patientName = splitPath[splitPath.size() - 1];
@@ -87,37 +85,37 @@ std::string locaFolder::fullLocalizerName()
 	return parent->patientName() + "_" + m_locaName;
 }
 
-FileExt locaFolder::fileExtention()
+InsermLibrary::FileExt locaFolder::fileExtention()
 {
 	if (m_trcFile != "")
-		return TRC;
+        return InsermLibrary::FileExt::TRC;
 	else if (m_eegFile != "")
-		return EEG_ELAN;
+        return InsermLibrary::FileExt::EEG_ELAN;
 	else if (m_edfFile != "")
-		return EDF;
+        return InsermLibrary::FileExt::EDF;
 	else
-		return NO_EXT;
+        return InsermLibrary::FileExt::NO_EXT;
 }
 
-std::string locaFolder::filePath(FileExt wantedFile)
+std::string locaFolder::filePath(InsermLibrary::FileExt wantedFile)
 {
 	switch (wantedFile)
 	{
-	case TRC:
+    case InsermLibrary::FileExt::TRC:
 		return m_trcFile;
-	case EEG_ELAN:
-		return m_eegFile;
-	case ENT_ELAN:
+    case InsermLibrary::FileExt::EEG_ELAN:
+		return m_eegFile == "" ? m_freqFolder[0].FilePaths(InsermLibrary::FileExt::SM0_ELAN)[0] : m_eegFile;
+    case InsermLibrary::FileExt::ENT_ELAN:
 		return m_eegEntFile;
-	case POS_ELAN:
+    case InsermLibrary::FileExt::POS_ELAN:
 		return m_posFile;
-	case POS_DS_ELAN:
+    case InsermLibrary::FileExt::POS_DS_ELAN:
 		return m_dsPosFile;
-	case EDF:
+    case InsermLibrary::FileExt::EDF:
 		return m_edfFile;
-	case BRAINVISION:
+    case InsermLibrary::FileExt::BRAINVISION:
 		return m_brainVisionFile;
-	case NO_EXT:
+    case InsermLibrary::FileExt::NO_EXT:
 		return "";
 	default:
 		return "";
@@ -127,7 +125,7 @@ std::string locaFolder::filePath(FileExt wantedFile)
 
 void locaFolder::getLocaName(std::string rootLocaFolder)
 {
-	std::vector<std::string> splitPath = split<std::string>(rootLocaFolder, "\\/_");
+    std::vector<std::string> splitPath = InsermLibrary::split<std::string>(rootLocaFolder, "\\/_");
 	m_locaName = splitPath[splitPath.size() - 1];
 }
 
@@ -210,21 +208,21 @@ std::string frequencyFolder::fullFrequencyName()
 	return parent->fullLocalizerName() + "_" + m_frequencyName;
 }
 
-std::string frequencyFolder::filePath(FileExt wantedFile)
+std::string frequencyFolder::filePath(InsermLibrary::FileExt wantedFile)
 {
 	switch (wantedFile)
 	{
-	case SM0_ELAN:
+    case InsermLibrary::FileExt::SM0_ELAN:
 		return m_sm0eeg;
-	case SM250_ELAN:
+    case InsermLibrary::FileExt::SM250_ELAN:
 		return m_sm250eeg;
-	case SM500_ELAN:
+    case InsermLibrary::FileExt::SM500_ELAN:
 		return m_sm500eeg;
-	case SM1000_ELAN:
+    case InsermLibrary::FileExt::SM1000_ELAN:
 		return m_sm1000eeg;
-	case SM2500_ELAN:
+    case InsermLibrary::FileExt::SM2500_ELAN:
 		return m_sm2500eeg;
-	case SM5000_ELAN:
+    case InsermLibrary::FileExt::SM5000_ELAN:
 		return m_sm5000eeg;
 	default:
 		return "";
@@ -236,21 +234,21 @@ std::string frequencyFolder::filePath(FileExt wantedFile)
 //there is no way to tell which one is the correct one so we send back
 //no paths , in the future, we might try to open the files to tell which one 
 //is the correct one
-std::vector<std::string> frequencyFolder::FilePaths(FileExt wantedFile)
+std::vector<std::string> frequencyFolder::FilePaths(InsermLibrary::FileExt wantedFile)
 {
 	switch (wantedFile)
 	{
-	case SM0_ELAN:
+    case InsermLibrary::FileExt::SM0_ELAN:
 		return m_smXFiles.size() > 0 ? GetFirstFullDataSet(m_smXFiles[0]) : std::vector<std::string>();
-	case SM250_ELAN:
+    case InsermLibrary::FileExt::SM250_ELAN:
 		return m_smXFiles.size() > 1 ? GetFirstFullDataSet(m_smXFiles[1]) : std::vector<std::string>();
-	case SM500_ELAN:
+    case InsermLibrary::FileExt::SM500_ELAN:
 		return m_smXFiles.size() > 2 ? GetFirstFullDataSet(m_smXFiles[2]) : std::vector<std::string>();
-	case SM1000_ELAN:
+    case InsermLibrary::FileExt::SM1000_ELAN:
 		return m_smXFiles.size() > 3 ? GetFirstFullDataSet(m_smXFiles[3]) : std::vector<std::string>();
-	case SM2500_ELAN:
+    case InsermLibrary::FileExt::SM2500_ELAN:
 		return m_smXFiles.size() > 4 ? GetFirstFullDataSet(m_smXFiles[4]) : std::vector<std::string>();
-	case SM5000_ELAN:
+    case InsermLibrary::FileExt::SM5000_ELAN:
 		return m_smXFiles.size() > 5 ? GetFirstFullDataSet(m_smXFiles[5]) : std::vector<std::string>();
 	default:
 		return std::vector<std::string>();
@@ -286,7 +284,7 @@ bool frequencyFolder::hasEnvBar()
 
 void frequencyFolder::getFreqBandName(std::string rootFreqFolder)
 {
-	std::vector<std::string> splitPath = split<std::string>(rootFreqFolder, "\\/_");
+    std::vector<std::string> splitPath = InsermLibrary::split<std::string>(rootFreqFolder, "\\/_");
 	m_frequencyName = splitPath[splitPath.size() - 1];
 }
 
@@ -419,8 +417,8 @@ analyzedDataFolder::~analyzedDataFolder()
 
 void analyzedDataFolder::getStatsInfo(std::string rootDataFolder)
 {
-	std::vector<std::string> splitPath = split<std::string>(rootDataFolder, "/");
-	std::vector<std::string> splitFolder = split<std::string>(splitPath[splitPath.size() - 1], "_");
+    std::vector<std::string> splitPath = InsermLibrary::split<std::string>(rootDataFolder, "/");
+    std::vector<std::string> splitFolder = InsermLibrary::split<std::string>(splitPath[splitPath.size() - 1], "_");
 
 	if (splitFolder[5] == "trials")
 	{
@@ -466,7 +464,7 @@ void analyzedDataFolder::getPicturesFolder(std::string rootDataFolder)
 		QString dirname = *entry;
 		if (dirname != QObject::tr(".") && dirname != QObject::tr(".."))
 		{
-			std::vector<std::string> splitVal = split<std::string>(dirname.toStdString(), "_.");
+            std::vector<std::string> splitVal = InsermLibrary::split<std::string>(dirname.toStdString(), "_.");
 			picData currentPic;
 			currentPic.sortingWeight = strToWeightInt(splitVal[splitVal.size() - 2]);
 			currentPic.pathToPic = rootDataFolder + "/" + dirname.toStdString();

@@ -15,8 +15,8 @@ InsermLibrary::TriggerContainer::~TriggerContainer()
 
 }
 
-//flag = -1 to get the full trigger list
-
+// Return a list of trigger for the wanted experiment
+// Use flagCode = -1 to get the full trigger list
 std::vector<InsermLibrary::Trigger> InsermLibrary::TriggerContainer::GetTriggerForExperiment(PROV *myprovFile, int flagCode, int downSamplingFactor)
 {
 	std::vector<Trigger> triggers = GetTriggerList(flagCode, downSamplingFactor);
@@ -64,6 +64,9 @@ void InsermLibrary::TriggerContainer::ProcessEventsForExperiment(PROV *myprovFil
 	{
 		DeleteTriggerNotPaired(m_processedTriggers);
 	}
+	if (m_processedTriggers.size() == 0)
+		return;
+
 	m_subGroupStimTrials = SortTrialsForExperiment(m_processedTriggers, myprovFile);
 	if (myprovFile->invertmapsinfo != "")
 	{

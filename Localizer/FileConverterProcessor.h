@@ -26,7 +26,7 @@ signals:
 
 private:
 	void LoadFileList(QList<QString> fileList);
-	void LoadFileTypeList(QList<QString> fileList, QStringList fileTypeName);
+    void LoadFileTypeList(QStringList fileTypeName);
 	void ResizeColumns();
 
 private:

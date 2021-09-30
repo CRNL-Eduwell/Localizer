@@ -1,21 +1,17 @@
 #include "mapsGenerator.h"
 
-using namespace InsermLibrary::DrawCard;
-using namespace std;//nettoye tes conneries gros con , flo du 28/10/2019
-using namespace InsermLibrary;//nettoye tes conneries gros con , flo du 28/10/2019
-
-mapsGenerator::mapsGenerator(int width, int heigth)
+InsermLibrary::DrawCard::mapsGenerator::mapsGenerator(int width, int heigth)
 {
 	Heigth = heigth;
 	Width = width;
 }
 
-mapsGenerator::~mapsGenerator()
+InsermLibrary::DrawCard::mapsGenerator::~mapsGenerator()
 {
 	deleteAndNullify1D(ColorMapJet);
 }
 
-void mapsGenerator::trialmatTemplate(vector<int> trialsPerRow, PROV *myprovFile)
+void InsermLibrary::DrawCard::mapsGenerator::trialmatTemplate(std::vector<int> trialsPerRow, PROV *myprovFile)
 {
 	double matrixWidth, matrixHeight;
 	QPoint MatrixtopLeft;
@@ -61,7 +57,7 @@ void mapsGenerator::trialmatTemplate(vector<int> trialsPerRow, PROV *myprovFile)
 	createTrialsLegend(&painterTemplate, myprovFile);
 }
 
-void mapsGenerator::graduateColorBar(QPainter *painter, int maxValue)
+void InsermLibrary::DrawCard::mapsGenerator::graduateColorBar(QPainter *painter, int maxValue)
 {
 	int numberTick = 3;
 
@@ -126,7 +122,7 @@ void mapsGenerator::graduateColorBar(QPainter *painter, int maxValue)
 	}
 }
 
-void mapsGenerator::drawVerticalZeroLine(QPainter *painter, PROV* myprovFile)
+void InsermLibrary::DrawCard::mapsGenerator::drawVerticalZeroLine(QPainter *painter, PROV* myprovFile)
 {
 	int *windowMS = myprovFile->getBiggestWindowMs();
 
@@ -147,7 +143,7 @@ void mapsGenerator::drawVerticalZeroLine(QPainter *painter, PROV* myprovFile)
 	delete windowMS;
 }
 
-void mapsGenerator::displayStatsOnMap(QPainter *painter, vec2<int> idCurrentMap, vec1<PVALUECOORD> significantValue, PROV* myprovFile)
+void InsermLibrary::DrawCard::mapsGenerator::displayStatsOnMap(QPainter *painter, vec2<int> idCurrentMap, vec1<PVALUECOORD> significantValue, PROV* myprovFile)
 {
 	int* windowMs = myprovFile->getBiggestWindowMs();
 	for (int y = myprovFile->nbRow() - 1; y >= 0; y--)
@@ -174,40 +170,41 @@ void mapsGenerator::displayStatsOnMap(QPainter *painter, vec2<int> idCurrentMap,
 	delete windowMs;
 }
 
-void mapsGenerator::drawMapTitle(QPainter *painter, string title)
+void InsermLibrary::DrawCard::mapsGenerator::drawMapTitle(QPainter *painter, std::string title)
 {
-	vector<string> splitFullPath = split<string>(title, "/");
+    std::vector<std::string> splitFullPath = split<std::string>(title, "/");
 	painter->setPen(QColor(Qt::GlobalColor::black));
 	painter->drawText(QPoint(0.20833 * fullMap.width(), 0.0532407 * fullMap.height()), 
 					  QString(splitFullPath[splitFullPath.size()-1].c_str()));
 }
 
-vec2<float> mapsGenerator::horizontalInterpolation(vec2<float> chanelToInterpol, int interpolationFactor, int idBegTrigg, int nbSubTrials)
+InsermLibrary::vec2<float> InsermLibrary::DrawCard::mapsGenerator::horizontalInterpolation(vec2<float> chanelToInterpol, int interpolationFactor, int idBegTrigg, int nbSubTrials)
 {
-	int nbSampleWin = chanelToInterpol[0].size() - 1;
+    vec2<float> eegDataInterpolated;
+    for (int i = 0; i < nbSubTrials; i++)
+    {
+        int subTrialIndex = idBegTrigg + i;
+        int subTrialSampleCount = chanelToInterpol[subTrialIndex].size();
 
-	vec2<float> eegDataInterpolated;
-	for (int i = 0; i < nbSubTrials; i++)
-	{
-		vector<float> eegDataOneTrial;
-		for (int j = 0; j < nbSampleWin; j++)
-		{
-			float beginValue = chanelToInterpol[idBegTrigg + i][j];
-			float endValue = chanelToInterpol[idBegTrigg + i][j + 1];
+        std::vector<float> eegDataOneTrial;
+        for (int j = 0; j < subTrialSampleCount; j++)
+        {
+            float beginValue = chanelToInterpol[subTrialIndex][j];
+            float endValue = chanelToInterpol[subTrialIndex][j + 1];
 
-			for (int k = 0; k < interpolationFactor; k++)
-			{
-				float coeff = (float)k / interpolationFactor;
-				eegDataOneTrial.push_back(((1 - coeff) * beginValue) + (coeff * endValue));
-			}
-		}
-		eegDataInterpolated.push_back(eegDataOneTrial);
-	}
+            for (int k = 0; k < interpolationFactor; k++)
+            {
+                float coeff = (float)k / interpolationFactor;
+                eegDataOneTrial.push_back(((1 - coeff) * beginValue) + (coeff * endValue));
+            }
+        }
+        eegDataInterpolated.push_back(eegDataOneTrial);
+    }
 
-	return eegDataInterpolated;
+    return eegDataInterpolated;
 }
 
-vec2<float> mapsGenerator::verticalInterpolation(vec2<float> chanelToInterpol, int interpolationFactor)
+InsermLibrary::vec2<float> InsermLibrary::DrawCard::mapsGenerator::verticalInterpolation(InsermLibrary::vec2<float> chanelToInterpol, int interpolationFactor)
 {
 	int vertSize = chanelToInterpol.size();
 	int horizSize = chanelToInterpol[0].size();
@@ -233,8 +230,7 @@ vec2<float> mapsGenerator::verticalInterpolation(vec2<float> chanelToInterpol, i
 	return eegDataInterpolated;
 }
 
-void mapsGenerator::eegData2ColorMap(vec1<int> colorX[512], vec1<int> colorY[512], vec2<float> interpolatedData, 
-									 float maxValue)
+void InsermLibrary::DrawCard::mapsGenerator::eegData2ColorMap(vec1<int> colorX[512], vec1<int> colorY[512], vec2<float> interpolatedData, float maxValue)
 {
 	float minValue = -maxValue;
 
@@ -258,9 +254,9 @@ void mapsGenerator::eegData2ColorMap(vec1<int> colorX[512], vec1<int> colorY[512
 	}
 }
 
-vec1<int> mapsGenerator::checkIfNeedDisplayStat(vec1<PVALUECOORD> significantValue, int idCurrentElec)
+InsermLibrary::vec1<int> InsermLibrary::DrawCard::mapsGenerator::checkIfNeedDisplayStat(InsermLibrary::vec1<PVALUECOORD> significantValue, int idCurrentElec)
 {
-	vector<int> significantIdCurrentMap;
+    std::vector<int> significantIdCurrentMap;
 	for (int z = 0; z < significantValue.size(); z++)
 	{
 		if (significantValue[z].elec == idCurrentElec)
@@ -271,12 +267,12 @@ vec1<int> mapsGenerator::checkIfNeedDisplayStat(vec1<PVALUECOORD> significantVal
 	return significantIdCurrentMap;
 }
 
-vec2<int> mapsGenerator::checkIfConditionStat(vec1<PVALUECOORD> significantValue, vec1<int> significantIdMap, int nbRow)
+InsermLibrary::vec2<int> InsermLibrary::DrawCard::mapsGenerator::checkIfConditionStat(InsermLibrary::vec1<PVALUECOORD> significantValue, vec1<int> significantIdMap, int nbRow)
 {
-	vector<vector<int>> idCurrentMap;
+    std::vector<std::vector<int>> idCurrentMap;
 	for (int y = nbRow - 1; y >= 0; y--)
 	{
-		vector<int> indexCondition;
+        std::vector<int> indexCondition;
 		for (int z = 0; z < significantIdMap.size(); z++)
 		{
 			if (significantValue[significantIdMap[z]].condit == y)
@@ -290,7 +286,7 @@ vec2<int> mapsGenerator::checkIfConditionStat(vec1<PVALUECOORD> significantValue
 	return idCurrentMap;
 }
 
-void mapsGenerator::jetColorMap512(QColor *colorMap)
+void InsermLibrary::DrawCard::mapsGenerator::jetColorMap512(QColor *colorMap)
 {
 	int compteur = 0;
 	for (int i = 0; i < 57; i++)
@@ -334,7 +330,7 @@ void mapsGenerator::jetColorMap512(QColor *colorMap)
 	}
 }
 
-void mapsGenerator::createColorBar(QPainter *painter)
+void InsermLibrary::DrawCard::mapsGenerator::createColorBar(QPainter *painter)
 {
 	painter->drawRect(colorBarRect);
 
@@ -361,7 +357,7 @@ void mapsGenerator::createColorBar(QPainter *painter)
 	}
 }
 
-void mapsGenerator::defineLineSeparation(QPainter *painter, vector<int> nbTrialPerRow, int nbCol)
+void InsermLibrary::DrawCard::mapsGenerator::defineLineSeparation(QPainter *painter, std::vector<int> nbTrialPerRow, int nbCol)
 {
 	int nbRow = nbTrialPerRow.size() - 1;
 	int nbVertLine = nbCol - 1;
@@ -417,7 +413,7 @@ void mapsGenerator::defineLineSeparation(QPainter *painter, vector<int> nbTrialP
 	}
 }
 
-void mapsGenerator::createTimeLegend(QPainter *painter, PROV *myprovFile)
+void InsermLibrary::DrawCard::mapsGenerator::createTimeLegend(QPainter *painter, PROV *myprovFile)
 {
 	int stepTimeLegend = 200;
 
@@ -477,7 +473,7 @@ void mapsGenerator::createTimeLegend(QPainter *painter, PROV *myprovFile)
 	delete windowMS;
 }
 
-void mapsGenerator::createTrialsLegend(QPainter *painter, PROV *myprovFile)
+void InsermLibrary::DrawCard::mapsGenerator::createTrialsLegend(QPainter *painter, PROV *myprovFile)
 {
 	for (int k = 0; k < (myprovFile->visuBlocs.size()); k++)
 	{

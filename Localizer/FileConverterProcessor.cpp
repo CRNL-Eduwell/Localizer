@@ -10,7 +10,7 @@ FileConverterProcessor::FileConverterProcessor(QList<QString> fileList, QWidget 
 	fileTypeName << "Elan" << "BrainVision";
 
 	LoadFileList(fileList);
-	LoadFileTypeList(fileList, fileTypeName);
+    LoadFileTypeList(fileTypeName);
 	ResizeColumns();
 }
 
@@ -63,7 +63,7 @@ void FileConverterProcessor::LoadFileList(QList<QString> fileList)
 	}
 }
 
-void FileConverterProcessor::LoadFileTypeList(QList<QString> fileList, QStringList examList)
+void FileConverterProcessor::LoadFileTypeList(QStringList examList)
 {
 	examList.insert(0, "UNKNOWN");
 	int examFileCount = examList.size();

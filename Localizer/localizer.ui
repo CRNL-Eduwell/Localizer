@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Localizer</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="localizer.qrc">
+    <normaloff>:/Localizer/Resources/localizer.ico</normaloff>:/Localizer/Resources/localizer.ico</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>

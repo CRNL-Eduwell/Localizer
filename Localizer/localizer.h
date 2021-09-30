@@ -13,9 +13,9 @@
 #include <QFileDialog>
 #include <QKeyEvent>
 #include <QShortcut>
-#include <QtUiTools>
-#include <QUiLoader>
 #include <QListWidgetItem>
+#include <QFileSystemModel>
+#include <QReadWriteLock>
 
 //==Ui headers
 #include "ui_localizer.h"
@@ -57,6 +57,7 @@ public:
 private:
 	void ReSetupGUI();
     void LoadFrequencyBandsUI(const std::vector<InsermLibrary::FrequencyBand>& FrequencyBands);
+    void ResetUiCheckboxes();
 	void DeactivateUIForSingleFiles();
     void ConnectSignals();
     void ConnectMenuBar();
@@ -69,7 +70,7 @@ private:
 	void PrepareSingleFiles();
 	void InitProgressBar();
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> GetUIAnalysisOption();
-	int GetNbElement(QModelIndexList selectedIndexes);
+	int GetSelectedFolderCount(QModelIndexList selectedIndexes);
 
 private slots:
 	void SetLabelCount(int count);
@@ -107,7 +108,7 @@ private:
 	bool isAlreadyRunning = false;
 	//==UI
 	float nbDoneTask = 0;
-	int nbTaskToDo = 0;
+	float nbTaskToDo = 0;
 	picOptions *picOpt = nullptr;
 	optionsStats *optStat = nullptr;
 	optionsPerf *optPerf = nullptr;
