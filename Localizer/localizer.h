@@ -57,6 +57,7 @@ public:
 private:
 	void ReSetupGUI();
     void LoadFrequencyBandsUI(const std::vector<InsermLibrary::FrequencyBand>& FrequencyBands);
+    void ResetUiCheckboxes();
 	void DeactivateUIForSingleFiles();
     void ConnectSignals();
     void ConnectMenuBar();

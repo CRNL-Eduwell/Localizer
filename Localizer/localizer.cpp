@@ -58,10 +58,18 @@ void Localizer::LoadFrequencyBandsUI(const std::vector<InsermLibrary::FrequencyB
     }
 }
 
+void Localizer::ResetUiCheckboxes()
+{
+    ui.Env2plotCheckBox->setEnabled(true);
+    ui.TrialmatCheckBox->setEnabled(true);
+}
+
 void Localizer::DeactivateUIForSingleFiles()
 {
     ui.Env2plotCheckBox->setEnabled(false);
+    ui.Env2plotCheckBox->setChecked(false);
     ui.TrialmatCheckBox->setEnabled(false);
+    ui.TrialmatCheckBox->setChecked(false);
 }
 
 void Localizer::ConnectSignals()
@@ -137,6 +145,7 @@ void Localizer::LoadSpecificFolder()
 
 void Localizer::LoadTreeViewFolder(QString rootFolder)
 {
+    ResetUiCheckboxes();
     disconnect(ui.processButton, nullptr, nullptr, nullptr);
     if (ui.FileTreeView->selectionModel() != nullptr)
         disconnect(ui.FileTreeView->selectionModel(), nullptr, nullptr, nullptr);
