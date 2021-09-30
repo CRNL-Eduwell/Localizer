@@ -169,6 +169,14 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer *myeegContainer, s
 		CreateConfFile(myeegContainer);
 		EEGFormat::Utility::DeleteAndNullify(mainTask);
 	}
+    else
+    {
+        //if we are at this point, no prov file to generate figures
+        //but we still need to advance the progress bar
+        emit sendLogInfo("No Protocol file found, no maps will be generated");
+        if(a.env2plot) emit incrementAdavnce(1);
+        if(a.trialmat) emit incrementAdavnce(1);
+    }
 
     std::vector<PROV> provFiles = LoadAllProvForTask();
     for (size_t i = 0; i < provFiles.size(); i++)

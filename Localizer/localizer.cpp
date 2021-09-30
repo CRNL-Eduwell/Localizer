@@ -119,7 +119,7 @@ void Localizer::ConnectMenuBar()
 void Localizer::LoadPatientFolder()
 {
     QFileDialog *fileDial = new QFileDialog(this);
-    fileDial->setFileMode(QFileDialog::FileMode::DirectoryOnly);
+    fileDial->setOption(QFileDialog::ShowDirsOnly, true);
     QString fileName = fileDial->getExistingDirectory(this, tr("Choose Patient Folder"));
     if (fileName != "")
     {
