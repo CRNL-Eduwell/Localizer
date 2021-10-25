@@ -23,6 +23,8 @@
 #include "FrequencyBand.h"
 #include "AlgorithmCalculator.h"
 
+#include "../../Framework/Framework/Pearson.h"
+
 namespace InsermLibrary
 {
 	class LOCA : public QObject
@@ -66,6 +68,9 @@ namespace InsermLibrary
         std::string PrepareFolderAndPathsTrial(std::string freqFolder, int dsSampFreq);
         bool ShouldPerformTrialmatStats(std::string locaName);
         std::vector<PVALUECOORD> ProcessWilcoxonStatistic(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+
+		//==
+		void CorrelationMaps(eegContainer* myeegContainer, std::string freqFolder);
 
 	signals:
 		void sendLogInfo(QString);

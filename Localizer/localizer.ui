@@ -186,6 +186,25 @@
                 </layout>
                </widget>
               </item>
+              <item>
+               <widget class="QFrame" name="CorrelationMapFrame">
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_6">
+                 <item>
+                  <widget class="QCheckBox" name="CorrelationMapsCheckBox">
+                   <property name="text">
+                    <string>Generate Correlation Map</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>

@@ -303,6 +303,7 @@ void Localizer::InitProgressBar()
     ui.Eeg2envCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo++; //eeg2env, wheter we need to compute or load
     ui.Env2plotCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
     ui.TrialmatCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
+    ui.CorrelationMapsCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
 
     nbTaskToDo *= nbFolderSelected * nbFrequencyBands;
 }
@@ -326,6 +327,7 @@ std::vector<InsermLibrary::FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOpt
         analysisOpt[i].analysisParameters.calculationType = Algorithm::Strategy::GetFileTypeFromString(ui.AnalysisCcomboBox->currentText().toStdString());
         analysisOpt[i].env2plot = ui.Env2plotCheckBox->isChecked();
         analysisOpt[i].trialmat = ui.TrialmatCheckBox->isChecked();
+        analysisOpt[i].correMaps = ui.CorrelationMapsCheckBox->isChecked();
 
         //	- what frequency bands data is
         QString label = ui.FrequencyListWidget->item(indexes[i])->text();
