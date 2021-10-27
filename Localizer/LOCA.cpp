@@ -971,10 +971,10 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
 		std::shuffle(eventRand.begin(), eventRand.end(), std::default_random_engine(seed));
 
 		int seedIndexEvent = eventRand[0];
+		int seedIndexEvent2 = (TriggerCount - 1) - seedIndexEvent;
 		//==================================
 
-		//coeff = pearsonCoefficient(baseline, ChannelData)
-		surrogates[ii] = Framework::Calculations::Stats::Correlation::pearsonCoefficient(eegData3D[seedIndexEvent][seedIndex1], eegData3D[seedIndexEvent][seedIndex2]);
+		surrogates[ii] = Framework::Calculations::Stats::Correlation::pearsonCoefficient(eegData3D[seedIndexEvent][seedIndex1], eegData3D[seedIndexEvent2][seedIndex2]);
 	}
 
 	std::vector<float> surrogatesAbs = std::vector<float>(surrogates);
@@ -1000,14 +1000,14 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
 				}
 
 				float corre = Framework::Calculations::Stats::Correlation::pearsonCoefficient(eegData3D[ii][i], eegData3D[ii][j]);
-				bigCorrePlus[i][j] = (corre / TriggerCount);// corre > s_rmax ? corre / TriggerCount : 0;
+				bigCorrePlus[i][j] += (corre > s_rmax) ? (1.0f / TriggerCount) : 0;
 			}
 		}
 	}
 
 	//==================================
-
 	QPixmap* pixmapChanel = new QPixmap(1200, 1200);
+	pixmapChanel->fill(QColor(Qt::white));
 	QPainter* painterChanel = new QPainter(pixmapChanel);
 
 	//#define PI 3.14159265f
@@ -1041,12 +1041,11 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
 			float x2 = (radius - 60) * cos(angle2);
 			float y2 = (radius - 60) * sin(angle2);
 
-			if (dist[i][j] > 4 && dist[i][j] < 30)
+			if (dist[i][j] > 5 || dist[i][j] == 30 )
 			{
-				float width = ((float)100 / s_minpct_toshow) * bigCorrePlus[i][j];
-				if (width > 0)
+				float width = floor(((float)100 / s_minpct_toshow) * bigCorrePlus[i][j]);
+				if (width > 0.0f)
 				{
-					//painterChanel->drawEllipse(QPoint(600 + x, 600 - y), 8, 8);
 					painterChanel->drawLine(600 + x, 600 - y, 600 + x2, 600 - y2);
 				}
 			}
@@ -1061,16 +1060,3 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
 
 	emit sendLogInfo("Correlation map generated");
 }
-
-//
-//int InsermLibrary::eegContainer::GetIndexFromElectrodeLabel(std::string myString)
-//{
-//	for (int j = 0; j < myString.size(); j++)
-//	{
-//		if (isdigit(myString[j]) && myString[j] != 0)
-//		{
-//			return j;
-//		}
-//	}
-//	return -1;
-//}
