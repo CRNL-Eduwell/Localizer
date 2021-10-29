@@ -3,6 +3,7 @@
 //#include <algorithm>    // std::shuffle
 #include <random>       // std::default_random_engine
 #include <chrono>       // std::chrono::system_clock
+#include <QDebug>
 
 InsermLibrary::LOCA::LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption* statOption, picOption* picOption)
 {
@@ -852,37 +853,29 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
 {
 	//Hardcoded stuff, look for parameters later
 	int halfWindowSizeInSeconds = 15;
-
 	//=== end hardcoded stuff
+
+    int ElectrodeCount = myeegContainer->elanFrequencyBand[0]->ElectrodeCount();
 	int stepInSample = round(myeegContainer->elanFrequencyBand[0]->SamplingFrequency() * halfWindowSizeInSeconds);
-	std::vector<int> windowsCenter;
-	windowsCenter.push_back(stepInSample);
-	while (windowsCenter[windowsCenter.size() - 1] + (2 * stepInSample) < myeegContainer->elanFrequencyBand[0]->NumberOfSamples())
-	{
-		windowsCenter.push_back(windowsCenter[windowsCenter.size() - 1] + stepInSample);
-	}
-
-	//We remove the two extreme border windows to avoid border effects 
-	windowsCenter.erase(windowsCenter.begin() + (windowsCenter.size() - 1));
-	windowsCenter.erase(windowsCenter.begin());
-
+    std::vector<int> windowsCenter = DefineCorrelationWindowsCenter(stepInSample, myeegContainer->elanFrequencyBand[0]->NumberOfSamples());
 	int TriggerCount = windowsCenter.size();
+
 	//== get Bloc of eeg data we want to display center around events
-	vec3<float> eegData3D = vec3<float>(TriggerCount, vec2<float>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount(), vec1<float>(2 * stepInSample)));
-	std::vector<std::vector<float>> currentData = myeegContainer->elanFrequencyBand[0]->Data(EEGFormat::DataConverterType::Analog);
+    vec3<float> eegData3D = vec3<float>(TriggerCount, vec2<float>(ElectrodeCount, vec1<float>(2 * stepInSample)));
+    std::vector<std::vector<float>> currentData = myeegContainer->elanFrequencyBand[0]->Data(EEGFormat::DataConverterType::Analog);
 	for (int i = 0; i < TriggerCount; i++)
 	{
 		for (int j = 0; j < (2 * stepInSample); j++)
 		{
 			int beginTime = windowsCenter[i] - stepInSample;
 
-			for (int k = 0; k < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); k++)
+            for (int k = 0; k < ElectrodeCount; k++)
 			{
 				//to prevent issue in case the first event has been recorded realy quick
 				if (beginTime + j < 0)
 					eegData3D[i][k][j] = 0;
 				else
-					eegData3D[i][k][j] = (currentData[k][beginTime + j] - 100);
+                    eegData3D[i][k][j] = currentData[k][beginTime + j];
 			}
 		}
 	}
@@ -891,134 +884,55 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
 	//		=> CAN NOT DO THAT WITHOUT PTS 
 	//		=> AT THE MOMENT WILL DO A LABEL COMPARAISON , SAME CHARACTER PART AND 
 	//		=> DIFFERENT NUMBER WILL BE USED AND DISTANCE OF 4 CONTACT WILL BE USED	(MIGHT CHANGE)
+    //std::vector<std::vector<int>> dist = ComputeElectrodesDistances(myeegContainer);
+    qDebug() << "coucou";
+    std::vector<std::vector<int>> dist = ComputeElectrodesDistancesFromPts(myeegContainer);
 
-
-	std::vector<std::vector<int>> dist = std::vector<std::vector<int>>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount(), std::vector<int>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount()));
-	for (int i = 0; i < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); i++)
-	{
-		for (int j = 0; j < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); j++)
-		{
-			std::string mainLabel = myeegContainer->elanFrequencyBand[0]->Electrode(i)->Label();
-			std::string secondaryLabel = myeegContainer->elanFrequencyBand[0]->Electrode(j)->Label();
-
-			//from InsermLibrary::eegContainer::GetIndexFromElectrodeLabel
-			int goodId = -1;
-			for (int k = 0; k < mainLabel.size(); k++)
-			{
-				if (isdigit(mainLabel[k]) && mainLabel[k] != 0)
-				{
-					goodId = k;
-					break;
-				}
-			}
-			std::string subLabel = mainLabel.substr(0, goodId);
-			int contactIndex = stoi(mainLabel.substr(goodId, mainLabel.size()));
-
-			goodId = -1;
-			for (int k = 0; k < secondaryLabel.size(); k++)
-			{
-				if (isdigit(secondaryLabel[k]) && secondaryLabel[k] != 0)
-				{
-					goodId = k;
-					break;
-				}
-			}
-			std::string subLabel2 = secondaryLabel.substr(0, goodId);
-			int contactIndex2 = stoi(secondaryLabel.substr(goodId, secondaryLabel.size()));
-
-			dist[i][j] = (subLabel == subLabel2) ? contactIndex2 - contactIndex : 30;
-		}
-	}
-
+    qDebug() << ElectrodeCount;
 
 	//== Compute surrogate (nb = 10000 , hardcoded for now)
-	std::vector<float> surrogates = std::vector<float>(10000);
-	for (int ii = 0; ii < 10000; ii++)
-	{
-		std::vector<int> rand;
-		for (int i = 0; i < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); i++)
-		{
-			rand.push_back(i);
-		}
-
-		// obtain a time-based seed and shuffle
-		unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
-		std::shuffle(rand.begin(), rand.end(), std::default_random_engine(seed));
-
-		int seedIndex1 = rand[0];
-		//==================================
-		std::vector<int> matches;
-		for (int i = 0; i < dist[seedIndex1].size(); i++)
-		{
-			if (dist[seedIndex1][i] == 30)
-			{
-				matches.push_back(i);
-			}
-		}
-
-		seed = std::chrono::system_clock::now().time_since_epoch().count();
-		std::shuffle(matches.begin(), matches.end(), std::default_random_engine(seed));
-
-		int seedIndex2 = matches[0];
-		//==================================
-		std::vector<int> eventRand;
-		for (int i = 0; i < round(TriggerCount / 3); i++)
-		{
-			eventRand.push_back(i);
-		}
-
-		seed = std::chrono::system_clock::now().time_since_epoch().count();
-		std::shuffle(eventRand.begin(), eventRand.end(), std::default_random_engine(seed));
-
-		int seedIndexEvent = eventRand[0];
-		int seedIndexEvent2 = (TriggerCount - 1) - seedIndexEvent;
-		//==================================
-
-		surrogates[ii] = Framework::Calculations::Stats::Correlation::pearsonCoefficient(eegData3D[seedIndexEvent][seedIndex1], eegData3D[seedIndexEvent2][seedIndex2]);
-	}
-
-	std::vector<float> surrogatesAbs = std::vector<float>(surrogates);
-	for (int i = 0; i < surrogatesAbs.size(); i++)
-	{
-		surrogatesAbs[i] = abs(surrogates[i]);
-	}
-	std::sort(surrogatesAbs.begin(), surrogatesAbs.end());
-	float s_rmax = surrogatesAbs[surrogatesAbs.size() - 1]; //not the same way as jp's script , see if it changes result 
+    float s_rmax = ComputeSurrogate(ElectrodeCount, TriggerCount, 10000, dist, eegData3D);
 	float s_rmin = -1 * s_rmax;
+    qDebug() << "coucou";
 
-	std::vector<std::vector<float>> bigCorrePlus = std::vector<std::vector<float>>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount(), std::vector<float>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount()));
+    //== Computecorrelations
+    std::vector<std::vector<float>> bigCorrePlus = std::vector<std::vector<float>>(ElectrodeCount, std::vector<float>(ElectrodeCount));
+    std::vector<std::vector<float>> bigCorreMinus = std::vector<std::vector<float>>(ElectrodeCount, std::vector<float>(ElectrodeCount));
 	for (int ii = 0; ii < TriggerCount; ii++)
 	{
-		for (int i = 0; i < bigCorrePlus.size(); i++)
+        for (int i = 0; i < ElectrodeCount; i++)
 		{
-			for (int j = 0; j < bigCorrePlus[i].size(); j++)
+            for (int j = 0; j < ElectrodeCount; j++)
 			{
 				if (i == j)
 				{
 					bigCorrePlus[i][j] = 1;
+                    bigCorreMinus[i][j] = 1;
 					continue;
 				}
 
 				float corre = Framework::Calculations::Stats::Correlation::pearsonCoefficient(eegData3D[ii][i], eegData3D[ii][j]);
 				bigCorrePlus[i][j] += (corre > s_rmax) ? (1.0f / TriggerCount) : 0;
+                bigCorreMinus[i][j] += (corre < s_rmin) ? (1.0f / TriggerCount) : 0;
 			}
 		}
 	}
+    qDebug() << "coucou";
 
-	//==================================
+    std::string outputFilePath = DefineMapPath(freqFolder, myeegContainer->DownsamplingFactor(), halfWindowSizeInSeconds * 2);
+    //==================================
 	QPixmap* pixmapChanel = new QPixmap(1200, 1200);
 	pixmapChanel->fill(QColor(Qt::white));
 	QPainter* painterChanel = new QPainter(pixmapChanel);
 
 	//#define PI 3.14159265f
-	int electrodeCount = myeegContainer->elanFrequencyBand[0]->ElectrodeCount();
 	int radius = 570;
-	for (int i = 0; i < electrodeCount; i++)
+    for (int i = 0; i < ElectrodeCount; i++)
 	{
 		QString label = QString::fromStdString(myeegContainer->elanFrequencyBand[0]->Electrode(i)->Label());
 
 		//elec label
-		float angle = (2 * 3.14159265f * i) / electrodeCount;
+        float angle = (2 * 3.14159265f * i) / ElectrodeCount;
 		float x = radius * cos(angle);
 		float y = radius * sin(angle);
 		painterChanel->drawText(QPoint(600 + x, 600 - y), label);
@@ -1030,18 +944,19 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
 	}
 
 	int s_minpct_toshow = 10;
-	for (int i = 0; i < electrodeCount - 1; i++)
+    for (int i = 0; i < ElectrodeCount - 1; i++)
 	{
-		float angle = (2 * 3.14159265f * i) / electrodeCount;
+        float angle = (2 * 3.14159265f * i) / ElectrodeCount;
 		float x = (radius - 60) * cos(angle);
 		float y = (radius - 60) * sin(angle);
-		for (int j = 1; j < electrodeCount; j++)
+        for (int j = 1; j < ElectrodeCount; j++)
 		{
-			float angle2 = (2 * 3.14159265f * j) / electrodeCount;
+            float angle2 = (2 * 3.14159265f * j) / ElectrodeCount;
 			float x2 = (radius - 60) * cos(angle2);
 			float y2 = (radius - 60) * sin(angle2);
 
-			if (dist[i][j] > 5 || dist[i][j] == 30 )
+//            if (dist[i][j] > 6 || dist[i][j] == 30 )
+            if (dist[i][j] > 25)
 			{
 				float width = floor(((float)100 / s_minpct_toshow) * bigCorrePlus[i][j]);
 				if (width > 0.0f)
@@ -1053,10 +968,193 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
 	}
 
 
-	pixmapChanel->save("D:/Users/Florian/Desktop/test.jpg", "JPG");
+    pixmapChanel->save(outputFilePath.c_str(), "JPG");
 	deleteAndNullify1D(painterChanel);
 	deleteAndNullify1D(pixmapChanel);
 
 
 	emit sendLogInfo("Correlation map generated");
+}
+
+std::string InsermLibrary::LOCA::DefineMapPath(std::string freqFolder, int dsSampFreq, int windowSizeInSec)
+{
+    vec1<std::string> pathSplit = split<std::string>(freqFolder, "/");
+    return std::string(freqFolder + "/" + pathSplit[pathSplit.size() - 1] + "_ds" + std::to_string(dsSampFreq) + "_sm0_ccircle_w" + std::to_string(windowSizeInSec) + "s.jpg");
+}
+
+//Define correlation Windows
+//from the file size and halfwindowsize, determine the centers (in sample)
+//of all the windows that will be considered for correlation computation
+std::vector<int> InsermLibrary::LOCA::DefineCorrelationWindowsCenter(int halfWindowSizeInSample, int fileSizeInSample)
+{
+    std::vector<int> windowsCenter;
+
+    windowsCenter.push_back(halfWindowSizeInSample);
+    while (windowsCenter[windowsCenter.size() - 1] + (2 * halfWindowSizeInSample) < fileSizeInSample)
+    {
+        windowsCenter.push_back(windowsCenter[windowsCenter.size() - 1] + halfWindowSizeInSample);
+    }
+
+    //We remove the two extreme border windows to avoid border effects
+    windowsCenter.erase(windowsCenter.begin() + (windowsCenter.size() - 1));
+    windowsCenter.erase(windowsCenter.begin());
+
+    return windowsCenter;
+}
+
+std::vector<std::vector<int>> InsermLibrary::LOCA::ComputeElectrodesDistances(eegContainer* myeegContainer)
+{
+    std::vector<std::vector<int>> dist = std::vector<std::vector<int>>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount(), std::vector<int>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount()));
+    for (int i = 0; i < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); i++)
+    {
+        for (int j = 0; j < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); j++)
+        {
+            std::string mainLabel = myeegContainer->elanFrequencyBand[0]->Electrode(i)->Label();
+            std::string secondaryLabel = myeegContainer->elanFrequencyBand[0]->Electrode(j)->Label();
+
+            //from InsermLibrary::eegContainer::GetIndexFromElectrodeLabel
+            int goodId = -1;
+            for (int k = 0; k < mainLabel.size(); k++)
+            {
+                if (isdigit(mainLabel[k]) && mainLabel[k] != 0)
+                {
+                    goodId = k;
+                    break;
+                }
+            }
+            std::string subLabel = mainLabel.substr(0, goodId);
+            int contactIndex = stoi(mainLabel.substr(goodId, mainLabel.size()));
+
+            goodId = -1;
+            for (int k = 0; k < secondaryLabel.size(); k++)
+            {
+                if (isdigit(secondaryLabel[k]) && secondaryLabel[k] != 0)
+                {
+                    goodId = k;
+                    break;
+                }
+            }
+            std::string subLabel2 = secondaryLabel.substr(0, goodId);
+            int contactIndex2 = stoi(secondaryLabel.substr(goodId, secondaryLabel.size()));
+
+            dist[i][j] = (subLabel == subLabel2) ? contactIndex2 - contactIndex : 30;
+        }
+    }
+    return dist;
+}
+
+std::vector<std::vector<int>> InsermLibrary::LOCA::ComputeElectrodesDistancesFromPts(eegContainer* myeegContainer)
+{
+    std::string path = "/Users/florian/Desktop/LYONNEURO_2021_JANe_MNI.pts";
+
+    std::vector<std::string> rawFile = readTxtFile(path);
+    int electrodeCount = QString::fromStdString(rawFile[2]).toInt();
+
+    std::vector<std::string> Label = std::vector<std::string>(electrodeCount);
+    std::vector<float> x = std::vector<float>(electrodeCount);
+    std::vector<float> y = std::vector<float>(electrodeCount);
+    std::vector<float> z = std::vector<float>(electrodeCount);
+
+    for(int i = 0; i < electrodeCount; i++)
+    {
+        std::vector<std::string> rawLine = InsermLibrary::split<std::string>(rawFile[3 + i],"\t ");
+        Label[i] = rawLine[0];
+        x[i] = QString::fromStdString(rawLine[1]).toFloat();
+        y[i] = QString::fromStdString(rawLine[2]).toFloat();
+        z[i] = QString::fromStdString(rawLine[3]).toFloat();
+    }
+
+    std::vector<std::vector<int>> dist = std::vector<std::vector<int>>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount(), std::vector<int>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount()));
+    for (int i = 0; i < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); i++)
+    {
+        for (int j = 0; j < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); j++)
+        {
+            std::string mainLabel = myeegContainer->elanFrequencyBand[0]->Electrode(i)->Label();
+            std::string mainLabel2 = mainLabel;
+            std::replace(mainLabel2.begin(), mainLabel2.end(), '\'', 'p');
+            //qDebug() << mainLabel2.c_str();
+
+            std::string secondaryLabel = myeegContainer->elanFrequencyBand[0]->Electrode(j)->Label();
+            std::string secondaryLabel2 = secondaryLabel;
+            std::replace(secondaryLabel2.begin(), secondaryLabel2.end(), '\'', 'p');
+            //qDebug() << secondaryLabel2.c_str();
+
+            std::vector<std::string>::iterator it = std::find(Label.begin(), Label.end(), mainLabel2);
+            int index = std::distance(Label.begin(), it);
+            //qDebug() << index;
+
+            std::vector<std::string>::iterator it2 = std::find(Label.begin(), Label.end(), secondaryLabel2);
+            int index2 = std::distance(Label.begin(), it2);
+//            qDebug() << index2;
+
+//            qDebug() << "x2" << x[index2];
+//            qDebug() << "x" << x[index];
+//            qDebug() << "y2" << y[index2];
+//            qDebug() << "y" << y[index];
+//            qDebug() << "z2" << z[index2];
+//            qDebug() << "z" << z[index];
+            float distt = sqrtf((x[index2] - x[index]) * (x[index2] - x[index]) + (y[index2] - y[index]) * (y[index2] - y[index]) + (z[index2] - z[index]) * (z[index2] - z[index]));
+            //qDebug() << "dist " << distt;
+            dist[i][j] = distt;
+        }
+    }
+
+    return dist;
+}
+
+float InsermLibrary::LOCA::ComputeSurrogate(int electrodeCount, int triggerCount, int surrogateCount, vec2<int> distances, vec3<float> eegData)
+{
+    std::vector<float> surrogates = std::vector<float>(surrogateCount);
+    for (int ii = 0; ii < surrogateCount; ii++)
+    {
+        std::vector<int> rand;
+        for (int i = 0; i < electrodeCount; i++)
+        {
+            rand.push_back(i);
+        }
+
+        // obtain a time-based seed and shuffle
+        unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+        std::shuffle(rand.begin(), rand.end(), std::default_random_engine(seed));
+
+        int seedIndex1 = rand[0];
+        //==================================
+        std::vector<int> matches;
+        for (int i = 0; i < distances[seedIndex1].size(); i++)
+        {
+            if (distances[seedIndex1][i] >= 30) //== 30)
+            {
+                matches.push_back(i);
+            }
+        }
+
+        seed = std::chrono::system_clock::now().time_since_epoch().count();
+        std::shuffle(matches.begin(), matches.end(), std::default_random_engine(seed));
+
+        int seedIndex2 = matches[0];
+        //==================================
+        std::vector<int> eventRand;
+        for (int i = 0; i < round(triggerCount / 3); i++)
+        {
+            eventRand.push_back(i);
+        }
+
+        seed = std::chrono::system_clock::now().time_since_epoch().count();
+        std::shuffle(eventRand.begin(), eventRand.end(), std::default_random_engine(seed));
+
+        int seedIndexEvent = eventRand[0];
+        int seedIndexEvent2 = (triggerCount - 1) - seedIndexEvent;
+        //==================================
+
+        surrogates[ii] = Framework::Calculations::Stats::Correlation::pearsonCoefficient(eegData[seedIndexEvent][seedIndex1], eegData[seedIndexEvent2][seedIndex2]);
+    }
+
+    std::vector<float> surrogatesAbs = std::vector<float>(surrogates);
+    for (int i = 0; i < surrogatesAbs.size(); i++)
+    {
+        surrogatesAbs[i] = abs(surrogates[i]);
+    }
+    std::sort(surrogatesAbs.begin(), surrogatesAbs.end());
+
+    return surrogatesAbs[surrogatesAbs.size() - 1]; //not the same way as jp's script , see if it changes result
 }
