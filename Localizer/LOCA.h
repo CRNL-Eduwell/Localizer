@@ -74,8 +74,8 @@ namespace InsermLibrary
         std::string DefineMapPath(std::string freqFolder, int dsSampFreq, int windowSizeInSec);
         std::vector<int> DefineCorrelationWindowsCenter(int halfWindowSizeInSample, int fileSizeInSample);
         std::vector<std::vector<int>> ComputeElectrodesDistances(eegContainer* myeegContainer);
-        std::vector<std::vector<int>> ComputeElectrodesDistancesFromPts(eegContainer* myeegContainer);
-        float ComputeSurrogate(int electrodeCount, int triggerCount, int surrogateCount, vec2<int> distances, vec3<float> eegData);
+        std::vector<std::vector<float>> ComputeElectrodesDistancesFromPts(eegContainer* myeegContainer);
+        float ComputeSurrogate(int electrodeCount, int triggerCount, int surrogateCount, vec2<float> distances, vec3<float> eegData);
 
 	signals:
 		void sendLogInfo(QString);

@@ -885,15 +885,11 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
 	//		=> AT THE MOMENT WILL DO A LABEL COMPARAISON , SAME CHARACTER PART AND 
 	//		=> DIFFERENT NUMBER WILL BE USED AND DISTANCE OF 4 CONTACT WILL BE USED	(MIGHT CHANGE)
     //std::vector<std::vector<int>> dist = ComputeElectrodesDistances(myeegContainer);
-    qDebug() << "coucou";
-    std::vector<std::vector<int>> dist = ComputeElectrodesDistancesFromPts(myeegContainer);
-
-    qDebug() << ElectrodeCount;
+    std::vector<std::vector<float>> dist = ComputeElectrodesDistancesFromPts(myeegContainer);
 
 	//== Compute surrogate (nb = 10000 , hardcoded for now)
     float s_rmax = ComputeSurrogate(ElectrodeCount, TriggerCount, 10000, dist, eegData3D);
 	float s_rmin = -1 * s_rmax;
-    qDebug() << "coucou";
 
     //== Computecorrelations
     std::vector<std::vector<float>> bigCorrePlus = std::vector<std::vector<float>>(ElectrodeCount, std::vector<float>(ElectrodeCount));
@@ -917,7 +913,6 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
 			}
 		}
 	}
-    qDebug() << "coucou";
 
     std::string outputFilePath = DefineMapPath(freqFolder, myeegContainer->DownsamplingFactor(), halfWindowSizeInSeconds * 2);
     //==================================
@@ -955,7 +950,6 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
 			float x2 = (radius - 60) * cos(angle2);
 			float y2 = (radius - 60) * sin(angle2);
 
-//            if (dist[i][j] > 6 || dist[i][j] == 30 )
             if (dist[i][j] > 25)
 			{
 				float width = floor(((float)100 / s_minpct_toshow) * bigCorrePlus[i][j]);
@@ -1043,9 +1037,9 @@ std::vector<std::vector<int>> InsermLibrary::LOCA::ComputeElectrodesDistances(ee
     return dist;
 }
 
-std::vector<std::vector<int>> InsermLibrary::LOCA::ComputeElectrodesDistancesFromPts(eegContainer* myeegContainer)
+std::vector<std::vector<float>> InsermLibrary::LOCA::ComputeElectrodesDistancesFromPts(eegContainer* myeegContainer)
 {
-    std::string path = "/Users/florian/Desktop/LYONNEURO_2021_JANe_MNI.pts";
+    std::string path = "D:/Users/Florian/Desktop/LYONNEURO_2021_JANe_MNI.pts";
 
     std::vector<std::string> rawFile = readTxtFile(path);
     int electrodeCount = QString::fromStdString(rawFile[2]).toInt();
@@ -1064,45 +1058,48 @@ std::vector<std::vector<int>> InsermLibrary::LOCA::ComputeElectrodesDistancesFro
         z[i] = QString::fromStdString(rawLine[3]).toFloat();
     }
 
-    std::vector<std::vector<int>> dist = std::vector<std::vector<int>>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount(), std::vector<int>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount()));
+    std::vector<std::vector<float>> dist = std::vector<std::vector<float>>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount(), std::vector<float>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount()));
     for (int i = 0; i < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); i++)
     {
-        for (int j = 0; j < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); j++)
-        {
-            std::string mainLabel = myeegContainer->elanFrequencyBand[0]->Electrode(i)->Label();
-            std::string mainLabel2 = mainLabel;
-            std::replace(mainLabel2.begin(), mainLabel2.end(), '\'', 'p');
-            //qDebug() << mainLabel2.c_str();
+		for (int j = 0; j < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); j++)
+		{
+			std::string mainLabel = myeegContainer->elanFrequencyBand[0]->Electrode(i)->Label();
+			std::string mainLabel2 = mainLabel;
+			std::replace(mainLabel2.begin(), mainLabel2.end(), '\'', 'p');
 
-            std::string secondaryLabel = myeegContainer->elanFrequencyBand[0]->Electrode(j)->Label();
-            std::string secondaryLabel2 = secondaryLabel;
-            std::replace(secondaryLabel2.begin(), secondaryLabel2.end(), '\'', 'p');
-            //qDebug() << secondaryLabel2.c_str();
+			std::string secondaryLabel = myeegContainer->elanFrequencyBand[0]->Electrode(j)->Label();
+			std::string secondaryLabel2 = secondaryLabel;
+			std::replace(secondaryLabel2.begin(), secondaryLabel2.end(), '\'', 'p');
 
-            std::vector<std::string>::iterator it = std::find(Label.begin(), Label.end(), mainLabel2);
-            int index = std::distance(Label.begin(), it);
-            //qDebug() << index;
+			std::vector<std::string>::iterator it = std::find(Label.begin(), Label.end(), mainLabel2);
+			int index = std::distance(Label.begin(), it);
 
-            std::vector<std::string>::iterator it2 = std::find(Label.begin(), Label.end(), secondaryLabel2);
-            int index2 = std::distance(Label.begin(), it2);
-//            qDebug() << index2;
+			std::vector<std::string>::iterator it2 = std::find(Label.begin(), Label.end(), secondaryLabel2);
+			int index2 = std::distance(Label.begin(), it2);
 
-//            qDebug() << "x2" << x[index2];
-//            qDebug() << "x" << x[index];
-//            qDebug() << "y2" << y[index2];
-//            qDebug() << "y" << y[index];
-//            qDebug() << "z2" << z[index2];
-//            qDebug() << "z" << z[index];
-            float distt = sqrtf((x[index2] - x[index]) * (x[index2] - x[index]) + (y[index2] - y[index]) * (y[index2] - y[index]) + (z[index2] - z[index]) * (z[index2] - z[index]));
-            //qDebug() << "dist " << distt;
-            dist[i][j] = distt;
-        }
+			float distt = 0.0f;
+			//if one of the indexes is not found we consider coordinates to be 0,0,0
+			if (index2 == Label.size())
+			{
+				distt = sqrtf((0 - x[index]) * (0 - x[index]) + (0 - y[index]) * (0 - y[index]) + (0 - z[index]) * (0 - z[index]));
+			}
+			else if (index == Label.size())
+			{
+				distt = sqrtf((x[index2] * x[index2]) + (y[index2] * y[index2]) + (z[index2] * z[index2]));
+			}
+			else
+			{
+				distt = sqrtf((x[index2] - x[index]) * (x[index2] - x[index]) + (y[index2] - y[index]) * (y[index2] - y[index]) + (z[index2] - z[index]) * (z[index2] - z[index]));
+			}
+				
+			dist[i][j] = distt;
+		}
     }
 
     return dist;
 }
 
-float InsermLibrary::LOCA::ComputeSurrogate(int electrodeCount, int triggerCount, int surrogateCount, vec2<int> distances, vec3<float> eegData)
+float InsermLibrary::LOCA::ComputeSurrogate(int electrodeCount, int triggerCount, int surrogateCount, vec2<float> distances, vec3<float> eegData)
 {
     std::vector<float> surrogates = std::vector<float>(surrogateCount);
     for (int ii = 0; ii < surrogateCount; ii++)
@@ -1122,7 +1119,7 @@ float InsermLibrary::LOCA::ComputeSurrogate(int electrodeCount, int triggerCount
         std::vector<int> matches;
         for (int i = 0; i < distances[seedIndex1].size(); i++)
         {
-            if (distances[seedIndex1][i] >= 30) //== 30)
+            if (distances[seedIndex1][i] >= 30)
             {
                 matches.push_back(i);
             }
