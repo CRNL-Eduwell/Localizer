@@ -888,7 +888,7 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
     std::vector<std::vector<float>> dist = ComputeElectrodesDistancesFromPts(myeegContainer);
 
 	//== Compute surrogate (nb = 10000 , hardcoded for now)
-    float s_rmax = ComputeSurrogate(ElectrodeCount, TriggerCount, 10000, dist, eegData3D);
+    float s_rmax = ComputeSurrogate(ElectrodeCount, TriggerCount, 1000000, dist, eegData3D);
 	float s_rmin = -1 * s_rmax;
 
     //== Computecorrelations
@@ -1099,9 +1099,19 @@ std::vector<std::vector<float>> InsermLibrary::LOCA::ComputeElectrodesDistancesF
     return dist;
 }
 
+/// <summary>
+/// Compute surrogates
+/// </summary>
+/// <param name="electrodeCount"></param>
+/// <param name="triggerCount"></param>
+/// <param name="surrogateCount"></param>
+/// <param name="distances"></param>
+/// <param name="eegData"></param>
+/// <returns>the surrogate value at 99.99%</returns>
 float InsermLibrary::LOCA::ComputeSurrogate(int electrodeCount, int triggerCount, int surrogateCount, vec2<float> distances, vec3<float> eegData)
 {
     std::vector<float> surrogates = std::vector<float>(surrogateCount);
+	#pragma omp parallel for
     for (int ii = 0; ii < surrogateCount; ii++)
     {
         std::vector<int> rand;
@@ -1125,8 +1135,8 @@ float InsermLibrary::LOCA::ComputeSurrogate(int electrodeCount, int triggerCount
             }
         }
 
-        seed = std::chrono::system_clock::now().time_since_epoch().count();
-        std::shuffle(matches.begin(), matches.end(), std::default_random_engine(seed));
+		unsigned int seed2 = std::chrono::system_clock::now().time_since_epoch().count();
+        std::shuffle(matches.begin(), matches.end(), std::default_random_engine(seed2));
 
         int seedIndex2 = matches[0];
         //==================================
@@ -1136,8 +1146,8 @@ float InsermLibrary::LOCA::ComputeSurrogate(int electrodeCount, int triggerCount
             eventRand.push_back(i);
         }
 
-        seed = std::chrono::system_clock::now().time_since_epoch().count();
-        std::shuffle(eventRand.begin(), eventRand.end(), std::default_random_engine(seed));
+		unsigned int seed3 = std::chrono::system_clock::now().time_since_epoch().count();
+		std::shuffle(eventRand.begin(), eventRand.end(), std::default_random_engine(seed3));
 
         int seedIndexEvent = eventRand[0];
         int seedIndexEvent2 = (triggerCount - 1) - seedIndexEvent;
@@ -1147,11 +1157,12 @@ float InsermLibrary::LOCA::ComputeSurrogate(int electrodeCount, int triggerCount
     }
 
     std::vector<float> surrogatesAbs = std::vector<float>(surrogates);
-    for (int i = 0; i < surrogatesAbs.size(); i++)
+    for (int i = 0; i < surrogateCount; i++)
     {
         surrogatesAbs[i] = abs(surrogates[i]);
     }
     std::sort(surrogatesAbs.begin(), surrogatesAbs.end());
 
-    return surrogatesAbs[surrogatesAbs.size() - 1]; //not the same way as jp's script , see if it changes result
+	int index = round(0.9999f * surrogateCount);
+	return surrogatesAbs[index];
 }
