@@ -76,6 +76,8 @@ namespace InsermLibrary
         std::vector<std::vector<int>> ComputeElectrodesDistances(eegContainer* myeegContainer);
         std::vector<std::vector<float>> ComputeElectrodesDistancesFromPts(eegContainer* myeegContainer);
         float ComputeSurrogate(int electrodeCount, int triggerCount, int surrogateCount, vec2<float> distances, vec3<float> eegData);
+		void DrawCorrelationCircle(QPainter* painterChanel, eegContainer* myeegContainer, int halfwidth, int halfheight, int offset);
+		void DrawCorrelationOnCircle(QPainter* painterChanel, int halfheight, int offset, std::vector<std::vector<float>> dist, std::vector<std::vector<float>> corre);
 
 	signals:
 		void sendLogInfo(QString);

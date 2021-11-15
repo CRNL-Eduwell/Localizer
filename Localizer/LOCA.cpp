@@ -887,7 +887,7 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
     //std::vector<std::vector<int>> dist = ComputeElectrodesDistances(myeegContainer);
     std::vector<std::vector<float>> dist = ComputeElectrodesDistancesFromPts(myeegContainer);
 
-	//== Compute surrogate (nb = 10000 , hardcoded for now)
+	//== Compute surrogate (nb = 1000000 , hardcoded for now)
     float s_rmax = ComputeSurrogate(ElectrodeCount, TriggerCount, 1000000, dist, eegData3D);
 	float s_rmin = -1 * s_rmax;
 
@@ -916,51 +916,19 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
 
     std::string outputFilePath = DefineMapPath(freqFolder, myeegContainer->DownsamplingFactor(), halfWindowSizeInSeconds * 2);
     //==================================
-	QPixmap* pixmapChanel = new QPixmap(1200, 1200);
+	int width = 2400;
+	int height = 1200;
+
+	QPixmap* pixmapChanel = new QPixmap(width, height);
 	pixmapChanel->fill(QColor(Qt::white));
 	QPainter* painterChanel = new QPainter(pixmapChanel);
 
-	//#define PI 3.14159265f
-	int radius = 570;
-    for (int i = 0; i < ElectrodeCount; i++)
-	{
-		QString label = QString::fromStdString(myeegContainer->elanFrequencyBand[0]->Electrode(i)->Label());
+	int offset = width / 2;
+	DrawCorrelationCircle(painterChanel, myeegContainer, width / 2, height / 2, 0); //negativ correlation area
+	DrawCorrelationCircle(painterChanel, myeegContainer, width / 2, height / 2, offset); //positiv correlation area
 
-		//elec label
-        float angle = (2 * 3.14159265f * i) / ElectrodeCount;
-		float x = radius * cos(angle);
-		float y = radius * sin(angle);
-		painterChanel->drawText(QPoint(600 + x, 600 - y), label);
-
-		//== correlation circle point
-		x = (radius - 60) * cos(angle);
-		y = (radius - 60) * sin(angle);
-		painterChanel->drawEllipse(QPoint(600 + x, 600 - y), 8, 8);
-	}
-
-	int s_minpct_toshow = 10;
-    for (int i = 0; i < ElectrodeCount - 1; i++)
-	{
-        float angle = (2 * 3.14159265f * i) / ElectrodeCount;
-		float x = (radius - 60) * cos(angle);
-		float y = (radius - 60) * sin(angle);
-        for (int j = 1; j < ElectrodeCount; j++)
-		{
-            float angle2 = (2 * 3.14159265f * j) / ElectrodeCount;
-			float x2 = (radius - 60) * cos(angle2);
-			float y2 = (radius - 60) * sin(angle2);
-
-            if (dist[i][j] > 25)
-			{
-				float width = floor(((float)100 / s_minpct_toshow) * bigCorrePlus[i][j]);
-				if (width > 0.0f)
-				{
-					painterChanel->drawLine(600 + x, 600 - y, 600 + x2, 600 - y2);
-				}
-			}
-		}
-	}
-
+	DrawCorrelationOnCircle(painterChanel, height / 2, 0, dist, bigCorreMinus); //negativ correlations
+	DrawCorrelationOnCircle(painterChanel, height / 2, offset, dist, bigCorrePlus); //positiv correlations
 
     pixmapChanel->save(outputFilePath.c_str(), "JPG");
 	deleteAndNullify1D(painterChanel);
@@ -1165,4 +1133,56 @@ float InsermLibrary::LOCA::ComputeSurrogate(int electrodeCount, int triggerCount
 
 	int index = round(0.9999f * surrogateCount);
 	return surrogatesAbs[index];
+}
+
+void InsermLibrary::LOCA::DrawCorrelationCircle(QPainter* painterChanel, eegContainer* myeegContainer, int halfwidth, int halfheight, int offset)
+{
+	//#define PI 3.14159265f
+	int radius = halfheight - 30;
+	int ElectrodeCount = myeegContainer->elanFrequencyBand[0]->ElectrodeCount();
+	for (int i = 0; i < ElectrodeCount; i++)
+	{
+		QString label = QString::fromStdString(myeegContainer->elanFrequencyBand[0]->Electrode(i)->Label());
+
+		//elec label
+		float angle = (2 * 3.14159265f * i) / ElectrodeCount;
+		float x = radius * cos(angle);
+		float y = radius * sin(angle);
+		painterChanel->drawText(QPoint(offset + halfheight + x, halfheight - y), label);
+
+		//== correlation circle point
+		x = (radius - 60) * cos(angle);
+		y = (radius - 60) * sin(angle);
+		painterChanel->drawEllipse(QPoint(offset + halfheight + x, halfheight - y), 8, 8);
+	}
+}
+
+void InsermLibrary::LOCA::DrawCorrelationOnCircle(QPainter* painterChanel, int halfheight, int offset, std::vector<std::vector<float>> dist, std::vector<std::vector<float>> corre)
+{
+	int ElectrodeCount = corre.size();
+	int radius = halfheight - 30;
+	int s_minpct_toshow = 10;
+	for (int i = 0; i < ElectrodeCount - 1; i++)
+	{
+		float angle = (2 * 3.14159265f * i) / ElectrodeCount;
+		float x = (radius - 60) * cos(angle);
+		float y = (radius - 60) * sin(angle);
+		for (int j = 1; j < ElectrodeCount; j++)
+		{
+			float angle2 = (2 * 3.14159265f * j) / ElectrodeCount;
+			float x2 = (radius - 60) * cos(angle2);
+			float y2 = (radius - 60) * sin(angle2);
+
+			if (dist[i][j] > 25)
+			{
+				float width = floor(((float)100 / s_minpct_toshow) * corre[i][j]);
+				if (width > 0.0f)
+				{
+					QPoint p1(offset + halfheight + x, halfheight - y);
+					QPoint p2(offset + halfheight + x2, halfheight - y2);
+					painterChanel->drawLine(p1, p2);
+				}
+			}
+		}
+	}
 }
