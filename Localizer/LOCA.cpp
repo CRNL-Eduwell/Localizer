@@ -1140,9 +1140,11 @@ void InsermLibrary::LOCA::DrawCorrelationCircle(QPainter* painterChanel, eegCont
 	//#define PI 3.14159265f
 	int radius = halfheight - 30;
 	int ElectrodeCount = myeegContainer->elanFrequencyBand[0]->ElectrodeCount();
+	std::string elecNameStringTemp = "%#";
 	for (int i = 0; i < ElectrodeCount; i++)
 	{
 		QString label = QString::fromStdString(myeegContainer->elanFrequencyBand[0]->Electrode(i)->Label());
+		QColor color = GetColorFromLabel(label.toStdString(), elecNameStringTemp);
 
 		//elec label
 		float angle = (2 * 3.14159265f * i) / ElectrodeCount;
@@ -1153,8 +1155,12 @@ void InsermLibrary::LOCA::DrawCorrelationCircle(QPainter* painterChanel, eegCont
 		//== correlation circle point
 		x = (radius - 60) * cos(angle);
 		y = (radius - 60) * sin(angle);
+		painterChanel->setPen(color);
 		painterChanel->drawEllipse(QPoint(offset + halfheight + x, halfheight - y), 8, 8);
+		painterChanel->setPen(Qt::black);
 	}
+
+	m_colorId = -1;
 }
 
 void InsermLibrary::LOCA::DrawCorrelationOnCircle(QPainter* painterChanel, int halfheight, int offset, std::vector<std::vector<float>> dist, std::vector<std::vector<float>> corre)
@@ -1185,4 +1191,47 @@ void InsermLibrary::LOCA::DrawCorrelationOnCircle(QPainter* painterChanel, int h
 			}
 		}
 	}
+}
+
+QColor InsermLibrary::LOCA::GetColorFromLabel(std::string label, std::string& memoryLabel)
+{
+	QColor colors[]{ QColor(Qt::red), QColor(Qt::blue), QColor(Qt::darkYellow), QColor(Qt::green), QColor(Qt::gray), QColor(Qt::cyan), QColor(Qt::black), QColor(Qt::magenta) };
+
+	std::string result = "";
+	int resId = -1;
+
+	int goodId = GetIndexFromElectrodeLabel(label);
+
+	if (goodId != -1)
+	{
+		result = label.substr(0, goodId);
+		resId = stoi(label.substr(goodId, label.size()));
+	}
+	else
+	{
+		result = label;
+	}
+
+	if (result.find(memoryLabel) != std::string::npos && (result.length() == memoryLabel.length()))
+	{
+		return colors[m_colorId];
+	}
+	else
+	{
+		memoryLabel = result;
+		m_colorId = (m_colorId + 1) % 8;
+		return colors[m_colorId];
+	}
+}
+
+int InsermLibrary::LOCA::GetIndexFromElectrodeLabel(std::string myString)
+{
+	for (int j = 0; j < myString.size(); j++)
+	{
+		if (isdigit(myString[j]) && myString[j] != 0)
+		{
+			return j;
+		}
+	}
+	return -1;
 }

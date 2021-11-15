@@ -78,6 +78,8 @@ namespace InsermLibrary
         float ComputeSurrogate(int electrodeCount, int triggerCount, int surrogateCount, vec2<float> distances, vec3<float> eegData);
 		void DrawCorrelationCircle(QPainter* painterChanel, eegContainer* myeegContainer, int halfwidth, int halfheight, int offset);
 		void DrawCorrelationOnCircle(QPainter* painterChanel, int halfheight, int offset, std::vector<std::vector<float>> dist, std::vector<std::vector<float>> corre);
+		int GetIndexFromElectrodeLabel(std::string myString);
+		QColor GetColorFromLabel(std::string label, std::string& memoryLabel);
 
 	signals:
 		void sendLogInfo(QString);
@@ -90,6 +92,7 @@ namespace InsermLibrary
 		std::vector<FrequencyBandAnalysisOpt> m_analysisOpt;
 		statOption* m_statOption;
 		picOption* m_picOption;
+		int m_colorId = -1;
 	};
 }
 
