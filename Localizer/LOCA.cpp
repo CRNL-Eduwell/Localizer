@@ -5,11 +5,12 @@
 #include <chrono>       // std::chrono::system_clock
 #include <QDebug>
 
-InsermLibrary::LOCA::LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption* statOption, picOption* picOption)
+InsermLibrary::LOCA::LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption* statOption, picOption* picOption, std::string ptsFilePath)
 {
 	m_analysisOpt = analysisOpt;
 	m_statOption = statOption;
 	m_picOption = picOption;
+	m_PtsFilePath = ptsFilePath;
 }
 
 InsermLibrary::LOCA::~LOCA()
@@ -881,11 +882,7 @@ void InsermLibrary::LOCA::CorrelationMaps(eegContainer* myeegContainer, std::str
 	}
 
 	//== Compute circular coordinates
-	//		=> CAN NOT DO THAT WITHOUT PTS 
-	//		=> AT THE MOMENT WILL DO A LABEL COMPARAISON , SAME CHARACTER PART AND 
-	//		=> DIFFERENT NUMBER WILL BE USED AND DISTANCE OF 4 CONTACT WILL BE USED	(MIGHT CHANGE)
-    //std::vector<std::vector<int>> dist = ComputeElectrodesDistances(myeegContainer);
-    std::vector<std::vector<float>> dist = ComputeElectrodesDistancesFromPts(myeegContainer);
+	std::vector<std::vector<float>> dist = (m_PtsFilePath != "") ? ComputeElectrodesDistancesFromPts(myeegContainer) : ComputeElectrodesDistances(myeegContainer);
 
 	//== Compute surrogate (nb = 1000000 , hardcoded for now)
     float s_rmax = ComputeSurrogate(ElectrodeCount, TriggerCount, 1000000, dist, eegData3D);
@@ -964,9 +961,9 @@ std::vector<int> InsermLibrary::LOCA::DefineCorrelationWindowsCenter(int halfWin
     return windowsCenter;
 }
 
-std::vector<std::vector<int>> InsermLibrary::LOCA::ComputeElectrodesDistances(eegContainer* myeegContainer)
+std::vector<std::vector<float>> InsermLibrary::LOCA::ComputeElectrodesDistances(eegContainer* myeegContainer)
 {
-    std::vector<std::vector<int>> dist = std::vector<std::vector<int>>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount(), std::vector<int>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount()));
+    std::vector<std::vector<float>> dist = std::vector<std::vector<float>>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount(), std::vector<float>(myeegContainer->elanFrequencyBand[0]->ElectrodeCount()));
     for (int i = 0; i < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); i++)
     {
         for (int j = 0; j < myeegContainer->elanFrequencyBand[0]->ElectrodeCount(); j++)
@@ -1007,9 +1004,7 @@ std::vector<std::vector<int>> InsermLibrary::LOCA::ComputeElectrodesDistances(ee
 
 std::vector<std::vector<float>> InsermLibrary::LOCA::ComputeElectrodesDistancesFromPts(eegContainer* myeegContainer)
 {
-    std::string path = "D:/Users/Florian/Desktop/LYONNEURO_2021_JANe_MNI.pts";
-
-    std::vector<std::string> rawFile = readTxtFile(path);
+    std::vector<std::string> rawFile = readTxtFile(m_PtsFilePath);
     int electrodeCount = QString::fromStdString(rawFile[2]).toInt();
 
     std::vector<std::string> Label = std::vector<std::string>(electrodeCount);

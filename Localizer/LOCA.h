@@ -32,7 +32,7 @@ namespace InsermLibrary
 		Q_OBJECT
 
 	public:
-		LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption* statOption, picOption* picOption);
+		LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption* statOption, picOption* picOptionn, std::string ptsFilePath = "");
 		~LOCA();
         void Eeg2erp(eegContainer *myeegContainer, PROV *myprovFile);
         void Localize(eegContainer *myeegContainer, int idCurrentLoca, locaFolder *currentLoca);
@@ -73,7 +73,7 @@ namespace InsermLibrary
 		void CorrelationMaps(eegContainer* myeegContainer, std::string freqFolder);
         std::string DefineMapPath(std::string freqFolder, int dsSampFreq, int windowSizeInSec);
         std::vector<int> DefineCorrelationWindowsCenter(int halfWindowSizeInSample, int fileSizeInSample);
-        std::vector<std::vector<int>> ComputeElectrodesDistances(eegContainer* myeegContainer);
+        std::vector<std::vector<float>> ComputeElectrodesDistances(eegContainer* myeegContainer);
         std::vector<std::vector<float>> ComputeElectrodesDistancesFromPts(eegContainer* myeegContainer);
         float ComputeSurrogate(int electrodeCount, int triggerCount, int surrogateCount, vec2<float> distances, vec3<float> eegData);
 		void DrawCorrelationCircle(QPainter* painterChanel, eegContainer* myeegContainer, int halfwidth, int halfheight, int offset);
@@ -92,6 +92,7 @@ namespace InsermLibrary
 		std::vector<FrequencyBandAnalysisOpt> m_analysisOpt;
 		statOption* m_statOption;
 		picOption* m_picOption;
+		std::string m_PtsFilePath = "";
 		int m_colorId = -1;
 	};
 }
