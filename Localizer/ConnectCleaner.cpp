@@ -6,6 +6,29 @@ ConnectCleaner::ConnectCleaner(std::vector<std::string> ElectrodeList, QString c
     m_connectCleanerFilePath = connectCleanerFilePath;
 
     ui.setupUi(this);
+
+    connect(ui.MonoCheckBox, &QCheckBox::clicked, this, [&]
+    {
+        if(ui.MonoCheckBox->isChecked())
+        {
+            ui.BipoleCheckBox->setChecked(false);
+        }
+        else
+        {
+            ui.BipoleCheckBox->setChecked(true);
+        }
+    });
+    connect(ui.BipoleCheckBox, &QCheckBox::clicked, this, [&]
+    {
+        if(ui.BipoleCheckBox->isChecked())
+        {
+            ui.MonoCheckBox->setChecked(false);
+        }
+        else
+        {
+            ui.MonoCheckBox->setChecked(true);
+        }
+    });
     connect(ui.ValidateButton, &QPushButton::clicked, this, &ConnectCleaner::ValidateConnect);
     connect(ui.ExportButton, &QPushButton::clicked, this, [&]{ m_cleanConnectFile->Save(); });
     FillList(m_ElectrodesLabel);

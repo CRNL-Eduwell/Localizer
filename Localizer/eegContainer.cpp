@@ -45,6 +45,23 @@ void InsermLibrary::eegContainer::GetElectrodes()
 	}
 }
 
+void InsermLibrary::eegContainer::MonoElectrodes()
+{
+    if (m_bipoles.size() > 0)
+        m_bipoles.clear();
+
+    int totalPlot = 0;
+
+    for (int i = 0; i < electrodes.size(); i++)
+    {
+        for (int j = 0; j < electrodes[i].id.size(); j++)
+        {
+            m_bipoles.push_back(std::make_pair(totalPlot + j, -1));
+        }
+        totalPlot += (int)electrodes[i].id.size();
+    }
+}
+
 void InsermLibrary::eegContainer::BipolarizeElectrodes()
 {
 	if (m_bipoles.size() > 0)

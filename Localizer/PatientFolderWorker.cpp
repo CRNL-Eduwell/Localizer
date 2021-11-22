@@ -82,9 +82,29 @@ InsermLibrary::eegContainer* PatientFolderWorker::ExtractData(locaFolder current
             InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData);
 			myContainer->DeleteElectrodes(m_IndexToDelete);
 			myContainer->GetElectrodes();
-			myContainer->BipolarizeElectrodes();
 
-			emit sendLogInfo(QString::fromStdString("Bipole created !"));
+            switch(m_ElectrodeOperation)
+            {
+                case 0: //mono
+                {
+                    myContainer->MonoElectrodes();
+                    emit sendLogInfo(QString::fromStdString("Single channel created !"));
+                    break;
+                }
+                case 1: //bipo
+                {
+                    myContainer->BipolarizeElectrodes();
+                    emit sendLogInfo(QString::fromStdString("Bipole created !"));
+                    break;
+                }
+                default:
+                {
+                    emit sendLogInfo(QString::fromStdString("Error, operation unknow, aborting"));
+                    return nullptr;
+                }
+            }
+
+
 			return myContainer;
 		}
 	}
