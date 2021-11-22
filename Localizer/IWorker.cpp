@@ -11,10 +11,11 @@ IWorker::~IWorker()
     deleteAndNullify1D(m_Loca);
 }
 
-void IWorker::SetExternalParameters(std::vector<int> IndexToDelete, std::vector<std::string> CorrectedLabels )
+void IWorker::SetExternalParameters(std::vector<int> IndexToDelete, std::vector<std::string> CorrectedLabels, int ElecOperation)
 {
     m_IndexToDelete = std::vector<int>(IndexToDelete);
     m_CorrectedLabels = std::vector<std::string>(CorrectedLabels);
+    m_ElectrodeOperation = ElecOperation;
 }
 
 std::vector<std::string> IWorker::ExtractElectrodeListFromFile(std::string currentFilePath)
