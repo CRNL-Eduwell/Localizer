@@ -45,7 +45,7 @@ unix:!macx{
 ####################################### LIBRAIRIES
     LIBS += -L"/home/bbontemps/software/boost_1_70_0" -lboost_filesystem
     LIBS += -L"/home/bbontemps/software/EEGFormat/EEGFormat" -lEEGFormat
-    LIBS += -L"/home/bbontemps/software/build-Framework-Desktop_Qt_5_14_2_GCC_64bit-Release" -lFramework
+    LIBS += -L"/home/bbontemps/software/Framework_x64" -lFramework
     LIBS += -L"/usr/local/lib" -lfftw3f -lfftw3f_threads
     LIBS += -fopenmp
 }

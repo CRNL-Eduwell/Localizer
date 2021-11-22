@@ -62,6 +62,7 @@ void Localizer::ResetUiCheckboxes()
 {
     ui.Env2plotCheckBox->setEnabled(true);
     ui.TrialmatCheckBox->setEnabled(true);
+    ui.CorrelationMapsCheckBox->setEnabled(true);
 }
 
 void Localizer::DeactivateUIForSingleFiles()
@@ -70,6 +71,8 @@ void Localizer::DeactivateUIForSingleFiles()
     ui.Env2plotCheckBox->setChecked(false);
     ui.TrialmatCheckBox->setEnabled(false);
     ui.TrialmatCheckBox->setChecked(false);
+    ui.CorrelationMapsCheckBox->setEnabled(false);
+    ui.CorrelationMapsCheckBox->setChecked(false);
 }
 
 void Localizer::ConnectSignals()
@@ -79,6 +82,9 @@ void Localizer::ConnectSignals()
     ui.FileTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui.FileTreeView, &QTreeView::customContextMenuRequested, this, &Localizer::ShowFileTreeContextMenu);
     connect(ui.FileTreeView, &DeselectableTreeView::ResetNbFolder, this, [&]() { SetLabelCount(0); });
+    
+    connect(ui.BrowsePtsButton, &QPushButton::clicked, this, &Localizer::SelectPtsForCorrelation);
+    connect(ui.ClearPtsButton, &QPushButton::clicked, this, &Localizer::ClearPtsForCorrelation);
 
     connect(ui.AllBandsCheckBox, &QCheckBox::clicked, this, &Localizer::ToggleAllBands);
     connect(ui.cancelButton, &QPushButton::clicked, this, &Localizer::CancelAnalysis);
@@ -126,6 +132,7 @@ void Localizer::LoadPatientFolder()
         m_isPatFolder = true;
         QString rootFolderPath = QDir(fileName).absolutePath();
         LoadTreeViewFolder(rootFolderPath);
+        ClearPtsForCorrelation();
     }
 }
 
@@ -303,6 +310,7 @@ void Localizer::InitProgressBar()
     ui.Eeg2envCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo++; //eeg2env, wheter we need to compute or load
     ui.Env2plotCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
     ui.TrialmatCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
+    ui.CorrelationMapsCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
 
     nbTaskToDo *= nbFolderSelected * nbFrequencyBands;
 }
@@ -326,6 +334,7 @@ std::vector<InsermLibrary::FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOpt
         analysisOpt[i].analysisParameters.calculationType = Algorithm::Strategy::GetFileTypeFromString(ui.AnalysisCcomboBox->currentText().toStdString());
         analysisOpt[i].env2plot = ui.Env2plotCheckBox->isChecked();
         analysisOpt[i].trialmat = ui.TrialmatCheckBox->isChecked();
+        analysisOpt[i].correMaps = ui.CorrelationMapsCheckBox->isChecked();
 
         //	- what frequency bands data is
         QString label = ui.FrequencyListWidget->item(indexes[i])->text();
@@ -476,6 +485,24 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
         contextMenu->exec(ui.FileTreeView->viewport()->mapToGlobal(point));
 }
 
+void Localizer::SelectPtsForCorrelation()
+{
+    QFileDialog* fileDial = new QFileDialog(this);
+    fileDial->setFileMode(QFileDialog::FileMode::AnyFile);
+    QString fileName = fileDial->getOpenFileName(this, tr("Choose Patient Folder"), tr("C:\\"), tr("*.pts"));
+    if (fileName != "")
+    {
+        PtsFilePath = fileName.toStdString();
+        ui.BrowsePtsButton->setEnabled(false);
+    }
+}
+
+void Localizer::ClearPtsForCorrelation()
+{
+    ui.BrowsePtsButton->setEnabled(true);
+    PtsFilePath = "";
+}
+
 void Localizer::ToggleAllBands()
 {
     Qt::CheckState status = ui.AllBandsCheckBox->checkState();
@@ -503,7 +530,7 @@ void Localizer::ProcessFolderAnalysis()
         if(result != -1)
         {
             thread = new QThread;
-            worker = new PatientFolderWorker(*currentPat, analysisOptions, optstat, optpic, filePriority);
+            worker = new PatientFolderWorker(*currentPat, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
 
             //=== Event update displayer
             connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);

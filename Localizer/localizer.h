@@ -76,6 +76,8 @@ private slots:
 	void SetLabelCount(int count);
 	void ModelClicked(const QModelIndex &current);
 	void ShowFileTreeContextMenu(QPoint point);
+	void SelectPtsForCorrelation();
+	void ClearPtsForCorrelation();
 	void ToggleAllBands();
     void ProcessFolderAnalysis();
     void ProcessSingleAnalysis();
@@ -109,6 +111,7 @@ private:
 	//==UI
 	float nbDoneTask = 0;
 	float nbTaskToDo = 0;
+	std::string PtsFilePath = "";
 	picOptions *picOpt = nullptr;
 	optionsStats *optStat = nullptr;
 	optionsPerf *optPerf = nullptr;

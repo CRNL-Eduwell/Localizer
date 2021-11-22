@@ -22,6 +22,7 @@ namespace InsermLibrary
 		FrequencyAnalysis analysisParameters;
 		bool env2plot;
 		bool trialmat;
+		bool correMaps;
 		FrequencyBand Band;
 	};
 }
