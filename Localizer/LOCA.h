@@ -81,6 +81,9 @@ namespace InsermLibrary
 		int GetIndexFromElectrodeLabel(std::string myString);
 		QColor GetColorFromLabel(std::string label, std::string& memoryLabel);
 
+        //==
+        void StatisticalFiles(eegContainer* myeegContainer, PROV* myprovFile, std::string freqFolder);
+
 	signals:
 		void sendLogInfo(QString);
 		void incrementAdavnce(int divider);

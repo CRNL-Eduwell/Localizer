@@ -63,6 +63,7 @@ void Localizer::ResetUiCheckboxes()
     ui.Env2plotCheckBox->setEnabled(true);
     ui.TrialmatCheckBox->setEnabled(true);
     ui.CorrelationMapsCheckBox->setEnabled(true);
+    ui.StatFileExportCheckBox->setEnabled(true);
 }
 
 void Localizer::DeactivateUIForSingleFiles()
@@ -73,6 +74,8 @@ void Localizer::DeactivateUIForSingleFiles()
     ui.TrialmatCheckBox->setChecked(false);
     ui.CorrelationMapsCheckBox->setEnabled(false);
     ui.CorrelationMapsCheckBox->setChecked(false);
+    ui.StatFileExportCheckBox->setEnabled(false);
+    ui.StatFileExportCheckBox->setChecked(false);
 }
 
 void Localizer::ConnectSignals()
@@ -311,6 +314,7 @@ void Localizer::InitProgressBar()
     ui.Env2plotCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
     ui.TrialmatCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
     ui.CorrelationMapsCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
+    ui.StatFileExportCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
 
     nbTaskToDo *= nbFolderSelected * nbFrequencyBands;
 }
@@ -335,6 +339,7 @@ std::vector<InsermLibrary::FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOpt
         analysisOpt[i].env2plot = ui.Env2plotCheckBox->isChecked();
         analysisOpt[i].trialmat = ui.TrialmatCheckBox->isChecked();
         analysisOpt[i].correMaps = ui.CorrelationMapsCheckBox->isChecked();
+        analysisOpt[i].statFiles = ui.StatFileExportCheckBox->isChecked();
 
         //	- what frequency bands data is
         QString label = ui.FrequencyListWidget->item(indexes[i])->text();

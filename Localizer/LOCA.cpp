@@ -182,6 +182,7 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
 		emit sendLogInfo("No Protocol file found, no maps will be generated");
 		if (a.env2plot) emit incrementAdavnce(1);
 		if (a.trialmat) emit incrementAdavnce(1);
+        if (a.statFiles) emit incrementAdavnce(1);
 	}
 
 	std::vector<PROV> provFiles = LoadAllProvForTask();
@@ -222,6 +223,12 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
 			CorrelationMaps(myeegContainer, freqFolder);
 			emit incrementAdavnce(static_cast<int>(provFiles.size()));
 		}
+
+        if(a.statFiles)
+        {
+            StatisticalFiles(myeegContainer, &provFiles[i], freqFolder);
+            emit incrementAdavnce(static_cast<int>(provFiles.size()));
+        }
 	}
 
 	deleteAndNullify1D(m_triggerContainer);
@@ -1229,4 +1236,9 @@ int InsermLibrary::LOCA::GetIndexFromElectrodeLabel(std::string myString)
 		}
 	}
 	return -1;
+}
+
+void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* myprovFile, std::string freqFolder)
+{
+
 }
