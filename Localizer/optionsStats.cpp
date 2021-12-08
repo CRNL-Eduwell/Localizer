@@ -17,11 +17,11 @@ InsermLibrary::statOption optionsStats::getStatOption()
     InsermLibrary::statOption statOpt;
 	statOpt.kruskall = ui.pCheckBoxKW->isChecked();
 	statOpt.FDRkruskall = ui.FDRCheckBoxKW->isChecked();
-	statOpt.pKruskall = atof(&ui.pValueLE_KW->text().toStdString()[0]);
+    statOpt.pKruskall = ui.pValueLE_KW->text().toFloat();
 	statOpt.locaKruskall = std::vector<QString>(wantedLocaKW);
 	statOpt.wilcoxon = ui.pCheckBoxWil->isChecked();
 	statOpt.FDRwilcoxon = ui.FDRCheckBoxWil->isChecked();
-	statOpt.pWilcoxon = atof(&ui.pValueLE_Wil->text().toStdString()[0]);
+    statOpt.pWilcoxon = ui.pValueLE_Wil->text().toFloat();
 	statOpt.locaWilcoxon = std::vector<QString>(wantedLocaWil);
 	return statOpt;
 }
@@ -49,7 +49,8 @@ void optionsStats::displayLoca(QListWidget *uiList, std::vector<QString> wantedL
 {
 	uiList->clear();
 
-	for (int i = 0; i < wantedLoca.size(); i++)
+    int wantedLocaCount = static_cast<int>(wantedLoca.size());
+    for (int i = 0; i < wantedLocaCount; i++)
 	{
 		QListWidgetItem *currentPROV = new QListWidgetItem(uiList);
 		currentPROV->setText(wantedLoca[i]);
@@ -62,13 +63,15 @@ void optionsStats::readList()
 	wantedLocaWil.clear();
 
     std::vector<std::string> locaFromFileKW = InsermLibrary::readTxtFile(kwFilePath.toStdString());
-	for (int i = 0; i < locaFromFileKW.size(); i++)
+    int locaKruskallCount = static_cast<int>(locaFromFileKW.size());
+    for (int i = 0; i < locaKruskallCount; i++)
 	{
 		wantedLocaKW.push_back(locaFromFileKW[i].c_str());
 	}
 
     std::vector<std::string> locaFromFileWil = InsermLibrary::readTxtFile(wilFilePath.toStdString());
-	for (int i = 0; i < locaFromFileWil.size(); i++)
+    int locaWilcoxonCount = static_cast<int>(locaFromFileWil.size());
+    for (int i = 0; i < locaWilcoxonCount; i++)
 	{
 		wantedLocaWil.push_back(locaFromFileWil[i].c_str());
 	}
@@ -142,7 +145,7 @@ void optionsStats::saveListsandClose()
 void optionsStats::pValueKruskall()
 {
 	ui.pValueLE_KW->setText(ui.pValueLE_KW->text().replace(QString(","), QString(".")));
-	if (atof(&ui.pValueLE_KW->text().toStdString()[0]) <= 0)
+    if (ui.pValueLE_KW->text().toFloat() <= 0.0f)
 	{
 		ui.pValueLE_KW->setText("0.01");
 	}
@@ -151,7 +154,7 @@ void optionsStats::pValueKruskall()
 void optionsStats::pValueWilcoxon()
 {
 	ui.pValueLE_Wil->setText(ui.pValueLE_Wil->text().replace(QString(","), QString(".")));
-	if (atof(&ui.pValueLE_Wil->text().toStdString()[0]) <= 0)
+    if (ui.pValueLE_Wil->text().toFloat() <= 0.0f)
 	{
 		ui.pValueLE_Wil->setText("0.01");
 	}
