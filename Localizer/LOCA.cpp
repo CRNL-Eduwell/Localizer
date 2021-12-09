@@ -1240,5 +1240,63 @@ int InsermLibrary::LOCA::GetIndexFromElectrodeLabel(std::string myString)
 
 void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* myprovFile, std::string freqFolder)
 {
+    //std::vector<PVALUECOORD> significantValue;
+    //== get some useful information
+    std::string mapsFolder = GetTrialmatFolder(myprovFile, freqFolder);
+    std::string mapPath = PrepareFolderAndPathsTrial(mapsFolder, myeegContainer->DownsamplingFactor());
+    int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->DownsampledFrequency());
 
+    //== get Bloc of eeg data we want to display center around events
+    vec3<float> bigData;
+    bigData.resize(myeegContainer->BipoleCount(), vec2<float>(m_triggerContainer->ProcessedTriggerCount(), vec1<float>(windowSam[1] - windowSam[0])));
+    myeegContainer->GetFrequencyBlocData(bigData, 0, m_triggerContainer->ProcessedTriggers(), windowSam);
+
+    for(int i = 0;i < 1/*bigData.size()*/; i++)
+    {
+        std::vector<int> ids = m_triggerContainer->SubGroupStimTrials();
+        for(int j = 0; j < 1/*static_cast<int>(ids.size() - 1)*/; j++)
+        {
+            int beg = ids[j];
+            int end = ids[j+1];
+
+
+            qDebug() << beg << " et " << end;
+            qDebug() << "fs " << myeegContainer->DownsampledFrequency() ;
+            int baselineBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.baseLineMin())/1000) - windowSam[0];
+            int baselineEnd = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.baseLineMax())/1000)  - windowSam[0];
+            int windowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMin())/1000)  - windowSam[0];
+            int windowEnd = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMax())/1000)  - windowSam[0];
+
+            qDebug() << "bl beg " << baselineBegin ;
+            qDebug() << "bl end " <<  baselineEnd ;
+            qDebug() << "win beg " << windowBegin ;
+            qDebug() << "win end " << windowEnd ;
+
+            //Copy needed data , all trials for one condition and the associated samples
+            vec1<double> baselineData = vec1<double>();
+            vec2<double> conditionData = vec2<double>(end-beg, vec1<double>());
+            for(int k = 0; k < conditionData.size(); k++)
+            {
+                int sum = std::accumulate(bigData[i][beg+k].begin() + baselineBegin, bigData[i][beg+k].begin() + baselineEnd, 0);
+                baselineData.push_back(static_cast<double>(sum) / (baselineEnd - baselineBegin)); //moyenne de ligne de base de cet essai
+                qDebug() << baselineData[k];
+                conditionData[k] = vec1<double>(bigData[i][beg+k].begin() + windowBegin, bigData[i][beg+k].begin() + windowEnd);
+            }
+
+            //loop over timebins
+            int timeBinsCount = static_cast<int>(conditionData[0].size());
+            for(int k = 0; k < timeBinsCount; k++)
+            {
+                std::vector<double> dataToCompare;
+                for(int l = 0; l < conditionData.size(); l++)
+                {
+                    dataToCompare.push_back(conditionData[l][k]);
+                }
+
+                std::pair<double, double> pz = Framework::Calculations::Stats::wilcoxon_rank_sum(dataToCompare, baselineData);
+                //qDebug() << "z value " << pz.second;
+            }
+            qDebug() << "[=================] ";
+        }
+    }
 }
