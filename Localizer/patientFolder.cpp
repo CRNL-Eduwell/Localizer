@@ -134,43 +134,50 @@ void locaFolder::retrieveFiles(std::string rootLocaFolder)
 	QDir currentDir(rootLocaFolder.c_str());
 	currentDir.setNameFilters(QStringList() << "*.trc" << "*.eeg" << "*.eeg.ent" << "*.pos" << "*.edf" << "*.vhdr");
 
-    QRegExp rxTRC((fullLocalizerName() + ".trc").c_str(), Qt::CaseSensitivity::CaseInsensitive);
-    QRegExp rxEeg((fullLocalizerName() + ".eeg").c_str(), Qt::CaseSensitivity::CaseInsensitive);
-    QRegExp rxEnt((fullLocalizerName() + ".eeg.ent").c_str(), Qt::CaseSensitivity::CaseInsensitive);
-    QRegExp rxPos((fullLocalizerName() + "_raw.pos").c_str(), Qt::CaseSensitivity::CaseInsensitive);
-    QRegExp rxDsPos((fullLocalizerName() + "_ds" + "(\\d+)" + ".pos").c_str(), Qt::CaseSensitivity::CaseInsensitive);
-    QRegExp rxEdf((fullLocalizerName() + ".edf").c_str(), Qt::CaseSensitivity::CaseInsensitive);
-    QRegExp rxBrainVision((fullLocalizerName() + ".vhdr").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+	QRegularExpression rxTRC((fullLocalizerName() + ".trc").c_str(), QRegularExpression::PatternOption::CaseInsensitiveOption);
+	QRegularExpression rxEeg((fullLocalizerName() + ".eeg").c_str(), QRegularExpression::PatternOption::CaseInsensitiveOption);
+	QRegularExpression rxEnt((fullLocalizerName() + ".eeg.ent").c_str(), QRegularExpression::PatternOption::CaseInsensitiveOption);
+	QRegularExpression rxPos((fullLocalizerName() + "_raw.pos").c_str(), QRegularExpression::PatternOption::CaseInsensitiveOption);
+	QRegularExpression rxDsPos((fullLocalizerName() + "_ds" + "(\\d+)" + ".pos").c_str(), QRegularExpression::PatternOption::CaseInsensitiveOption);
+	QRegularExpression rxEdf((fullLocalizerName() + ".edf").c_str(), QRegularExpression::PatternOption::CaseInsensitiveOption);
+	QRegularExpression rxBrainVision((fullLocalizerName() + ".vhdr").c_str(), QRegularExpression::PatternOption::CaseInsensitiveOption);
 
 	QStringList fileFound = currentDir.entryList();
 	for (int i = 0; i < fileFound.size(); i++)
 	{	
-		if (rxTRC.exactMatch(fileFound[i]))
+		QRegularExpressionMatch trcMatch = rxTRC.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (trcMatch.hasMatch())
 			m_trcFile = rootLocaFolder + fileFound[i].toStdString();
 
-		if (rxEeg.exactMatch(fileFound[i]))
+		QRegularExpressionMatch eegMatch = rxEeg.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (eegMatch.hasMatch())
 			m_eegFile = rootLocaFolder + fileFound[i].toStdString();
 
-		if (rxEnt.exactMatch(fileFound[i]))
+		QRegularExpressionMatch entMatch = rxEnt.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (entMatch.hasMatch())
 			m_eegEntFile = rootLocaFolder + fileFound[i].toStdString();
 
-		if (rxPos.exactMatch(fileFound[i]))
+		QRegularExpressionMatch posMatch = rxPos.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (posMatch.hasMatch())
 			m_posFile = rootLocaFolder + fileFound[i].toStdString();
 
-		if (rxDsPos.exactMatch(fileFound[i]))
+		QRegularExpressionMatch dsPosMatch = rxDsPos.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (dsPosMatch.hasMatch())
 			m_dsPosFile = rootLocaFolder + fileFound[i].toStdString();
 
-		if (rxEdf.exactMatch(fileFound[i]))
+		QRegularExpressionMatch edfMatch = rxEdf.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (edfMatch.hasMatch())
 			m_edfFile = rootLocaFolder + fileFound[i].toStdString();
 
-		if (rxBrainVision.exactMatch(fileFound[i]))
+		QRegularExpressionMatch bvMatch = rxBrainVision.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (bvMatch.hasMatch())
 			m_brainVisionFile = rootLocaFolder + fileFound[i].toStdString();
 	}
 }
 
 void locaFolder::retrieveFrequencyFolders(std::string rootLocaFolder)
 {
-	QRegExp rxFreqFold((fullLocalizerName() + "_f(\\d+)f(\\d+)").c_str());
+	QRegularExpression rxFreqFold((fullLocalizerName() + "_f(\\d+)f(\\d+)").c_str());
 
 	//Get every folder corresponding to one LOCALIZER exam
 	QDir currentDir(rootLocaFolder.c_str());
@@ -179,8 +186,10 @@ void locaFolder::retrieveFrequencyFolders(std::string rootLocaFolder)
 	QStringList entries = currentDir.entryList();
 	for (QStringList::ConstIterator entry = entries.begin(); entry != entries.end(); ++entry)
 	{
+		
 		QString dirname = *entry;
-		if (dirname != QObject::tr(".") && dirname != QObject::tr("..") && rxFreqFold.exactMatch(dirname))
+		QRegularExpressionMatch dirMatch = rxFreqFold.match(dirname);
+		if (dirname != QObject::tr(".") && dirname != QObject::tr("..") && dirMatch.hasMatch())
 		{
 			m_freqFolder.push_back(frequencyFolder(this, rootLocaFolder + dirname.toStdString() + "/"));
 		}
@@ -293,32 +302,38 @@ void frequencyFolder::retrieveSMFile2(std::string rootFreqFolder)
 	QDir currentDir(rootFreqFolder.c_str());
 	currentDir.setNameFilters(QStringList() << "*.eeg" << "*.eeg.ent");
 
-	QRegExp rxEeg0((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm0.eeg").c_str());
-	QRegExp rxEeg250((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm250.eeg").c_str());
-	QRegExp rxEeg500((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm500.eeg").c_str());
-	QRegExp rxEeg1000((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm1000.eeg").c_str());
-	QRegExp rxEeg2500((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm2500.eeg").c_str());
-	QRegExp rxEeg5000((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm5000.eeg").c_str());
+	QRegularExpression rxEeg0((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm0.eeg").c_str());
+	QRegularExpression rxEeg250((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm250.eeg").c_str());
+	QRegularExpression rxEeg500((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm500.eeg").c_str());
+	QRegularExpression rxEeg1000((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm1000.eeg").c_str());
+	QRegularExpression rxEeg2500((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm2500.eeg").c_str());
+	QRegularExpression rxEeg5000((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm5000.eeg").c_str());
 
 	QStringList fileFound = currentDir.entryList();
 	for (int i = 0; i < fileFound.size(); i++)
 	{
-		if (rxEeg0.exactMatch(fileFound[i]))
+		QRegularExpressionMatch eeg0Match = rxEeg0.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (eeg0Match.hasMatch())
 			m_sm0eeg = rootFreqFolder + fileFound[i].toStdString();
 
-		if (rxEeg250.exactMatch(fileFound[i]))
+		QRegularExpressionMatch eeg250Match = rxEeg250.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (eeg250Match.hasMatch())
 			m_sm250eeg = rootFreqFolder + fileFound[i].toStdString();
 
-		if (rxEeg500.exactMatch(fileFound[i]))
+		QRegularExpressionMatch eeg500Match = rxEeg500.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (eeg500Match.hasMatch())
 			m_sm500eeg = rootFreqFolder + fileFound[i].toStdString();
 
-		if (rxEeg1000.exactMatch(fileFound[i]))
+		QRegularExpressionMatch eeg1000Match = rxEeg1000.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (eeg1000Match.hasMatch())
 			m_sm1000eeg = rootFreqFolder + fileFound[i].toStdString();
 
-		if (rxEeg2500.exactMatch(fileFound[i]))
+		QRegularExpressionMatch eeg2500Match = rxEeg2500.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (eeg2500Match.hasMatch())
 			m_sm2500eeg = rootFreqFolder + fileFound[i].toStdString();
 
-		if (rxEeg5000.exactMatch(fileFound[i]))
+		QRegularExpressionMatch eeg5000Match = rxEeg5000.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (eeg5000Match.hasMatch())
 			m_sm5000eeg = rootFreqFolder + fileFound[i].toStdString();
 	}
 }
@@ -328,13 +343,13 @@ void frequencyFolder::retrieveSMFile(std::string rootFreqFolder)
 	QDir currentDir(rootFreqFolder.c_str());
 	currentDir.setNameFilters(QStringList() << "*.eeg" << "*.eeg.ent" << "*.vhdr");
 
-	std::vector<QRegExp> rxEegSmX;
-	rxEegSmX.push_back(QRegExp(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm0") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
-	rxEegSmX.push_back(QRegExp(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm250") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
-	rxEegSmX.push_back(QRegExp(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm500") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
-	rxEegSmX.push_back(QRegExp(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm1000") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
-	rxEegSmX.push_back(QRegExp(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm2500") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
-	rxEegSmX.push_back(QRegExp(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm5000") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
+	std::vector<QRegularExpression> rxEegSmX;
+	rxEegSmX.push_back(QRegularExpression(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm0") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
+	rxEegSmX.push_back(QRegularExpression(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm250") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
+	rxEegSmX.push_back(QRegularExpression(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm500") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
+	rxEegSmX.push_back(QRegularExpression(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm1000") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
+	rxEegSmX.push_back(QRegularExpression(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm2500") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
+	rxEegSmX.push_back(QRegularExpression(((fullFrequencyName() + "_ds" + "(\\d+)" + "_sm5000") + "(.eeg|.eeg.ent|.vhdr)").c_str()));
 
 	m_smXFiles.resize(6, std::vector<std::string>());
 	QStringList fileFound = currentDir.entryList();
@@ -342,7 +357,8 @@ void frequencyFolder::retrieveSMFile(std::string rootFreqFolder)
 	{
 		for (int j = 0; j < 6; j++)
 		{
-			if (rxEegSmX[j].exactMatch(fileFound[i]))
+			QRegularExpressionMatch smxMatch = rxEegSmX[j].match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+			if (smxMatch.hasMatch())
 			{
 				m_smXFiles[j].push_back(rootFreqFolder + fileFound[i].toStdString());
 			}
