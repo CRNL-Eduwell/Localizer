@@ -1,7 +1,7 @@
 #ifndef PROTOCOLFILE_H
 #define PROTOCOLFILE_H
 
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QString>
 #include <QFileInfo>
 #include <QTextStream>

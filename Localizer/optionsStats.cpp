@@ -144,20 +144,50 @@ void optionsStats::saveListsandClose()
 
 void optionsStats::pValueKruskall()
 {
-	ui.pValueLE_KW->setText(ui.pValueLE_KW->text().replace(QString(","), QString(".")));
-    if (ui.pValueLE_KW->text().toFloat() <= 0.0f)
-	{
-		ui.pValueLE_KW->setText("0.01");
-	}
+    QLocale locale(QLocale::English, QLocale::UnitedStates);
+
+    bool parseOk = false;
+    float value = locale.toFloat(ui.pValueLE_KW->text(), &parseOk);
+    if(parseOk)
+    {
+        if(value <= 0.0f)
+        {
+            ui.pValueLE_KW->setText("0.01");
+        }
+    }
+    else //probably using , separator for decimal numbers
+    {
+        ui.pValueLE_KW->setText(ui.pValueLE_KW->text().replace(QString(","), QString(".")));
+        float value = locale.toFloat(ui.pValueLE_KW->text(), &parseOk);
+        if(value <= 0.0f)
+        {
+            ui.pValueLE_KW->setText("0.01");
+        }
+    }
 }
 
 void optionsStats::pValueWilcoxon()
 {
-	ui.pValueLE_Wil->setText(ui.pValueLE_Wil->text().replace(QString(","), QString(".")));
-    if (ui.pValueLE_Wil->text().toFloat() <= 0.0f)
-	{
-		ui.pValueLE_Wil->setText("0.01");
-	}
+    QLocale locale(QLocale::English, QLocale::UnitedStates);
+
+    bool parseOk = false;
+    float value = locale.toFloat(ui.pValueLE_Wil->text(), &parseOk);
+    if(parseOk)
+    {
+        if(value <= 0.0f)
+        {
+            ui.pValueLE_Wil->setText("0.01");
+        }
+    }
+    else //probably using , separator for decimal numbers
+    {
+        ui.pValueLE_Wil->setText(ui.pValueLE_Wil->text().replace(QString(","), QString(".")));
+        float value = locale.toFloat(ui.pValueLE_Wil->text(), &parseOk);
+        if(value <= 0.0f)
+        {
+            ui.pValueLE_Wil->setText("0.01");
+        }
+    }
 }
 
 void optionsStats::updateWilOpt()

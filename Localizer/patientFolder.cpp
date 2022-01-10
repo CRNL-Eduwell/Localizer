@@ -134,13 +134,13 @@ void locaFolder::retrieveFiles(std::string rootLocaFolder)
 	QDir currentDir(rootLocaFolder.c_str());
 	currentDir.setNameFilters(QStringList() << "*.trc" << "*.eeg" << "*.eeg.ent" << "*.pos" << "*.edf" << "*.vhdr");
 
-	QRegExp rxTRC((fullLocalizerName() + ".trc").c_str(), Qt::CaseSensitivity::CaseInsensitive);
-	QRegExp rxEeg((fullLocalizerName() + ".eeg").c_str(), Qt::CaseSensitivity::CaseInsensitive);
-	QRegExp rxEnt((fullLocalizerName() + ".eeg.ent").c_str(), Qt::CaseSensitivity::CaseInsensitive);
-	QRegExp rxPos((fullLocalizerName() + "_raw.pos").c_str(), Qt::CaseSensitivity::CaseInsensitive);
-	QRegExp rxDsPos((fullLocalizerName() + "_ds" + "(\\d+)" + ".pos").c_str(), Qt::CaseSensitivity::CaseInsensitive);
-	QRegExp rxEdf((fullLocalizerName() + ".edf").c_str(), Qt::CaseSensitivity::CaseInsensitive);
-	QRegExp rxBrainVision((fullLocalizerName() + ".vhdr").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+    QRegExp rxTRC((fullLocalizerName() + ".trc").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+    QRegExp rxEeg((fullLocalizerName() + ".eeg").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+    QRegExp rxEnt((fullLocalizerName() + ".eeg.ent").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+    QRegExp rxPos((fullLocalizerName() + "_raw.pos").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+    QRegExp rxDsPos((fullLocalizerName() + "_ds" + "(\\d+)" + ".pos").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+    QRegExp rxEdf((fullLocalizerName() + ".edf").c_str(), Qt::CaseSensitivity::CaseInsensitive);
+    QRegExp rxBrainVision((fullLocalizerName() + ".vhdr").c_str(), Qt::CaseSensitivity::CaseInsensitive);
 
 	QStringList fileFound = currentDir.entryList();
 	for (int i = 0; i < fileFound.size(); i++)

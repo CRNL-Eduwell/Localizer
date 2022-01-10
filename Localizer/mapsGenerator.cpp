@@ -77,7 +77,7 @@ void InsermLibrary::DrawCard::mapsGenerator::graduateColorBar(QPainter *painter,
 	painter->setFont(fff);
 
 	QFontMetrics fm(fff);
-	int pixelsWide = fm.width("0");
+    int pixelsWide = fm.horizontalAdvance("0");
 
 	QRect zeroRect(0.8836805 * fullMap.width(), 0.4953703 * fullMap.height(), pixelsWide, 0.0254629 * fullMap.height());
 	painter->drawText(zeroRect.x(), zeroRect.y(), QString("0"));
@@ -88,7 +88,7 @@ void InsermLibrary::DrawCard::mapsGenerator::graduateColorBar(QPainter *painter,
 	for (int i = 0; i < numberTick; i++)
 	{
 		int numberLegend = (int)round(numberStep * (i + 1));
-		pixelsWide = fm.width(QString::number(-numberLegend));
+        pixelsWide = fm.horizontalAdvance(QString::number(-numberLegend));
 
 		//=== Below Zero
 		QPoint Lbeg(LbegLine.x(), LbegLine.y() + (verticalStep * i));
@@ -435,8 +435,8 @@ void InsermLibrary::DrawCard::mapsGenerator::createTimeLegend(QPainter *painter,
 	painter->setFont(font);
 
 	QFontMetrics fm(font);
-	int z = fm.width("0");
-	int pixelsWide = fm.width("0");
+    int z = fm.horizontalAdvance("0");
+    int pixelsWide = fm.horizontalAdvance("0");
 
 	int xBeg = MatrixRect.x() + zeroBorder - (0.5 * pixelsWide);
 	int yBeg = 0.9027777 * fullMap.height();
@@ -448,7 +448,7 @@ void InsermLibrary::DrawCard::mapsGenerator::createTimeLegend(QPainter *painter,
 
 	for (int i = 1; i < numberTickRight + 1; i++)
 	{
-		pixelsWide = fm.width("XXXX");
+        pixelsWide = fm.horizontalAdvance("XXXX");
 		width = pixelsWide;
 
 		int ohterBorder = ceil((double)MatrixRect.width() / (windowMS[1] - windowMS[0]) * (i * stepTimeLegend));
@@ -460,7 +460,7 @@ void InsermLibrary::DrawCard::mapsGenerator::createTimeLegend(QPainter *painter,
 
 	for (int i = 1; i < numberTickLeft + 1; i++)
 	{
-		pixelsWide = fm.width("XXXXX");
+        pixelsWide = fm.horizontalAdvance("XXXXX");
 		width = pixelsWide;
 
 		int ohterBorder = ceil((double)MatrixRect.width() / (windowMS[1] - windowMS[0]) * (i * stepTimeLegend));

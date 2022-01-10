@@ -9,6 +9,7 @@
 #include <QDir>
 #include <QString>
 #include <QObject>
+#include <QRegExp>
 
 class patientFolder;
 class locaFolder;
