@@ -74,24 +74,29 @@ void singleFile::getFileData(std::string path)
 	QDir currentDir(m_rootFolder.c_str());
 	currentDir.setNameFilters(QStringList() << "*.trc" << "*.eeg" << "*.eeg.ent" << "*.pos" << "*.edf");
 
-	QRegExp rxTrc(QString::fromStdString(m_patientName) + ".trc", Qt::CaseSensitivity::CaseInsensitive);
-	QRegExp rxEeg(QString::fromStdString(m_patientName) + ".eeg", Qt::CaseSensitivity::CaseInsensitive);
-	QRegExp rxEnt(QString::fromStdString(m_patientName) + ".eeg.ent", Qt::CaseSensitivity::CaseInsensitive);
-	QRegExp rxPos(QString::fromStdString(m_patientName) + "_raw.pos", Qt::CaseSensitivity::CaseInsensitive);
-	QRegExp rxEdf(QString::fromStdString(m_patientName) + ".edf", Qt::CaseSensitivity::CaseInsensitive);
+	QRegularExpression rxTrc(QString::fromStdString(m_patientName) + ".trc", QRegularExpression::PatternOption::CaseInsensitiveOption);
+	QRegularExpression rxEeg(QString::fromStdString(m_patientName) + ".eeg", QRegularExpression::PatternOption::CaseInsensitiveOption);
+	QRegularExpression rxEnt(QString::fromStdString(m_patientName) + ".eeg.ent", QRegularExpression::PatternOption::CaseInsensitiveOption);
+	QRegularExpression rxPos(QString::fromStdString(m_patientName) + "_raw.pos", QRegularExpression::PatternOption::CaseInsensitiveOption);
+	QRegularExpression rxEdf(QString::fromStdString(m_patientName) + ".edf", QRegularExpression::PatternOption::CaseInsensitiveOption);
 
 	QStringList fileFound = currentDir.entryList();
 	for (int i = 0; i < fileFound.size(); i++)
 	{
-		if (rxTrc.exactMatch(fileFound[i]))
+		QRegularExpressionMatch trcMatch = rxTrc.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (trcMatch.hasMatch())
 			m_trcFile = m_rootFolder + fileFound[i].toStdString();
-		if (rxEeg.exactMatch(fileFound[i]))
+		QRegularExpressionMatch eegMatch = rxEeg.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (eegMatch.hasMatch())
 			m_eegFile = m_rootFolder + fileFound[i].toStdString();
-		if (rxEnt.exactMatch(fileFound[i]))
+		QRegularExpressionMatch entMatch = rxEnt.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (entMatch.hasMatch())
 			m_eegEntFile = m_rootFolder + fileFound[i].toStdString();
-		if (rxPos.exactMatch(fileFound[i]))
+		QRegularExpressionMatch posMatch = rxPos.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (posMatch.hasMatch())
 			m_posFile = m_rootFolder + fileFound[i].toStdString();
-		if (rxEdf.exactMatch(fileFound[i]))
+		QRegularExpressionMatch edfMatch = rxEdf.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+		if (edfMatch.hasMatch())
 			m_edfFile = m_rootFolder + fileFound[i].toStdString();
 	}
 }

@@ -8,6 +8,7 @@
 #include <QString>
 #include <QList>
 #include <QDir>
+#include <QRegularExpression>
 
 #include <iostream>
 #include <vector>

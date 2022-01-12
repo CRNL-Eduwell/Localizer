@@ -6,7 +6,7 @@ macx:CONFIG += app_bundle
 CONFIG += qt
 CONFIG += c++1z
 CONFIG -= console
-QT += core gui widgets
+QT += core gui widgets core5compat
 
 ####################################### COMPILATION FLAGS
 #Windows is done by VisualStudio

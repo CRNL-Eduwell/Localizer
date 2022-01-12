@@ -4,6 +4,8 @@
 #include <QCoreApplication>
 #include <QtWidgets/QDialog>
 #include <QString>
+#include <QLocale>
+#include <QDebug>
 
 #include "displayProv.h"
 #include "Utility.h"
