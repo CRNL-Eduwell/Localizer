@@ -1284,6 +1284,7 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
             }
 
             //loop over timebins
+			std::vector<double> v_stat_Z, v_stat_P;
             int timeBinsCount = static_cast<int>(conditionData[0].size());
             for(int k = 0; k < timeBinsCount; k++)
             {
@@ -1293,8 +1294,11 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
                     dataToCompare.push_back(conditionData[l][k]);
                 }
 
+				//TODO : differences beetween matlab and this one , see if it's important
                 std::pair<double, double> pz = Framework::Calculations::Stats::wilcoxon_rank_sum(dataToCompare, baselineData);
                 //qDebug() << "z value " << pz.second;
+				v_stat_P.push_back(pz.first);
+				v_stat_Z.push_back(pz.second);
             }
             qDebug() << "[=================] ";
         }
