@@ -1346,6 +1346,37 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 	}
 
 	//Kruskall
+	for (int i = 0; i < bigData.size(); i++)
+	{
+		std::vector<int> ids = m_triggerContainer->SubGroupStimTrials();
+		for (int j = 0; j < static_cast<int>(ids.size() - 1); j++)
+		{
+			int firstConditionBeg = ids[j];
+			int firstConditionEnd = ids[j + 1];
+			int firstConditionWindowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMin()) / 1000) - windowSam[0];
+			int firstConditionWindowEnd = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMax()) / 1000) - windowSam[0];
+
+			//copy relevant data
+			std::vector<float>::iterator begIter = bigData[i][firstConditionBeg + j].begin() + firstConditionWindowBegin;
+			std::vector<float>::iterator endIter = bigData[i][firstConditionBeg + j].begin() + firstConditionWindowEnd;
+			std::vector<double> firstConditionData = vec1<double>(begIter, endIter);
+
+			for (int k = 1; k < static_cast<int>(ids.size()); k++)
+			{
+				int secondConditionBeg = ids[k];
+				int secondConditionEnd = ids[k + 1];
+				int secondConditionWindowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[k].dispBloc.windowMin()) / 1000) - windowSam[0];
+				int secondConditionWindowEnd = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[k].dispBloc.windowMax()) / 1000) - windowSam[0];
+
+				//copy relevant data
+				std::vector<float>::iterator begIter = bigData[i][secondConditionBeg + k].begin() + secondConditionWindowBegin;
+				std::vector<float>::iterator endIter = bigData[i][secondConditionBeg + k].begin() + secondConditionWindowEnd;
+				std::vector<double> secondConditionData = vec1<double>(begIter, endIter);
+
+
+			}
+		}
+	}
 }
 
 //Temp : need to be put in some class once algorithm is validated
