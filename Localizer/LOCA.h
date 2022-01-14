@@ -84,6 +84,10 @@ namespace InsermLibrary
         //==
         void StatisticalFiles(eegContainer* myeegContainer, PROV* myprovFile, std::string freqFolder);
 
+		//Temp : need to be put in some class once algorithm is validated
+		std::vector<PVALUECOORD> loadPValues(vec3<double>& pValues3D);
+		std::vector<PVALUECOORD> loadPValues(vec3<double>& pValues3D, float pLimit);
+
 	signals:
 		void sendLogInfo(QString);
 		void incrementAdavnce(int divider);
