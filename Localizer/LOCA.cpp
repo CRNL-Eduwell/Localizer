@@ -1346,10 +1346,12 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 	}
 
 	//Kruskall
+	std::vector<std::vector<std::vector<std::vector<double>>>> v_stat_K4, v_stat_P4;
 	for (int i = 0; i < bigData.size(); i++)
 	{
+		std::vector<std::vector<std::vector<double>>> v_stat_K3, v_stat_P3;
 		std::vector<int> ids = m_triggerContainer->SubGroupStimTrials();
-		for (int j = 0; j < static_cast<int>(ids.size() - 1); j++)
+		for (int j = 0; j < static_cast<int>(ids.size() - 2); j++)
 		{
 			int firstConditionBeg = ids[j];
 			int firstConditionEnd = ids[j + 1];
@@ -1357,11 +1359,16 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 			int firstConditionWindowEnd = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMax()) / 1000) - windowSam[0];
 
 			//copy relevant data
-			std::vector<float>::iterator begIter = bigData[i][firstConditionBeg + j].begin() + firstConditionWindowBegin;
-			std::vector<float>::iterator endIter = bigData[i][firstConditionBeg + j].begin() + firstConditionWindowEnd;
-			std::vector<double> firstConditionData = vec1<double>(begIter, endIter);
+			std::vector<std::vector<double>> firstConditionData;
+			for (int k = firstConditionBeg; k < firstConditionEnd; k++)
+			{
+				std::vector<float>::iterator begIter = bigData[i][k].begin() + firstConditionWindowBegin;
+				std::vector<float>::iterator endIter = bigData[i][k].begin() + firstConditionWindowEnd;
+				firstConditionData.push_back(vec1<double>(begIter, endIter));
+			}
 
-			for (int k = 1; k < static_cast<int>(ids.size()); k++)
+			std::vector<std::vector<double>> v_stat_K2, v_stat_P2;
+			for (int k = 1; k < static_cast<int>(ids.size() - 1); k++)
 			{
 				int secondConditionBeg = ids[k];
 				int secondConditionEnd = ids[k + 1];
@@ -1369,13 +1376,67 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 				int secondConditionWindowEnd = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[k].dispBloc.windowMax()) / 1000) - windowSam[0];
 
 				//copy relevant data
-				std::vector<float>::iterator begIter = bigData[i][secondConditionBeg + k].begin() + secondConditionWindowBegin;
-				std::vector<float>::iterator endIter = bigData[i][secondConditionBeg + k].begin() + secondConditionWindowEnd;
-				std::vector<double> secondConditionData = vec1<double>(begIter, endIter);
+				std::vector<std::vector<double>> secondConditionData;
+				for (int l = secondConditionBeg; l < secondConditionEnd; l++)
+				{
+					std::vector<float>::iterator begIter = bigData[i][l].begin() + secondConditionWindowBegin;
+					std::vector<float>::iterator endIter = bigData[i][l].begin() + secondConditionWindowEnd;
+					secondConditionData.push_back(vec1<double>(begIter, endIter));
+				}
 
+				//loop over timebins
+				std::vector<double> v_stat_K, v_stat_P;
+				int timeBinsCount = static_cast<int>(firstConditionData[0].size());
+				for (int l = 0; l < timeBinsCount; l++)
+				{
+					double firstMean = 0;
+					std::vector<float> firstDataToCompare;
+					for (int m = 0; m < firstConditionData.size(); m++)
+					{
+						firstMean += firstConditionData[m][l];
+						firstDataToCompare.push_back(firstConditionData[m][l]);
+					}
+					firstMean /= firstConditionData.size();
 
+					double secondMean = 0;
+					std::vector<float> secondDataToCompare;
+					for (int m = 0; m < secondConditionData.size(); m++)
+					{
+						secondMean += secondConditionData[m][l];
+						secondDataToCompare.push_back(secondConditionData[m][l]);
+					}
+					secondMean /= secondConditionData.size();
+
+					float* dataArray[2];
+					int nbSamplePerGroup[2];
+					double p = 0, H = 0;
+					dataArray[0] = firstDataToCompare.data();
+					dataArray[1] = secondDataToCompare.data();
+					nbSamplePerGroup[0] = firstDataToCompare.size();
+					nbSamplePerGroup[1] = secondDataToCompare.size();
+					Framework::Calculations::Stats::kruskal_wallis(dataArray, 2, nbSamplePerGroup, &H, &p, 1);
+
+					int sign_FirstMinusSecond = (firstMean - secondMean) < 0 ? -1 : 1;
+					v_stat_K.push_back(sign_FirstMinusSecond * ((p < m_statOption->pWilcoxon) ? 1 : 0 ));
+					v_stat_P.push_back(p);
+				}
+
+				v_stat_K2.push_back(v_stat_K);
+				v_stat_P2.push_back(v_stat_P);
 			}
+			v_stat_K3.push_back(v_stat_K2);
+			v_stat_P3.push_back(v_stat_P2);
 		}
+		v_stat_K4.push_back(v_stat_K3);
+		v_stat_P4.push_back(v_stat_P3);
+	}
+
+	if (m_statOption->FDRkruskall)
+	{
+	}
+	else
+	{
+
 	}
 }
 
