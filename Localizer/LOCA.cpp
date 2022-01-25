@@ -1551,10 +1551,51 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 			sampleAlreadyWritten += Stat_Z_CCS[0][0].size();
 		}
 
-
-		//TODO
 		//need to add kruskall data to writable data
-		//TODO
+		for (int j = 0; j < static_cast<int>(ids.size() - 2); j++)
+		{
+			for (int k = 0; k < static_cast<int>(ids.size() - 2); k++)
+			{
+				std::vector<int> indices;
+				auto it = significantValue2.begin();
+				while ((it = std::find_if(it, significantValue2.end(), [&](PVALUECOORD_KW const& obj) { return obj.elec == i && obj.condit1 == j && obj.condit2 == k; })) != significantValue2.end())
+				{
+					indices.push_back(std::distance(significantValue2.begin(), it));
+					it++;
+				}
+
+				std::vector<double> signif = std::vector<double>(v_stat_K4[i][j][k].size(), 0);
+				for (int m = 0; m < indices.size(); m++)
+				{
+					int ind1 = significantValue2[indices[m]].elec;
+					int ind2 = significantValue2[indices[m]].condit1;
+					int ind3 = significantValue2[indices[m]].condit2;
+					float indP = significantValue2[indices[m]].pValue;
+
+					for (int l = 0; l < signif.size(); l++)
+					{
+						signif[l] = v_stat_K4[ind1][ind2][ind3][l] * indP;
+					}
+				}
+
+				for (int n = 0; n < 3; n++)
+				{
+					for (int l = 0; l < signif.size(); l++)
+					{
+						statToWrite.push_back(signif[l]);
+					}
+
+					std::vector<int> codes = myprovFile->visuBlocs[j].mainEventBloc.eventCode;
+					std::vector<int> codes2 = myprovFile->visuBlocs[j+1].mainEventBloc.eventCode;
+
+
+					int sample = std::abs(windowBegin) + sampleAlreadyWritten;
+					int code = 10000 * (1000 + codes[0]) + (1000 + codes2[0]);
+					posSampleCode.push_back(std::make_pair(sample, code));
+					sampleAlreadyWritten += signif.size();
+				}
+			}
+		}
 
 		//eeg data
 		ChannelDataToWrite.push_back(statToWrite);
