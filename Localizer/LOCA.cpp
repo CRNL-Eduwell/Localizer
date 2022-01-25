@@ -1358,8 +1358,6 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 			int firstConditionWindowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMin()) / 1000) - windowSam[0];
 			int firstConditionWindowEnd = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMax()) / 1000) - windowSam[0];
 
-            qDebug() << firstConditionBeg << " " << firstConditionEnd;
-            qDebug() << firstConditionWindowBegin << " " << firstConditionWindowEnd;
 			//copy relevant data
 			std::vector<std::vector<double>> firstConditionData;
             for (int k = 0; k < (firstConditionEnd - firstConditionBeg); k++)
@@ -1477,12 +1475,16 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 	}
 
     //at this point everything is processed, now we need to export that in an ELAN File
+
+	std::vector<std::vector<double>> ChannelDataToWrite;
+	std::vector<std::pair<int, int>> posSampleCodeToWrite;
     for(int i = 0; i < bigData.size(); i++)
     {
         std::vector<double> statToWrite;
         std::vector<std::pair<int, int>> posSampleCode;
         int sampleAlreadyWritten = 0;
 
+		bool isChannelReactive = false;
         std::vector<int> ids = m_triggerContainer->SubGroupStimTrials();
         for(int j = 0; j < static_cast<int>(ids.size() - 1); j++)
         {
@@ -1490,7 +1492,7 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
             int end = ids[j+1];
 
             std::vector<int> codes = myprovFile->visuBlocs[j].mainEventBloc.eventCode;
-            int windowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMin())/1000)  - windowSam[0];
+			int windowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMin()) / 1000);
 
             for(int k = 0; k < 3; k++) //repeat for better visibility in hibop
             {
@@ -1520,22 +1522,82 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
                 int indexSignif = significantValue[indices[k]].window;
                 signif[indexSignif] = 1;
             }
-            //ecrire comme au dessus
 
-            //ensuite mettre les 9999
+			for (int k = 0; k < 3; k++) //repeat for better visibility in hibop
+			{
+				for (int l = 0; l < signif.size(); l++)
+				{
+					statToWrite.push_back(signif[l]);
+				}
+				int sample = std::abs(windowBegin) + sampleAlreadyWritten;
+				int code = 1000 + codes[0];
+				posSampleCode.push_back(std::make_pair(sample, code));
+				sampleAlreadyWritten += signif.size();
+			}
         }
-    }
+
+		//ensuite mettre les 9999
+		int windowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[0].dispBloc.windowMin()) / 1000);
+		int valueToWrite = isChannelReactive ? 1 : 0;
+		for (int j = 0; j < 3; j++) //repeat for better visibility in hibop
+		{
+			for (int k = 0; k < Stat_Z_CCS[0][0].size(); k++)
+			{
+				statToWrite.push_back(valueToWrite);
+			}
+			int sample = std::abs(windowBegin) + sampleAlreadyWritten;
+			int code = 9999;
+			posSampleCode.push_back(std::make_pair(sample, code));
+			sampleAlreadyWritten += Stat_Z_CCS[0][0].size();
+		}
+
+
+		//TODO
+		//need to add kruskall data to writable data
+		//TODO
+
+		//eeg data
+		ChannelDataToWrite.push_back(statToWrite);
+
+		//copy pos data only once
+		if (posSampleCodeToWrite.size() == 0)
+		{
+			posSampleCodeToWrite = std::vector<std::pair<int, int>>(posSampleCode);
+		}
+	}
 
     EEGFormat::ElanFile *outputFile = new EEGFormat::ElanFile();
-    outputFile->ElectrodeCount((int)significantValue2.size());
+    outputFile->ElectrodeCount((int)ChannelDataToWrite.size());
     outputFile->SamplingFrequency(myeegContainer->DownsampledFrequency());
-    //TODO : charger la liste comme le container
-    //EegContainer->elanFrequencyBand[i]->Electrodes(bipolesList);
+    //Load electrodes list according to container
+	std::vector<EEGFormat::IElectrode*> bipolesList;
+	int BipoleCount = myeegContainer->BipoleCount();
+	for (int i = 0; i < BipoleCount; i++)
+	{
+		std::pair<int, int> currentBipole = myeegContainer->Bipole(i);
+		bipolesList.push_back(myeegContainer->Electrode(currentBipole.first));
+	}
+    outputFile->Electrodes(bipolesList);
     //Define type of elec : label + "EEG" + "uV"
-//    EegContainer->elanFrequencyBand[i]->Data(EEGFormat::DataConverterType::Analog).resize((int)bipolesList.size(), std::vector<float>(EegContainer->NbSample() / EegContainer->DownsamplingFactor()));
+	outputFile->Data(EEGFormat::DataConverterType::Analog).resize((int)bipolesList.size(), std::vector<float>(ChannelDataToWrite[0].size()));
+	for (int i = 0; i < ChannelDataToWrite.size(); i++)
+	{
+		for (int j = 0; j < ChannelDataToWrite[i].size(); j++)
+		{
+			outputFile->Data(EEGFormat::DataConverterType::Analog)[i][j] = ChannelDataToWrite[i][j];
+		}
+	}
 
+	for (int i = 0; i < posSampleCodeToWrite.size(); i++)
+	{
+		int code = posSampleCodeToWrite[i].second;
+		long sample = posSampleCodeToWrite[i].first;
+		EEGFormat::ElanTrigger dede(code, sample);
+		outputFile->AddTrigger(dede);
+	}
 
     //then save
+	outputFile->SaveAs("D:/Users/Florian/Desktop/", "TestFile");
 
     //and delete pointer
     DeleteGenericFile(outputFile);
