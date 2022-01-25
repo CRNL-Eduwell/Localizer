@@ -349,7 +349,7 @@ void InsermLibrary::LOCA::RelinkAnalysisFileAnUglyWay(const std::string& rootPat
 			if (LineCount == 0)
 				throw std::runtime_error("Error, this file should not be empty");
 
-			auto it = std::find_if(rawHeader.begin(), rawHeader.end(), [&](const std::string& str)
+            auto it = std::find_if(rawHeader.begin(), rawHeader.end(), [&](const std::string& str)
 			{
 				return str.find("MarkerFile=") != std::string::npos;
 			});
@@ -1254,13 +1254,13 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 	std::vector<std::vector<std::vector<double>>> Stat_Z_CCS, Stat_P_CCS;
     for(int i = 0;i < bigData.size(); i++)
     {
-		std::vector<std::vector<double>> Stat_Z_CS, Stat_P_CS;
+        std::vector<std::vector<double>> Stat_Z_CS, Stat_P_CS;
         std::vector<int> ids = m_triggerContainer->SubGroupStimTrials();
         for(int j = 0; j < static_cast<int>(ids.size() - 1); j++)
         {
             int beg = ids[j];
             int end = ids[j+1];
-;
+
             int baselineBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.baseLineMin())/1000) - windowSam[0];
             int baselineEnd = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.baseLineMax())/1000)  - windowSam[0];
             int windowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMin())/1000)  - windowSam[0];
@@ -1272,17 +1272,17 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
             for(int k = 0; k < conditionData.size(); k++)
             {
                 int sum = std::accumulate(bigData[i][beg+k].begin() + baselineBegin, bigData[i][beg+k].begin() + baselineEnd, 0);
-				double bl = static_cast<double>(sum) / (baselineEnd - baselineBegin);
+                double bl = static_cast<double>(sum) / (baselineEnd - baselineBegin);
                 baselineData.push_back(bl); //baseline mean for this trial
 
-				//copy relevant data
-				std::vector<float>::iterator begIter = bigData[i][beg + k].begin() + windowBegin;
-				std::vector<float>::iterator endIter = bigData[i][beg + k].begin() + windowEnd;
+                //copy relevant data
+                std::vector<float>::iterator begIter = bigData[i][beg + k].begin() + windowBegin;
+                std::vector<float>::iterator endIter = bigData[i][beg + k].begin() + windowEnd;
                 conditionData[k] = vec1<double>(begIter, endIter);
             }
 
             //loop over timebins
-			std::vector<double> v_stat_Z, v_stat_P;
+            std::vector<double> v_stat_Z, v_stat_P;
             int timeBinsCount = static_cast<int>(conditionData[0].size());
             for(int k = 0; k < timeBinsCount; k++)
             {
@@ -1293,57 +1293,57 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
                 }
 
                 std::pair<double, double> pz = Framework::Calculations::Stats::wilcoxon_rank_sum(dataToCompare, baselineData);
-				v_stat_P.push_back(pz.first);
-				v_stat_Z.push_back(pz.second);
+                v_stat_P.push_back(pz.first);
+                v_stat_Z.push_back(pz.second);
             }
 
-			Stat_P_CS.push_back(v_stat_P);
-			Stat_Z_CS.push_back(v_stat_Z);
+            Stat_P_CS.push_back(v_stat_P);
+            Stat_Z_CS.push_back(v_stat_Z);
         }
 
-		Stat_P_CCS.push_back(Stat_P_CS);
-		Stat_Z_CCS.push_back(Stat_Z_CS);
+        Stat_P_CCS.push_back(Stat_P_CS);
+        Stat_Z_CCS.push_back(Stat_Z_CS);
     }
 
-	std::vector<PVALUECOORD> significantValue;
-	if (m_statOption->FDRwilcoxon)
-	{
-		int V = Stat_P_CCS.size() * Stat_P_CCS[0].size() * Stat_P_CCS[0][0].size();
-		float CV = log(V) + 0.5772;
-		float slope = m_statOption->pWilcoxon / (V * CV);
+    std::vector<PVALUECOORD> significantValue;
+    if (m_statOption->FDRwilcoxon)
+    {
+        int V = Stat_P_CCS.size() * Stat_P_CCS[0].size() * Stat_P_CCS[0][0].size();
+        float CV = log(V) + 0.5772;
+        float slope = m_statOption->pWilcoxon / (V * CV);
 
-		std::vector<PVALUECOORD> preFDRValues = loadPValues(Stat_P_CCS);
+        std::vector<PVALUECOORD> preFDRValues = loadPValues(Stat_P_CCS);
 
-		std::sort(preFDRValues.begin(), preFDRValues.end(),
-			[](PVALUECOORD firstValue, PVALUECOORD secondValue) {
-			return (firstValue.pValue < secondValue.pValue);
-		});
+        std::sort(preFDRValues.begin(), preFDRValues.end(),
+            [](PVALUECOORD firstValue, PVALUECOORD secondValue) {
+            return (firstValue.pValue < secondValue.pValue);
+        });
 
-		int copyIndex = 0;
-		for (int i = 0; i < V; i++)
-		{
-			if (preFDRValues[i].pValue > ((double)slope * (i + 1)))
-			{
-				copyIndex = i;
-				break;
-			}
-		}
+        int copyIndex = 0;
+        for (int i = 0; i < V; i++)
+        {
+            if (preFDRValues[i].pValue > ((double)slope * (i + 1)))
+            {
+                copyIndex = i;
+                break;
+            }
+        }
 
-		for (int i = 0; i < copyIndex; i++)
-		{
-			significantValue.push_back(preFDRValues[i]);
-		}
+        for (int i = 0; i < copyIndex; i++)
+        {
+            significantValue.push_back(preFDRValues[i]);
+        }
 
-		//verifier si celui la est necessaire ??
-		std::sort(significantValue.begin(), significantValue.end(),
-			[](PVALUECOORD firstValue, PVALUECOORD secondValue) {
-			return (firstValue.pValue < secondValue.pValue);
-		});
-	}
-	else
-	{
-		significantValue = loadPValues(Stat_P_CCS, m_statOption->pWilcoxon);
-	}
+        //verifier si celui la est necessaire ??
+        std::sort(significantValue.begin(), significantValue.end(),
+            [](PVALUECOORD firstValue, PVALUECOORD secondValue) {
+            return (firstValue.pValue < secondValue.pValue);
+        });
+    }
+    else
+    {
+        significantValue = loadPValues(Stat_P_CCS, m_statOption->pWilcoxon);
+    }
 
 	//Kruskall
 	std::vector<std::vector<std::vector<std::vector<double>>>> v_stat_K4, v_stat_P4;
@@ -1358,12 +1358,14 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 			int firstConditionWindowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMin()) / 1000) - windowSam[0];
 			int firstConditionWindowEnd = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMax()) / 1000) - windowSam[0];
 
+            qDebug() << firstConditionBeg << " " << firstConditionEnd;
+            qDebug() << firstConditionWindowBegin << " " << firstConditionWindowEnd;
 			//copy relevant data
 			std::vector<std::vector<double>> firstConditionData;
-			for (int k = firstConditionBeg; k < firstConditionEnd; k++)
+            for (int k = 0; k < (firstConditionEnd - firstConditionBeg); k++)
 			{
-				std::vector<float>::iterator begIter = bigData[i][k].begin() + firstConditionWindowBegin;
-				std::vector<float>::iterator endIter = bigData[i][k].begin() + firstConditionWindowEnd;
+                std::vector<float>::iterator begIter = bigData[i][firstConditionBeg + k].begin() + firstConditionWindowBegin;
+                std::vector<float>::iterator endIter = bigData[i][firstConditionBeg + k].begin() + firstConditionWindowEnd;
 				firstConditionData.push_back(vec1<double>(begIter, endIter));
 			}
 
@@ -1377,10 +1379,10 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 
 				//copy relevant data
 				std::vector<std::vector<double>> secondConditionData;
-				for (int l = secondConditionBeg; l < secondConditionEnd; l++)
+                for (int l = 0; l < (secondConditionEnd - secondConditionBeg); l++)
 				{
-					std::vector<float>::iterator begIter = bigData[i][l].begin() + secondConditionWindowBegin;
-					std::vector<float>::iterator endIter = bigData[i][l].begin() + secondConditionWindowEnd;
+                    std::vector<float>::iterator begIter = bigData[i][secondConditionBeg + l].begin() + secondConditionWindowBegin;
+                    std::vector<float>::iterator endIter = bigData[i][secondConditionBeg + l].begin() + secondConditionWindowEnd;
 					secondConditionData.push_back(vec1<double>(begIter, endIter));
 				}
 
@@ -1407,6 +1409,7 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 					}
 					secondMean /= secondConditionData.size();
 
+                    //TODO : first pass doesn't send back a p value (=0) , why ?
 					float* dataArray[2];
 					int nbSamplePerGroup[2];
 					double p = 0, H = 0;
@@ -1431,13 +1434,111 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 		v_stat_P4.push_back(v_stat_P3);
 	}
 
+    std::vector<PVALUECOORD_KW> significantValue2;
 	if (m_statOption->FDRkruskall)
 	{
+        qDebug() << "fdr ";
+        int V = v_stat_P4.size() * v_stat_P4[0].size() * v_stat_P4[0][0].size() * v_stat_P4[0][0][0].size();
+        float CV = log(V) + 0.5772;
+        float slope = m_statOption->pWilcoxon / (V * CV);
+
+        std::vector<PVALUECOORD_KW> preFDRValues = loadPValues_KW(v_stat_P4);
+
+        std::sort(preFDRValues.begin(), preFDRValues.end(),
+            [](PVALUECOORD_KW firstValue, PVALUECOORD_KW secondValue) {
+            return (firstValue.pValue < secondValue.pValue);
+        });
+
+        int copyIndex = 0;
+        for (int i = 0; i < V; i++)
+        {
+            if (preFDRValues[i].pValue > ((double)slope * (i + 1)))
+            {
+                copyIndex = i;
+                break;
+            }
+        }
+
+        for (int i = 0; i < copyIndex; i++)
+        {
+            significantValue2.push_back(preFDRValues[i]);
+        }
+
+        //verifier si celui la est necessaire ??
+        std::sort(significantValue2.begin(), significantValue2.end(),
+            [](PVALUECOORD_KW firstValue, PVALUECOORD_KW secondValue) {
+            return (firstValue.pValue < secondValue.pValue);
+        });
 	}
 	else
 	{
-
+        qDebug() << "no fdr ";
+        significantValue2 = loadPValues_KW(v_stat_P4, m_statOption->pKruskall);
 	}
+
+    //at this point everything is processed, now we need to export that in an ELAN File
+    for(int i = 0; i < bigData.size(); i++)
+    {
+        std::vector<double> statToWrite;
+        std::vector<std::pair<int, int>> posSampleCode;
+        int sampleAlreadyWritten = 0;
+
+        std::vector<int> ids = m_triggerContainer->SubGroupStimTrials();
+        for(int j = 0; j < static_cast<int>(ids.size() - 1); j++)
+        {
+            int beg = ids[j];
+            int end = ids[j+1];
+
+            std::vector<int> codes = myprovFile->visuBlocs[j].mainEventBloc.eventCode;
+            int windowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMin())/1000)  - windowSam[0];
+
+            for(int k = 0; k < 3; k++) //repeat for better visibility in hibop
+            {
+                for(int l = 0; l < Stat_Z_CCS[i][j].size(); l++)
+                {
+                    statToWrite.push_back(Stat_Z_CCS[i][j][l]);
+                }
+
+                int sample = std::abs(windowBegin) + sampleAlreadyWritten;
+                int code = codes[0];
+                posSampleCode.push_back(std::make_pair(sample,code));
+                sampleAlreadyWritten += Stat_Z_CCS[i][j].size();
+            }
+
+            std::vector<int> indices;
+            auto it = significantValue.begin();
+            while ((it = std::find_if(it, significantValue.end(),[&](PVALUECOORD const& obj){ return obj.elec == i && obj.condit == j; })) != significantValue.end())
+            {
+                indices.push_back(std::distance(significantValue.begin(), it));
+                it++;
+            }
+
+            //tout les indices correspondant dans le vector
+            std::vector<double> signif = std::vector<double>(Stat_Z_CCS[i][j].size(), 0);
+            for(int k = 0; k < indices.size(); k++)
+            {
+                int indexSignif = significantValue[indices[k]].window;
+                signif[indexSignif] = 1;
+            }
+            //ecrire comme au dessus
+
+            //ensuite mettre les 9999
+        }
+    }
+
+    EEGFormat::ElanFile *outputFile = new EEGFormat::ElanFile();
+    outputFile->ElectrodeCount((int)significantValue2.size());
+    outputFile->SamplingFrequency(myeegContainer->DownsampledFrequency());
+    //TODO : charger la liste comme le container
+    //EegContainer->elanFrequencyBand[i]->Electrodes(bipolesList);
+    //Define type of elec : label + "EEG" + "uV"
+//    EegContainer->elanFrequencyBand[i]->Data(EEGFormat::DataConverterType::Analog).resize((int)bipolesList.size(), std::vector<float>(EegContainer->NbSample() / EegContainer->DownsamplingFactor()));
+
+
+    //then save
+
+    //and delete pointer
+    DeleteGenericFile(outputFile);
 }
 
 //Temp : need to be put in some class once algorithm is validated
@@ -1445,8 +1546,8 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 std::vector<InsermLibrary::PVALUECOORD> InsermLibrary::LOCA::loadPValues(vec3<double>& pValues3D)
 {
 	int count = 0;
-	PVALUECOORD tempPValue;
-	std::vector<PVALUECOORD> pValues;
+    PVALUECOORD tempPValue;
+    std::vector<PVALUECOORD> pValues;
 
 	for (int i = 0; i < static_cast<int>(pValues3D.size()); i++)
 	{
@@ -1497,4 +1598,67 @@ std::vector<InsermLibrary::PVALUECOORD> InsermLibrary::LOCA::loadPValues(InsermL
 	}
 
 	return pValues;
+}
+
+std::vector<InsermLibrary::PVALUECOORD_KW> InsermLibrary::LOCA::loadPValues_KW(vec4<double>& pValues4D)
+{
+    int count = 0;
+    InsermLibrary::PVALUECOORD_KW tempPValue;
+    std::vector<InsermLibrary::PVALUECOORD_KW> pValues;
+
+    for (int i = 0; i < static_cast<int>(pValues4D.size()); i++)
+    {
+        for (int j = 0; j < static_cast<int>(pValues4D[i].size()); j++)
+        {
+            for (int k = 0; k < static_cast<int>(pValues4D[i][j].size()); k++)
+            {
+                for (int l = 0; l < static_cast<int>(pValues4D[i][j][k].size()); l++)
+                {
+                    tempPValue.elec = i;
+                    tempPValue.condit1 = j;
+                    tempPValue.condit2 = k;
+                    tempPValue.window = l;
+                    tempPValue.vectorpos = count;
+                    tempPValue.pValue = pValues4D[i][j][k][l];
+                    pValues.push_back(tempPValue);
+                    count++;
+                }
+            }
+        }
+    }
+
+    return pValues;
+}
+
+std::vector<InsermLibrary::PVALUECOORD_KW> InsermLibrary::LOCA::loadPValues_KW(vec4<double>& pValues4D, float pLimit)
+{
+    int count = 0;
+    InsermLibrary::PVALUECOORD_KW tempPValue;
+    std::vector<InsermLibrary::PVALUECOORD_KW> pValues;
+
+    for (int i = 0; i < static_cast<int>(pValues4D.size()); i++)
+    {
+        for (int j = 0; j < static_cast<int>(pValues4D[i].size()); j++)
+        {
+            for (int k = 0; k < static_cast<int>(pValues4D[i][j].size()); k++)
+            {
+                for (int l = 0; l < static_cast<int>(pValues4D[i][j][k].size()); l++)
+                {
+                    if (pValues4D[i][j][k][l] < pLimit)
+                    {
+                        tempPValue.elec = i;
+                        tempPValue.condit1 = j;
+                        tempPValue.condit2 = k;
+                        tempPValue.window = l;
+                        tempPValue.vectorpos = count;
+                        tempPValue.pValue = pValues4D[i][j][k][l];
+                        pValues.push_back(tempPValue);
+                        count++;
+                    }
+                }
+            }
+        }
+    }
+
+    return pValues;
 }

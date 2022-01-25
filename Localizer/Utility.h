@@ -104,6 +104,9 @@ namespace InsermLibrary
 	template<class T>
 	using vec3 = std::vector<vec2<T>>; /**< templated std vector of std vector of std vector alias */
 
+    template<class T>
+    using vec4 = std::vector<vec3<T>>; /**< templated std vector of std vector of std vector alias */
+
 	std::vector<std::string> readTxtFile(std::string path);
 
 	void saveTxtFile(std::vector<QString> data, std::string pathFile);

@@ -87,6 +87,8 @@ namespace InsermLibrary
 		//Temp : need to be put in some class once algorithm is validated
 		std::vector<PVALUECOORD> loadPValues(vec3<double>& pValues3D);
 		std::vector<PVALUECOORD> loadPValues(vec3<double>& pValues3D, float pLimit);
+        std::vector<PVALUECOORD_KW> loadPValues_KW(vec4<double>& pValues4D);
+        std::vector<PVALUECOORD_KW> loadPValues_KW(vec4<double>& pValues4D, float pLimit);
 
 	signals:
 		void sendLogInfo(QString);
