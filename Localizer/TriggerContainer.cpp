@@ -350,17 +350,6 @@ std::vector<int> InsermLibrary::TriggerContainer::SortTrialsForExperiment(std::v
 	}
 	subGroupStimTrials.push_back(triggers.size());
 
-	for (int i = 0; i < subGroupStimTrials.size() - 1; i++)
-	{
-		int beg = subGroupStimTrials[i];
-		int end = subGroupStimTrials[i + 1];
-		sort(triggers.begin() + beg, triggers.begin() + end,
-			[](Trigger a, Trigger b)-> bool
-		{
-			return (a.MainSample() < b.MainSample());
-		});
-	}
-
 	//according to the rest sort by what is wanted
 	int beg = 0, end = 0;
 	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)

@@ -1368,7 +1368,7 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 			}
 
 			std::vector<std::vector<double>> v_stat_K2, v_stat_P2;
-			for (int k = 1; k < static_cast<int>(ids.size() - 1); k++)
+            for (int k = j + 1; k < static_cast<int>(ids.size() - 1); k++)
 			{
 				int secondConditionBeg = ids[k];
 				int secondConditionEnd = ids[k + 1];
@@ -1474,8 +1474,20 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
         significantValue2 = loadPValues_KW(v_stat_P4, m_statOption->pKruskall);
 	}
 
-    //at this point everything is processed, now we need to export that in an ELAN File
+    std::vector<int> ids = m_triggerContainer->SubGroupStimTrials();
+    std::vector<std::pair<int,int>> codesPairs;
+    for (int j = 0; j < static_cast<int>(ids.size() - 2); j++)
+    {
+        std::vector<int> firstCodes = myprovFile->visuBlocs[j].mainEventBloc.eventCode;
+        for (int k = j + 1; k < static_cast<int>(ids.size() - 1); k++)
+        {
+            std::vector<int> secondCodes = myprovFile->visuBlocs[k].mainEventBloc.eventCode;
+            codesPairs.push_back(std::make_pair(firstCodes[0], secondCodes[0]));
+        }
+    }
 
+
+    //at this point everything is processed, now we need to export that in an ELAN File
 	std::vector<std::vector<double>> ChannelDataToWrite;
 	std::vector<std::pair<int, int>> posSampleCodeToWrite;
     for(int i = 0; i < bigData.size(); i++)
@@ -1498,7 +1510,7 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
             {
                 for(int l = 0; l < Stat_Z_CCS[i][j].size(); l++)
                 {
-                    statToWrite.push_back(Stat_Z_CCS[i][j][l]);
+                    statToWrite.push_back(10 * Stat_Z_CCS[i][j][l]);
                 }
 
                 int sample = std::abs(windowBegin) + sampleAlreadyWritten;
@@ -1520,14 +1532,14 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
             for(int k = 0; k < indices.size(); k++)
             {
                 int indexSignif = significantValue[indices[k]].window;
-                signif[indexSignif] = 1;
+                signif[indexSignif] = 10;
             }
 
 			for (int k = 0; k < 3; k++) //repeat for better visibility in hibop
 			{
 				for (int l = 0; l < signif.size(); l++)
 				{
-					statToWrite.push_back(signif[l]);
+                    statToWrite.push_back(signif[l]);
 				}
 				int sample = std::abs(windowBegin) + sampleAlreadyWritten;
 				int code = 1000 + codes[0];
@@ -1538,12 +1550,12 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 
 		//ensuite mettre les 9999
 		int windowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[0].dispBloc.windowMin()) / 1000);
-		int valueToWrite = isChannelReactive ? 1 : 0;
+        int valueToWrite = 30 * (isChannelReactive ? 1 : 0);
 		for (int j = 0; j < 3; j++) //repeat for better visibility in hibop
 		{
 			for (int k = 0; k < Stat_Z_CCS[0][0].size(); k++)
 			{
-				statToWrite.push_back(valueToWrite);
+                statToWrite.push_back(valueToWrite);
 			}
 			int sample = std::abs(windowBegin) + sampleAlreadyWritten;
 			int code = 9999;
@@ -1552,19 +1564,21 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 		}
 
 		//need to add kruskall data to writable data
+        int bigCounter = 0;
 		for (int j = 0; j < static_cast<int>(ids.size() - 2); j++)
 		{
-			for (int k = 0; k < static_cast<int>(ids.size() - 2); k++)
+            int counter = 0;
+            for (int k = j + 1; k < static_cast<int>(ids.size() - 1); k++)
 			{
 				std::vector<int> indices;
 				auto it = significantValue2.begin();
-				while ((it = std::find_if(it, significantValue2.end(), [&](PVALUECOORD_KW const& obj) { return obj.elec == i && obj.condit1 == j && obj.condit2 == k; })) != significantValue2.end())
+                while ((it = std::find_if(it, significantValue2.end(), [&](PVALUECOORD_KW const& obj) { return obj.elec == i && obj.condit1 == j && obj.condit2 == counter; })) != significantValue2.end())
 				{
 					indices.push_back(std::distance(significantValue2.begin(), it));
 					it++;
 				}
 
-				std::vector<double> signif = std::vector<double>(v_stat_K4[i][j][k].size(), 0);
+                std::vector<double> signif = std::vector<double>(v_stat_K4[0][0][0].size(), 0);
 				for (int m = 0; m < indices.size(); m++)
 				{
 					int ind1 = significantValue2[indices[m]].elec;
@@ -1574,7 +1588,7 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 
 					for (int l = 0; l < signif.size(); l++)
 					{
-						signif[l] = v_stat_K4[ind1][ind2][ind3][l] * indP;
+                        signif[l] = 30 * v_stat_K4[ind1][ind2][ind3][l] * indP;
 					}
 				}
 
@@ -1582,18 +1596,17 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 				{
 					for (int l = 0; l < signif.size(); l++)
 					{
-						statToWrite.push_back(signif[l]);
+                        statToWrite.push_back(signif[l]);
 					}
 
-					std::vector<int> codes = myprovFile->visuBlocs[j].mainEventBloc.eventCode;
-					std::vector<int> codes2 = myprovFile->visuBlocs[j+1].mainEventBloc.eventCode;
-
-
 					int sample = std::abs(windowBegin) + sampleAlreadyWritten;
-					int code = 10000 * (1000 + codes[0]) + (1000 + codes2[0]);
+                    int code = 10000 * (1000 + codesPairs[bigCounter].first) + (1000 + codesPairs[bigCounter].second);
 					posSampleCode.push_back(std::make_pair(sample, code));
 					sampleAlreadyWritten += signif.size();
 				}
+
+                counter++;
+                bigCounter++;
 			}
 		}
 
@@ -1620,25 +1633,34 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 	}
     outputFile->Electrodes(bipolesList);
     //Define type of elec : label + "EEG" + "uV"
-	outputFile->Data(EEGFormat::DataConverterType::Analog).resize((int)bipolesList.size(), std::vector<float>(ChannelDataToWrite[0].size()));
+    outputFile->Data(EEGFormat::DataConverterType::Digital).resize((int)bipolesList.size(), std::vector<float>(ChannelDataToWrite[0].size()));
 	for (int i = 0; i < ChannelDataToWrite.size(); i++)
 	{
 		for (int j = 0; j < ChannelDataToWrite[i].size(); j++)
 		{
-			outputFile->Data(EEGFormat::DataConverterType::Analog)[i][j] = ChannelDataToWrite[i][j];
+            outputFile->Data(EEGFormat::DataConverterType::Digital)[i][j] = ChannelDataToWrite[i][j];
 		}
 	}
 
-	for (int i = 0; i < posSampleCodeToWrite.size(); i++)
-	{
-		int code = posSampleCodeToWrite[i].second;
-		long sample = posSampleCodeToWrite[i].first;
-		EEGFormat::ElanTrigger dede(code, sample);
-		outputFile->AddTrigger(dede);
-	}
+    //then save eegdata
+    std::string rootFileFolder = EEGFormat::Utility::GetDirectoryPath(myeegContainer->elanFrequencyBand[0]->DefaultFilePath());
+    std::string fileNameRoot = EEGFormat::Utility::GetFileName(myeegContainer->elanFrequencyBand[0]->DefaultFilePath(), false);
 
-    //then save
-	outputFile->SaveAs("D:/Users/Florian/Desktop/", "TestFile");
+    std::string entFile = rootFileFolder + fileNameRoot + "_stats.eeg.ent";
+    std::string eegFile = rootFileFolder + fileNameRoot + "_stats.eeg";
+    outputFile->SaveAs(entFile,eegFile, "","");
+
+    //and trigger in pos
+    std::vector<EEGFormat::ITrigger> iTriggers(posSampleCodeToWrite.size());
+    for (int i = 0; i < posSampleCodeToWrite.size(); i++)
+    {
+        int code = posSampleCodeToWrite[i].second;
+        long sample = posSampleCodeToWrite[i].first;
+        iTriggers[i] = EEGFormat::ElanTrigger(code, sample);
+    }
+    std::string fileNameBase = myeegContainer->RootFileFolder() + myeegContainer->RootFileName();
+    std::string posFile = fileNameBase + "_ds" + std::to_string(myeegContainer->DownsamplingFactor()) + "_stats.pos";
+    EEGFormat::ElanFile::SaveTriggers(posFile, iTriggers);
 
     //and delete pointer
     DeleteGenericFile(outputFile);
