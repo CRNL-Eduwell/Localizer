@@ -231,21 +231,27 @@ int Localizer::PreparePatientFolder()
 
     //check which elements to keep and delete since the ui can show single files with folders
     std::vector<bool> deleteMe = std::vector<bool>(currentPat->localizerFolder().size(), true);
-
     for (int i = 0; i < selectedRows.size(); i++)
     {
         bool isRoot = selectedRows[i].parent() == ui.FileTreeView->rootIndex();
         QFileInfo info = m_localFileSystemModel->fileInfo(selectedRows[i]);
         if(isRoot && info.isDir())
         {
-            for(size_t j = 0; j < currentPat->localizerFolder().size(); j++)
+            int idToKeep = -1;
+            for(int j = 0; j < currentPat->localizerFolder().size(); j++)
             {
-                std::string internalPath = currentPat->localizerFolder()[j].rootLocaFolder();
-                std::string uiPath = info.absoluteFilePath().toStdString();
-                if (internalPath.find(uiPath) != std::string::npos)
+                QString internalPath = QString::fromStdString(currentPat->localizerFolder()[j].rootLocaFolder());
+                QString uiPath = QString(info.absoluteFilePath() + "/");
+                if (internalPath.compare(uiPath, Qt::CaseSensitive) == 0)
                 {
-                    deleteMe[j] = false;
+                    idToKeep = j;
+                    break;
                 }
+            }
+
+            if(idToKeep != -1)
+            {
+                deleteMe[idToKeep] = false;
             }
         }
     }
@@ -253,7 +259,7 @@ int Localizer::PreparePatientFolder()
     int ExamCount = static_cast<int>(deleteMe.size());
     for (int i = ExamCount - 1; i >= 0; i--)
     {
-        if (deleteMe[static_cast<size_t>(i)])
+        if (deleteMe[i])
         {
             currentPat->localizerFolder().erase(currentPat->localizerFolder().begin() + i);
         }
