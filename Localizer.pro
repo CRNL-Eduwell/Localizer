@@ -95,6 +95,7 @@ HEADERS += \
     Localizer/PatientFolderWorker.h \
     Localizer/ProtocolFile.h \
     Localizer/ProtocolWindow.h \
+    Localizer/ProvFile.h \
     Localizer/SingleFilesWorker.h \
     Localizer/Stats.h \
     Localizer/Trigger.h \
@@ -104,6 +105,7 @@ HEADERS += \
     Localizer/displayProv.h \
     Localizer/eegContainer.h \
     Localizer/eegContainerParameters.h \
+    Localizer/json.hpp \
     Localizer/localizer.h \
     Localizer/mapsGenerator.h \
     Localizer/optionsParameters.h \
@@ -138,6 +140,7 @@ SOURCES += \
     Localizer/PatientFolderWorker.cpp \
     Localizer/ProtocolFile.cpp \
     Localizer/ProtocolWindow.cpp \
+    Localizer/ProvFile.cpp \
     Localizer/SingleFilesWorker.cpp \
     Localizer/Stats.cpp \
     Localizer/Trigger.cpp \
