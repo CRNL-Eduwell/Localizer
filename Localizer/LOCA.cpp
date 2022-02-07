@@ -1642,12 +1642,20 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 		}
 	}
 
-    //then save eegdata
-    std::string rootFileFolder = EEGFormat::Utility::GetDirectoryPath(myeegContainer->elanFrequencyBand[0]->DefaultFilePath());
-    std::string fileNameRoot = EEGFormat::Utility::GetFileName(myeegContainer->elanFrequencyBand[0]->DefaultFilePath(), false);
+    //TODO : right name name is reprocessed based on freqfolder name , see to fill default filepath when processing envellopes
+    //to use the name of the file as commented below
 
-    std::string entFile = rootFileFolder + fileNameRoot + "_stats.eeg.ent";
-    std::string eegFile = rootFileFolder + fileNameRoot + "_stats.eeg";
+    //then save eegdata
+    vec1<std::string> pathSplit = split<std::string>(freqFolder, "/");
+    std::string newPath = freqFolder;
+    newPath.append(pathSplit[pathSplit.size() - 1]);
+    std::string baseName = newPath  + "_ds" + std::to_string(myeegContainer->DownsamplingFactor()) + "_sm0";
+
+//    std::string rootFileFolder = EEGFormat::Utility::GetDirectoryPath(myeegContainer->elanFrequencyBand[0]->DefaultFilePath());
+//    std::string fileNameRoot = EEGFormat::Utility::GetFileName(myeegContainer->elanFrequencyBand[0]->DefaultFilePath(), false);
+
+    std::string entFile = baseName + "_stats.eeg.ent";
+    std::string eegFile = baseName + "_stats.eeg";
     outputFile->SaveAs(entFile,eegFile, "","");
 
     //and trigger in pos

@@ -152,7 +152,7 @@ void optionsStats::pValueKruskall()
     {
         if(value <= 0.0f)
         {
-            ui.pValueLE_KW->setText("0.01");
+            ui.pValueLE_KW->setText("0.05");
         }
     }
     else //probably using , separator for decimal numbers
@@ -161,7 +161,7 @@ void optionsStats::pValueKruskall()
         float value = locale.toFloat(ui.pValueLE_KW->text(), &parseOk);
         if(value <= 0.0f)
         {
-            ui.pValueLE_KW->setText("0.01");
+            ui.pValueLE_KW->setText("0.05");
         }
     }
 }
@@ -176,7 +176,7 @@ void optionsStats::pValueWilcoxon()
     {
         if(value <= 0.0f)
         {
-            ui.pValueLE_Wil->setText("0.01");
+            ui.pValueLE_Wil->setText("0.05");
         }
     }
     else //probably using , separator for decimal numbers
@@ -185,7 +185,7 @@ void optionsStats::pValueWilcoxon()
         float value = locale.toFloat(ui.pValueLE_Wil->text(), &parseOk);
         if(value <= 0.0f)
         {
-            ui.pValueLE_Wil->setText("0.01");
+            ui.pValueLE_Wil->setText("0.05");
         }
     }
 }
