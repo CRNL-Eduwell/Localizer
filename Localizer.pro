@@ -71,6 +71,7 @@ HEADERS += \
     Localizer/AboutDycog.h \
     Localizer/AlgorithmCalculator.h \
     Localizer/AlgorithmStrategyFactory.h \
+    Localizer/Bloc.h \
     Localizer/CleanConnectFile.h \
     Localizer/ConcatenationWorker.h \
     Localizer/ConnectCleaner.h \
@@ -78,6 +79,7 @@ HEADERS += \
     Localizer/DeselectableTreeView.h \
     Localizer/ErpProcessor.h \
     Localizer/ErpWorker.h \
+    Localizer/Event.h \
     Localizer/FileConverterProcessor.h \
     Localizer/FileConverterWorker.h \
     Localizer/FrequencyBand.h \
@@ -93,14 +95,17 @@ HEADERS += \
     Localizer/PROV.h \
     Localizer/PROVParameters.h \
     Localizer/PatientFolderWorker.h \
+    Localizer/Protocol.h \
     Localizer/ProtocolFile.h \
     Localizer/ProtocolWindow.h \
     Localizer/ProvFile.h \
     Localizer/SingleFilesWorker.h \
     Localizer/Stats.h \
+    Localizer/SubBloc.h \
     Localizer/Trigger.h \
     Localizer/TriggerContainer.h \
     Localizer/Utility.h \
+    Localizer/Window.h \
     Localizer/barsPlotsGenerator.h \
     Localizer/displayProv.h \
     Localizer/eegContainer.h \
@@ -119,6 +124,7 @@ SOURCES += \
     Localizer/AboutDycog.cpp \
     Localizer/AlgorithmCalculator.cpp \
     Localizer/AlgorithmStrategyFactory.cpp \
+    Localizer/Bloc.cpp \
     Localizer/CleanConnectFile.cpp \
     Localizer/ConcatenationWorker.cpp \
     Localizer/ConnectCleaner.cpp \
@@ -126,6 +132,7 @@ SOURCES += \
     Localizer/DeselectableTreeView.cpp \
     Localizer/ErpProcessor.cpp \
     Localizer/ErpWorker.cpp \
+    Localizer/Event.cpp \
     Localizer/FileConverterProcessor.cpp \
     Localizer/FileConverterWorker.cpp \
     Localizer/FrequencyBand.cpp \
@@ -138,14 +145,17 @@ SOURCES += \
     Localizer/LOCA.cpp \
     Localizer/PROV.cpp \
     Localizer/PatientFolderWorker.cpp \
+    Localizer/Protocol.cpp \
     Localizer/ProtocolFile.cpp \
     Localizer/ProtocolWindow.cpp \
     Localizer/ProvFile.cpp \
     Localizer/SingleFilesWorker.cpp \
     Localizer/Stats.cpp \
+    Localizer/SubBloc.cpp \
     Localizer/Trigger.cpp \
     Localizer/TriggerContainer.cpp \
     Localizer/Utility.cpp \
+    Localizer/Window.cpp \
     Localizer/barsPlotsGenerator.cpp \
     Localizer/displayProv.cpp \
     Localizer/eegContainer.cpp \
