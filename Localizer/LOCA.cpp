@@ -251,8 +251,8 @@ void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt,
 		std::string eventFilePath = fileNameBase + ".pos";
         std::string rawEventsDownsampledFilePath = fileNameBase + "_raw_ds" + std::to_string(myeegContainer->DownsamplingFactor()) + ".pos";
 		std::string downsampledEventsFilePath = fileNameBase + "_ds" + std::to_string(myeegContainer->DownsamplingFactor()) + ".pos";
-		std::vector<Trigger> triggers = triggerContainer->GetTriggerForExperiment(myprovFile, 99);
-        std::vector<Trigger> triggersRawDs = triggerContainer->GetTriggerForExperiment(myprovFile, -1, myeegContainer->DownsamplingFactor());
+        std::vector<Trigger> triggers = triggerContainer->GetTriggerForExperiment(myprovFile, 99);
+        std::vector<Trigger> triggersRawDs = triggerContainer->GetTriggerForExperiment(nullptr, -1, myeegContainer->DownsamplingFactor());
 		std::vector<Trigger> triggersDownsampled = triggerContainer->GetTriggerForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
 		CreateFile(outputType, eventFilePath, triggers);
         CreateFile(outputType, rawEventsDownsampledFilePath, triggersRawDs);
