@@ -26,7 +26,9 @@ void displayProv::getProvList()
 	QStringList provList = currentDir.entryList();
 	for (int i = 0; i < provList.size(); i++)
 	{
-		prov.push_back(QString(provList[i]).split(QRegExp(".prov"), QString::SplitBehavior::SkipEmptyParts).at(0));
+        QString provv = QString(provList[i]);
+        QString shortLabel = provv.split(QRegularExpression(".prov"), Qt::SkipEmptyParts).at(0);
+        prov.push_back(shortLabel);
 	}
 	prov.erase(unique(prov.begin(), prov.end()), prov.end());
 }

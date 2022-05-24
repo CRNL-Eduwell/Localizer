@@ -9,6 +9,7 @@
 #include "TriggerContainer.h"
 #include <QPixmap>
 #include <QPainter>
+#include <QPainterPath>
 #include "optionsParameters.h"
 
 namespace InsermLibrary

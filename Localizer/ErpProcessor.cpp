@@ -89,7 +89,7 @@ void ErpProcessor::LoadProvList(QList<QString> fileList, QStringList examList)
 void ErpProcessor::ResizeColumns()
 {
 	QFontMetrics * fm = new QFontMetrics(ui.FileListWidget->item(0)->font());
-	int width = fm->width(ui.FileListWidget->item(0)->text());// +25;
+    int width = fm->horizontalAdvance(ui.FileListWidget->item(0)->text());// +25;
 	ui.FileListWidget->setMinimumWidth(width);
 	ui.ExamListWidget->setMinimumWidth(width);
 	delete fm;

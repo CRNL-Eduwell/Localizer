@@ -9,7 +9,7 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QStandardItemModel>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QString>
 
 class CleanConnectFile

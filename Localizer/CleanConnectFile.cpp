@@ -95,7 +95,7 @@ QString CleanConnectFile::CorrectElectrodeNaming(std::string label, bool shouldC
     {
         EEGFormat::Utility::FixElectrodeName(fixedLabel);
         QString correctedLabel = QString::fromStdString(fixedLabel);
-        if (correctedLabel.contains(QRegExp("^[A-Z]+\'*[0-9]{1,2}$")))
+        if (correctedLabel.contains(QRegularExpression("^[A-Z]+\'*[0-9]{1,2}$")))
         {
             return correctedLabel;
         }
