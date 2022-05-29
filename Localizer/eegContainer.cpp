@@ -45,6 +45,23 @@ void InsermLibrary::eegContainer::GetElectrodes()
 	}
 }
 
+void InsermLibrary::eegContainer::MonoElectrodes()
+{
+    if (m_bipoles.size() > 0)
+        m_bipoles.clear();
+
+    int totalPlot = 0;
+
+    for (int i = 0; i < electrodes.size(); i++)
+    {
+        for (int j = 0; j < electrodes[i].id.size(); j++)
+        {
+            m_bipoles.push_back(std::make_pair(totalPlot + j, -1));
+        }
+        totalPlot += (int)electrodes[i].id.size();
+    }
+}
+
 void InsermLibrary::eegContainer::BipolarizeElectrodes()
 {
 	if (m_bipoles.size() > 0)
@@ -157,7 +174,7 @@ void InsermLibrary::eegContainer::GetFrequencyBlocData(vec3<float>& outputEegDat
 		}
 	}
 
-	std::vector<std::vector<float>> currentData = elanFrequencyBand[smoothingId]->Data(EEGFormat::DataConverterType::Analog);
+    std::vector<std::vector<float>> currentData = elanFrequencyBand[smoothingId]->Data(EEGFormat::DataConverterType::Analog);
 	for (int i = 0; i < elanFrequencyBand[smoothingId]->ElectrodeCount(); i++)
 	{
 		for (int j = 0; j < TriggerCount; j++)
@@ -171,7 +188,7 @@ void InsermLibrary::eegContainer::GetFrequencyBlocData(vec3<float>& outputEegDat
 				if (beginTime + k < 0)
 					outputEegData[i][j][k] = 0;
 				else
-					outputEegData[i][j][k] = (currentData[i][beginTime + k] - 100);
+                    outputEegData[i][j][k] = (currentData[i][beginTime + k] - 100);
 			}
 		}
 	}

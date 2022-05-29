@@ -63,6 +63,7 @@ void Localizer::ResetUiCheckboxes()
     ui.Env2plotCheckBox->setEnabled(true);
     ui.TrialmatCheckBox->setEnabled(true);
     ui.CorrelationMapsCheckBox->setEnabled(true);
+    ui.StatFileExportCheckBox->setEnabled(true);
 }
 
 void Localizer::DeactivateUIForSingleFiles()
@@ -73,6 +74,8 @@ void Localizer::DeactivateUIForSingleFiles()
     ui.TrialmatCheckBox->setChecked(false);
     ui.CorrelationMapsCheckBox->setEnabled(false);
     ui.CorrelationMapsCheckBox->setChecked(false);
+    ui.StatFileExportCheckBox->setEnabled(false);
+    ui.StatFileExportCheckBox->setChecked(false);
 }
 
 void Localizer::ConnectSignals()
@@ -228,21 +231,27 @@ int Localizer::PreparePatientFolder()
 
     //check which elements to keep and delete since the ui can show single files with folders
     std::vector<bool> deleteMe = std::vector<bool>(currentPat->localizerFolder().size(), true);
-
     for (int i = 0; i < selectedRows.size(); i++)
     {
         bool isRoot = selectedRows[i].parent() == ui.FileTreeView->rootIndex();
         QFileInfo info = m_localFileSystemModel->fileInfo(selectedRows[i]);
         if(isRoot && info.isDir())
         {
-            for(size_t j = 0; j < currentPat->localizerFolder().size(); j++)
+            int idToKeep = -1;
+            for(int j = 0; j < currentPat->localizerFolder().size(); j++)
             {
-                std::string internalPath = currentPat->localizerFolder()[j].rootLocaFolder();
-                std::string uiPath = info.absoluteFilePath().toStdString();
-                if (internalPath.find(uiPath) != std::string::npos)
+                QString internalPath = QString::fromStdString(currentPat->localizerFolder()[j].rootLocaFolder());
+                QString uiPath = QString(info.absoluteFilePath() + "/");
+                if (internalPath.compare(uiPath, Qt::CaseSensitive) == 0)
                 {
-                    deleteMe[j] = false;
+                    idToKeep = j;
+                    break;
                 }
+            }
+
+            if(idToKeep != -1)
+            {
+                deleteMe[idToKeep] = false;
             }
         }
     }
@@ -250,7 +259,7 @@ int Localizer::PreparePatientFolder()
     int ExamCount = static_cast<int>(deleteMe.size());
     for (int i = ExamCount - 1; i >= 0; i--)
     {
-        if (deleteMe[static_cast<size_t>(i)])
+        if (deleteMe[i])
         {
             currentPat->localizerFolder().erase(currentPat->localizerFolder().begin() + i);
         }
@@ -311,6 +320,7 @@ void Localizer::InitProgressBar()
     ui.Env2plotCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
     ui.TrialmatCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
     ui.CorrelationMapsCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
+    ui.StatFileExportCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
 
     nbTaskToDo *= nbFolderSelected * nbFrequencyBands;
 }
@@ -335,6 +345,7 @@ std::vector<InsermLibrary::FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOpt
         analysisOpt[i].env2plot = ui.Env2plotCheckBox->isChecked();
         analysisOpt[i].trialmat = ui.TrialmatCheckBox->isChecked();
         analysisOpt[i].correMaps = ui.CorrelationMapsCheckBox->isChecked();
+        analysisOpt[i].statFiles = ui.StatFileExportCheckBox->isChecked();
 
         //	- what frequency bands data is
         QString label = ui.FrequencyListWidget->item(indexes[i])->text();
@@ -770,7 +781,7 @@ void Localizer::ReceiveElectrodeList(std::vector<std::string> ElectrodeList, std
     int res = elecWin->exec();
     if(res == 1)
     {
-        worker->SetExternalParameters(elecWin->IndexToDelete(), elecWin->CorrectedLabel());
+        worker->SetExternalParameters(elecWin->IndexToDelete(), elecWin->CorrectedLabel(), elecWin->OperationToDo());
         MontageDone(res);
     }
     else

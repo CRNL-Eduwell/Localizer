@@ -81,6 +81,15 @@ namespace InsermLibrary
 		int GetIndexFromElectrodeLabel(std::string myString);
 		QColor GetColorFromLabel(std::string label, std::string& memoryLabel);
 
+        //==
+        void StatisticalFiles(eegContainer* myeegContainer, PROV* myprovFile, std::string freqFolder);
+
+		//Temp : need to be put in some class once algorithm is validated
+		std::vector<PVALUECOORD> loadPValues(vec3<double>& pValues3D);
+		std::vector<PVALUECOORD> loadPValues(vec3<double>& pValues3D, float pLimit);
+        std::vector<PVALUECOORD_KW> loadPValues_KW(vec4<double>& pValues4D);
+        std::vector<PVALUECOORD_KW> loadPValues_KW(vec4<double>& pValues4D, float pLimit);
+
 	signals:
 		void sendLogInfo(QString);
 		void incrementAdavnce(int divider);

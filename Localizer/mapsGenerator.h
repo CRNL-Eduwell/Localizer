@@ -9,6 +9,7 @@
 #include <QPainter>
 #include <QFileInfo>
 #include <QDir>
+#include <QPainterPath>
 
 namespace InsermLibrary
 {

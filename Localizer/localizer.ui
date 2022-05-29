@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>914</width>
-    <height>503</height>
+    <height>605</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -243,6 +243,25 @@
                 </layout>
                </widget>
               </item>
+              <item>
+               <widget class="QFrame" name="StatFileExportFrame">
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_7">
+                 <item>
+                  <widget class="QCheckBox" name="StatFileExportCheckBox">
+                   <property name="text">
+                    <string>Generate Statistical Export Files</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>
@@ -373,7 +392,7 @@
      <x>0</x>
      <y>0</y>
      <width>914</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">

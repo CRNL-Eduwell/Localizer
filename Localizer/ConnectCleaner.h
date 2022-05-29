@@ -26,6 +26,7 @@ public:
     inline std::vector<int> IndexToDelete() { return m_indexToDelete; }
     inline std::vector<std::string> UncorrectedLabels() { return m_ElectrodesLabel; }
     inline std::vector<std::string> CorrectedLabel() { return m_CorrectedElectrodesLabel; }
+    inline int OperationToDo() { if(ui.BipoleCheckBox->isChecked()) return 1; else return 0; }
 
 private:
     void FillList(const std::vector<std::string> & labels);

@@ -18,7 +18,7 @@ public:
 	IWorker();
 	~IWorker();
     inline InsermLibrary::LOCA* GetLoca() { return m_Loca; }
-    void SetExternalParameters(std::vector<int> IndexToDelete, std::vector<std::string> CorrectedLabels );
+    void SetExternalParameters(std::vector<int> IndexToDelete, std::vector<std::string> CorrectedLabels, int ElecOperation);
 
 protected:
     std::vector<std::string> ExtractElectrodeListFromFile(std::string currentFilePath);
@@ -42,6 +42,7 @@ protected:
     InsermLibrary::LOCA *m_Loca = nullptr;
     std::vector<int> m_IndexToDelete;
     std::vector<std::string> m_CorrectedLabels;
+    int m_ElectrodeOperation = -1;
 };
 
 

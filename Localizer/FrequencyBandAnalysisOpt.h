@@ -23,6 +23,7 @@ namespace InsermLibrary
 		bool env2plot;
 		bool trialmat;
 		bool correMaps;
+        bool statFiles;
 		FrequencyBand Band;
 	};
 }
