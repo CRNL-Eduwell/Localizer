@@ -338,6 +338,12 @@
     <ClCompile Include="GeneralOptionsWindow.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_MultiSubjectWorker.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiSubjectWorker.cpp">
+      <Filter>Source Files\Workers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="localizer.qrc">
@@ -435,6 +441,9 @@
     </CustomBuild>
     <CustomBuild Include="GeneralOptionsWindow.h">
       <Filter>Header Files\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MultiSubjectWorker.h">
+      <Filter>Header Files\Workers</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
