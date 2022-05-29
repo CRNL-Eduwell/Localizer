@@ -781,7 +781,7 @@ void Localizer::ReceiveElectrodeList(std::vector<std::string> ElectrodeList, std
     int res = elecWin->exec();
     if(res == 1)
     {
-        worker->SetExternalParameters(elecWin->IndexToDelete(), elecWin->CorrectedLabel());
+        worker->SetExternalParameters(elecWin->IndexToDelete(), elecWin->CorrectedLabel(), elecWin->OperationToDo());
         MontageDone(res);
     }
     else

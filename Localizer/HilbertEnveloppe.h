@@ -19,6 +19,7 @@ namespace Algorithm
 
 		private:
 			void InitOutputDataStructure(InsermLibrary::eegContainer* EegContainer);
+            void SetInputDataFromBipoles(std::vector<float> & inputData, std::pair<int, int> bipoles, int sampleCount, InsermLibrary::eegContainer* EegContainer);
             void CalculateSmoothingCoefficients(int DownsampledFrequency);
 			void HilbertDownSampSumData(InsermLibrary::DataContainer* DataContainer, int threadId, int freqId);
 			void MeanConvolveData(InsermLibrary::DataContainer *DataContainer, int threadId);

@@ -18,11 +18,8 @@ void Algorithm::Strategy::HilbertEnveloppe::Process(InsermLibrary::eegContainer*
 		for (int j = 0; j < 5; j++)
 		{
 			int idCurrentBip = (i * 5) + j;
-			for (int k = 0; k < NumberOfSample; k++)
-			{
-				std::pair<int, int> currentBipole = EegContainer->Bipole(idCurrentBip);
-				dataCont.bipData[j][k] = EegContainer->Data()[currentBipole.first][k] - EegContainer->Data()[currentBipole.second][k];
-			}
+            std::pair<int, int> currentBipole = EegContainer->Bipole(idCurrentBip);
+            SetInputDataFromBipoles(dataCont.bipData[j], currentBipole, NumberOfSample, EegContainer);
 		}
 
 		for (int j = 0; j < NumberOfFrequencyBins - 1; j++)
@@ -68,12 +65,9 @@ void Algorithm::Strategy::HilbertEnveloppe::Process(InsermLibrary::eegContainer*
 	{
 		for (int i = 0; i < NumberOfElement % 5; i++)
 		{
-			for (int j = 0; j < NumberOfSample; j++)
-			{
-				int idCurrentBip = (NumberOfElement / 5) * 5;
-				std::pair<int, int> currentBipole = EegContainer->Bipole(idCurrentBip + i);
-				dataCont.bipData[i][j] = EegContainer->Data()[currentBipole.first][j] - EegContainer->Data()[currentBipole.second][j];
-			}
+            int idCurrentBip = (NumberOfElement / 5) * 5;
+            std::pair<int, int> currentBipole = EegContainer->Bipole(idCurrentBip + i);
+            SetInputDataFromBipoles(dataCont.bipData[i], currentBipole, NumberOfSample, EegContainer);
 		}
 
 		for (int i = 0; i < NumberOfFrequencyBins - 1; i++)
@@ -125,6 +119,24 @@ void Algorithm::Strategy::HilbertEnveloppe::InitOutputDataStructure(InsermLibrar
 		//Define type of elec : label + "EEG" + "uV"
 		EegContainer->elanFrequencyBand[i]->Data(EEGFormat::DataConverterType::Analog).resize((int)bipolesList.size(), std::vector<float>(EegContainer->NbSample() / EegContainer->DownsamplingFactor()));
 	}
+}
+
+void Algorithm::Strategy::HilbertEnveloppe::SetInputDataFromBipoles(std::vector<float> & inputData, std::pair<int, int> bipoles, int sampleCount, InsermLibrary::eegContainer* EegContainer)
+{
+    if(bipoles.second != -1)
+    {
+        for (int k = 0; k < sampleCount; k++)
+        {
+            inputData[k] = EegContainer->Data()[bipoles.first][k] - EegContainer->Data()[bipoles.second][k];
+        }
+    }
+    else
+    {
+        for (int k = 0; k < sampleCount; k++)
+        {
+            inputData[k] = EegContainer->Data()[bipoles.first][k];
+        }
+    }
 }
 
 void Algorithm::Strategy::HilbertEnveloppe::CalculateSmoothingCoefficients(int DownsampledFrequency)

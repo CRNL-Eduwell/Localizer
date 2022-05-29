@@ -106,6 +106,7 @@ namespace InsermLibrary
 		//===[ Data Modification ]===
         void DeleteElectrodes(std::vector<int> elecToDelete);
 		void GetElectrodes();
+        void MonoElectrodes();
 		void BipolarizeElectrodes();
 		void SaveFrequencyData(EEGFormat::FileType FileType, const std::vector<int>& frequencyBand);
 		int LoadFrequencyData(std::vector<std::string>& filesPath, int smoothingId);
