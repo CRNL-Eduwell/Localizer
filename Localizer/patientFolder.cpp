@@ -3,9 +3,6 @@
 patientFolder::patientFolder(patientFolder *pat)
 {
 	this->m_rootFolder = pat->m_rootFolder;
-	this->m_hospital = pat->m_hospital;
-	this->m_year = pat->m_year;
-	this->m_patientName = pat->m_patientName;
 
 	m_localizerFolder = std::vector<locaFolder>(pat->m_localizerFolder);
 }
@@ -25,7 +22,6 @@ patientFolder::patientFolder(std::string rootPath)
 
 	for (int i = 0; i < splitExt.size(); i++)
 		m_rootFolder += splitExt[i] + "/";
-	getPatientInfo(m_rootFolder);
 	findLocaFolders(m_rootFolder);
 }
 
@@ -36,15 +32,8 @@ patientFolder::~patientFolder()
 
 std::string patientFolder::patientName()
 {
-	return (m_hospital + "_" + m_year + "_" + m_patientName);
-}
-
-void patientFolder::getPatientInfo(std::string rootPath)
-{
-    std::vector<std::string> splitPath = InsermLibrary::split<std::string>(rootPath, "_\\/");
-	m_hospital = splitPath[splitPath.size() - 3];
-	m_year = splitPath[splitPath.size() - 2];
-	m_patientName = splitPath[splitPath.size() - 1];
+    QDir currentDir(m_rootFolder.c_str());
+    return currentDir.dirName().toStdString();
 }
 
 void patientFolder::findLocaFolders(std::string rootPath)
