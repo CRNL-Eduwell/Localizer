@@ -3,8 +3,8 @@
 ConcatenationWorker::ConcatenationWorker(std::vector<std::string>& trcFiles, std::string& directoryPath, std::string& fileName)
 {
     m_EegFiles = std::vector<std::string>(trcFiles);
-    m_DirectoryPath = directoryPath;
-    m_FileName = fileName;
+    m_DirectoryPath = std::string(directoryPath);
+    m_FileName = std::string(fileName);
 }
 
 ConcatenationWorker::~ConcatenationWorker()
@@ -14,59 +14,35 @@ ConcatenationWorker::~ConcatenationWorker()
 
 void ConcatenationWorker::Process()
 {
-    if (m_EegFiles.size() < 2)
+	if (m_EegFiles.size() < 2)
 	{
-        emit sendLogInfo("Error : You need at least to file to perform concatenation.");
+		emit sendLogInfo("Error : You need at least two file to perform concatenation.");
 		emit finished();
 		return;
 	}
 
-    if (EEGFormat::Utility::IsValidFile(m_DirectoryPath + m_FileName))
+	std::vector<EEGFormat::MicromedFile*> filesToConcatenate;
+	int fileCount = static_cast<int>(m_EegFiles.size());
+	for (int i = 0; i < fileCount; i++)
 	{
-        emit sendLogInfo("Error : You need to input a valid file path for the output file.");
-		emit finished();
-		return;
+		filesToConcatenate.push_back(new EEGFormat::MicromedFile(m_EegFiles[i]));
 	}
 
-	EEGFormat::MicromedFile* firstTRC = nullptr;
-	bool firstFileFound = false;
-	int concatenationCount = 0;
-    for (size_t i = 0; i < m_EegFiles.size(); i++)
+	EEGFormat::MicromedFile::ConcatenateFiles(m_DirectoryPath, m_FileName, filesToConcatenate);
+
+	//then we cleanup
+	for (int i = 0; i < fileCount; i++)
 	{
-        if (!firstFileFound && EEGFormat::Utility::IsValidFile(m_EegFiles[i]))
+		if (filesToConcatenate[i] != nullptr)
 		{
-            std::string firstFile = m_EegFiles[i];
-			firstTRC = new EEGFormat::MicromedFile(firstFile);
-			firstFileFound = true;
-			continue;
-		}
-
-        if (EEGFormat::Utility::IsValidFile(m_EegFiles[i]))
-		{	
-			//Do the stuff
-            std::string secondFile = m_EegFiles[i];
-			EEGFormat::MicromedFile* secondTRC = new EEGFormat::MicromedFile(secondFile);
-			//EEGFormat::MicromedFile::ConcatenateFiles("", firstTRC, secondTRC);
-			//EEGFormat::MicromedFile::StapleFiles("", firstTRC, secondTRC);
-			concatenationCount++;
-			EEGFormat::Utility::DeleteAndNullify(secondTRC);
-
-			QString dd = QString::fromStdString("Processing " + firstTRC->FilePath() + " et " + secondTRC->FilePath());
-            emit sendLogInfo(dd);
-		}
-		else
-		{
-            emit sendLogInfo(QString::fromStdString(m_EegFiles[i]) + "is not valid, going to the next file.");
+			delete filesToConcatenate[i];
+			filesToConcatenate[i] = nullptr;
 		}
 	}
+	filesToConcatenate.clear();
 
-	if (firstFileFound && concatenationCount > 0)
-	{
-		//firstTRC->SaveAs(m_directoryPath, m_fileName);
-		EEGFormat::Utility::DeleteAndNullify(firstTRC);
-	}
-
-    emit sendLogInfo("Concatenation Process is over.");
+	emit sendLogInfo("Concatenation Process is over.");
+	emit finished();
 }
 
 void ConcatenationWorker::ExtractElectrodeList()

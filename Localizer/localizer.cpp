@@ -590,14 +590,17 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 
             if (!isAlreadyRunning)
             {
-                bool ok;
-                QString fileName = QInputDialog::getText(ui.FileTreeView, "New Name", "Choose New File Name", QLineEdit::Normal, "New Micromed File", &ok);
-                std::string suffixx = EEGFormat::Utility::GetFileExtension(fileName.toStdString());
+                //TODO : QinputDialog is exploding, need to see why since it has been a long time since we reactivated concatenation
+                //QString fileName = QInputDialog::getText(this, "New Name", "Choose New File Name", QLineEdit::Normal, "New Micromed File", nullptr);
 
+                QString fileName = "CONCATENATED_FILE";
+                std::string suffixx = EEGFormat::Utility::GetFileExtension(fileName.toStdString());
                 QString suffix = QString::fromStdString(suffixx).toLower();
-                if (ok && !fileName.isEmpty() && suffix.contains("trc"))
+
+                if (!fileName.isEmpty()) //TODO : put that back when issue with qinputdialog is solved => && suffix.contains("trc"))
                 {
-                    ProcessMicromedFileConcatenation(files, m_localFileSystemModel->rootPath(), fileName);
+                    QString dir = QFileInfo(m_localFileSystemModel->filePath(indexes[0])).dir().absolutePath();
+                    ProcessMicromedFileConcatenation(files, dir, fileName);
                 }
                 else
                 {
@@ -609,11 +612,11 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
                 QMessageBox::information(this, "Error", "Process already running");
             }
         });
-        processConcatenationAction->setEnabled(false); //TODO : Temporary, until the concatenation worker is verified with the new eegformat lib
+        //processConcatenationAction->setEnabled(false); //TODO : Temporary, until the concatenation worker is verified with the new eegformat lib
+    
+        if (sender() == ui.FileTreeView)
+            contextMenu->exec(ui.FileTreeView->viewport()->mapToGlobal(point));
     }
-
-    if (sender() == ui.FileTreeView)
-        contextMenu->exec(ui.FileTreeView->viewport()->mapToGlobal(point));
 }
 
 void Localizer::SelectPtsForCorrelation()
@@ -895,7 +898,7 @@ void Localizer::ProcessMicromedFileConcatenation(QList<QString> files, QString d
     worker = new ConcatenationWorker(trcFiles, directoryPathString, fileNameString);
 
     //Update info
-    connect(worker, &IWorker::sendLogInfo, this, [&](QString info) { emit DisplayLog(info); });
+    connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
 
     //=== Event From worker and thread
     connect(thread, &QThread::started, worker, &IWorker::Process);
