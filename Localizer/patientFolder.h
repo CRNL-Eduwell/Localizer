@@ -122,14 +122,10 @@ public:
 	inline std::string rootFolder() const { return m_rootFolder; };
 
 private :
-	void getPatientInfo(std::string rootPath);
 	void findLocaFolders(std::string rootPath);
 
 private:
-	std::string m_rootFolder = "";
-	std::string m_hospital = "";
-	std::string m_year = "";
-	std::string m_patientName = "";
+    std::string m_rootFolder = "";
 	std::vector<locaFolder> m_localizerFolder;
 };
 

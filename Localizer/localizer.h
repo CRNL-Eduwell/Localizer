@@ -16,6 +16,7 @@
 #include <QListWidgetItem>
 #include <QFileSystemModel>
 #include <QReadWriteLock>
+#include <QInputDialog>
 
 //==Ui headers
 #include "ui_localizer.h"
@@ -42,6 +43,7 @@
 #include "IWorker.h"
 #include "PatientFolderWorker.h"
 #include "SingleFilesWorker.h"
+#include "MultiSubjectWorker.h"
 #include "FileConverterWorker.h"
 #include "ErpWorker.h"
 #include "ConcatenationWorker.h"
@@ -63,12 +65,16 @@ private:
     void ConnectMenuBar();
     void LoadPatientFolder();
     void LoadSpecificFolder();
+    void LoadDatabaseFolder();
     void LoadTreeViewFolder(QString rootFolder);
     void LoadTreeViewFiles(QString rootFolder);
+    void LoadTreeViewDatabase(QString rootFolder);
 	void LoadTreeViewUI(QString initialFolder);
     int PreparePatientFolder();
 	void PrepareSingleFiles();
+    std::vector<patientFolder> PrepareDBFolders();
 	void InitProgressBar();
+    void InitMultiSubjectProgresBar(std::vector<patientFolder> subjects);
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> GetUIAnalysisOption();
 	int GetSelectedFolderCount(QModelIndexList selectedIndexes);
 
@@ -81,6 +87,7 @@ private slots:
 	void ToggleAllBands();
     void ProcessFolderAnalysis();
     void ProcessSingleAnalysis();
+    void ProcessMultiFolderAnalysis();
     void ProcessERPAnalysis(QList<QString> examCorrespondance);
     void ProcessFileConvertion(QList<QString> newFileType);
 	void ProcessMicromedFileConcatenation(QList<QString> files, QString directoryPath, QString fileName);

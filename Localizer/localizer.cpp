@@ -100,6 +100,8 @@ void Localizer::ConnectMenuBar()
     connect(openPatFolder, &QAction::triggered, this, [&] { LoadPatientFolder(); });
     QAction* openSpecificFolder = ui.menuFiles->actions().at(1);
     connect(openSpecificFolder, &QAction::triggered, this, [&] { LoadSpecificFolder(); });
+    QAction* openDatabaseFolder = ui.menuFiles->actions().at(2);
+    connect(openDatabaseFolder, &QAction::triggered, this, [&] { LoadDatabaseFolder(); });
     //===Configuration
     QAction* openPerfMenu = ui.menuConfiguration->actions().at(0);
     connect(openPerfMenu, &QAction::triggered, this, [&] { optPerf->exec(); });
@@ -153,6 +155,20 @@ void Localizer::LoadSpecificFolder()
     }
 }
 
+void Localizer::LoadDatabaseFolder()
+{
+    QFileDialog *fileDial = new QFileDialog(this);
+    fileDial->setOption(QFileDialog::ShowDirsOnly, true);
+    QString fileName = fileDial->getExistingDirectory(this, tr("Choose a folder containing multiple Patients"));
+    if (fileName != "")
+    {
+        m_isPatFolder = true;
+        QString rootFolderPath = QDir(fileName).absolutePath();
+        LoadTreeViewDatabase(rootFolderPath);
+        ClearPtsForCorrelation();
+    }
+}
+
 void Localizer::LoadTreeViewFolder(QString rootFolder)
 {
     ResetUiCheckboxes();
@@ -190,6 +206,22 @@ void Localizer::LoadTreeViewFiles(QString rootFolder)
     {
         QMessageBox::information(this, "Are you sure ? ", "There is no file in this folder.");
     }
+}
+
+void Localizer::LoadTreeViewDatabase(QString rootFolder)
+{
+    ResetUiCheckboxes();
+    disconnect(ui.processButton, nullptr, nullptr, nullptr);
+    if (ui.FileTreeView->selectionModel() != nullptr)
+        disconnect(ui.FileTreeView->selectionModel(), nullptr, nullptr, nullptr);
+
+    LoadTreeViewUI(rootFolder);
+
+    //==[Event connected to model of treeview]
+    connect(ui.FileTreeView, &QTreeView::clicked, this, &Localizer::ModelClicked);
+    //==[Event for rest of UI]
+    connect(ui.processButton, &QPushButton::clicked, this, &Localizer::ProcessMultiFolderAnalysis);
+    SetLabelCount(0);
 }
 
 void Localizer::LoadTreeViewUI(QString initialFolder)
@@ -302,6 +334,64 @@ void Localizer::PrepareSingleFiles()
     }
 }
 
+std::vector<patientFolder> Localizer::PrepareDBFolders()
+{
+    QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
+    if(GetSelectedFolderCount(selectedRows) == 0) return std::vector<patientFolder>();
+
+    //Create data structure used by the processing part
+    if (currentFiles.size() > 0) currentFiles.clear();
+    deleteAndNullify1D(currentPat);
+
+    std::vector<patientFolder> subjects;
+    for (int i = 0; i < selectedRows.size(); i++)
+    {
+        bool isRoot = selectedRows[i].parent() == ui.FileTreeView->rootIndex();
+        QFileInfo info = m_localFileSystemModel->fileInfo(selectedRows[i]);
+        if(isRoot && info.isDir())
+        {
+            QString subjectRoot = info.absoluteFilePath();
+            try
+            {
+                patientFolder pat = patientFolder(subjectRoot.toStdString());
+
+                //check which elements to keep and delete
+                std::vector<bool> deleteMe = std::vector<bool>(pat.localizerFolder().size(), true);
+                int idToKeep = -1;
+                for(int j = 0; j < pat.localizerFolder().size(); j++)
+                {
+                    if(pat.localizerFolder()[j].localizerName() == "ARFA" || pat.localizerFolder()[j].localizerName() == "AUDI" ||
+                       pat.localizerFolder()[j].localizerName() == "LEC1" || pat.localizerFolder()[j].localizerName() == "LEC2" ||
+                       pat.localizerFolder()[j].localizerName() == "MCSE" || pat.localizerFolder()[j].localizerName() == "MOTO" ||
+                       pat.localizerFolder()[j].localizerName() == "MVEB" || pat.localizerFolder()[j].localizerName() == "MVIS" ||
+                       pat.localizerFolder()[j].localizerName() == "REST" || pat.localizerFolder()[j].localizerName() == "VISU")
+                    {
+                        deleteMe[j] = false;
+                    }
+                }
+
+                int ExamCount = static_cast<int>(deleteMe.size());
+                for (int j = ExamCount - 1; j >= 0; j--)
+                {
+                    if (deleteMe[j])
+                    {
+                        pat.localizerFolder().erase(pat.localizerFolder().begin() + j);
+                    }
+                }
+
+                subjects.push_back(pat);
+            }
+            catch(const std::exception&)
+            {
+                QString message = subjectRoot + " does not seem to be a valid subject folder, skipping it";
+                DisplayLog(message);
+            }
+        }
+    }
+
+    return subjects;
+}
+
 void Localizer::InitProgressBar()
 {
     ui.progressBar->reset();
@@ -323,6 +413,36 @@ void Localizer::InitProgressBar()
     ui.StatFileExportCheckBox->isChecked() ? nbTaskToDo++ : nbTaskToDo;
 
     nbTaskToDo *= nbFolderSelected * nbFrequencyBands;
+}
+
+void Localizer::InitMultiSubjectProgresBar(std::vector<patientFolder> subjects)
+{
+    ui.progressBar->reset();
+    nbDoneTask = 0;
+    nbTaskToDo = 0;
+
+    int nbFolderSelected = GetSelectedFolderCount(ui.FileTreeView->selectionModel()->selectedRows());
+    int nbFrequencyBands = 0;
+    for (int i = 0; i < ui.FrequencyListWidget->count(); i++)
+    {
+        if (ui.FrequencyListWidget->item(i)->checkState() == Qt::CheckState::Checked)
+            nbFrequencyBands++;
+    }
+
+    int subjectCount = static_cast<int>(subjects.size());
+    for(int i = 0; i < subjectCount; i++)
+    {
+        int nbTaskPerExam = 0;
+        int examCount = static_cast<int>(subjects[i].localizerFolder().size());
+
+        ui.Eeg2envCheckBox->isChecked() ? nbTaskPerExam++ : nbTaskPerExam++; //eeg2env, wheter we need to compute or load
+        ui.Env2plotCheckBox->isChecked() ? nbTaskPerExam++ : nbTaskPerExam;
+        ui.TrialmatCheckBox->isChecked() ? nbTaskPerExam++ : nbTaskPerExam;
+        ui.CorrelationMapsCheckBox->isChecked() ? nbTaskPerExam++ : nbTaskPerExam;
+        ui.StatFileExportCheckBox->isChecked() ? nbTaskPerExam++ : nbTaskPerExam;
+
+        nbTaskToDo += (nbTaskPerExam * examCount * nbFrequencyBands);
+    }
 }
 
 std::vector<InsermLibrary::FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
@@ -470,14 +590,17 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 
             if (!isAlreadyRunning)
             {
-                bool ok;
-                QString fileName = QInputDialog::getText(ui.FileTreeView, "New Name", "Choose New File Name", QLineEdit::Normal, "New Micromed File", &ok);
-                std::string suffixx = EEGFormat::Utility::GetFileExtension(fileName.toStdString());
+                //TODO : QinputDialog is exploding, need to see why since it has been a long time since we reactivated concatenation
+                //QString fileName = QInputDialog::getText(this, "New Name", "Choose New File Name", QLineEdit::Normal, "New Micromed File", nullptr);
 
+                QString fileName = "CONCATENATED_FILE";
+                std::string suffixx = EEGFormat::Utility::GetFileExtension(fileName.toStdString());
                 QString suffix = QString::fromStdString(suffixx).toLower();
-                if (ok && !fileName.isEmpty() && suffix.contains("trc"))
+
+                if (!fileName.isEmpty()) //TODO : put that back when issue with qinputdialog is solved => && suffix.contains("trc"))
                 {
-                    ProcessMicromedFileConcatenation(files, m_localFileSystemModel->rootPath(), fileName);
+                    QString dir = QFileInfo(m_localFileSystemModel->filePath(indexes[0])).dir().absolutePath();
+                    ProcessMicromedFileConcatenation(files, dir, fileName);
                 }
                 else
                 {
@@ -489,11 +612,11 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
                 QMessageBox::information(this, "Error", "Process already running");
             }
         });
-        processConcatenationAction->setEnabled(false); //TODO : Temporary, until the concatenation worker is verified with the new eegformat lib
+        //processConcatenationAction->setEnabled(false); //TODO : Temporary, until the concatenation worker is verified with the new eegformat lib
+    
+        if (sender() == ui.FileTreeView)
+            contextMenu->exec(ui.FileTreeView->viewport()->mapToGlobal(point));
     }
-
-    if (sender() == ui.FileTreeView)
-        contextMenu->exec(ui.FileTreeView->viewport()->mapToGlobal(point));
 }
 
 void Localizer::SelectPtsForCorrelation()
@@ -615,6 +738,57 @@ void Localizer::ProcessSingleAnalysis()
     }
 }
 
+void Localizer::ProcessMultiFolderAnalysis()
+{
+    if (!isAlreadyRunning)
+    {
+        //Data Struct info
+        InsermLibrary::picOption optpic = picOpt->getPicOption();
+        InsermLibrary::statOption optstat = optStat->getStatOption();
+        std::vector<InsermLibrary::FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
+        std::vector<InsermLibrary::FileExt> filePriority = std::vector<InsermLibrary::FileExt>(m_GeneralOptionsFile->FileExtensionsFavorite());
+
+        //Should probably senbd back the struct here and not keep a global variable
+        std::vector<patientFolder> subjects = PrepareDBFolders();
+        InitMultiSubjectProgresBar(subjects);
+
+        if(subjects.size() > 0)
+        {
+            thread = new QThread;
+            worker = new MultiSubjectWorker(subjects, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
+
+            //=== Event update displayer
+            connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
+            connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+            connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
+
+            //New ping pong order
+            connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
+            connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
+            connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
+
+            //=== Event From worker and thread
+            connect(worker, &IWorker::finished, thread, &QThread::quit);
+            connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
+            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+            connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
+
+            //=== Launch Thread and lock possible second launch
+            worker->moveToThread(thread);
+            thread->start();
+            isAlreadyRunning = true;
+        }
+        else
+        {
+            QMessageBox::critical(this, "No subject folder selected", "You need to select at least one folder in the user interface");
+        }
+    }
+    else
+    {
+        QMessageBox::critical(this, "Analysis already running", "Please wait until the current analysis if finished");
+    }
+}
+
 void Localizer::ProcessERPAnalysis(QList<QString> exams)
 {
     QModelIndexList indexes = ui.FileTreeView->selectionModel()->selectedRows();
@@ -724,7 +898,7 @@ void Localizer::ProcessMicromedFileConcatenation(QList<QString> files, QString d
     worker = new ConcatenationWorker(trcFiles, directoryPathString, fileNameString);
 
     //Update info
-    connect(worker, &IWorker::sendLogInfo, this, [&](QString info) { emit DisplayLog(info); });
+    connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
 
     //=== Event From worker and thread
     connect(thread, &QThread::started, worker, &IWorker::Process);

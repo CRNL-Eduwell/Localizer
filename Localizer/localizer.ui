@@ -392,7 +392,7 @@
      <x>0</x>
      <y>0</y>
      <width>914</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
@@ -401,6 +401,7 @@
     </property>
     <addaction name="actionLoadPatientFolder"/>
     <addaction name="actionLoadSpecificFolder"/>
+    <addaction name="actionLoad_Database_Folder"/>
    </widget>
    <widget class="QMenu" name="menuConfiguration">
     <property name="title">
@@ -479,6 +480,11 @@
   <action name="actionFilePriority">
    <property name="text">
     <string>File Priority</string>
+   </property>
+  </action>
+  <action name="actionLoad_Database_Folder">
+   <property name="text">
+    <string>Load Database Folder</string>
    </property>
   </action>
  </widget>
