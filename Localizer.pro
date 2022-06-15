@@ -56,6 +56,7 @@ RESOURCES += \
 
 FORMS += \
     Localizer/AboutDycog.ui \
+    Localizer/ChooseLocaWindow.ui \
     Localizer/ConnectCleaner.ui \
     Localizer/ErpProcessor.ui \
     Localizer/FileConverterProcessor.ui \
@@ -72,6 +73,7 @@ HEADERS += \
     Localizer/AlgorithmCalculator.h \
     Localizer/AlgorithmStrategyFactory.h \
     Localizer/Bloc.h \
+    Localizer/ChooseLocaWindow.h \
     Localizer/CleanConnectFile.h \
     Localizer/ConcatenationWorker.h \
     Localizer/ConnectCleaner.h \
@@ -126,6 +128,7 @@ SOURCES += \
     Localizer/AlgorithmCalculator.cpp \
     Localizer/AlgorithmStrategyFactory.cpp \
     Localizer/Bloc.cpp \
+    Localizer/ChooseLocaWindow.cpp \
     Localizer/CleanConnectFile.cpp \
     Localizer/ConcatenationWorker.cpp \
     Localizer/ConnectCleaner.cpp \
