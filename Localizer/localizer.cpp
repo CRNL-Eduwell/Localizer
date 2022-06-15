@@ -566,10 +566,10 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 
             if (!isAlreadyRunning)
             {
-                FileConverterProcessor* fileWindow = new FileConverterProcessor(files, this);
-                connect(fileWindow, &FileConverterProcessor::SendExamCorrespondance, this, &Localizer::ProcessFileConvertion);
-                fileWindow->exec();
-                delete fileWindow;
+                FileConverterProcessor fileWindow(files, this);
+                connect(&fileWindow, &FileConverterProcessor::SendExamCorrespondance, this, &Localizer::ProcessFileConvertion);
+                fileWindow.exec();
+                disconnect(&fileWindow,nullptr, nullptr, nullptr);
             }
             else
             {

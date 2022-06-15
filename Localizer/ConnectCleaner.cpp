@@ -114,4 +114,5 @@ void ConnectCleaner::ValidateConnect()
         m_CorrectedElectrodesLabel.push_back(label);
     }
     done(1);
+    close();
 }
