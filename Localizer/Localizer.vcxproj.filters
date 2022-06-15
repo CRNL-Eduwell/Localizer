@@ -347,6 +347,15 @@
     <ClCompile Include="MultiSubjectWorker.cpp">
       <Filter>Source Files\Workers</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ChooseLocaWindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ChooseLocaWindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ChooseLocaWindow.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="localizer.qrc">
@@ -447,6 +456,12 @@
     </CustomBuild>
     <CustomBuild Include="MultiSubjectWorker.h">
       <Filter>Header Files\Workers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ChooseLocaWindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ChooseLocaWindow.h">
+      <Filter>Header Files\GUI</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -553,6 +568,9 @@
       <Filter>Header Files\OptFiles</Filter>
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_GeneralOptionsWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_ChooseLocaWindow.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>

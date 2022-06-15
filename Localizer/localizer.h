@@ -30,6 +30,7 @@
 #include "GeneralOptionsWindow.h"
 #include "picOptions.h"
 #include "ProtocolWindow.h"
+#include "ChooseLocaWindow.h"
 #include "AboutDycog.h"
 #include "ErpProcessor.h"
 #include "FileConverterProcessor.h"
