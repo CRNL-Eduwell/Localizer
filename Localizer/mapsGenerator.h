@@ -36,7 +36,6 @@ namespace InsermLibrary
 		
 			//=== TrialMat Stats2Map
 			vec1<int> checkIfNeedDisplayStat(vec1<PVALUECOORD> significantValue, int idCurrentElec);
-			vec2<int>checkIfConditionStat(vec1<PVALUECOORD> significantValue, vec1<int> significantIdMap, int nbRow);
 
 		private:
 			void jetColorMap512(QColor *colorMap);

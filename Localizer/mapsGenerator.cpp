@@ -396,25 +396,6 @@ InsermLibrary::vec1<int> InsermLibrary::DrawCard::mapsGenerator::checkIfNeedDisp
 	return significantIdCurrentMap;
 }
 
-InsermLibrary::vec2<int> InsermLibrary::DrawCard::mapsGenerator::checkIfConditionStat(InsermLibrary::vec1<PVALUECOORD> significantValue, vec1<int> significantIdMap, int nbRow)
-{
-	std::vector<std::vector<int>> idCurrentMap;
-	for (int y = nbRow - 1; y >= 0; y--)
-	{
-		std::vector<int> indexCondition;
-		for (int z = 0; z < significantIdMap.size(); z++)
-		{
-			if (significantValue[significantIdMap[z]].condit == y)
-			{
-				indexCondition.push_back(significantIdMap[z]);
-			}
-		}
-		idCurrentMap.push_back(indexCondition);
-	}
-
-	return idCurrentMap;
-}
-
 void InsermLibrary::DrawCard::mapsGenerator::jetColorMap512(QColor* colorMap)
 {
 	int compteur = 0;

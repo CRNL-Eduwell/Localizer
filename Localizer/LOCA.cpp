@@ -776,12 +776,7 @@ void InsermLibrary::LOCA::TimeTrialMatrices(eegContainer* myeegContainer, PROV* 
 			std::vector<int> allIdCurrentMap = mGen.checkIfNeedDisplayStat(significantValue, i);
 			if (allIdCurrentMap.size() > 0)
 			{
-				vec2<int> idCurrentMap = mGen.checkIfConditionStat(significantValue, allIdCurrentMap, nbRow);
-				if (myeegContainer->flatElectrodes[myeegContainer->Bipole(i).first] == "V14")
-				{
-					mGen.displayStatsOnMap(painterChanel, significantValue, i, myprovFile);
-					//mGen.displayStatsOnMap(painterChanel, idCurrentMap, significantValue, myprovFile);
-				}
+				mGen.displayStatsOnMap(painterChanel, significantValue, i, myprovFile);
 			}
 		}
 
