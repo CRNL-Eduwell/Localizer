@@ -655,9 +655,9 @@ void InsermLibrary::LOCA::TimeTrialMatrices(eegContainer* myeegContainer, PROV* 
 		significantValue = ProcessWilcoxonStatistic(bigData, myeegContainer, myprovFile, mapsFolder);
 
 	//== Draw for each plot and according to a template to reduce drawing time
-	std::vector<int> SubGroupStimTrials = m_triggerContainer->SubGroupStimTrials();
+	std::vector<std::tuple<int, int, int>> CodeAndTrialsIndexes = m_triggerContainer->CodeAndTrialsIndexes();
 	InsermLibrary::DrawCard::mapsGenerator mGen(m_picOption->sizeTrialmap.width(), m_picOption->sizeTrialmap.height());
-	mGen.trialmatTemplate(SubGroupStimTrials, myprovFile);
+	mGen.trialmatTemplate(CodeAndTrialsIndexes, myprovFile);
 
 	QPixmap* pixmapChanel = nullptr, * pixmapSubSubMatrix = nullptr;
 	QPainter* painterChanel = nullptr, * painterSubSubMatrix = nullptr;
@@ -677,15 +677,26 @@ void InsermLibrary::LOCA::TimeTrialMatrices(eegContainer* myeegContainer, PROV* 
 		int interpolFactorX = m_picOption->interpolationtrialmap.width();
 		int interpolFactorY = m_picOption->interpolationtrialmap.height();
 
-		int indexPos = 0;
-		int conditionCount = static_cast<int>(myprovFile->visuBlocs.size());
+		int conditionCount = static_cast<int>(CodeAndTrialsIndexes.size());
 		for (int j = 0; j < conditionCount; j++)
 		{
-			int* currentWinMs = myprovFile->getWindowMs(j);
-			int* currentWinSam = myprovFile->getWindowSam(myeegContainer->DownsampledFrequency(), j);
+			int index = -1;
+			for (int k = 0; k < myprovFile->visuBlocs.size(); k++)
+			{
+				if (myprovFile->visuBlocs[k].mainEventBloc.eventCode[0] == std::get<0>(CodeAndTrialsIndexes[j]))
+				{
+					index = k;
+					break;
+				}
+			}
+
+			//TODO : probably check that we find an index, we should but who knows
+
+			int* currentWinMs = myprovFile->getWindowMs(index);
+			int* currentWinSam = myprovFile->getWindowSam(myeegContainer->DownsampledFrequency(), index);
 			int nbSampleWindow = currentWinSam[1] - currentWinSam[0];
-			int indexBegTrigg = SubGroupStimTrials[j];
-			int numberSubTrial = SubGroupStimTrials[j + 1] - indexBegTrigg;
+			int indexBegTrigg = std::get<1>(CodeAndTrialsIndexes[j]);
+			int numberSubTrial = std::get<2>(CodeAndTrialsIndexes[j]) - indexBegTrigg;
 			int subsubMatrixHeigth = 0;
 
 			vec1<int> colorX[512], colorY[512];
@@ -722,7 +733,11 @@ void InsermLibrary::LOCA::TimeTrialMatrices(eegContainer* myeegContainer, PROV* 
 				}
 			}
 
-			indexPos = myprovFile->visuBlocs.size() - 1 - j;
+			auto itttt = std::find_if(mGen.subMatrixesCodes.begin(), mGen.subMatrixesCodes.end(), [&](const int& c)
+			{
+				return c == std::get<0>(CodeAndTrialsIndexes[j]);
+			}); 
+			int indexPos = std::distance(mGen.subMatrixesCodes.begin(), itttt);
 			painterChanel->drawPixmap(mGen.subMatrixes[indexPos].x(), mGen.subMatrixes[indexPos].y(),
 				pixmapSubSubMatrix->scaled(QSize(mGen.subMatrixes[indexPos].width(), mGen.subMatrixes[indexPos].height()),
 					Qt::AspectRatioMode::IgnoreAspectRatio, Qt::TransformationMode::SmoothTransformation));
@@ -762,7 +777,11 @@ void InsermLibrary::LOCA::TimeTrialMatrices(eegContainer* myeegContainer, PROV* 
 			if (allIdCurrentMap.size() > 0)
 			{
 				vec2<int> idCurrentMap = mGen.checkIfConditionStat(significantValue, allIdCurrentMap, nbRow);
-				mGen.displayStatsOnMap(painterChanel, idCurrentMap, significantValue, myprovFile);
+				if (myeegContainer->flatElectrodes[myeegContainer->Bipole(i).first] == "V14")
+				{
+					mGen.displayStatsOnMap(painterChanel, significantValue, i, myprovFile);
+					//mGen.displayStatsOnMap(painterChanel, idCurrentMap, significantValue, myprovFile);
+				}
 			}
 		}
 

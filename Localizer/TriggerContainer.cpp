@@ -67,7 +67,7 @@ void InsermLibrary::TriggerContainer::ProcessEventsForExperiment(PROV *myprovFil
 	if (m_processedTriggers.size() == 0)
 		return;
 
-	m_subGroupStimTrials = SortTrialsForExperiment(m_processedTriggers, myprovFile);
+	m_codeAndTrials = SortTrialsForExperiment(m_processedTriggers, myprovFile);
 	if (myprovFile->invertmapsinfo != "")
 	{
 		SwapStimulationsAndResponses(myprovFile);
@@ -324,68 +324,109 @@ void InsermLibrary::TriggerContainer::DeleteTriggerNotPaired(std::vector<Trigger
 		triggers.erase(triggers.begin() + IdToDelete[i]);
 }
 
-std::vector<int> InsermLibrary::TriggerContainer::SortTrialsForExperiment(std::vector<Trigger>& triggers, PROV *myprovFile)
+std::vector<std::tuple<int, int, int>> InsermLibrary::TriggerContainer::SortTrialsForExperiment(std::vector<Trigger>& triggers, PROV *myprovFile)
 {
 	//Sort by MainCode
 	std::vector<int> mainEventsCode = myprovFile->getMainCodes();
 	std::vector<Trigger> sortedByMainCodeArray;
 	for (int i = 0; i < mainEventsCode.size(); i++)
 	{
-		std::copy_if(triggers.begin(), triggers.end(), std::back_inserter(sortedByMainCodeArray), [&](Trigger trigger) 
-		{
-			return trigger.MainCode() == mainEventsCode[i];
-		});
+		std::copy_if(triggers.begin(), triggers.end(), std::back_inserter(sortedByMainCodeArray), [&](Trigger trigger)
+			{
+				return trigger.MainCode() == mainEventsCode[i];
+			});
 	}
 	triggers = std::vector<Trigger>(sortedByMainCodeArray);
 
-	//get first id of each new main code
-	std::vector<int> subGroupStimTrials;
-	subGroupStimTrials.push_back(0);
-	for (int i = 0; i < triggers.size() - 1; i++)
-	{
-		if (triggers[i].MainCode() != triggers[i + 1].MainCode())
-		{
-			subGroupStimTrials.push_back(i + 1);
-		}
-	}
-	subGroupStimTrials.push_back(triggers.size());
+	//std::unordered_map<int, int> beg_map;
+	//std::unordered_map<int, int> end_map;
 
-	//according to the rest sort by what is wanted
-	int beg = 0, end = 0;
-	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
+	std::vector<int> code_mapp;
+	std::vector<int> beg_mapp;
+	std::vector<int> end_mapp;
+
+	//get first id of each new main code
+	//int memoryCode = -1;
+	//for (int i = 0; i < triggers.size(); i++)
+	//{
+	//	if (triggers[i].MainCode() != memoryCode)
+	//	{
+	//		memoryCode = triggers[i].MainCode();
+	//		beg_map[triggers[i].MainCode()] = i;
+	//	}
+	//	else
+	//	{
+	//		end_map[triggers[i].MainCode()] = i;
+	//	}
+	//}
+
+	int memoryCode = -1;
+	for (int i = 0; i < triggers.size(); i++)
 	{
-        std::string currentSort = myprovFile->visuBlocs[i].dispBloc.sort();
-        std::vector<std::string> sortSplited = split<std::string>(currentSort, "_");
-		for (int j = 1; j < sortSplited.size(); j++)
+		if (triggers[i].MainCode() != memoryCode)
 		{
-			SortingChoice Choice = (SortingChoice)(sortSplited[j][0]);
-			switch (Choice)
+			memoryCode = triggers[i].MainCode();
+
+			code_mapp.push_back(memoryCode);
+			beg_mapp.push_back(i);
+			if (i > 0)
 			{
-				//Sort by resp code
-			case SortingChoice::Code:
-				beg = subGroupStimTrials[i];
-				end = subGroupStimTrials[i + 1];
-				sort(triggers.begin() + beg, triggers.begin() + end,
-					[](Trigger a, Trigger b)-> bool
-				{
-					return (a.ResponseCode() < b.ResponseCode());
-				});
-				break;
-				//Sort by reaction time
-			case SortingChoice::Latency:
-				beg = subGroupStimTrials[i];
-				end = subGroupStimTrials[i + 1];
-				sort(triggers.begin() + beg, triggers.begin() + end,
-					[](Trigger m, Trigger n)-> bool
-				{
-					return  m.ReactionTimeInMilliSeconds() < n.ReactionTimeInMilliSeconds();
-				});
-				break;
+				end_mapp.push_back(i - 1);
 			}
 		}
 	}
+	end_mapp.push_back(triggers.size() - 1);
 
-	return subGroupStimTrials;
+	//according to the rest sort by what is wanted
+	std::vector<std::tuple<int, int, int>> codeAndTrials;
+	//for (const auto& [key, value] : beg_map)
+	for (int i = 0; i < beg_mapp.size(); i++)
+	{
+		int code = code_mapp[i];
+		int beg = beg_mapp[i];
+		int end = end_mapp[i] + 1;
+
+		int index = -1;
+		for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
+		{
+			if (myprovFile->visuBlocs[j].mainEventBloc.eventCode[0] == code)
+			{
+				index = j;
+				break;
+			}
+		}
+
+		if (index != -1)
+		{
+			std::string currentSort = myprovFile->visuBlocs[index].dispBloc.sort();
+			std::vector<std::string> sortSplited = split<std::string>(currentSort, "_");
+			for (int j = 1; j < sortSplited.size(); j++)
+			{
+				SortingChoice Choice = (SortingChoice)(sortSplited[j][0]);
+				switch (Choice)
+				{
+				case SortingChoice::Code:
+					std::sort(triggers.begin() + beg, triggers.begin() + end,
+						[](Trigger a, Trigger b)-> bool
+						{
+							return (a.ResponseCode() < b.ResponseCode());
+						});
+					break;
+				case SortingChoice::Latency:
+					std::sort(triggers.begin() + beg, triggers.begin() + end,
+						[](Trigger m, Trigger n)-> bool
+						{
+							return  m.ReactionTimeInMilliSeconds() < n.ReactionTimeInMilliSeconds();
+						});
+					break;
+				}
+			}
+
+			codeAndTrials.push_back(std::make_tuple(code, beg, end));
+		}
+	}
+
+	return codeAndTrials;
 }
 
 int InsermLibrary::TriggerContainer::FindFirstIndexAfter(int flagCode)

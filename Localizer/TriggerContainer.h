@@ -4,7 +4,11 @@
 #include "ITrigger.h"
 #include "Trigger.h"
 #include "PROV.h"
-
+//#include <QDebug>
+#include <iostream>
+#include <algorithm>
+#include <map>
+#include <tuple>
 namespace InsermLibrary
 {
 	class TriggerContainer
@@ -22,6 +26,7 @@ namespace InsermLibrary
 		inline std::vector<Trigger>& ProcessedTriggers() { return m_processedTriggers; }
 		inline const std::vector<Trigger>& ProcessedTriggers() const { return m_processedTriggers; }
 		inline const std::vector<int>& SubGroupStimTrials() const { return m_subGroupStimTrials; }		
+		inline const std::vector<std::tuple<int, int, int>>& CodeAndTrialsIndexes() const { return m_codeAndTrials; }
 		std::vector<Trigger> GetTriggerForExperiment(PROV *myprovFile, int flagCode = 99, int downSamplingFactor = 1);
 		void ProcessEventsForExperiment(PROV *myprovFile, int flagCode = 99, int downSaplingFactor = 1);
 		void SwapStimulationsAndResponses(PROV *myprovFile);
@@ -33,11 +38,12 @@ namespace InsermLibrary
 		void PairStimulationWithResponses(std::vector<Trigger>& triggers, PROV *myprovFile);
 		void DeleteTriggerNotInExperiment(std::vector<Trigger>& triggers, PROV *myprovFile);
 		void DeleteTriggerNotPaired(std::vector<Trigger>& triggers);
-		std::vector<int> SortTrialsForExperiment(std::vector<Trigger>& triggers, PROV *myprovFile);
+		std::vector<std::tuple<int, int, int>> SortTrialsForExperiment(std::vector<Trigger>& triggers, PROV *myprovFile);
 		void RenameTriggersForExperiment(PROV *myprovFile, std::vector<Trigger>& triggers);
 
 	private:
 		std::vector<int> m_subGroupStimTrials;
+		std::vector<std::tuple<int, int, int>> m_codeAndTrials;
 		std::vector<Trigger> m_processedTriggers;
 		int m_originalSamplingFrequency = 0;
 		std::vector<EEGFormat::ITrigger> m_originalTriggers;
