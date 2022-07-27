@@ -384,7 +384,7 @@ std::vector<std::tuple<int, int, int>> InsermLibrary::TriggerContainer::SortTria
 	{
 		int code = code_mapp[i];
 		int beg = beg_mapp[i];
-		int end = end_mapp[i] + 1;
+        int end = end_mapp[i] + 1;
 
 		int index = -1;
 		for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
