@@ -25,7 +25,6 @@ namespace InsermLibrary
 		}
 		inline std::vector<Trigger>& ProcessedTriggers() { return m_processedTriggers; }
 		inline const std::vector<Trigger>& ProcessedTriggers() const { return m_processedTriggers; }
-		inline const std::vector<int>& SubGroupStimTrials() const { return m_subGroupStimTrials; }		
 		inline const std::vector<std::tuple<int, int, int>>& CodeAndTrialsIndexes() const { return m_codeAndTrials; }
 		std::vector<Trigger> GetTriggerForExperiment(PROV *myprovFile, int flagCode = 99, int downSamplingFactor = 1);
 		void ProcessEventsForExperiment(PROV *myprovFile, int flagCode = 99, int downSaplingFactor = 1);
@@ -42,7 +41,6 @@ namespace InsermLibrary
 		void RenameTriggersForExperiment(PROV *myprovFile, std::vector<Trigger>& triggers);
 
 	private:
-		std::vector<int> m_subGroupStimTrials;
 		std::vector<std::tuple<int, int, int>> m_codeAndTrials;
 		std::vector<Trigger> m_processedTriggers;
 		int m_originalSamplingFrequency = 0;
