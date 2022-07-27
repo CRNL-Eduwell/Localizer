@@ -1272,7 +1272,6 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
     for(int i = 0;i < bigData.size(); i++)
     {
         std::vector<std::vector<double>> Stat_Z_CS, Stat_P_CS;
-        //std::vector<int> ids = m_triggerContainer->SubGroupStimTrials();
         std::vector<std::tuple<int, int, int>> CodeAndTrialsIndexes = m_triggerContainer->CodeAndTrialsIndexes();
         for(int j = 0; j < static_cast<int>(myprovFile->visuBlocs.size()); j++)
         {
@@ -1344,8 +1343,6 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
             }
         }
 
-        qDebug() << "Nb sample : " << nbOfSample;
-
         for(int j = 0; j < Stat_P_CCS[i].size(); j++)
         {
             if(Stat_P_CCS[i][j].size() == 0)
@@ -1401,7 +1398,6 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 	for (int i = 0; i < bigData.size(); i++)
 	{
 		std::vector<std::vector<std::vector<double>>> v_stat_K3, v_stat_P3;
-        //std::vector<int> ids = m_triggerContainer->SubGroupStimTrials();
         std::vector<std::tuple<int, int, int>> CodeAndTrialsIndexes = m_triggerContainer->CodeAndTrialsIndexes();
         for (int j = 0; j < static_cast<int>(myprovFile->visuBlocs.size() - 1); j++)
 		{
@@ -1424,8 +1420,6 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
                     std::vector<float>::iterator endIter = bigData[i][firstConditionBeg + k].begin() + firstConditionWindowEnd;
                     firstConditionData.push_back(vec1<double>(begIter, endIter));
                 }
-
-                qDebug() << "coucou";
             }
 
 			std::vector<std::vector<double>> v_stat_K2, v_stat_P2;
@@ -1437,7 +1431,6 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
                 std::vector<std::vector<double>> secondConditionData;
                 std::vector<double> v_stat_K, v_stat_P;
                 int secondCode = myprovFile->visuBlocs[k].mainEventBloc.eventCode[0];
-                qDebug() << code << " et " << secondCode << " et " << j << " et " << k;
 
                 auto secondIt = std::find_if(CodeAndTrialsIndexes.begin(), CodeAndTrialsIndexes.end(), [&](const std::tuple<int, int, int>& c) { return std::get<0>(c) == secondCode; });
                 if (it != CodeAndTrialsIndexes.end() && secondIt != CodeAndTrialsIndexes.end())
@@ -1515,8 +1508,6 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
             }
         }
 
-        qDebug() << "Nb sample : " << nbOfSample;
-
         for(int j = 0; j < v_stat_K4[i].size(); j++)
         {
             for(int k = 0; k < v_stat_K4[i][j].size(); k++)
@@ -1533,7 +1524,6 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
     std::vector<PVALUECOORD_KW> significantValue2;
 	if (m_statOption->FDRkruskall)
 	{
-        qDebug() << "fdr ";
         int V = v_stat_P4.size() * v_stat_P4[0].size() * v_stat_P4[0][0].size() * v_stat_P4[0][0][0].size();
         float CV = log(V) + 0.5772;
         float slope = m_statOption->pWilcoxon / (V * CV);
@@ -1568,11 +1558,9 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 	}
 	else
 	{
-        qDebug() << "no fdr ";
         significantValue2 = loadPValues_KW(v_stat_P4, m_statOption->pKruskall);
 	}
 
-    //std::vector<int> ids = m_triggerContainer->SubGroupStimTrials();
     std::vector<std::pair<int,int>> codesPairs;
     for (int j = 0; j < static_cast<int>(myprovFile->visuBlocs.size() - 1); j++)
     {
@@ -1641,9 +1629,6 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 				posSampleCode.push_back(std::make_pair(sample, code));
 				sampleAlreadyWritten += signif.size();
 			}
-
-            int a = 2;
-            qDebug() << "coucou" ;
         }
 
 		//ensuite mettre les 9999
