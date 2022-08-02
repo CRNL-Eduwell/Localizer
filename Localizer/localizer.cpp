@@ -336,6 +336,12 @@ void Localizer::PrepareSingleFiles()
 
 std::vector<patientFolder> Localizer::PrepareDBFolders()
 {
+    std::vector<std::string> locaToSearchFor;
+    ChooseLocaWindow* elecWin = new ChooseLocaWindow(nullptr);
+    int res = elecWin->exec();
+    locaToSearchFor = (res == 1) ? std::vector<std::string>(elecWin->ElementsToLookFor()) : std::vector<std::string>();
+    delete elecWin;
+
     QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
     if(GetSelectedFolderCount(selectedRows) == 0) return std::vector<patientFolder>();
 
@@ -360,11 +366,12 @@ std::vector<patientFolder> Localizer::PrepareDBFolders()
                 int idToKeep = -1;
                 for(int j = 0; j < pat.localizerFolder().size(); j++)
                 {
-                    if(pat.localizerFolder()[j].localizerName() == "ARFA" || pat.localizerFolder()[j].localizerName() == "AUDI" ||
-                       pat.localizerFolder()[j].localizerName() == "LEC1" || pat.localizerFolder()[j].localizerName() == "LEC2" ||
-                       pat.localizerFolder()[j].localizerName() == "MCSE" || pat.localizerFolder()[j].localizerName() == "MOTO" ||
-                       pat.localizerFolder()[j].localizerName() == "MVEB" || pat.localizerFolder()[j].localizerName() == "MVIS" ||
-                       pat.localizerFolder()[j].localizerName() == "REST" || pat.localizerFolder()[j].localizerName() == "VISU")
+                    //if(pat.localizerFolder()[j].localizerName() == "ARFA" || pat.localizerFolder()[j].localizerName() == "AUDI" ||
+                    //   pat.localizerFolder()[j].localizerName() == "LEC1" || pat.localizerFolder()[j].localizerName() == "LEC2" ||
+                    //   pat.localizerFolder()[j].localizerName() == "MCSE" || pat.localizerFolder()[j].localizerName() == "MOTO" ||
+                    //   pat.localizerFolder()[j].localizerName() == "MVEB" || pat.localizerFolder()[j].localizerName() == "MVIS" ||
+                    //   pat.localizerFolder()[j].localizerName() == "REST" || pat.localizerFolder()[j].localizerName() == "VISU")
+                    if(std::find(locaToSearchFor.begin(), locaToSearchFor.end(), pat.localizerFolder()[j].localizerName()) != locaToSearchFor.end())
                     {
                         deleteMe[j] = false;
                     }
@@ -566,10 +573,10 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 
             if (!isAlreadyRunning)
             {
-                FileConverterProcessor* fileWindow = new FileConverterProcessor(files, this);
-                connect(fileWindow, &FileConverterProcessor::SendExamCorrespondance, this, &Localizer::ProcessFileConvertion);
-                fileWindow->exec();
-                delete fileWindow;
+                FileConverterProcessor fileWindow(files, this);
+                connect(&fileWindow, &FileConverterProcessor::SendExamCorrespondance, this, &Localizer::ProcessFileConvertion);
+                fileWindow.exec();
+                disconnect(&fileWindow,nullptr, nullptr, nullptr);
             }
             else
             {

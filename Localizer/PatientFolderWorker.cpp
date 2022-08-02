@@ -36,7 +36,7 @@ void PatientFolderWorker::Process()
             emit sendLogInfo(QString::fromStdString("End time : ") + GetCurrentTime().c_str());
             emit sendLogInfo("");
 
-            sendLogInfo("End of processing for experiment " + QString::number(i+1) + " out of " + QString::number(localizerCount) + "\n");
+            emit sendLogInfo("End of processing for experiment " + QString::number(i+1) + " out of " + QString::number(localizerCount) + "\n");
 			deleteAndNullify1D(myContainer);
 		}
 	}
@@ -50,7 +50,7 @@ void PatientFolderWorker::ExtractElectrodeList()
 {
 	if (m_Patient->localizerFolder().size() == 0)
 	{
-		sendLogInfo("Error, there is no localizer folder in this patient, aborting analysis.\n");
+        emit sendLogInfo("Error, there is no localizer folder in this patient, aborting analysis.\n");
 		emit finished();
 	}
 
@@ -67,7 +67,7 @@ void PatientFolderWorker::ExtractElectrodeList()
 		}
 	}
 
-	sendLogInfo("No Compatible file format detected, aborting analysis.\n");
+    emit sendLogInfo("No Compatible file format detected, aborting analysis.\n");
 	emit finished();
 }
 

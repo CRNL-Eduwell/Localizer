@@ -2,17 +2,18 @@
 
 void InsermLibrary::Stats::pValuesWilcoxon(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata, TriggerContainer* triggerContainer, int samplingFreq, PROV *myprovFile)
 {
-	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
-    int ConditionCount = static_cast<int>(SubGroupStimTrials.size());
+	//std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
+	std::vector<std::tuple<int, int, int>> CodeAndTrialsIndexes = triggerContainer->CodeAndTrialsIndexes();
+    int ConditionCount = static_cast<int>(CodeAndTrialsIndexes.size());
     int ChannelCount = static_cast<int>(bigdata.size());
     for (int i = 0; i < ChannelCount; i++)
 	{
 		vec2<float> p_valueBig;
 		vec2<int> p_signeBig;
-		for (int j = 0; j < ConditionCount - 1; j++)
+		for (int j = 0; j < ConditionCount; j++)
 		{
-			int lowTrial = SubGroupStimTrials[j];
-			int highTrial = SubGroupStimTrials[j + 1];
+			int lowTrial = std::get<1>(CodeAndTrialsIndexes[j]);// SubGroupStimTrials[j];
+			int highTrial = std::get<2>(CodeAndTrialsIndexes[j]); // SubGroupStimTrials[j + 1];
 			int numberSubTrial = highTrial - lowTrial;
 
             vec1<double> baseLine = getBaselineBlocWilcoxon(i, lowTrial, numberSubTrial, samplingFreq, myprovFile->visuBlocs[j].dispBloc, bigdata);
@@ -286,11 +287,13 @@ InsermLibrary::vec1<int> InsermLibrary::Stats::getEegSignBlocWilcoxon(vec1<doubl
 
 InsermLibrary::vec1<float> InsermLibrary::Stats::getBaselineKruskall(vec3<float> &bigdata, TriggerContainer* triggerContainer, int currentChanel, int* windowSam)
 {
-	int SubGroupCount = triggerContainer->SubGroupStimTrials().size();
-	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
+	std::vector<std::tuple<int, int, int>> CodeAndTrialsIndexes = triggerContainer->CodeAndTrialsIndexes();
 
-	int lowTrial = SubGroupStimTrials[SubGroupCount - 2];
-	int highTrial = SubGroupStimTrials[SubGroupCount - 1];
+	int SubGroupCount = CodeAndTrialsIndexes.size();// triggerContainer->SubGroupStimTrials().size();
+	//std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
+
+	int lowTrial = std::get<1>(CodeAndTrialsIndexes[SubGroupCount - 1]);
+	int highTrial = std::get<2>(CodeAndTrialsIndexes[SubGroupCount - 1]);
 	int numberSubTrial = highTrial - lowTrial;
 
 	vec1<float> baseLineData;
@@ -311,14 +314,16 @@ InsermLibrary::vec1<float> InsermLibrary::Stats::getBaselineKruskall(vec3<float>
 
 InsermLibrary::vec2<float> InsermLibrary::Stats::getEEGDataKruskall(vec3<float> &bigdata, TriggerContainer* triggerContainer, int currentChanel, int* windowSam)
 {
-	int SubGroupCount = triggerContainer->SubGroupStimTrials().size();
-	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
+	std::vector<std::tuple<int, int, int>> CodeAndTrialsIndexes = triggerContainer->CodeAndTrialsIndexes();
+
+	int SubGroupCount = CodeAndTrialsIndexes.size();// triggerContainer->SubGroupStimTrials().size();
+	//std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
 
 	vec2<float> eegDataBig;
-	for (int j = 0; j < SubGroupCount - 2; j++)
+	for (int j = 0; j < SubGroupCount - 1; j++)
 	{
-		int lowTrial = SubGroupStimTrials[j];
-		int highTrial = SubGroupStimTrials[j + 1];
+		int lowTrial = std::get<1>(CodeAndTrialsIndexes[j]); //SubGroupStimTrials[j];
+		int highTrial = std::get<2>(CodeAndTrialsIndexes[j]); //SubGroupStimTrials[j + 1];
 		int numberSubTrial = highTrial - lowTrial;
 
 		vec1<float> eegData;

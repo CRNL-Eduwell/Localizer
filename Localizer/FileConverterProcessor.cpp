@@ -44,7 +44,7 @@ void FileConverterProcessor::ValidateFiles()
 			newFileTypes.push_back("");
 		}
 	}
-	SendExamCorrespondance(newFileTypes);
+    emit SendExamCorrespondance(newFileTypes);
 
 	done(1);
 	close();

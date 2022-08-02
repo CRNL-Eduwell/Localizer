@@ -22,9 +22,11 @@ namespace InsermLibrary
 			~mapsGenerator();
 			//=== TrialMat Drawing Functions
 			void trialmatTemplate(std::vector<int> trialsPerRow, PROV *myprovFile);
+			void trialmatTemplate(std::vector<std::tuple<int, int, int>> codesAndTrials, PROV* myprovFile);
 			void graduateColorBar(QPainter *painter, int maxValue);
 			void drawVerticalZeroLine(QPainter *painter, PROV* myprovFile);
 			void displayStatsOnMap(QPainter *painter, vec2<int> idCurrentMap, vec1<PVALUECOORD> significantValue, PROV* myprovFile);
+			void displayStatsOnMap(QPainter* painter, vec1<PVALUECOORD> significantValue, int electrodeIndex, PROV* myprovFile);
 			void drawMapTitle(QPainter *painter, std::string title);
 
 			//=== TrialMat Data2Color Functions
@@ -34,18 +36,20 @@ namespace InsermLibrary
 		
 			//=== TrialMat Stats2Map
 			vec1<int> checkIfNeedDisplayStat(vec1<PVALUECOORD> significantValue, int idCurrentElec);
-			vec2<int>checkIfConditionStat(vec1<PVALUECOORD> significantValue, vec1<int> significantIdMap, int nbRow);
 
 		private:
 			void jetColorMap512(QColor *colorMap);
 			void createColorBar(QPainter *painter);
 			void defineLineSeparation(QPainter *painter, std::vector<int> nbTrialPerRow, int nbCol);
+			void defineLineSeparation(QPainter* painter, std::vector<std::tuple<int, int, int>> codesAndTrials, PROV* myprovFile);
 			void createTimeLegend(QPainter *painter, PROV *myprovFile);
 			void createTrialsLegend(QPainter *painter, PROV *myprovFile);
+			void createTrialsLegend(QPainter* painter, std::vector<std::tuple<int, int, int>> codesAndTrials, PROV* myprovFile);
 
 		public:
 			QPixmap pixmapTemplate;
 			std::vector<QRect> subMatrixes;
+			std::vector<int> subMatrixesCodes;
 			std::vector<QRect> separationLines;
 			QRect MatrixRect;
 			QRect colorBarRect;
