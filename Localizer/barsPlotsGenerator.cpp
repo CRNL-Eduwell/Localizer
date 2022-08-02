@@ -107,7 +107,8 @@ void InsermLibrary::DrawbarsPlots::drawBars::drawDataOnTemplate(vec3<float> &big
 	vec1<bool> sizeSigCheck = vec1<bool>(significantValue.size());  vec2<float> data = vec2<float>(triggerContainer->ProcessedTriggerCount(), 
 																					   vec1<float>(windowSam[1] - windowSam[0]));
 
-	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
+    //std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
+    std::vector<std::tuple<int, int, int>> CodeAndTrialsIndexes = triggerContainer->CodeAndTrialsIndexes();
 	std::vector<Trigger> Triggers = triggerContainer->ProcessedTriggers();
 	for (int i = 0; i < myeegContainer->electrodes.size(); i++)
 	{
@@ -154,8 +155,8 @@ void InsermLibrary::DrawbarsPlots::drawBars::drawDataOnTemplate(vec3<float> &big
 					//Loop accross conditions
 					for (int k = 0; k < nbRow; k++)
 					{
-						int lowTrigg = SubGroupStimTrials[k];
-						int highTrigg = SubGroupStimTrials[k + 1] - 1;
+                        int lowTrigg = std::get<1>(CodeAndTrialsIndexes[k]);
+                        int highTrigg = std::get<2>(CodeAndTrialsIndexes[k]) - 1;
 						int currentMainCode = myprovFile->visuBlocs[k].mainEventBloc.eventCode[0];
 
 						if (Triggers[lowTrigg].MainCode() == currentMainCode && Triggers[highTrigg].MainCode() == currentMainCode)
@@ -351,8 +352,9 @@ void InsermLibrary::DrawbarsPlots::drawPlots::drawDataOnTemplate(vec3<float> &bi
 	vec2<float> m_erpM = vec2<float>(nbRow, vec1<float>(windowSam[1] - windowSam[0]));
 
 
-	std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
-	std::vector<Trigger> Triggers = triggerContainer->ProcessedTriggers();
+    //std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
+    std::vector<std::tuple<int, int, int>> CodeAndTrialsIndexes = triggerContainer->CodeAndTrialsIndexes();
+    std::vector<Trigger> Triggers = triggerContainer->ProcessedTriggers();
 	for (int i = 0; i < myeegContainer->electrodes.size(); i++)
 	{
 		idCurrentElecDrawn = i % nbElecPerFigure;
@@ -419,8 +421,8 @@ void InsermLibrary::DrawbarsPlots::drawPlots::drawDataOnTemplate(vec3<float> &bi
 					//Loop accross conditions
 					for (int k = 0; k < nbRow; k++)
 					{
-						int lowTrigg = SubGroupStimTrials[k];
-						int highTrigg = SubGroupStimTrials[k + 1] - 1;
+                        int lowTrigg = std::get<1>(CodeAndTrialsIndexes[k]);
+                        int highTrigg = std::get<2>(CodeAndTrialsIndexes[k]) - 1;
 						int currentMainCode = myprovFile->visuBlocs[k].mainEventBloc.eventCode[0];
 
 						if (Triggers[lowTrigg].MainCode() == currentMainCode && Triggers[highTrigg].MainCode() == currentMainCode)
