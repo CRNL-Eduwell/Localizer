@@ -1394,6 +1394,7 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
     }
 
 	//Kruskall
+    int countFDR = 0;
 	std::vector<std::vector<std::vector<std::vector<double>>>> v_stat_K4, v_stat_P4;
 	for (int i = 0; i < bigData.size(); i++)
 	{
@@ -1482,6 +1483,7 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
                         int sign_FirstMinusSecond = (firstMean - secondMean) < 0 ? -1 : 1;
                         v_stat_K.push_back(sign_FirstMinusSecond * ((p < m_statOption->pWilcoxon) ? 1 : 0 ));
                         v_stat_P.push_back(p);
+                        countFDR++;
                     }
                 }
                 v_stat_K2.push_back(v_stat_K);
@@ -1525,8 +1527,8 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 	if (m_statOption->FDRkruskall)
 	{
         int V = v_stat_P4.size() * v_stat_P4[0].size() * v_stat_P4[0][0].size() * v_stat_P4[0][0][0].size();
-        float CV = log(V) + 0.5772;
-        float slope = m_statOption->pWilcoxon / (V * CV);
+        float CV = log(countFDR) + 0.5772;
+        float slope = m_statOption->pWilcoxon / (countFDR * CV);
 
         std::vector<PVALUECOORD_KW> preFDRValues = loadPValues_KW(v_stat_P4);
 
@@ -1536,7 +1538,7 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
         });
 
         int copyIndex = 0;
-        for (int i = 0; i < V; i++)
+        for (int i = 0; i < countFDR; i++)
         {
             if (preFDRValues[i].pValue > ((double)slope * (i + 1)))
             {
@@ -1668,12 +1670,9 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 					int ind1 = significantValue2[indices[m]].elec;
 					int ind2 = significantValue2[indices[m]].condit1;
 					int ind3 = significantValue2[indices[m]].condit2;
-					float indP = significantValue2[indices[m]].pValue;
+                    int ind4 = significantValue2[indices[m]].window;
 
-					for (int l = 0; l < signif.size(); l++)
-					{
-                        signif[l] = 30 * v_stat_K4[ind1][ind2][ind3][l] * indP;
-					}
+                    signif[ind4] = 30 * v_stat_K4[ind1][ind2][ind3][ind4];
 				}
 
 				for (int n = 0; n < 3; n++)
