@@ -1582,7 +1582,7 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
         std::vector<std::pair<int, int>> posSampleCode;
         int sampleAlreadyWritten = 0;
 
-        bool isChannelReactive = false;
+        double sumIsChannelReactive = 0;
         std::vector<std::tuple<int, int, int>> CodeAndTrialsIndexes = m_triggerContainer->CodeAndTrialsIndexes();
         for(int j = 0; j < static_cast<int>(myprovFile->visuBlocs.size()); j++)
         {
@@ -1615,7 +1615,8 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
             for(int k = 0; k < indices.size(); k++)
             {
                 int indexSignif = significantValue[indices[k]].window;
-                signif[indexSignif] = 10;
+                signif[indexSignif] = 10 * Stat_Z_CCS[i][j][indexSignif];
+                sumIsChannelReactive += signif[indexSignif];
             }
 
 			for (int k = 0; k < 3; k++) //repeat for better visibility in hibop
@@ -1633,7 +1634,7 @@ void InsermLibrary::LOCA::StatisticalFiles(eegContainer* myeegContainer, PROV* m
 
 		//ensuite mettre les 9999
 		int windowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[0].dispBloc.windowMin()) / 1000);
-        int valueToWrite = 30 * (isChannelReactive ? 1 : 0);
+        int valueToWrite = 30 * (sumIsChannelReactive > 0 ? 1 : 0);
 		for (int j = 0; j < 3; j++) //repeat for better visibility in hibop
 		{
 			for (int k = 0; k < Stat_Z_CCS[0][0].size(); k++)
