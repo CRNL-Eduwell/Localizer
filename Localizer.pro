@@ -18,6 +18,7 @@ unix:!macx{
 macx{
     QMAKE_CXXFLAGS += -O3
     QMAKE_CXXFLAGS_WARN_ON += -Wno-maybe-uninitialized -Wno-unused-result -Wno-unused-function -Wno-unused-parameter -Wno-comment -Wno-sign-compare -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-local-typedefs -Wno-reorder -Wno-switch #-Wfatal-errors -Werror
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.15 #allow acces to C++ 17 std::filesystem
 }
 
 macx{
@@ -103,6 +104,7 @@ HEADERS += \
     Localizer/ProtocolWindow.h \
     Localizer/ProvFile.h \
     Localizer/SingleFilesWorker.h \
+    Localizer/StatisticalFilesProcessor.h \
     Localizer/Stats.h \
     Localizer/SubBloc.h \
     Localizer/Trigger.h \
@@ -155,6 +157,7 @@ SOURCES += \
     Localizer/ProtocolWindow.cpp \
     Localizer/ProvFile.cpp \
     Localizer/SingleFilesWorker.cpp \
+    Localizer/StatisticalFilesProcessor.cpp \
     Localizer/Stats.cpp \
     Localizer/SubBloc.cpp \
     Localizer/Trigger.cpp \
