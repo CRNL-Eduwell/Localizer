@@ -99,6 +99,12 @@
     <Filter Include="Source Files\Algorithm\Strategy">
       <UniqueIdentifier>{87136f4a-524b-409d-895e-a0e7bb09bfef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\LocaProcessing">
+      <UniqueIdentifier>{8f661712-a30c-4171-beba-7dbb8b2e1e3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\LocaProcessing">
+      <UniqueIdentifier>{bdd5a839-ab3f-486f-8d0b-d52f9af88ca8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -356,6 +362,9 @@
     <ClCompile Include="ChooseLocaWindow.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="StatisticalFilesProcessor.cpp">
+      <Filter>Source Files\LocaProcessing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="localizer.qrc">
@@ -572,6 +581,9 @@
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_ChooseLocaWindow.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StatisticalFilesProcessor.h">
+      <Filter>Header Files\LocaProcessing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
