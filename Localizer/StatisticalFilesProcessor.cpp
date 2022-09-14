@@ -444,58 +444,7 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
         }
     }
 
-    EEGFormat::ElanFile *outputFile = new EEGFormat::ElanFile();
-    outputFile->ElectrodeCount((int)ChannelDataToWrite.size());
-    outputFile->SamplingFrequency(myeegContainer->DownsampledFrequency());
-    //Load electrodes list according to container
-    std::vector<EEGFormat::IElectrode*> bipolesList;
-    int BipoleCount = myeegContainer->BipoleCount();
-    for (int i = 0; i < BipoleCount; i++)
-    {
-        std::pair<int, int> currentBipole = myeegContainer->Bipole(i);
-        bipolesList.push_back(myeegContainer->Electrode(currentBipole.first));
-    }
-    outputFile->Electrodes(bipolesList);
-    //Define type of elec : label + "EEG" + "uV"
-    outputFile->Data(EEGFormat::DataConverterType::Digital).resize((int)bipolesList.size(), std::vector<float>(ChannelDataToWrite[0].size()));
-    for (int i = 0; i < ChannelDataToWrite.size(); i++)
-    {
-        for (int j = 0; j < ChannelDataToWrite[i].size(); j++)
-        {
-            outputFile->Data(EEGFormat::DataConverterType::Digital)[i][j] = ChannelDataToWrite[i][j];
-        }
-    }
-
-    //TODO : right name name is reprocessed based on freqfolder name , see to fill default filepath when processing envellopes
-    //to use the name of the file as commented below
-
-    //then save eegdata
-    vec1<std::string> pathSplit = split<std::string>(freqFolder, "/");
-    std::string newPath = freqFolder;
-    newPath.append(pathSplit[pathSplit.size() - 1]);
-    std::string baseName = newPath  + "_ds" + std::to_string(myeegContainer->DownsamplingFactor()) + "_sm0";
-
-//    std::string rootFileFolder = EEGFormat::Utility::GetDirectoryPath(myeegContainer->elanFrequencyBand[0]->DefaultFilePath());
-//    std::string fileNameRoot = EEGFormat::Utility::GetFileName(myeegContainer->elanFrequencyBand[0]->DefaultFilePath(), false);
-
-    std::string entFile = baseName + "_stats.eeg.ent";
-    std::string eegFile = baseName + "_stats.eeg";
-    outputFile->SaveAs(entFile,eegFile, "","");
-
-    //and trigger in pos
-    std::vector<EEGFormat::ITrigger> iTriggers(posSampleCodeToWrite.size());
-    for (int i = 0; i < posSampleCodeToWrite.size(); i++)
-    {
-        int code = posSampleCodeToWrite[i].second;
-        long sample = posSampleCodeToWrite[i].first;
-        iTriggers[i] = EEGFormat::ElanTrigger(code, sample);
-    }
-    std::string fileNameBase = myeegContainer->RootFileFolder() + myeegContainer->RootFileName();
-    std::string posFile = fileNameBase + "_ds" + std::to_string(myeegContainer->DownsamplingFactor()) + "_stats.pos";
-    EEGFormat::ElanFile::SaveTriggers(posFile, iTriggers);
-
-    //and delete pointer
-    DeleteGenericFile(outputFile);
+    WriteResultFile(ChannelDataToWrite, posSampleCodeToWrite, triggerContainer, myeegContainer, freqFolder);
 }
 
 std::vector<InsermLibrary::PVALUECOORD> InsermLibrary::StatisticalFilesProcessor::loadPValues(vec3<double>& pValues3D)
@@ -616,4 +565,60 @@ std::vector<InsermLibrary::PVALUECOORD_KW> InsermLibrary::StatisticalFilesProces
     }
 
     return pValues;
+}
+
+void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(std::vector<std::vector<double>> ChannelDataToWrite, std::vector<std::pair<int, int>> posSampleCodeToWrite, TriggerContainer* triggerContainer, eegContainer* eegContainer, std::string freqFolder)
+{
+    EEGFormat::ElanFile *outputFile = new EEGFormat::ElanFile();
+    outputFile->ElectrodeCount((int)ChannelDataToWrite.size());
+    outputFile->SamplingFrequency(eegContainer->DownsampledFrequency());
+    //Load electrodes list according to container
+    std::vector<EEGFormat::IElectrode*> bipolesList;
+    int BipoleCount = eegContainer->BipoleCount();
+    for (int i = 0; i < BipoleCount; i++)
+    {
+        std::pair<int, int> currentBipole = eegContainer->Bipole(i);
+        bipolesList.push_back(eegContainer->Electrode(currentBipole.first));
+    }
+    outputFile->Electrodes(bipolesList);
+    //Define type of elec : label + "EEG" + "uV"
+    outputFile->Data(EEGFormat::DataConverterType::Digital).resize((int)bipolesList.size(), std::vector<float>(ChannelDataToWrite[0].size()));
+    for (int i = 0; i < ChannelDataToWrite.size(); i++)
+    {
+        for (int j = 0; j < ChannelDataToWrite[i].size(); j++)
+        {
+            outputFile->Data(EEGFormat::DataConverterType::Digital)[i][j] = ChannelDataToWrite[i][j];
+        }
+    }
+
+    //TODO : right name name is reprocessed based on freqfolder name , see to fill default filepath when processing envellopes
+    //to use the name of the file as commented below
+
+    //then save eegdata
+    vec1<std::string> pathSplit = split<std::string>(freqFolder, "/");
+    std::string newPath = freqFolder;
+    newPath.append(pathSplit[pathSplit.size() - 1]);
+    std::string baseName = newPath  + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_sm0";
+
+//    std::string rootFileFolder = EEGFormat::Utility::GetDirectoryPath(myeegContainer->elanFrequencyBand[0]->DefaultFilePath());
+//    std::string fileNameRoot = EEGFormat::Utility::GetFileName(myeegContainer->elanFrequencyBand[0]->DefaultFilePath(), false);
+
+    std::string entFile = baseName + "_stats.eeg.ent";
+    std::string eegFile = baseName + "_stats.eeg";
+    outputFile->SaveAs(entFile,eegFile, "","");
+
+    //and trigger in pos
+    std::vector<EEGFormat::ITrigger> iTriggers(posSampleCodeToWrite.size());
+    for (int i = 0; i < posSampleCodeToWrite.size(); i++)
+    {
+        int code = posSampleCodeToWrite[i].second;
+        long sample = posSampleCodeToWrite[i].first;
+        iTriggers[i] = EEGFormat::ElanTrigger(code, sample);
+    }
+    std::string fileNameBase = eegContainer->RootFileFolder() + eegContainer->RootFileName();
+    std::string posFile = fileNameBase + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_stats.pos";
+    EEGFormat::ElanFile::SaveTriggers(posFile, iTriggers);
+
+    //and delete pointer
+    DeleteGenericFile(outputFile);
 }
