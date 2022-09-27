@@ -1,5 +1,4 @@
 #include "ProvFile.h"
-#include <QDebug>
 
 InsermLibrary::ProvFile::ProvFile(const std::string& filePath)
 {

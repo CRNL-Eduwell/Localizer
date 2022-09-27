@@ -70,10 +70,9 @@ void InsermLibrary::TriggerContainer::ProcessEventsForExperiment(ProvFile *mypro
 	}
 	PairStimulationWithResponses(m_processedTriggers, myprovFile);
 	DeleteTriggerNotInExperiment(m_processedTriggers, myprovFile);
-//	if (myprovFile->getSecondaryCodes()[0][0] != 0) //At this point , if there is secondary code, we need to check if all have been paired correctly
-//	{
-//		DeleteTriggerNotPaired(m_processedTriggers);
-//	}
+
+	//At this point, if there is a secondary code, we need to check that they have been paired,
+	//otherwise we delete them and only keep those that have been paired
     DeleteTriggerNotPaired(m_processedTriggers, myprovFile);
 
 	if (m_processedTriggers.size() == 0)
@@ -371,119 +370,12 @@ void InsermLibrary::TriggerContainer::DeleteTriggerNotPaired(std::vector<Trigger
     }
 }
 
-//std::vector<std::tuple<int, int, int>> InsermLibrary::TriggerContainer::SortTrialsForExperiment(std::vector<Trigger>& triggers, ProvFile *myprovFile)
-//{
-//	//Sort by MainCode
-//    std::vector<int> mainEventsCode = GetMainCodesFromProtocol(myprovFile);
-
-//	std::vector<Trigger> sortedByMainCodeArray;
-//	for (int i = 0; i < mainEventsCode.size(); i++)
-//	{
-//		std::copy_if(triggers.begin(), triggers.end(), std::back_inserter(sortedByMainCodeArray), [&](Trigger trigger)
-//			{
-//				return trigger.MainCode() == mainEventsCode[i];
-//			});
-//	}
-//	triggers = std::vector<Trigger>(sortedByMainCodeArray);
-
-//	//std::unordered_map<int, int> beg_map;
-//	//std::unordered_map<int, int> end_map;
-
-//	std::vector<int> code_mapp;
-//	std::vector<int> beg_mapp;
-//	std::vector<int> end_mapp;
-
-//	//get first id of each new main code
-//	//int memoryCode = -1;
-//	//for (int i = 0; i < triggers.size(); i++)
-//	//{
-//	//	if (triggers[i].MainCode() != memoryCode)
-//	//	{
-//	//		memoryCode = triggers[i].MainCode();
-//	//		beg_map[triggers[i].MainCode()] = i;
-//	//	}
-//	//	else
-//	//	{
-//	//		end_map[triggers[i].MainCode()] = i;
-//	//	}
-//	//}
-
-//	int memoryCode = -1;
-//	for (int i = 0; i < triggers.size(); i++)
-//	{
-//		if (triggers[i].MainCode() != memoryCode)
-//		{
-//			memoryCode = triggers[i].MainCode();
-
-//			code_mapp.push_back(memoryCode);
-//			beg_mapp.push_back(i);
-//			if (i > 0)
-//			{
-//				end_mapp.push_back(i - 1);
-//			}
-//		}
-//	}
-//	end_mapp.push_back(triggers.size() - 1);
-
-//	//according to the rest sort by what is wanted
-//	std::vector<std::tuple<int, int, int>> codeAndTrials;
-//	//for (const auto& [key, value] : beg_map)
-//	for (int i = 0; i < beg_mapp.size(); i++)
-//	{
-//		int code = code_mapp[i];
-//		int beg = beg_mapp[i];
-//        int end = end_mapp[i] + 1;
-
-//		int index = -1;
-//        for (int j = 0; j < myprovFile->Blocs().size(); j++)
-//		{
-//            if (myprovFile->Blocs()[j].MainSubBloc().MainEvent().Codes()[0] == code)
-//			{
-//				index = j;
-//				break;
-//			}
-//		}
-
-//		if (index != -1)
-//		{
-//			std::string currentSort = myprovFile->visuBlocs[index].dispBloc.sort();
-//			std::vector<std::string> sortSplited = split<std::string>(currentSort, "_");
-//			for (int j = 1; j < sortSplited.size(); j++)
-//			{
-//				SortingChoice Choice = (SortingChoice)(sortSplited[j][0]);
-//				switch (Choice)
-//				{
-//				case SortingChoice::Code:
-//					std::sort(triggers.begin() + beg, triggers.begin() + end,
-//						[](Trigger a, Trigger b)-> bool
-//						{
-//							return (a.ResponseCode() < b.ResponseCode());
-//						});
-//					break;
-//				case SortingChoice::Latency:
-//					std::sort(triggers.begin() + beg, triggers.begin() + end,
-//						[](Trigger m, Trigger n)-> bool
-//						{
-//							return  m.ReactionTimeInMilliSeconds() < n.ReactionTimeInMilliSeconds();
-//						});
-//					break;
-//				}
-//			}
-
-//			codeAndTrials.push_back(std::make_tuple(code, beg, end));
-//		}
-//	}
-
-//	return codeAndTrials;
-//}
-
-//TODO : on s'est arrêter la , ca marche pas , trie et compagnie
 std::vector<std::tuple<int, int, int>> InsermLibrary::TriggerContainer::SortTrialsForExperiment(std::vector<Trigger>& triggers, ProvFile *myprovFile)
 {
     std::vector<std::tuple<int, int, int>> codeAndTrials;
     std::vector<Trigger> finalArray;
-    //Pour chaque bloc , on split le sort et on trie en fonction du résultat
-    for(int i = 0; i < myprovFile->Blocs().size(); i++)
+
+	for(int i = 0; i < myprovFile->Blocs().size(); i++)
     {
         std::string blocSort = myprovFile->Blocs()[i].Sort();
         std::vector<std::string> blocSortSplitted = split<std::string>(blocSort, ";");
