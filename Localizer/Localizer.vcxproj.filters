@@ -380,6 +380,9 @@
     <ClCompile Include="SubBloc.cpp">
       <Filter>Source Files\PROV</Filter>
     </ClCompile>
+    <ClCompile Include="Icon.cpp">
+      <Filter>Source Files\PROV</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="localizer.qrc">
@@ -613,6 +616,9 @@
       <Filter>Header Files\PROV</Filter>
     </ClInclude>
     <ClInclude Include="SubBloc.h">
+      <Filter>Header Files\PROV</Filter>
+    </ClInclude>
+    <ClInclude Include="Icon.h">
       <Filter>Header Files\PROV</Filter>
     </ClInclude>
   </ItemGroup>

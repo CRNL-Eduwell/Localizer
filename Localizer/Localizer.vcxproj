@@ -348,6 +348,7 @@
     </ClCompile>
     <ClCompile Include="HilbertEnveloppe.cpp" />
     <ClCompile Include="AlgorithmStrategyFactory.cpp" />
+    <ClCompile Include="Icon.cpp" />
     <ClCompile Include="ITxtFile.cpp" />
     <ClCompile Include="IWorker.cpp" />
     <ClCompile Include="LOCA.cpp" />
@@ -395,6 +396,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Icon.h" />
     <ClInclude Include="SubBloc.h" />
     <ClInclude Include="Window.h" />
     <CustomBuild Include="AboutDycog.h">

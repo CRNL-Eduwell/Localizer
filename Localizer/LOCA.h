@@ -67,18 +67,18 @@ namespace InsermLibrary
         void Barplot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
         std::string GetBarplotMapsFolder(std::string freqFolder, PROV *myprovFile);
         std::string PrepareFolderAndPathsBar(std::string freqFolder, int dsSampFreq);
-        std::vector<PVALUECOORD> ProcessKruskallStatistic(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+        std::vector<PVALUECOORD> ProcessKruskallStatistic(vec3<float> &bigData, eegContainer *myeegContainer, ProvFile* myprovFile, std::string freqFolder);
 		//==
         void Env2plot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
         std::string GetEnv2PlotMapsFolder(std::string freqFolder, PROV *myprovFile);
         std::string PrepareFolderAndPathsPlot(std::string freqFolder, int dsSampFreq);
 
 		//==
-        void TimeTrialMatrices(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
-        std::string GetTrialmatFolder(PROV *myprovFile, std::string freqFolder);
+        void TimeTrialMatrices(eegContainer *myeegContainer, ProvFile* myprovFile, std::string freqFolder);
+        std::string GetTrialmatFolder(ProvFile* myprovFile, std::string freqFolder);
         std::string PrepareFolderAndPathsTrial(std::string freqFolder, int dsSampFreq);
         bool ShouldPerformTrialmatStats(std::string locaName);
-        std::vector<PVALUECOORD> ProcessWilcoxonStatistic(vec3<float> &bigData, eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
+        std::vector<PVALUECOORD> ProcessWilcoxonStatistic(vec3<float> &bigData, eegContainer *myeegContainer, ProvFile* myprovFile, std::string freqFolder);
 
 		//==
 		void CorrelationMaps(eegContainer* myeegContainer, std::string freqFolder);

@@ -5,6 +5,7 @@
 #include <fstream>		
 
 #include "PROV.h"
+#include "ProvFile.h"
 #include "TriggerContainer.h"
 #include "eegContainer.h"
 
@@ -19,19 +20,19 @@ namespace InsermLibrary
 	{
 	public:
 		static void pValuesWilcoxon(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata, TriggerContainer* triggerContainer,
-									int samplingFreq, PROV *myprovFile);
+									int samplingFreq, ProvFile* myprovFile);
 		static void pValuesKruskall(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata, TriggerContainer* triggerContainer,
-									int samplingFreq, PROV *myprovFile);
+									int samplingFreq, ProvFile* myprovFile);
 		static vec1<PVALUECOORD> FDR(vec3<float> &pValues3D, vec3<int> &pSign3D, int &copyIndex, float pLimit);
 		static vec1<PVALUECOORD> loadPValues(vec3<float> &pValues3D, vec3<int> &pSign3D);
 		static vec1<PVALUECOORD> loadPValues(vec3<float> &pValues3D, vec3<int> &pSign3D, float pLimit);
-		static void exportStatsData(eegContainer *myEegContainer, PROV *myprovFile, vec1<PVALUECOORD> pValues, 
+		static void exportStatsData(eegContainer *myEegContainer, ProvFile* myprovFile, vec1<PVALUECOORD> pValues,
                                     std::string outputFolder, bool isBar);
 	private:
         static vec1<double> getBaselineBlocWilcoxon(int currentChanel, int lowTrial, int numberSubTrial, int samplingFreq,
-												   displayBLOC dispBloc, vec3<float> &bigdata);
+			SubBloc dispBloc, vec3<float> &bigdata);
         static vec2<double> getEegDataBlocWilcoxon(int currentChanel, int lowTrial, int numberSubTrial, int samplingFreq,
-												  int idBloc, PROV *myprovFile, vec3<float> &bigdata);
+												  int idBloc, ProvFile* myprovFile, vec3<float> &bigdata);
         static vec1<int> getEegSignBlocWilcoxon(vec1<double> &baseLine, vec2<double> &eegDataBig);
 		//==
 		static vec1<float> getBaselineKruskall(vec3<float> &bigdata, TriggerContainer* triggerContainer, int currentChanel, int* windowSam);
