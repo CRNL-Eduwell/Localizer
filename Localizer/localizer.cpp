@@ -39,7 +39,7 @@ void Localizer::ReSetupGUI()
     optPerf = new optionsPerf();
     optStat = new optionsStats();
     picOpt = new picOptions();
-    optLoca = new ProtocolWindow();
+    //optLoca = new ProtocolWindow();
 
     ui.progressBar->reset();
 }

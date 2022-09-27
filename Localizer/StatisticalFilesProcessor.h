@@ -8,6 +8,7 @@
 #include "TriggerContainer.h"
 #include "eegContainer.h"
 #include "PROV.h"
+#include "ProvFile.h"
 #include "optionsParameters.h"
 #include "Stats.h"
 
@@ -16,7 +17,7 @@ namespace InsermLibrary
     class StatisticalFilesProcessor
     {
     public:
-        void Process(TriggerContainer* triggerContainer, eegContainer* eegContainer, PROV* myprovFile, std::string freqFolder, statOption* statOption);
+        void Process(TriggerContainer* triggerContainer, eegContainer* eegContainer, ProvFile* myprovFile, std::string freqFolder, statOption* statOption);
 
     private:
         std::vector<PVALUECOORD> loadPValues(vec3<double>& pValues3D);

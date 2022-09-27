@@ -1,8 +1,10 @@
 #include "StatisticalFilesProcessor.h"
 
-void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* triggerContainer, eegContainer* myeegContainer, PROV* myprovFile, std::string freqFolder, statOption* statOption)
+void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* triggerContainer, eegContainer* myeegContainer, ProvFile* myprovFile, std::string freqFolder, statOption* statOption)
 {
-    int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->DownsampledFrequency());
+    int StartInSam = (myprovFile->Blocs()[0].MainSubBloc().MainWindow().Start() * myeegContainer->DownsampledFrequency()) / 1000;
+    int EndinSam = (myprovFile->Blocs()[0].MainSubBloc().MainWindow().End() * myeegContainer->DownsampledFrequency()) / 1000;
+    int* windowSam = new int[2]{ StartInSam, EndinSam };
 
     //== get Bloc of eeg data we want to display center around events
     vec3<float> bigData;
@@ -14,17 +16,19 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
     {
         std::vector<std::vector<double>> Stat_Z_CS, Stat_P_CS;
         std::vector<std::tuple<int, int, int>> CodeAndTrialsIndexes = triggerContainer->CodeAndTrialsIndexes();
-        for(int j = 0; j < static_cast<int>(myprovFile->visuBlocs.size()); j++)
+        int blocCount = static_cast<int>(myprovFile->Blocs().size());
+        for(int j = 0; j < blocCount; j++)
         {
-            int baselineBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.baseLineMin())/1000) - windowSam[0];
-            int baselineEnd = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.baseLineMax())/1000)  - windowSam[0];
-            int windowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMin())/1000)  - windowSam[0];
-            int windowEnd = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMax())/1000)  - windowSam[0];
+            SubBloc subBloc = myprovFile->Blocs()[j].MainSubBloc();
+            int baselineBegin = (((float)myeegContainer->DownsampledFrequency() * subBloc.Baseline().Start()) / 1000) - windowSam[0];
+            int baselineEnd = (((float)myeegContainer->DownsampledFrequency() * subBloc.Baseline().End()) / 1000)  - windowSam[0];
+            int windowBegin = (((float)myeegContainer->DownsampledFrequency() * subBloc.MainWindow().Start()) / 1000)  - windowSam[0];
+            int windowEnd = (((float)myeegContainer->DownsampledFrequency() * subBloc.MainWindow().End())/1000)  - windowSam[0];
 
             vec1<double> baselineData = vec1<double>();
             vec2<double> conditionData = vec2<double>();
             std::vector<double> v_stat_Z, v_stat_P;
-            int code = myprovFile->visuBlocs[j].mainEventBloc.eventCode[0];
+            int code = subBloc.MainEvent().Codes()[0];
             auto it = std::find_if(CodeAndTrialsIndexes.begin(), CodeAndTrialsIndexes.end(), [&](const std::tuple<int, int, int>& c) { return std::get<0>(c) == code; });
             if (it != CodeAndTrialsIndexes.end())
             {
@@ -141,14 +145,16 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
     {
         std::vector<std::vector<std::vector<double>>> v_stat_K3, v_stat_P3;
         std::vector<std::tuple<int, int, int>> CodeAndTrialsIndexes = triggerContainer->CodeAndTrialsIndexes();
-        for (int j = 0; j < static_cast<int>(myprovFile->visuBlocs.size() - 1); j++)
+        int blocCount = static_cast<int>(myprovFile->Blocs().size());
+        for (int j = 0; j < blocCount - 1; j++)
         {
-            int firstConditionWindowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMin()) / 1000) - windowSam[0];
-            int firstConditionWindowEnd = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMax()) / 1000) - windowSam[0];
+            SubBloc subBloc = myprovFile->Blocs()[j].MainSubBloc();
+            int firstConditionWindowBegin = (((float)myeegContainer->DownsampledFrequency() * subBloc.MainWindow().Start()) / 1000) - windowSam[0];
+            int firstConditionWindowEnd = (((float)myeegContainer->DownsampledFrequency() * subBloc.MainWindow().End()) / 1000)  - windowSam[0];
 
             //copy relevant data
             std::vector<std::vector<double>> firstConditionData;
-            int code = myprovFile->visuBlocs[j].mainEventBloc.eventCode[0];
+            int code = subBloc.MainEvent().Codes()[0];
             auto it = std::find_if(CodeAndTrialsIndexes.begin(), CodeAndTrialsIndexes.end(), [&](const std::tuple<int, int, int>& c) { return std::get<0>(c) == code; });
             if (it != CodeAndTrialsIndexes.end())
             {
@@ -165,14 +171,15 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
             }
 
             std::vector<std::vector<double>> v_stat_K2, v_stat_P2;
-            for (int k = j + 1; k < static_cast<int>(myprovFile->visuBlocs.size()); k++)
+            for (int k = j + 1; k < blocCount; k++)
             {
-                int secondConditionWindowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[k].dispBloc.windowMin()) / 1000) - windowSam[0];
-                int secondConditionWindowEnd = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[k].dispBloc.windowMax()) / 1000) - windowSam[0];
+                SubBloc secondSubBloc = myprovFile->Blocs()[k].MainSubBloc();
+                int secondConditionWindowBegin = (((float)myeegContainer->DownsampledFrequency() * secondSubBloc.MainWindow().Start()) / 1000) - windowSam[0];
+                int secondConditionWindowEnd = (((float)myeegContainer->DownsampledFrequency() * secondSubBloc.MainWindow().End()) / 1000) - windowSam[0];
 
                 std::vector<std::vector<double>> secondConditionData;
                 std::vector<double> v_stat_K, v_stat_P;
-                int secondCode = myprovFile->visuBlocs[k].mainEventBloc.eventCode[0];
+                int secondCode = secondSubBloc.MainEvent().Codes()[0];
 
                 auto secondIt = std::find_if(CodeAndTrialsIndexes.begin(), CodeAndTrialsIndexes.end(), [&](const std::tuple<int, int, int>& c) { return std::get<0>(c) == secondCode; });
                 if (it != CodeAndTrialsIndexes.end() && secondIt != CodeAndTrialsIndexes.end())
@@ -305,12 +312,13 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
     }
 
     std::vector<std::pair<int,int>> codesPairs;
-    for (int j = 0; j < static_cast<int>(myprovFile->visuBlocs.size() - 1); j++)
+    int blocCount = static_cast<int>(myprovFile->Blocs().size());
+    for (int j = 0; j < blocCount - 1; j++)
     {
-        std::vector<int> firstCodes = myprovFile->visuBlocs[j].mainEventBloc.eventCode;
-        for (int k = j + 1; k < static_cast<int>(myprovFile->visuBlocs.size()); k++)
+        std::vector<int> firstCodes = myprovFile->Blocs()[j].MainSubBloc().MainEvent().Codes();
+        for (int k = j + 1; k < blocCount; k++)
         {
-            std::vector<int> secondCodes = myprovFile->visuBlocs[k].mainEventBloc.eventCode;
+            std::vector<int> secondCodes = myprovFile->Blocs()[k].MainSubBloc().MainEvent().Codes();
             codesPairs.push_back(std::make_pair(firstCodes[0], secondCodes[0]));
         }
     }
@@ -327,10 +335,10 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
 
         double sumIsChannelReactive = 0;
         std::vector<std::tuple<int, int, int>> CodeAndTrialsIndexes = triggerContainer->CodeAndTrialsIndexes();
-        for(int j = 0; j < static_cast<int>(myprovFile->visuBlocs.size()); j++)
+        for(int j = 0; j < static_cast<int>(myprovFile->Blocs().size()); j++)
         {
-            std::vector<int> codes = myprovFile->visuBlocs[j].mainEventBloc.eventCode;
-            int windowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[j].dispBloc.windowMin()) / 1000);
+            std::vector<int> codes = myprovFile->Blocs()[j].MainSubBloc().MainEvent().Codes();
+            int windowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->Blocs()[j].MainSubBloc().MainWindow().Start()) / 1000);
 
             for(int k = 0; k < 3; k++) //repeat for better visibility in hibop
             {
@@ -376,7 +384,7 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
         }
 
         //ensuite mettre les 9999
-        int windowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->visuBlocs[0].dispBloc.windowMin()) / 1000);
+        int windowBegin = (((float)myeegContainer->DownsampledFrequency() * myprovFile->Blocs()[0].MainSubBloc().MainWindow().Start()) / 1000);
         int valueToWrite = 30 * (sumIsChannelReactive > 0 ? 1 : 0);
         for (int j = 0; j < 3; j++) //repeat for better visibility in hibop
         {
@@ -392,10 +400,10 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
 
         //need to add kruskall data to writable data
         int bigCounter = 0;
-        for (int j = 0; j < static_cast<int>(myprovFile->visuBlocs.size() - 1); j++)
+        for (int j = 0; j < static_cast<int>(myprovFile->Blocs().size() - 1); j++)
         {
             int counter = 0;
-            for (int k = j + 1; k < static_cast<int>(myprovFile->visuBlocs.size()); k++)
+            for (int k = j + 1; k < static_cast<int>(myprovFile->Blocs().size()); k++)
             {
                 std::vector<int> indices;
                 auto it = significantValue2.begin();
@@ -445,6 +453,9 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
     }
 
     WriteResultFile(ChannelDataToWrite, posSampleCodeToWrite, triggerContainer, myeegContainer, freqFolder);
+
+    //Delete what needs to be deleted
+    delete[] windowSam;
 }
 
 std::vector<InsermLibrary::PVALUECOORD> InsermLibrary::StatisticalFilesProcessor::loadPValues(vec3<double>& pValues3D)

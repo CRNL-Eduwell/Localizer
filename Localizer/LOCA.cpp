@@ -41,7 +41,7 @@ void InsermLibrary::LOCA::Eeg2erp(eegContainer* myeegContainer, PROV* myprovFile
 	std::vector<EEGFormat::ITrigger> triggers = myeegContainer->Triggers();
 	int samplingFrequency = myeegContainer->SamplingFrequency();
 	m_triggerContainer = new TriggerContainer(triggers, samplingFrequency);
-	m_triggerContainer->ProcessEventsForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
+    //m_triggerContainer->ProcessEventsForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
 
 	vec3<float> bigDataMono = vec3<float>(m_triggerContainer->ProcessedTriggerCount(), vec2<float>(myeegContainer->flatElectrodes.size(), vec1<float>(windowSam[1] - windowSam[0])));
 	vec3<float> bigDataBipo = vec3<float>(m_triggerContainer->ProcessedTriggerCount(), vec2<float>(myeegContainer->BipoleCount(), vec1<float>(windowSam[1] - windowSam[0])));
@@ -160,82 +160,212 @@ void InsermLibrary::LOCA::LocalizeMapsOnly(eegContainer* myeegContainer, int idC
 	deleteAndNullify1D(m_triggerContainer);
 }
 
+//void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, std::string freqFolder, FrequencyBandAnalysisOpt a)
+//{
+//	std::vector<EEGFormat::ITrigger> triggers = myeegContainer->Triggers();
+//	int samplingFrequency = myeegContainer->SamplingFrequency();
+//	m_triggerContainer = new TriggerContainer(triggers, samplingFrequency);
+
+//	//We generate file.pos and file_dsX.pos if we find a prov file
+//	//with the exact same name as the experiment.
+//    ProvFile* task = LoadProvForTask(m_currentLoca->localizerName());
+//    ProvFile* taskInverted = LoadProvForTask(m_currentLoca->localizerName(), "INVERTED");
+//    ProvFile* taskBarPlot = LoadProvForTask(m_currentLoca->localizerName(), "BARPLOT");
+//    ProvFile* taskStatistics = LoadProvForTask(m_currentLoca->localizerName(), "STATISTICS");
+
+//    if (task != nullptr)
+//    {
+//        CreateEventsFile(a, myeegContainer, m_triggerContainer, task);
+//        CreateConfFile(myeegContainer);
+//        EEGFormat::Utility::DeleteAndNullify(task);
+//    }
+//    else
+//    {
+//        //if we are at this point, no prov file to generate figures
+//        //but we still need to advance the progress bar
+//        emit sendLogInfo("No Protocol file found, no maps will be generated");
+//        if (a.env2plot) emit incrementAdavnce(1);
+//        if (a.trialmat) emit incrementAdavnce(1);
+//        if (a.statFiles) emit incrementAdavnce(1);
+//    }
+
+//	std::vector<PROV> provFiles = LoadAllProvForTask();
+//	for (size_t i = 0; i < provFiles.size(); i++)
+//	{
+//		m_triggerContainer->ProcessEventsForExperiment(&provFiles[i], 99);
+//		if (m_triggerContainer->ProcessedTriggerCount() == 0)
+//		{
+//			emit sendLogInfo("No Trigger found for this experiment, aborting maps generation");
+//			continue;
+//		}
+
+//		if (a.env2plot)
+//		{
+//			if (ShouldPerformBarPlot(m_currentLoca->localizerName()) || IsBarPlot(provFiles[i].filePath()))
+//			{
+//				Barplot(myeegContainer, &provFiles[i], freqFolder);
+//				emit incrementAdavnce(static_cast<int>(provFiles.size()));
+//			}
+//			else
+//			{
+//				if (provFiles[i].invertmapsinfo == "")
+//				{
+//					Env2plot(myeegContainer, &provFiles[i], freqFolder);
+//					emit incrementAdavnce(static_cast<int>(provFiles.size()));
+//				}
+//			}
+//		}
+
+//		if (a.trialmat && (IsBarPlot(provFiles[i].filePath()) == false || provFiles.size() == 1))
+//		{
+//			TimeTrialMatrices(myeegContainer, &provFiles[i], freqFolder);
+//			emit incrementAdavnce(static_cast<int>(provFiles.size()));
+//		}
+
+//		if (a.correMaps)
+//		{
+//			CorrelationMaps(myeegContainer, freqFolder);
+//			emit incrementAdavnce(static_cast<int>(provFiles.size()));
+//		}
+
+//        if(a.statFiles)
+//        {
+//            StatisticalFilesProcessor sfp;
+//            sfp.Process(m_triggerContainer, myeegContainer, &provFiles[i], freqFolder, m_statOption);
+//            emit incrementAdavnce(static_cast<int>(provFiles.size()));
+//        }
+//	}
+
+//	deleteAndNullify1D(m_triggerContainer);
+//}
+
 void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, std::string freqFolder, FrequencyBandAnalysisOpt a)
 {
-	std::vector<EEGFormat::ITrigger> triggers = myeegContainer->Triggers();
-	int samplingFrequency = myeegContainer->SamplingFrequency();
-	m_triggerContainer = new TriggerContainer(triggers, samplingFrequency);
+    std::vector<EEGFormat::ITrigger> triggers = myeegContainer->Triggers();
+    int samplingFrequency = myeegContainer->SamplingFrequency();
+    m_triggerContainer = new TriggerContainer(triggers, samplingFrequency);
 
-	//We generate file.pos and file_dsX.pos if we find a prov file 
-	//with the exact same name as the experiment.	
-	PROV* mainTask = LoadProvForTask();
-	if (mainTask != nullptr)
-	{
-		CreateEventsFile(a, myeegContainer, m_triggerContainer, mainTask);
-		CreateConfFile(myeegContainer);
-		EEGFormat::Utility::DeleteAndNullify(mainTask);
-	}
-	else
-	{
-		//if we are at this point, no prov file to generate figures
-		//but we still need to advance the progress bar
-		emit sendLogInfo("No Protocol file found, no maps will be generated");
-		if (a.env2plot) emit incrementAdavnce(1);
-		if (a.trialmat) emit incrementAdavnce(1);
-        if (a.statFiles) emit incrementAdavnce(1);
-	}
+    //We generate file.pos and file_dsX.pos if we find a prov file
+    //with the exact same name as the experiment.
+    ProvFile* task = LoadProvForTask(m_currentLoca->localizerName());
+    ProvFile* taskInverted = LoadProvForTask(m_currentLoca->localizerName(), "INVERTED");
+    ProvFile* taskBarPlot = LoadProvForTask(m_currentLoca->localizerName(), "BARPLOT");
+    ProvFile* taskStatistics = LoadProvForTask(m_currentLoca->localizerName(), "STATISTICS");
 
-	std::vector<PROV> provFiles = LoadAllProvForTask();
-	for (size_t i = 0; i < provFiles.size(); i++)
-	{
-		m_triggerContainer->ProcessEventsForExperiment(&provFiles[i], 99);
-		if (m_triggerContainer->ProcessedTriggerCount() == 0)
-		{
-			emit sendLogInfo("No Trigger found for this experiment, aborting maps generation");
-			continue;
-		}
+    if (task != nullptr)
+    {
+        CreateEventsFile(a, myeegContainer, m_triggerContainer, task);
+        CreateConfFile(myeegContainer);
+        //EEGFormat::Utility::DeleteAndNullify(task);
+    }
+//    else
+//    {
+//        //if we are at this point, no prov file to generate figures
+//        //but we still need to advance the progress bar
+//        emit sendLogInfo("No Protocol file found, no maps will be generated");
+//        if (a.env2plot) emit incrementAdavnce(1);
+//        if (a.trialmat) emit incrementAdavnce(1);
+//        if (a.statFiles) emit incrementAdavnce(1);
+//    }
 
-		if (a.env2plot)
-		{
-			if (ShouldPerformBarPlot(m_currentLoca->localizerName()) || IsBarPlot(provFiles[i].filePath()))
-			{
-				Barplot(myeegContainer, &provFiles[i], freqFolder);
-				emit incrementAdavnce(static_cast<int>(provFiles.size()));
-			}
-			else
-			{
-				if (provFiles[i].invertmapsinfo == "")
-				{
-					Env2plot(myeegContainer, &provFiles[i], freqFolder);
-					emit incrementAdavnce(static_cast<int>(provFiles.size()));
-				}
-			}
-		}
+    //Process Env2Plot
+        //EnvPlot => LOCA
+        //BarPlot => LOCA_BARPLOT
+    if (a.env2plot)
+    {
+        if(taskBarPlot != nullptr)
+        {
+            m_triggerContainer->ProcessEventsForExperiment(task, 99);
+            if (m_triggerContainer->ProcessedTriggerCount() == 0)
+            {
+                emit sendLogInfo("No Trigger found for this experiment, aborting Barplot generation");
+            }
+            else
+            {
+                //Barplot(myeegContainer, taskBarPlot, freqFolder);
+                //emit incrementAdavnce(static_cast<int>(provFiles.size()));
+            }
+        }
+        else
+        {
+            if(task != nullptr)
+            {
+                m_triggerContainer->ProcessEventsForExperiment(task, 99);
+                if (m_triggerContainer->ProcessedTriggerCount() == 0)
+                {
+                    emit sendLogInfo("No Trigger found for this experiment, aborting Env2Plot generation");
+                }
+                else
+                {
+                    //Env2plot(myeegContainer, task, freqFolder);
+                    //emit incrementAdavnce(static_cast<int>(provFiles.size()));
+                }
+            }
+        }
+    }
 
-		if (a.trialmat && (IsBarPlot(provFiles[i].filePath()) == false || provFiles.size() == 1))
-		{
-			TimeTrialMatrices(myeegContainer, &provFiles[i], freqFolder);
-			emit incrementAdavnce(static_cast<int>(provFiles.size()));
-		}
+    //Process Trialmatrices => LOCA and LOCA_INVERTED
+   if (a.trialmat)
+   {
+       if(task != nullptr)
+       {
+            m_triggerContainer->ProcessEventsForExperiment(task, 99);
+            if (m_triggerContainer->ProcessedTriggerCount() == 0)
+            {
+                emit sendLogInfo("No Trigger found for this experiment, aborting trialmats generation");
+            }
+            else
+            {
+                //TimeTrialMatrices(myeegContainer, task, freqFolder);
+                //emit incrementAdavnce(static_cast<int>(provFiles.size()));
+            }
+       }
+       if(taskInverted != nullptr)
+       {
+            m_triggerContainer->ProcessEventsForExperiment(taskInverted, 99);
+            if (m_triggerContainer->ProcessedTriggerCount() == 0)
+            {
+                emit sendLogInfo("No Trigger found for this experiment, aborting inverted trialmats generation");
+            }
+            else
+            {
+                //TimeTrialMatrices(myeegContainer, taskInverted, freqFolder);
+                //emit incrementAdavnce(static_cast<int>(provFiles.size()));
+            }
+       }
+   }
 
-		if (a.correMaps)
-		{
-			CorrelationMaps(myeegContainer, freqFolder);
-			emit incrementAdavnce(static_cast<int>(provFiles.size()));
-		}
+    //Process Correlation Maps
+    if (a.correMaps)
+    {
+        CorrelationMaps(myeegContainer, freqFolder);
+        //emit incrementAdavnce(static_cast<int>(provFiles.size()));
+    }
 
-        if(a.statFiles)
+    //Process Statistical Files
+    if(a.statFiles && taskStatistics != nullptr)
+    {
+        m_triggerContainer->ProcessEventsForExperiment(taskStatistics, 99);
+        if (m_triggerContainer->ProcessedTriggerCount() == 0)
+        {
+            emit sendLogInfo("No Trigger found for this experiment, aborting trialmats generation");
+        }
+        else
         {
             StatisticalFilesProcessor sfp;
-            sfp.Process(m_triggerContainer, myeegContainer, &provFiles[i], freqFolder, m_statOption);
-            emit incrementAdavnce(static_cast<int>(provFiles.size()));
+            sfp.Process(m_triggerContainer, myeegContainer, taskStatistics, freqFolder, m_statOption);
+            //emit incrementAdavnce(static_cast<int>(provFiles.size()));
         }
-	}
+    }
 
-	deleteAndNullify1D(m_triggerContainer);
+    deleteAndNullify1D(m_triggerContainer);
+    EEGFormat::Utility::DeleteAndNullify(task);
+    EEGFormat::Utility::DeleteAndNullify(taskInverted);
+    EEGFormat::Utility::DeleteAndNullify(taskBarPlot);
+    EEGFormat::Utility::DeleteAndNullify(taskStatistics);
 }
 
-void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt, eegContainer* myeegContainer, TriggerContainer* triggerContainer, PROV* myprovFile)
+void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt, eegContainer* myeegContainer, TriggerContainer* triggerContainer, ProvFile* myprovFile)
 {
 	std::string fileNameBase = myeegContainer->RootFileFolder() + myeegContainer->RootFileName();
 
@@ -485,6 +615,21 @@ std::vector<InsermLibrary::PROV> InsermLibrary::LOCA::LoadAllProvForTask()
 	}
 
 	return provFiles;
+}
+
+InsermLibrary::ProvFile* InsermLibrary::LOCA::LoadProvForTask(std::string taskName, std::string analysisName)
+{
+    //m_currentLoca->localizerName()
+    std::string taskLabel = analysisName == "" ? taskName : taskName + "_" + analysisName;
+    std::string MainProvPath = QCoreApplication::applicationDirPath().toStdString() + "/Resources/Config/Prov/" + taskLabel + ".prov";
+    if (EEGFormat::Utility::DoesFileExist(MainProvPath))
+    {
+        return new ProvFile(MainProvPath);
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 bool InsermLibrary::LOCA::ShouldPerformBarPlot(std::string locaName)

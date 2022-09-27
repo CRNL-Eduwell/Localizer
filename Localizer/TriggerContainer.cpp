@@ -17,14 +17,19 @@ InsermLibrary::TriggerContainer::~TriggerContainer()
 
 // Return a list of trigger for the wanted experiment
 // Use flagCode = -1 to get the full trigger list
-std::vector<InsermLibrary::Trigger> InsermLibrary::TriggerContainer::GetTriggerForExperiment(PROV *myprovFile, int flagCode, int downSamplingFactor)
+std::vector<InsermLibrary::Trigger> InsermLibrary::TriggerContainer::GetTriggerForExperiment(ProvFile *myprovFile, int flagCode, int downSamplingFactor)
 {
 	std::vector<Trigger> triggers = GetTriggerList(flagCode, downSamplingFactor);
 	if (myprovFile != nullptr && triggers.size() != 0)
 	{
-		if (myprovFile->changeCodeFilePath != "")
+        std::string chgFilePath = myprovFile->FilePath();
+        int pos = chgFilePath.find(".prov");
+        if( pos != std::string::npos )
+            chgFilePath.replace(pos, 5, ".chg");
+
+        if(std::filesystem::exists(chgFilePath))
 		{
-			RenameTriggersForExperiment(myprovFile, triggers);
+            RenameTriggersForExperiment(myprovFile, chgFilePath, triggers);
 		}
 	}
 	return triggers;
@@ -48,35 +53,44 @@ std::vector<InsermLibrary::Trigger> InsermLibrary::TriggerContainer::GetTriggerL
 	return triggers;
 }
 
-void InsermLibrary::TriggerContainer::ProcessEventsForExperiment(PROV *myprovFile, int flagCode, int downSaplingFactor)
+void InsermLibrary::TriggerContainer::ProcessEventsForExperiment(ProvFile *myprovFile, int flagCode, int downSaplingFactor)
 {
 	m_processedTriggers = GetTriggerList(flagCode, downSaplingFactor);
 	if (m_processedTriggers.size() == 0)
 		return;
 
-	if (myprovFile->changeCodeFilePath != "")
+    std::string chgFilePath = myprovFile->FilePath();
+    int pos = chgFilePath.find(".prov");
+    if( pos != std::string::npos )
+        chgFilePath.replace(pos, 5, ".chg");
+
+    if(std::filesystem::exists(chgFilePath))
 	{
-		RenameTriggersForExperiment(myprovFile, m_processedTriggers);
+        RenameTriggersForExperiment(myprovFile, chgFilePath, m_processedTriggers);
 	}
 	PairStimulationWithResponses(m_processedTriggers, myprovFile);
 	DeleteTriggerNotInExperiment(m_processedTriggers, myprovFile);
-	if (myprovFile->getSecondaryCodes()[0][0] != 0) //At this point , if there is secondary code, we need to check if all have been paired correctly 
-	{
-		DeleteTriggerNotPaired(m_processedTriggers);
-	}
+//	if (myprovFile->getSecondaryCodes()[0][0] != 0) //At this point , if there is secondary code, we need to check if all have been paired correctly
+//	{
+//		DeleteTriggerNotPaired(m_processedTriggers);
+//	}
+    DeleteTriggerNotPaired(m_processedTriggers, myprovFile);
+
 	if (m_processedTriggers.size() == 0)
 		return;
 
 	m_codeAndTrials = SortTrialsForExperiment(m_processedTriggers, myprovFile);
-	if (myprovFile->invertmapsinfo != "")
-	{
-		SwapStimulationsAndResponses(myprovFile);
-	}
+
+    //TODO : A VERIFIER MAIS PROBABLEMENT PLUS NECESSAIRE AVEC LES NOUVEAUX PROV ET LE SYSTEME DE SUBBLOCS ET LEUR ORDRE
+//	if (myprovFile->invertmapsinfo != "")
+//	{
+//		SwapStimulationsAndResponses(myprovFile);
+//	}
 }
 
-void InsermLibrary::TriggerContainer::RenameTriggersForExperiment(PROV *myprovFile, std::vector<Trigger>& triggers)
+void InsermLibrary::TriggerContainer::RenameTriggersForExperiment(ProvFile *myprovFile, std::string chgFilePath, std::vector<Trigger>& triggers)
 {
-	std::vector<std::string> rawChangeCodeData = EEGFormat::Utility::ReadTextFile(myprovFile->changeCodeFilePath);
+    std::vector<std::string> rawChangeCodeData = EEGFormat::Utility::ReadTextFile(chgFilePath);
 
 	std::vector<std::vector<std::pair<int, int>>> oldCodes;
 	std::vector<std::pair<int, int>> newCodes;
@@ -106,20 +120,21 @@ void InsermLibrary::TriggerContainer::RenameTriggersForExperiment(PROV *myprovFi
 	int TriggerCount = triggers.size();
 	for (int k = 0; k < TriggerCount; k++)
 	{
-		int idVisuBloc = -1;
+        int idVisuBloc = -1;
 		int idMain = -1;
 		int idSec = -1;
 
-		for (int l = 0; l < oldCodes.size(); l++)
+        for (int l = 0; l < oldCodes.size(); l++)
 		{
 			for (int m = 0; m < oldCodes[l].size(); m++)
 			{
 				if (triggers[k].MainEvent().Code() == oldCodes[l][m].first)
 				{
 					idMain = k;
-					for (int n = 0; n < myprovFile->visuBlocs.size(); n++)
-					{
-						if (newCodes[l].first == myprovFile->visuBlocs[n].mainEventBloc.eventCode[0])
+                    for (int n = 0; n < myprovFile->Blocs().size(); n++)
+                    {
+                        Event mainEvent = myprovFile->Blocs()[n].MainSubBloc().MainEvent();
+                        if (newCodes[l].first == mainEvent.Codes()[0])
 							idVisuBloc = n;
 					}
 				}
@@ -131,9 +146,9 @@ void InsermLibrary::TriggerContainer::RenameTriggersForExperiment(PROV *myprovFi
 		int memId = 0;
 		int triggersSamplingFrequency = triggers[0].SamplingFrequency();
 		if (idMain != -1)
-		{
-			int winSamMin = round((triggersSamplingFrequency * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMin()) / 1000);
-			int winSamMax = round((triggersSamplingFrequency * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMax()) / 1000);
+        {
+            int winSamMin = round((triggersSamplingFrequency * myprovFile->Blocs()[idVisuBloc].MainSubBloc().MainWindow().Start()) / 1000);
+            int winSamMax = round((triggersSamplingFrequency * myprovFile->Blocs()[idVisuBloc].MainSubBloc().MainWindow().End()) / 1000);
 
 			int CurrentTriggerId = k + 1;
 			while (idSec == -1 && CurrentTriggerId < TriggerCount - 1)
@@ -177,26 +192,27 @@ void InsermLibrary::TriggerContainer::RenameTriggersForExperiment(PROV *myprovFi
 	}
 }
 
-void InsermLibrary::TriggerContainer::SwapStimulationsAndResponses(PROV *myprovFile)
+//TODO : A VERIFIER MAIS PROBABLEMENT PLUS NECESSAIRE AVEC LES NOUVEAUX PROV ET LE SYSTEME DE SUBBLOCS ET LEUR ORDRE
+void InsermLibrary::TriggerContainer::SwapStimulationsAndResponses(ProvFile *myprovFile)
 {
-	int TriggerCount = m_processedTriggers.size();
-	for (int i = 0; i < TriggerCount; i++)
-	{
-		m_processedTriggers[i].SwapStimulationAndResponse();
-	}
+//	int TriggerCount = m_processedTriggers.size();
+//	for (int i = 0; i < TriggerCount; i++)
+//	{
+//		m_processedTriggers[i].SwapStimulationAndResponse();
+//	}
 
-	//This is the new window to visualize data
-	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
-	{
-		myprovFile->visuBlocs[i].dispBloc.window(myprovFile->invertmaps.epochWindow[0], myprovFile->invertmaps.epochWindow[1]);
-		myprovFile->visuBlocs[i].dispBloc.baseLine(myprovFile->invertmaps.baseLineWindow[0], myprovFile->invertmaps.baseLineWindow[1]);
-	}
+//	//This is the new window to visualize data
+//	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
+//	{
+//		myprovFile->visuBlocs[i].dispBloc.window(myprovFile->invertmaps.epochWindow[0], myprovFile->invertmaps.epochWindow[1]);
+//		myprovFile->visuBlocs[i].dispBloc.baseLine(myprovFile->invertmaps.baseLineWindow[0], myprovFile->invertmaps.baseLineWindow[1]);
+//	}
 }
 
-void InsermLibrary::TriggerContainer::PairStimulationWithResponses(std::vector<Trigger>& triggers, PROV *myprovFile)
+void InsermLibrary::TriggerContainer::PairStimulationWithResponses(std::vector<Trigger>& triggers, ProvFile *myprovFile)
 {
-	std::vector<int> mainEventsCode = myprovFile->getMainCodes();
-	std::vector<std::vector<int>> respEventsCode = myprovFile->getSecondaryCodes();
+    std::vector<int> mainEventsCode = GetMainCodesFromProtocol(myprovFile);
+    std::vector<std::vector<int>> respEventsCode = GetSecondaryCodesFromProtocol(myprovFile);
 
 	int idVisuBloc = 0;
 	int TriggerCount = triggers.size();
@@ -211,9 +227,9 @@ void InsermLibrary::TriggerContainer::PairStimulationWithResponses(std::vector<T
 			if (triggers[k].MainEvent().Code() == mainEventsCode[l])
 			{
 				idMain = k;
-				for (int m = 0; m < myprovFile->visuBlocs.size(); m++)
+                for (int m = 0; m < myprovFile->Blocs().size(); m++)
 				{
-					if (mainEventsCode[l] == myprovFile->visuBlocs[m].mainEventBloc.eventCode[0])
+                    if (mainEventsCode[l] == myprovFile->Blocs()[m].MainSubBloc().MainEvent().Codes()[0])
 						idVisuBloc = m;
 				}
 			}
@@ -224,8 +240,8 @@ void InsermLibrary::TriggerContainer::PairStimulationWithResponses(std::vector<T
 		int triggersSamplingFrequency = triggers[0].SamplingFrequency();
 		if (idMain != -1)
 		{
-			int winSamMin = round((triggersSamplingFrequency * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMin()) / 1000);
-			int winSamMax = round((triggersSamplingFrequency * myprovFile->visuBlocs[idVisuBloc].dispBloc.windowMax()) / 1000);
+            int winSamMin = round((triggersSamplingFrequency * myprovFile->Blocs()[idVisuBloc].MainSubBloc().MainWindow().Start()) / 1000);
+            int winSamMax = round((triggersSamplingFrequency * myprovFile->Blocs()[idVisuBloc].MainSubBloc().MainWindow().End()) / 1000);
 
 			int CurrentTriggerId = k + 1;
 			while (idSec == -1 && CurrentTriggerId < TriggerCount - 1)
@@ -277,7 +293,7 @@ void InsermLibrary::TriggerContainer::PairStimulationWithResponses(std::vector<T
 }
 
 //Delete code that are not defined in prov file 
-void InsermLibrary::TriggerContainer::DeleteTriggerNotInExperiment(std::vector<Trigger>& triggers, PROV *myprovFile)
+void InsermLibrary::TriggerContainer::DeleteTriggerNotInExperiment(std::vector<Trigger>& triggers, ProvFile *myprovFile)
 {
 	int TriggerCount = triggers.size();
 
@@ -285,11 +301,11 @@ void InsermLibrary::TriggerContainer::DeleteTriggerNotInExperiment(std::vector<T
 	for (int i = 0; i < TriggerCount; i++)
 	{
 		bool KeepCurrentTrigger = false;
-		for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
+        for (int j = 0; j < myprovFile->Blocs().size(); j++)
 		{
-			for (int k = 0; k < myprovFile->visuBlocs[j].mainEventBloc.eventCode.size(); k++)
+            for (int k = 0; k < myprovFile->Blocs()[j].MainSubBloc().MainEvent().Codes().size(); k++)
 			{
-				if (triggers[i].MainCode() == myprovFile->visuBlocs[j].mainEventBloc.eventCode[k])
+                if (triggers[i].MainCode() == myprovFile->Blocs()[j].MainSubBloc().MainEvent().Codes()[k])
 				{
 					KeepCurrentTrigger = true;
 					//break here ? 
@@ -324,109 +340,225 @@ void InsermLibrary::TriggerContainer::DeleteTriggerNotPaired(std::vector<Trigger
 		triggers.erase(triggers.begin() + IdToDelete[i]);
 }
 
-std::vector<std::tuple<int, int, int>> InsermLibrary::TriggerContainer::SortTrialsForExperiment(std::vector<Trigger>& triggers, PROV *myprovFile)
+void InsermLibrary::TriggerContainer::DeleteTriggerNotPaired(std::vector<Trigger>& triggers, ProvFile *myprovFile)
 {
-	//Sort by MainCode
-	std::vector<int> mainEventsCode = myprovFile->getMainCodes();
-	std::vector<Trigger> sortedByMainCodeArray;
-	for (int i = 0; i < mainEventsCode.size(); i++)
-	{
-		std::copy_if(triggers.begin(), triggers.end(), std::back_inserter(sortedByMainCodeArray), [&](Trigger trigger)
-			{
-				return trigger.MainCode() == mainEventsCode[i];
-			});
-	}
-	triggers = std::vector<Trigger>(sortedByMainCodeArray);
+    for(int i = 0; i < myprovFile->Blocs().size(); i++)
+    {
+        for(int j = 0; j < myprovFile->Blocs()[i].SubBlocs().size(); j++)
+        {
+            std::vector<int> IdToDelete;
+            SubBloc subbloc = myprovFile->Blocs()[i].SubBlocs()[j];
+            if(subbloc.Type() == MainSecondaryEnum::Main)
+            {
+                int mainCode = subbloc.MainEvent().Codes()[0];
+                if(subbloc.SecondaryEvents().size() != 0) //if the blocs has secondary codes but we find codes without response we want to delete them
+                {
+                    std::vector<int> secondaryCodes = subbloc.SecondaryEvents()[0].Codes();
+                    for (int k = 0; k < triggers.size(); k++)
+                    {
+                        if (triggers[k].MainCode() == mainCode && triggers[k].ResponseCode() == -1)
+                        {
+                            IdToDelete.push_back(k);
+                        }
+                    }
 
-	//std::unordered_map<int, int> beg_map;
-	//std::unordered_map<int, int> end_map;
+                    int ToDeleteCount = IdToDelete.size() - 1;
+                    for (int k = ToDeleteCount; k >= 0; k--)
+                        triggers.erase(triggers.begin() + IdToDelete[k]);
+                }
+            }
+        }
+    }
+}
 
-	std::vector<int> code_mapp;
-	std::vector<int> beg_mapp;
-	std::vector<int> end_mapp;
+//std::vector<std::tuple<int, int, int>> InsermLibrary::TriggerContainer::SortTrialsForExperiment(std::vector<Trigger>& triggers, ProvFile *myprovFile)
+//{
+//	//Sort by MainCode
+//    std::vector<int> mainEventsCode = GetMainCodesFromProtocol(myprovFile);
 
-	//get first id of each new main code
-	//int memoryCode = -1;
-	//for (int i = 0; i < triggers.size(); i++)
-	//{
-	//	if (triggers[i].MainCode() != memoryCode)
-	//	{
-	//		memoryCode = triggers[i].MainCode();
-	//		beg_map[triggers[i].MainCode()] = i;
-	//	}
-	//	else
-	//	{
-	//		end_map[triggers[i].MainCode()] = i;
-	//	}
-	//}
+//	std::vector<Trigger> sortedByMainCodeArray;
+//	for (int i = 0; i < mainEventsCode.size(); i++)
+//	{
+//		std::copy_if(triggers.begin(), triggers.end(), std::back_inserter(sortedByMainCodeArray), [&](Trigger trigger)
+//			{
+//				return trigger.MainCode() == mainEventsCode[i];
+//			});
+//	}
+//	triggers = std::vector<Trigger>(sortedByMainCodeArray);
 
-	int memoryCode = -1;
-	for (int i = 0; i < triggers.size(); i++)
-	{
-		if (triggers[i].MainCode() != memoryCode)
-		{
-			memoryCode = triggers[i].MainCode();
+//	//std::unordered_map<int, int> beg_map;
+//	//std::unordered_map<int, int> end_map;
 
-			code_mapp.push_back(memoryCode);
-			beg_mapp.push_back(i);
-			if (i > 0)
-			{
-				end_mapp.push_back(i - 1);
-			}
-		}
-	}
-	end_mapp.push_back(triggers.size() - 1);
+//	std::vector<int> code_mapp;
+//	std::vector<int> beg_mapp;
+//	std::vector<int> end_mapp;
 
-	//according to the rest sort by what is wanted
-	std::vector<std::tuple<int, int, int>> codeAndTrials;
-	//for (const auto& [key, value] : beg_map)
-	for (int i = 0; i < beg_mapp.size(); i++)
-	{
-		int code = code_mapp[i];
-		int beg = beg_mapp[i];
-        int end = end_mapp[i] + 1;
+//	//get first id of each new main code
+//	//int memoryCode = -1;
+//	//for (int i = 0; i < triggers.size(); i++)
+//	//{
+//	//	if (triggers[i].MainCode() != memoryCode)
+//	//	{
+//	//		memoryCode = triggers[i].MainCode();
+//	//		beg_map[triggers[i].MainCode()] = i;
+//	//	}
+//	//	else
+//	//	{
+//	//		end_map[triggers[i].MainCode()] = i;
+//	//	}
+//	//}
 
-		int index = -1;
-		for (int j = 0; j < myprovFile->visuBlocs.size(); j++)
-		{
-			if (myprovFile->visuBlocs[j].mainEventBloc.eventCode[0] == code)
-			{
-				index = j;
-				break;
-			}
-		}
+//	int memoryCode = -1;
+//	for (int i = 0; i < triggers.size(); i++)
+//	{
+//		if (triggers[i].MainCode() != memoryCode)
+//		{
+//			memoryCode = triggers[i].MainCode();
 
-		if (index != -1)
-		{
-			std::string currentSort = myprovFile->visuBlocs[index].dispBloc.sort();
-			std::vector<std::string> sortSplited = split<std::string>(currentSort, "_");
-			for (int j = 1; j < sortSplited.size(); j++)
-			{
-				SortingChoice Choice = (SortingChoice)(sortSplited[j][0]);
-				switch (Choice)
-				{
-				case SortingChoice::Code:
-					std::sort(triggers.begin() + beg, triggers.begin() + end,
-						[](Trigger a, Trigger b)-> bool
-						{
-							return (a.ResponseCode() < b.ResponseCode());
-						});
-					break;
-				case SortingChoice::Latency:
-					std::sort(triggers.begin() + beg, triggers.begin() + end,
-						[](Trigger m, Trigger n)-> bool
-						{
-							return  m.ReactionTimeInMilliSeconds() < n.ReactionTimeInMilliSeconds();
-						});
-					break;
-				}
-			}
+//			code_mapp.push_back(memoryCode);
+//			beg_mapp.push_back(i);
+//			if (i > 0)
+//			{
+//				end_mapp.push_back(i - 1);
+//			}
+//		}
+//	}
+//	end_mapp.push_back(triggers.size() - 1);
 
-			codeAndTrials.push_back(std::make_tuple(code, beg, end));
-		}
-	}
+//	//according to the rest sort by what is wanted
+//	std::vector<std::tuple<int, int, int>> codeAndTrials;
+//	//for (const auto& [key, value] : beg_map)
+//	for (int i = 0; i < beg_mapp.size(); i++)
+//	{
+//		int code = code_mapp[i];
+//		int beg = beg_mapp[i];
+//        int end = end_mapp[i] + 1;
 
-	return codeAndTrials;
+//		int index = -1;
+//        for (int j = 0; j < myprovFile->Blocs().size(); j++)
+//		{
+//            if (myprovFile->Blocs()[j].MainSubBloc().MainEvent().Codes()[0] == code)
+//			{
+//				index = j;
+//				break;
+//			}
+//		}
+
+//		if (index != -1)
+//		{
+//			std::string currentSort = myprovFile->visuBlocs[index].dispBloc.sort();
+//			std::vector<std::string> sortSplited = split<std::string>(currentSort, "_");
+//			for (int j = 1; j < sortSplited.size(); j++)
+//			{
+//				SortingChoice Choice = (SortingChoice)(sortSplited[j][0]);
+//				switch (Choice)
+//				{
+//				case SortingChoice::Code:
+//					std::sort(triggers.begin() + beg, triggers.begin() + end,
+//						[](Trigger a, Trigger b)-> bool
+//						{
+//							return (a.ResponseCode() < b.ResponseCode());
+//						});
+//					break;
+//				case SortingChoice::Latency:
+//					std::sort(triggers.begin() + beg, triggers.begin() + end,
+//						[](Trigger m, Trigger n)-> bool
+//						{
+//							return  m.ReactionTimeInMilliSeconds() < n.ReactionTimeInMilliSeconds();
+//						});
+//					break;
+//				}
+//			}
+
+//			codeAndTrials.push_back(std::make_tuple(code, beg, end));
+//		}
+//	}
+
+//	return codeAndTrials;
+//}
+
+//TODO : on s'est arrêter la , ca marche pas , trie et compagnie
+std::vector<std::tuple<int, int, int>> InsermLibrary::TriggerContainer::SortTrialsForExperiment(std::vector<Trigger>& triggers, ProvFile *myprovFile)
+{
+    std::vector<std::tuple<int, int, int>> codeAndTrials;
+    std::vector<Trigger> finalArray;
+    //Pour chaque bloc , on split le sort et on trie en fonction du résultat
+    for(int i = 0; i < myprovFile->Blocs().size(); i++)
+    {
+        std::string blocSort = myprovFile->Blocs()[i].Sort();
+        std::vector<std::string> blocSortSplitted = split<std::string>(blocSort, ";");
+
+        std::vector<std::tuple<int, int, int>> begAndEnd;
+        std::vector<Trigger> sortedArray;
+        for(int j = blocSortSplitted.size() - 1; j >= 0; j--)
+        {
+           std::vector<std::string> blocSortSubAction = split<std::string>(blocSortSplitted[j], "_");
+           if(blocSortSubAction.size() >= 3)
+           {
+               std::string subBlocName = blocSortSubAction[0];
+               std::string eventName = "";
+               for(int k = 1; k < blocSortSubAction.size() - 1; k++)
+               {
+                   eventName = eventName + blocSortSubAction[k];
+                   if(k + 1 < blocSortSubAction.size() - 1)
+                   {
+                       eventName = eventName  + "_";
+                   }
+               }
+               std::string sortType = blocSortSubAction[blocSortSubAction.size() - 1];
+
+               if (sortType == "LATENCY")
+               {
+                   if(sortedArray.size() == 0)
+                   {
+                       std::vector<int> codes = myprovFile->Blocs()[i].MainSubBloc().MainEvent().Codes();
+                       for(int k = 0; k < codes.size(); k++)
+                       {
+                           std::copy_if(triggers.begin(), triggers.end(), std::back_inserter(sortedArray), [&](Trigger trigger) { return trigger.MainCode() == codes[k]; });
+                       }
+                       std::sort(sortedArray.begin(), sortedArray.end(),
+                           [](Trigger m, Trigger n)-> bool
+                           {
+                               return m.ReactionTimeInMilliSeconds() < n.ReactionTimeInMilliSeconds();
+                           });
+                   }
+                   else
+                   {
+                       for(int k = 0; k < begAndEnd.size();k++)
+                       {
+                           int beg = std::get<1>(begAndEnd[k]);
+                           int end = std::get<2>(begAndEnd[k]);
+                           std::sort(sortedArray.begin() + beg, sortedArray.begin() + end,
+                               [](Trigger m, Trigger n)-> bool
+                               {
+                                   return m.ReactionTimeInMilliSeconds() < n.ReactionTimeInMilliSeconds();
+                               });
+                       }
+                   }
+               }
+               else if (sortType == "CODE")
+               {
+                   std::vector<int> codes = myprovFile->Blocs()[i].MainSubBloc().MainEvent().Codes();
+                   for(int k = 0; k < codes.size(); k++)
+                   {
+                       int beg = sortedArray.size();
+                       std::copy_if(triggers.begin(), triggers.end(), std::back_inserter(sortedArray), [&](Trigger trigger) { return trigger.MainCode() == codes[k]; });
+                       int end = sortedArray.size() - 1;
+                       begAndEnd.push_back(std::make_tuple(codes[k], beg, end));
+                   }
+               }
+           }
+        }
+        int beg = finalArray.size();
+        finalArray.insert(finalArray.end(), sortedArray.begin(), sortedArray.end());
+        int end = finalArray.size() - 1;
+        int code = myprovFile->Blocs()[i].MainSubBloc().MainEvent().Codes()[0];
+        codeAndTrials.push_back(std::make_tuple(code, beg, end));
+    }
+
+    triggers = std::vector<Trigger>(finalArray);
+
+    return codeAndTrials;
 }
 
 int InsermLibrary::TriggerContainer::FindFirstIndexAfter(int flagCode)
@@ -449,4 +581,41 @@ std::vector<int> InsermLibrary::TriggerContainer::FindIndexes(int searchValue)
 		}
 	}
 	return indexes;
+}
+
+std::vector<int> InsermLibrary::TriggerContainer::GetMainCodesFromProtocol(ProvFile *myprovFile)
+{
+    std::vector<int> mainCodes;
+    std::vector<Bloc> blocs = myprovFile->Blocs();
+    for (int m = 0; m < blocs.size(); m++)
+    {
+        if (find(mainCodes.begin(), mainCodes.end(), blocs[m].MainSubBloc().MainEvent().Codes()[0]) == mainCodes.end())
+        {
+            mainCodes.push_back(blocs[m].MainSubBloc().MainEvent().Codes()[0]);
+        }
+    }
+    return mainCodes;
+}
+
+std::vector<std::vector<int>> InsermLibrary::TriggerContainer::GetSecondaryCodesFromProtocol(ProvFile *myprovFile)
+{
+    std::vector<std::vector<int>> responseCodes;
+    std::vector<Bloc> blocs = myprovFile->Blocs();
+    for (int m = 0; m < blocs.size(); m++)
+    {
+        std::vector<int> blocCodes;
+        for (int j = 0; j < blocs[m].MainSubBloc().SecondaryEvents().size(); j++)
+        {
+            for (int n = 0; n < blocs[m].MainSubBloc().SecondaryEvents()[j].Codes().size(); n++)
+            {
+                int code = blocs[m].MainSubBloc().SecondaryEvents()[j].Codes()[n];
+                if (find(blocCodes.begin(), blocCodes.end(), code) == blocCodes.end())
+                {
+                    blocCodes.push_back(code);
+                }
+            }
+        }
+        responseCodes.push_back(blocCodes);
+    }
+    return responseCodes;
 }

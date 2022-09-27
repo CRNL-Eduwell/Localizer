@@ -5,6 +5,7 @@ InsermLibrary::ProvFile::ProvFile(const std::string& filePath)
 {
     try
     {
+        m_filePath = std::string(filePath);
         Load(filePath);
     }
     catch (std::exception& e)

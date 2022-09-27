@@ -14,6 +14,10 @@
 #include "eegContainer.h"
 #include "patientFolder.h"
 #include "PROV.h"
+
+//EN COURS
+#include "ProvFile.h"
+
 #include "Stats.h"
 #include "mapsGenerator.h"
 #include "barsPlotsGenerator.h"
@@ -27,6 +31,7 @@
 
 #include <filesystem>
 #include "StatisticalFilesProcessor.h"
+
 
 namespace InsermLibrary
 {
@@ -44,7 +49,7 @@ namespace InsermLibrary
 	private:
         void GenerateMapsAndFigures(eegContainer *myeegContainer, std::string freqFolder, FrequencyBandAnalysisOpt a);
 		//==
-		void CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt, eegContainer *myeegContainer, TriggerContainer *triggerContainer, PROV *myprovFile);
+        void CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt, eegContainer *myeegContainer, TriggerContainer *triggerContainer, ProvFile *myprovFile);
 		void CreateFile(EEGFormat::FileType outputType, std::string filePath, std::vector<Trigger> & triggers, std::string extraFilePath = "");
 		void CreateConfFile(eegContainer *myeegContainer);
 		void RelinkAnalysisFileAnUglyWay(const std::string& rootPath, const std::string& fileNameBase, const std::string& frequencySuffix, const std::string& downsamplingFactor);
@@ -53,6 +58,9 @@ namespace InsermLibrary
         std::string CreateFrequencyFolder(eegContainer *myeegContainer, FrequencyBand currentFreq);
 		PROV* LoadProvForTask();
 		std::vector<PROV> LoadAllProvForTask();
+
+        ProvFile* LoadProvForTask(std::string taskName, std::string analysisName = "");
+
         bool ShouldPerformBarPlot(std::string locaName);
         bool IsBarPlot(std::string provFile);
 		//==
