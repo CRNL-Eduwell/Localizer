@@ -69,8 +69,8 @@ namespace InsermLibrary
         std::string PrepareFolderAndPathsBar(std::string freqFolder, int dsSampFreq);
         std::vector<PVALUECOORD> ProcessKruskallStatistic(vec3<float> &bigData, eegContainer *myeegContainer, ProvFile* myprovFile, std::string freqFolder);
 		//==
-        void Env2plot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
-        std::string GetEnv2PlotMapsFolder(std::string freqFolder, PROV *myprovFile);
+        void Env2plot(eegContainer *myeegContainer, ProvFile* myprovFile, std::string freqFolder);
+        std::string GetEnv2PlotMapsFolder(std::string freqFolder, ProvFile* myprovFile);
         std::string PrepareFolderAndPathsPlot(std::string freqFolder, int dsSampFreq);
 
 		//==
