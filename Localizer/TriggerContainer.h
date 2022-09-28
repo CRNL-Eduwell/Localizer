@@ -30,7 +30,7 @@ namespace InsermLibrary
 		inline const std::vector<std::tuple<int, int, int>>& CodeAndTrialsIndexes() const { return m_codeAndTrials; }
         std::vector<Trigger> GetTriggerForExperiment(ProvFile *myprovFile, int flagCode = 99, int downSamplingFactor = 1);
         void ProcessEventsForExperiment(ProvFile *myprovFile, int flagCode = 99, int downSaplingFactor = 1);
-        void SwapStimulationsAndResponses(ProvFile *myprovFile);
+		void SwapStimulationsAndResponses(ProvFile* myprovFile, int* newWindow, int* newBaseline);
 	
 	private:		
 		int FindFirstIndexAfter(int flagCode = 99);

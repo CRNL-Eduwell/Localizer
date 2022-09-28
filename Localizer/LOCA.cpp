@@ -256,17 +256,7 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
     {
         CreateEventsFile(a, myeegContainer, m_triggerContainer, task);
         CreateConfFile(myeegContainer);
-        //EEGFormat::Utility::DeleteAndNullify(task);
     }
-//    else
-//    {
-//        //if we are at this point, no prov file to generate figures
-//        //but we still need to advance the progress bar
-//        emit sendLogInfo("No Protocol file found, no maps will be generated");
-//        if (a.env2plot) emit incrementAdavnce(1);
-//        if (a.trialmat) emit incrementAdavnce(1);
-//        if (a.statFiles) emit incrementAdavnce(1);
-//    }
 
     //Process Env2Plot
         //EnvPlot => LOCA
@@ -317,21 +307,21 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
             else
             {
                 TimeTrialMatrices(myeegContainer, task, freqFolder);
-                //emit incrementAdavnce(static_cast<int>(provFiles.size()));
             }
+			//emit incrementAdavnce(static_cast<int>(provFiles.size()));
        }
        if(taskInverted != nullptr)
        {
-            m_triggerContainer->ProcessEventsForExperiment(taskInverted, 99);
-            if (m_triggerContainer->ProcessedTriggerCount() == 0)
-            {
-                emit sendLogInfo("No Trigger found for this experiment, aborting inverted trialmats generation");
-            }
-            else
-            {
-                //TimeTrialMatrices(myeegContainer, taskInverted, freqFolder);
-                //emit incrementAdavnce(static_cast<int>(provFiles.size()));
-            }
+			m_triggerContainer->ProcessEventsForExperiment(taskInverted, 99);
+			if (m_triggerContainer->ProcessedTriggerCount() == 0)
+			{
+				emit sendLogInfo("No Trigger found for this experiment, aborting inverted trialmats generation");
+			}
+			else
+			{
+				TimeTrialMatrices(myeegContainer, taskInverted, freqFolder);
+			}
+			//emit incrementAdavnce(static_cast<int>(provFiles.size()));
        }
    }
 
@@ -354,8 +344,8 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
         {
             StatisticalFilesProcessor sfp;
             sfp.Process(m_triggerContainer, myeegContainer, taskStatistics, freqFolder, m_statOption);
-            //emit incrementAdavnce(static_cast<int>(provFiles.size()));
         }
+		//emit incrementAdavnce(static_cast<int>(provFiles.size()));
     }
 
     deleteAndNullify1D(m_triggerContainer);

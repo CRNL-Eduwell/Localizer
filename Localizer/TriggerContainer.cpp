@@ -79,12 +79,44 @@ void InsermLibrary::TriggerContainer::ProcessEventsForExperiment(ProvFile *mypro
 		return;
 
 	m_codeAndTrials = SortTrialsForExperiment(m_processedTriggers, myprovFile);
+	if (myprovFile->FilePath().find("INVERTED") != std::string::npos)
+	{
+		std::string invertedFilePath = myprovFile->FilePath();
+		int pos = invertedFilePath.find(".prov");
+		if (pos != std::string::npos)
+			invertedFilePath.replace(pos, 5, ".txt");
 
-    //TODO : A VERIFIER MAIS PROBABLEMENT PLUS NECESSAIRE AVEC LES NOUVEAUX PROV ET LE SYSTEME DE SUBBLOCS ET LEUR ORDRE
-//	if (myprovFile->invertmapsinfo != "")
-//	{
-//		SwapStimulationsAndResponses(myprovFile);
-//	}
+		if (std::filesystem::exists(invertedFilePath))
+		{
+			std::stringstream buffer;						
+			std::ifstream provFile(invertedFilePath, std::ios::binary);
+			if (provFile)	
+			{																
+				buffer << provFile.rdbuf();						
+				provFile.close();			
+			}			
+			else	
+			{
+				std::cout << " Error opening Prov File @ " << invertedFilePath << std::endl;
+			}
+			
+			std::vector<std::string>splitInvertWin = split<std::string>(buffer.str(), "|");
+
+			std::vector<std::string>splitInvertEpochWin = split<std::string>(splitInvertWin[0], ":");
+			int winStart = atoi(&splitInvertEpochWin[0][0]);
+			int winEnd = atoi(&splitInvertEpochWin[1][0]);
+			int* newWindow = new int[2]{ winStart, winEnd };
+			std::vector<std::string>splitInvertBaseLineWin = split<std::string>(splitInvertWin[1], ":");
+			int baselineStart = atoi(&splitInvertBaseLineWin[0][0]);
+			int baselineEnd = atoi(&splitInvertBaseLineWin[1][0]);
+			int* newBaseline = new int[2]{ baselineStart, baselineEnd };
+
+			SwapStimulationsAndResponses(myprovFile, newWindow, newBaseline);
+
+			delete[] newWindow;
+			delete[] newBaseline;
+		}
+	}
 }
 
 void InsermLibrary::TriggerContainer::RenameTriggersForExperiment(ProvFile *myprovFile, std::string chgFilePath, std::vector<Trigger>& triggers)
@@ -191,21 +223,23 @@ void InsermLibrary::TriggerContainer::RenameTriggersForExperiment(ProvFile *mypr
 	}
 }
 
-//TODO : A VERIFIER MAIS PROBABLEMENT PLUS NECESSAIRE AVEC LES NOUVEAUX PROV ET LE SYSTEME DE SUBBLOCS ET LEUR ORDRE
-void InsermLibrary::TriggerContainer::SwapStimulationsAndResponses(ProvFile *myprovFile)
+void InsermLibrary::TriggerContainer::SwapStimulationsAndResponses(ProvFile *myprovFile, int* newWindow, int* newBaseline)
 {
-//	int TriggerCount = m_processedTriggers.size();
-//	for (int i = 0; i < TriggerCount; i++)
-//	{
-//		m_processedTriggers[i].SwapStimulationAndResponse();
-//	}
+	int TriggerCount = m_processedTriggers.size();
+	for (int i = 0; i < TriggerCount; i++)
+	{
+		m_processedTriggers[i].SwapStimulationAndResponse();
+	}
 
-//	//This is the new window to visualize data
-//	for (int i = 0; i < myprovFile->visuBlocs.size(); i++)
-//	{
-//		myprovFile->visuBlocs[i].dispBloc.window(myprovFile->invertmaps.epochWindow[0], myprovFile->invertmaps.epochWindow[1]);
-//		myprovFile->visuBlocs[i].dispBloc.baseLine(myprovFile->invertmaps.baseLineWindow[0], myprovFile->invertmaps.baseLineWindow[1]);
-//	}
+	Window newWin(newWindow[0], newWindow[1]);
+	Window newBl(newBaseline[0], newBaseline[1]);
+
+	//This is the new window to visualize data
+	for (int i = 0; i < myprovFile->Blocs().size(); i++)
+	{
+		myprovFile->Blocs()[i].MainSubBloc().MainWindow(newWin);
+		myprovFile->Blocs()[i].MainSubBloc().Baseline(newBl);
+	}
 }
 
 void InsermLibrary::TriggerContainer::PairStimulationWithResponses(std::vector<Trigger>& triggers, ProvFile *myprovFile)
