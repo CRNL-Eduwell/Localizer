@@ -532,7 +532,6 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
     extention << "trc" << "eeg" << "vhdr" << "edf";
 
     QMenu* contextMenu = new QMenu();
-    connect(contextMenu, &QMenu::aboutToHide, contextMenu, &QMenu::deleteLater);
 
     QModelIndex index = ui.FileTreeView->indexAt(point);
     QFileInfo selectedElementInfo = QFileInfo(m_localFileSystemModel->filePath(index));
@@ -552,10 +551,11 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 
             if (!isAlreadyRunning)
             {
-                ErpProcessor* erpWindow = new ErpProcessor(files, this);
-                connect(erpWindow, &ErpProcessor::SendExamCorrespondance, this, &Localizer::ProcessERPAnalysis);
-                erpWindow->exec();
-                delete erpWindow;
+                ErpProcessor erpWindow(files, this);
+                connect(&erpWindow, &ErpProcessor::SendExamCorrespondance, this, &Localizer::ProcessERPAnalysis);
+                erpWindow.exec();
+                disconnect(&erpWindow, nullptr, nullptr, nullptr);
+
             }
             else
             {
@@ -619,10 +619,16 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
                 QMessageBox::information(this, "Error", "Process already running");
             }
         });
-        //processConcatenationAction->setEnabled(false); //TODO : Temporary, until the concatenation worker is verified with the new eegformat lib
     
         if (sender() == ui.FileTreeView)
+        {
             contextMenu->exec(ui.FileTreeView->viewport()->mapToGlobal(point));
+        }
+
+        //Note : intead of using this => connect(contextMenu, &QMenu::aboutToHide, contextMenu, &QMenu::deleteLater);
+        //we delete the menu at the end so whether there was an action or not it is cleaned correctly . This is
+        //due to the need of having gui for user interactions
+        delete contextMenu;
     }
 }
 

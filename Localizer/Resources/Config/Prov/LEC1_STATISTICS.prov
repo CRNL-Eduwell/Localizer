@@ -7,7 +7,7 @@
       "ID": "db4d0f26-cdc3-4bde-996e-8ef0d7d4fe9c",
       "Name": "SEMANTIC_WIL",
       "Order": 0,
-      "Sort": "MAIN_SEMANTIC_WIL_CODE",
+      "Sort": "Main_SEMANTIC_WIL_CODE",
       "SubBlocs": [
         {
           "ID": "be7ce115-6863-4af4-9ac5-7e2c68ac8165",
@@ -43,7 +43,7 @@
       "ID": "53ce5ded-2848-414b-a37f-365ead0b08ac",
       "Name": "PHONETIC_WIL",
       "Order": 1,
-      "Sort": "MAIN_PHONETIC_WIL_CODE",
+      "Sort": "Main_PHONETIC_WIL_CODE",
       "SubBlocs": [
         {
           "ID": "9f1748f4-3cfd-426a-aadb-d7c8a87bb797",
@@ -79,7 +79,7 @@
       "ID": "f4f36731-cfcc-4d39-9381-5f08be533d0d",
       "Name": "VISUAL_WIL",
       "Order": 2,
-      "Sort": "MAIN_VISUAL_WIL_CODE",
+      "Sort": "Main_VISUAL_WIL_CODE",
       "SubBlocs": [
         {
           "ID": "ae91f77e-1de7-400b-943a-e19af0d1476b",

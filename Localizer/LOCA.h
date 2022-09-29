@@ -42,7 +42,7 @@ namespace InsermLibrary
 	public:
 		LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption* statOption, picOption* picOptionn, std::string ptsFilePath = "");
 		~LOCA();
-        void Eeg2erp(eegContainer *myeegContainer, PROV *myprovFile);
+        void Eeg2erp(eegContainer *myeegContainer, ProvFile* myprovFile);
         void Localize(eegContainer *myeegContainer, int idCurrentLoca, locaFolder *currentLoca);
         void LocalizeMapsOnly(eegContainer *myeegContainer, int idCurrentLoca);
 
@@ -64,8 +64,8 @@ namespace InsermLibrary
         bool ShouldPerformBarPlot(std::string locaName);
         bool IsBarPlot(std::string provFile);
 		//==
-        void Barplot(eegContainer *myeegContainer, PROV *myprovFile, std::string freqFolder);
-        std::string GetBarplotMapsFolder(std::string freqFolder, PROV *myprovFile);
+        void Barplot(eegContainer *myeegContainer, ProvFile* myprovFile, std::string freqFolder);
+        std::string GetBarplotMapsFolder(std::string freqFolder, ProvFile* myprovFile);
         std::string PrepareFolderAndPathsBar(std::string freqFolder, int dsSampFreq);
         std::vector<PVALUECOORD> ProcessKruskallStatistic(vec3<float> &bigData, eegContainer *myeegContainer, ProvFile* myprovFile, std::string freqFolder);
 		//==

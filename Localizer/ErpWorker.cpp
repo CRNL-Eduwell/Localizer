@@ -19,8 +19,8 @@ void ErpWorker::Process()
     std::string provFolderPath = QCoreApplication::applicationDirPath().toStdString() + "/Resources/Config/Prov/";
     for (size_t i = 0; i < m_EegFiles.size(); i++)
 	{
-        InsermLibrary::eegContainer *myContainer = ExtractData(m_EegFiles[i]);
-        InsermLibrary::PROV *myprovFile = new InsermLibrary::PROV(provFolderPath + m_ProvFiles[i]);
+        InsermLibrary::eegContainer* myContainer = ExtractData(m_EegFiles[i]);
+        InsermLibrary::ProvFile* myprovFile = new InsermLibrary::ProvFile(provFolderPath + m_ProvFiles[i]);
 		if (myprovFile != nullptr)
             m_Loca->Eeg2erp(myContainer, myprovFile);
 		deleteAndNullify1D(myContainer);

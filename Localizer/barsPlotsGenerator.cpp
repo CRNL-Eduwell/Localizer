@@ -390,7 +390,7 @@ void InsermLibrary::DrawbarsPlots::drawPlots::drawDataOnTemplate(vec3<float> &bi
 			bool isElecHere = false;
 			if (card2Draw == 0)
 			{
-				isElecHere = j /*+ 1*/ <= myeegContainer->electrodes[i].id.size();
+				isElecHere = j /*+ 1*/ </*=*/ myeegContainer->electrodes[i].id.size();
 			}
 			else
 			{

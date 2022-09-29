@@ -23,9 +23,13 @@ InsermLibrary::LOCA::~LOCA()
 /************/
 /* eeg2erp  */
 /************/
-void InsermLibrary::LOCA::Eeg2erp(eegContainer* myeegContainer, PROV* myprovFile)
+void InsermLibrary::LOCA::Eeg2erp(eegContainer* myeegContainer, ProvFile* myprovFile)
 {
-	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->SamplingFrequency());
+	// Get biggest window possible, for now we use the assumption that every bloc has the same window
+	// TODO : deal with possible different windows
+	int StartInSam = (myprovFile->Blocs()[0].MainSubBloc().MainWindow().Start() * myeegContainer->SamplingFrequency()) / 1000;
+	int EndinSam = (myprovFile->Blocs()[0].MainSubBloc().MainWindow().End() * myeegContainer->SamplingFrequency()) / 1000;
+	int* windowSam = new int[2]{ StartInSam, EndinSam };
 
 	std::string outputErpFolder = myeegContainer->RootFileFolder();
 	outputErpFolder.append(myeegContainer->RootFileName());
@@ -41,7 +45,7 @@ void InsermLibrary::LOCA::Eeg2erp(eegContainer* myeegContainer, PROV* myprovFile
 	std::vector<EEGFormat::ITrigger> triggers = myeegContainer->Triggers();
 	int samplingFrequency = myeegContainer->SamplingFrequency();
 	m_triggerContainer = new TriggerContainer(triggers, samplingFrequency);
-    //m_triggerContainer->ProcessEventsForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
+    m_triggerContainer->ProcessEventsForExperiment(myprovFile, 99, myeegContainer->DownsamplingFactor());
 
 	vec3<float> bigDataMono = vec3<float>(m_triggerContainer->ProcessedTriggerCount(), vec2<float>(myeegContainer->flatElectrodes.size(), vec1<float>(windowSam[1] - windowSam[0])));
 	vec3<float> bigDataBipo = vec3<float>(m_triggerContainer->ProcessedTriggerCount(), vec2<float>(myeegContainer->BipoleCount(), vec1<float>(windowSam[1] - windowSam[0])));
@@ -72,12 +76,11 @@ void InsermLibrary::LOCA::Eeg2erp(eegContainer* myeegContainer, PROV* myprovFile
 		}
 	}
 
-	//TODO : 
-	//InsermLibrary::DrawbarsPlots::drawPlots b = InsermLibrary::DrawbarsPlots::drawPlots(myprovFile, monoErpOutput, m_picOption->sizePlotmap);
-	//b.drawDataOnTemplate(bigDataMono, m_triggerContainer, myeegContainer, 0);
-	//emit sendLogInfo("Mono Maps Generated");
-	//b.drawDataOnTemplate(bigDataBipo, m_triggerContainer, myeegContainer, 1);
-	//emit sendLogInfo("Bipo Maps Generated");
+	InsermLibrary::DrawbarsPlots::drawPlots b = InsermLibrary::DrawbarsPlots::drawPlots(myprovFile, monoErpOutput, m_picOption->sizePlotmap);
+	b.drawDataOnTemplate(bigDataMono, m_triggerContainer, myeegContainer, 0);
+	emit sendLogInfo("Mono Maps Generated");
+	b.drawDataOnTemplate(bigDataBipo, m_triggerContainer, myeegContainer, 1);
+	emit sendLogInfo("Bipo Maps Generated");
 	emit incrementAdavnce(1);
 
 	delete windowSam;
@@ -187,14 +190,14 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
     {
         if(taskBarPlot != nullptr)
         {
-            m_triggerContainer->ProcessEventsForExperiment(task, 99);
+            m_triggerContainer->ProcessEventsForExperiment(taskBarPlot, 99);
             if (m_triggerContainer->ProcessedTriggerCount() == 0)
             {
                 emit sendLogInfo("No Trigger found for this experiment, aborting Barplot generation");
             }
             else
             {
-                //Barplot(myeegContainer, taskBarPlot, freqFolder);
+                Barplot(myeegContainer, taskBarPlot, freqFolder);
                 //emit incrementAdavnce(static_cast<int>(provFiles.size()));
             }
         }
@@ -575,28 +578,31 @@ bool InsermLibrary::LOCA::IsBarPlot(std::string provFile)
 /************/
 /* Barplot  */
 /************/
-void InsermLibrary::LOCA::Barplot(eegContainer* myeegContainer, PROV* myprovFile, std::string freqFolder)
+void InsermLibrary::LOCA::Barplot(eegContainer* myeegContainer, ProvFile* myprovFile, std::string freqFolder)
 {
 	std::string mapsFolder = GetBarplotMapsFolder(freqFolder, myprovFile);
 	std::string mapPath = PrepareFolderAndPathsBar(mapsFolder, myeegContainer->DownsamplingFactor());
-	int* windowSam = myprovFile->getBiggestWindowSam(myeegContainer->DownsampledFrequency());
+	// Get biggest window possible, for now we use the assumption that every bloc has the same window
+	// TODO : deal with possible different windows
+	int StartInSam = (myprovFile->Blocs()[0].MainSubBloc().MainWindow().Start() * myeegContainer->DownsampledFrequency()) / 1000;
+	int EndinSam = (myprovFile->Blocs()[0].MainSubBloc().MainWindow().End() * myeegContainer->DownsampledFrequency()) / 1000;
+	int* windowSam = new int[2]{ StartInSam, EndinSam };
 
 	//== get Bloc of eeg data we want to display center around events
 	vec3<float> eegData3D = vec3<float>(m_triggerContainer->ProcessedTriggerCount(), vec2<float>(myeegContainer->BipoleCount(), vec1<float>(windowSam[1] - windowSam[0])));
 	myeegContainer->GetFrequencyBlocDataEvents(eegData3D, 0, m_triggerContainer->ProcessedTriggers(), windowSam);
 
 	//== calculate stat
-	//TODO : finir le changement ici aussi
-	vec1<PVALUECOORD> significantValue;// = ProcessKruskallStatistic(eegData3D, myeegContainer, myprovFile, mapsFolder);
+	vec1<PVALUECOORD> significantValue = ProcessKruskallStatistic(eegData3D, myeegContainer, myprovFile, mapsFolder);
 
 	//==
-	//InsermLibrary::DrawbarsPlots::drawBars b = InsermLibrary::DrawbarsPlots::drawBars(myprovFile, mapPath, m_picOption->sizePlotmap);
-	//b.drawDataOnTemplate(eegData3D, m_triggerContainer, significantValue, myeegContainer);
+	InsermLibrary::DrawbarsPlots::drawBars b = InsermLibrary::DrawbarsPlots::drawBars(myprovFile, mapPath, m_picOption->sizePlotmap);
+	b.drawDataOnTemplate(eegData3D, m_triggerContainer, significantValue, myeegContainer);
 
-	delete windowSam;
+	delete[] windowSam;
 }
 
-std::string InsermLibrary::LOCA::GetBarplotMapsFolder(std::string freqFolder, PROV* myprovFile)
+std::string InsermLibrary::LOCA::GetBarplotMapsFolder(std::string freqFolder, ProvFile* myprovFile)
 {
 	std::string mapsFolder = freqFolder;
 	vec1<std::string> dd = split<std::string>(mapsFolder, "/");
@@ -614,7 +620,7 @@ std::string InsermLibrary::LOCA::GetBarplotMapsFolder(std::string freqFolder, PR
 			mapsFolder.append("_P" + streamPValue.str());
 	}
 
-	std::vector<std::string> myProv = split<std::string>(myprovFile->filePath(), "/");
+	std::vector<std::string> myProv = split<std::string>(myprovFile->FilePath(), "/");
 	mapsFolder.append(" - " + myProv[myProv.size() - 1]);
 
 	return mapsFolder;
@@ -674,7 +680,7 @@ void InsermLibrary::LOCA::Env2plot(eegContainer* myeegContainer, ProvFile* mypro
 	InsermLibrary::DrawbarsPlots::drawPlots b = InsermLibrary::DrawbarsPlots::drawPlots(myprovFile, mapPath, m_picOption->sizePlotmap);
 	b.drawDataOnTemplate(eegData3D, m_triggerContainer, myeegContainer, 2);
 
-	delete windowSam;
+	delete[] windowSam;
 }
 
 std::string InsermLibrary::LOCA::GetEnv2PlotMapsFolder(std::string freqFolder, ProvFile* myprovFile)

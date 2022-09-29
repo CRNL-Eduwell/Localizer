@@ -128,6 +128,10 @@ private:
 	//==
 	Ui::LocalizerClass ui;
 	QStringList inputArguments;
+
+
+
+	ErpProcessor* erpWindow = nullptr;
 };
 
 #endif // LOCALIZER_H

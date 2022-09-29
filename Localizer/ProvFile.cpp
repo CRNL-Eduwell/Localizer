@@ -100,6 +100,8 @@ void InsermLibrary::ProvFile::FillProtocolInformations(nlohmann::json jsonObject
 
         m_blocs.push_back(Bloc(blocName, blocOrder, blocIllustrationPath, blocSort, subBlocs));
     }
+
+    std::sort(m_blocs.begin(), m_blocs.end(), [](Bloc a, Bloc b) { return (a.Order() < b.Order()); });
 }
 
 void InsermLibrary::ProvFile::Save()
