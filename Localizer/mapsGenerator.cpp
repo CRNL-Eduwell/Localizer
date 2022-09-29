@@ -393,7 +393,7 @@ void InsermLibrary::DrawCard::mapsGenerator::defineLineSeparation(QPainter* pain
 				int width = (MatrixRect.width() - 1 - ((cheatNbCol - 1) * sizePxLine)) / cheatNbCol;
 
 				int realHeight = (MatrixRect.height() - 2 - (nbRow * sizePxLine));
-				double ratioTrials = ((double)(std::get<2>(*it) - std::get<1>(*it))) / totalNbTrials;
+				double ratioTrials = ((double)std::get<2>(*it) - (double)std::get<1>(*it)) / totalNbTrials;
 
 				int height = round(realHeight * ratioTrials);
 
@@ -406,7 +406,13 @@ void InsermLibrary::DrawCard::mapsGenerator::defineLineSeparation(QPainter* pain
 
 				heightCumul += height + sizePxLine;
 
-				subMatrixes.push_back(QRect(x, y, width, height));
+				int diff = 0;
+				if (j == 0)
+				{
+					diff = MatrixRect.height() - 2 - heightCumul;
+				}
+
+				subMatrixes.push_back(QRect(x, y, width, height + diff));
 				subMatrixesCodes.push_back(std::get<0>(*it));
 			}
 		}
@@ -421,16 +427,6 @@ void InsermLibrary::DrawCard::mapsGenerator::defineLineSeparation(QPainter* pain
 			int y = subMatrixes[j].y() + subMatrixes[j].height();
 
 			separationLines.push_back(QRect(x, y, subMatrixes[j].width(), sizePxLine));
-
-			if (j == nbRow - 1)
-			{
-				int a = MatrixRect.height() + MatrixRect.y();
-				int b = separationLines[j].height() + separationLines[j].y();
-				if (b != a)
-				{
-					separationLines[j].setHeight(separationLines[j].height() + (a - b));
-				}
-			}
 		}
 	}
 }
