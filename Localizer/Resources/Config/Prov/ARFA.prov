@@ -1,39 +1,40 @@
 {
   "ID": "xxxxxxxxxxxxxxxxxxxxxxxxx",
-  "Name": "VISU",
+  "Name": "ARFA",
   "Blocs": [
     {
       "IllustrationPath": "",
-      "ID": "e65e9f04-f626-44e4-9516-97def8fc7c0a",
-      "Name": "FRUIT",
-      "Order": 8,
-      "Sort": "Main_RESPONSE_LATENCY;Main_FRUIT_CODE",
+      "ID": "2905efb3-3107-4e4d-abf8-f716db3dfe98",
+      "Name": "CLIGNE",
+      "Order": 0,
+      "Sort": "Main_CLIGNE_CODE",
       "SubBlocs": [
         {
-          "ID": "51bbf696-c698-42a2-9ecb-7b60a8264bd4",
+          "ID": "165b4a00-2736-42fa-89d6-604992e1dfc5",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 1000
+            "End": 3000
           },
           "Baseline": {
-            "Start": -200,
-            "End": 0
+            "Start": -250,
+            "End": -50
           },
           "Events": [
             {
-              "Name": "FRUIT",
+              "Name": "CLIGNE",
               "Codes": [
-                80
+                10
               ],
               "Type": 0
             },
             {
               "Name": "RESPONSE",
               "Codes": [
-                1
+                1,
+				2
               ],
               "Type": 1
             }
@@ -45,31 +46,39 @@
     },
     {
       "IllustrationPath": "",
-      "ID": "b7bd58e5-8b42-44ec-9f75-360b967d227d",
-      "Name": "FACE",
+      "ID": "52adb20d-32ef-451d-af5f-334458cca320",
+      "Name": "SACCADE",
       "Order": 1,
-      "Sort": "Main_FACE_CODE",
+      "Sort": "Main_SACCADE_CODE",
       "SubBlocs": [
         {
-          "ID": "433ec4c7-ddc9-4a12-90c8-ab36ffccb8ee",
+          "ID": "71c4674a-330a-4b79-ba38-896d8ab6c690",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 1000
+            "End": 3000
           },
           "Baseline": {
-            "Start": -200,
-            "End": 0
+            "Start": -250,
+            "End": -50
           },
           "Events": [
             {
-              "Name": "FACE",
+              "Name": "SACCADE",
               "Codes": [
                 20
               ],
               "Type": 0
+            },
+            {
+              "Name": "RESPONSE",
+              "Codes": [
+                1,
+				2
+              ],
+              "Type": 1
             }
           ],
           "Icons": [],
@@ -79,31 +88,39 @@
     },
     {
       "IllustrationPath": "",
-      "ID": "fa56e7bc-83ef-485b-a38f-31e78e0cb7a0",
-      "Name": "ANIMAL",
+      "ID": "5e230cb6-a0d9-45e2-a217-a6a941f8b879",
+      "Name": "SALIVE",
       "Order": 2,
-      "Sort": "Main_ANIMAL_CODE",
+      "Sort": "Main_SALIVE_CODE",
       "SubBlocs": [
         {
-          "ID": "ec88d25b-9157-47d6-bbd9-586e9fdeca1d",
+          "ID": "5b49e3b8-5aac-4cb2-89b5-b72a3063ae71",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 1000
+            "End": 3000
           },
           "Baseline": {
-            "Start": -200,
-            "End": 0
+            "Start": -250,
+            "End": -50
           },
           "Events": [
             {
-              "Name": "ANIMAL",
+              "Name": "SALIVE",
               "Codes": [
                 30
               ],
               "Type": 0
+            },
+            {
+              "Name": "RESPONSE",
+              "Codes": [
+                1,
+				2
+              ],
+              "Type": 1
             }
           ],
           "Icons": [],
@@ -113,31 +130,39 @@
     },
     {
       "IllustrationPath": "",
-      "ID": "2630224e-08bc-44c4-9857-93e90002508b",
-      "Name": "LANDSCAPE",
+      "ID": "b629b341-f715-4053-9ddf-80e19be23f2e",
+      "Name": "DENTS",
       "Order": 3,
-      "Sort": "Main_LANDSCAPE_CODE",
+      "Sort": "Main_DENTS_CODE",
       "SubBlocs": [
         {
-          "ID": "178f2cb8-73b6-4675-90de-2228b59cf45a",
+          "ID": "cfa9e43c-5186-4b6c-aef6-e7a1aa2305ef",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 1000
+            "End": 3000
           },
           "Baseline": {
-            "Start": -200,
-            "End": 0
+            "Start": -250,
+            "End": -50
           },
           "Events": [
             {
-              "Name": "LANDSCAPE",
+              "Name": "DENTS",
               "Codes": [
                 40
               ],
               "Type": 0
+            },
+            {
+              "Name": "RESPONSE",
+              "Codes": [
+                1,
+				2
+              ],
+              "Type": 1
             }
           ],
           "Icons": [],
@@ -147,31 +172,39 @@
     },
     {
       "IllustrationPath": "",
-      "ID": "87564be1-5fe3-4c84-b9e3-eb890683240d",
-      "Name": "OBJECT",
+      "ID": "4d9229c6-9d52-4ce8-84ea-d372ce99471c",
+      "Name": "FRONCE",
       "Order": 4,
-      "Sort": "Main_OBJECT_CODE",
+      "Sort": "Main_FRONCE_CODE",
       "SubBlocs": [
         {
-          "ID": "53d6e3f1-23e5-4e09-ba6c-c04caf3c45fe",
+          "ID": "bdb9cf26-a0ae-4431-bc0d-9199dc0ef833",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 1000
+            "End": 3000
           },
           "Baseline": {
-            "Start": -200,
-            "End": 0
+            "Start": -250,
+            "End": -50
           },
           "Events": [
             {
-              "Name": "OBJECT",
+              "Name": "FRONCE",
               "Codes": [
                 50
               ],
               "Type": 0
+            },
+            {
+              "Name": "RESPONSE",
+              "Codes": [
+                1,
+				2
+              ],
+              "Type": 1
             }
           ],
           "Icons": [],
@@ -181,31 +214,39 @@
     },
     {
       "IllustrationPath": "",
-      "ID": "5a144fa1-6662-4f97-a3e3-be8197983a49",
-      "Name": "PSEUDOWORD",
+      "ID": "28d96d7e-a1d5-48c3-b723-4b45b771be96",
+      "Name": "LANGUE",
       "Order": 5,
-      "Sort": "Main_PSEUDOWORD_CODE",
+      "Sort": "Main_LANGUE_CODE",
       "SubBlocs": [
         {
-          "ID": "9890d2c1-cbac-4ce0-b71b-aa940e820760",
+          "ID": "10e366b7-d3d8-49e3-907a-c67bd0f51e8c",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 1000
+            "End": 3000
           },
           "Baseline": {
-            "Start": -200,
-            "End": 0
+            "Start": -250,
+            "End": -50
           },
           "Events": [
             {
-              "Name": "PSEUDOWORD",
+              "Name": "LANGUE",
               "Codes": [
                 60
               ],
               "Type": 0
+            },
+            {
+              "Name": "RESPONSE",
+              "Codes": [
+                1,
+				2
+              ],
+              "Type": 1
             }
           ],
           "Icons": [],
@@ -215,31 +256,40 @@
     },
     {
       "IllustrationPath": "",
-      "ID": "ab59a3d2-1c8f-4c38-9ab6-90a656928aba",
-      "Name": "CONSONANT",
+      "ID": "cab986eb-372d-4b6b-a431-7f41fc065d62",
+      "Name": "SOURIRE",
       "Order": 6,
-      "Sort": "Main_CONSONANT_CODE",
+      "Sort": "Main_SOURIRE_CODE",
       "SubBlocs": [
         {
-          "ID": "42913a12-3baa-42d5-912b-bac71adc4e4f",
+          "ID": "ecac5c60-00a2-4ede-b546-41cdcb86d2bf",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 1000
+            "End": 3000
           },
           "Baseline": {
-            "Start": -200,
-            "End": 0
+            "Start": -250,
+            "End": -50,
+            "Lenght": 200
           },
           "Events": [
             {
-              "Name": "CONSONANT",
+              "Name": "SOURIRE",
               "Codes": [
                 70
               ],
               "Type": 0
+            },
+            {
+              "Name": "RESPONSE",
+              "Codes": [
+                1,
+				2
+              ],
+              "Type": 1
             }
           ],
           "Icons": [],
@@ -249,65 +299,39 @@
     },
     {
       "IllustrationPath": "",
-      "ID": "85d1e3aa-ac94-4144-8d27-297695f00f74",
-      "Name": "SCRAMBLED",
+      "ID": "293fa2ba-6c0a-4e3a-873f-97d753f00693",
+      "Name": "CALME",
       "Order": 7,
-      "Sort": "Main_SCRAMBLED_CODE",
+      "Sort": "Main_CALME_CODE",
       "SubBlocs": [
         {
-          "ID": "1e15af37-b9ca-4b10-85c0-6808e847d836",
+          "ID": "5ab45b47-8352-4c8a-80cb-5ce856908bec",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 1000
+            "End": 3000
           },
           "Baseline": {
-            "Start": -200,
-            "End": 0
+            "Start": -250,
+            "End": -50
           },
           "Events": [
             {
-              "Name": "SCRAMBLED",
+              "Name": "CALME",
               "Codes": [
-                90
+                80
               ],
               "Type": 0
-            }
-          ],
-          "Icons": [],
-          "Treatments": []
-        }
-      ]
-    },
-    {
-      "IllustrationPath": "",
-      "ID": "d876b5ac-c097-46f4-9016-1c359eb4fe1c",
-      "Name": "HOUSE",
-      "Order": 0,
-      "Sort": "Main_HOUSE_CODE",
-      "SubBlocs": [
-        {
-          "ID": "ca32f740-95e1-45af-b39a-8562fdbee6cb",
-          "Name": "Main",
-          "Order": 0,
-          "Type": 0,
-          "Window": {
-            "Start": -500,
-            "End": 1000
-          },
-          "Baseline": {
-            "Start": -200,
-            "End": 0
-          },
-          "Events": [
+            },
             {
-              "Name": "HOUSE",
+              "Name": "RESPONSE",
               "Codes": [
-                10
+                1,
+				2
               ],
-              "Type": 0
+              "Type": 1
             }
           ],
           "Icons": [],

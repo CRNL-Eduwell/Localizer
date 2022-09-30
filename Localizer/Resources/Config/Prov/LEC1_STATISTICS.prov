@@ -16,13 +16,11 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 2000,
-            "Lenght": 2500
+            "End": 2000
           },
           "Baseline": {
             "Start": -200,
-            "End": 0,
-            "Lenght": 200
+            "End": 0
           },
           "Events": [
             {
@@ -52,13 +50,11 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 2000,
-            "Lenght": 2500
+            "End": 2000
           },
           "Baseline": {
             "Start": -200,
-            "End": 0,
-            "Lenght": 200
+            "End": 0
           },
           "Events": [
             {
@@ -88,13 +84,11 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 2000,
-            "Lenght": 2500
+            "End": 2000
           },
           "Baseline": {
             "Start": -200,
-            "End": 0,
-            "Lenght": 200
+            "End": 0
           },
           "Events": [
             {
