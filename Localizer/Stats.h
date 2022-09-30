@@ -3,8 +3,6 @@
 
 #include <iostream>
 #include <fstream>		
-
-#include "PROV.h"
 #include "ProvFile.h"
 #include "TriggerContainer.h"
 #include "eegContainer.h"

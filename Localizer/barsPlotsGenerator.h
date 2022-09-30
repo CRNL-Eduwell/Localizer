@@ -4,7 +4,6 @@
 #include <iostream>
 #include <algorithm>
 #include "Utility.h"
-#include "PROV.h"
 #include "ProvFile.h"
 #include "eegContainer.h"
 #include "TriggerContainer.h"

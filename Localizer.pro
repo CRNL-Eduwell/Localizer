@@ -97,7 +97,6 @@ HEADERS += \
 	Localizer/Icon.h \
     Localizer/LOCA.h \
     Localizer/MultiSubjectWorker.h \
-    Localizer/PROV.h \
     Localizer/PROVParameters.h \
     Localizer/PatientFolderWorker.h \
     Localizer/Protocol.h \
@@ -152,7 +151,6 @@ SOURCES += \
 	Localizer/Icon.cpp \
     Localizer/LOCA.cpp \
     Localizer/MultiSubjectWorker.cpp \
-    Localizer/PROV.cpp \
     Localizer/PatientFolderWorker.cpp \
     Localizer/Protocol.cpp \
     Localizer/ProtocolFile.cpp \

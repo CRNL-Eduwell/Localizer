@@ -7,7 +7,6 @@
 
 #include "TriggerContainer.h"
 #include "eegContainer.h"
-#include "PROV.h"
 #include "ProvFile.h"
 #include "optionsParameters.h"
 #include "Stats.h"

@@ -1,9 +1,7 @@
 #include "LOCA.h"
 
-//#include <algorithm>    // std::shuffle
 #include <random>       // std::default_random_engine
 #include <chrono>       // std::chrono::system_clock
-#include <QDebug>
 
 InsermLibrary::LOCA::LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption* statOption, picOption* picOption, std::string ptsFilePath)
 {
@@ -83,7 +81,7 @@ void InsermLibrary::LOCA::Eeg2erp(eegContainer* myeegContainer, ProvFile* myprov
 	emit sendLogInfo("Bipo Maps Generated");
 	emit incrementAdavnce(1);
 
-	delete windowSam;
+	delete[] windowSam;
 }
 
 void InsermLibrary::LOCA::Localize(eegContainer* myeegContainer, int idCurrentLoca, locaFolder* currentLoca)
@@ -485,51 +483,6 @@ std::string InsermLibrary::LOCA::CreateFrequencyFolder(eegContainer* myeegContai
 	}
 
 	return freqFolder;
-}
-
-InsermLibrary::PROV* InsermLibrary::LOCA::LoadProvForTask()
-{
-	std::string MainProvPath = QCoreApplication::applicationDirPath().toStdString() + "/Resources/Config/Prov/" + m_currentLoca->localizerName() + ".prov";
-	if (EEGFormat::Utility::DoesFileExist(MainProvPath))
-	{
-		return new PROV(MainProvPath);
-	}
-	else
-	{
-		return nullptr;
-	}
-}
-
-std::vector<InsermLibrary::PROV> InsermLibrary::LOCA::LoadAllProvForTask()
-{
-	std::string provFolder = QCoreApplication::applicationDirPath().toStdString() + "/Resources/Config/Prov/";
-
-	std::vector<PROV> provFiles;
-	for (int i = 0; i < static_cast<int>(m_statOption->locaWilcoxon.size()); i++)
-	{
-		if (m_statOption->locaWilcoxon[i].contains(QString::fromStdString(m_currentLoca->localizerName())))
-		{
-			std::string possibleFile = provFolder + m_statOption->locaWilcoxon[i].toStdString() + ".prov";
-			if (EEGFormat::Utility::DoesFileExist(possibleFile))
-			{
-				provFiles.push_back(PROV(possibleFile));
-			}
-		}
-	}
-
-	for (int i = 0; i < static_cast<int>(m_statOption->locaKruskall.size()); i++)
-	{
-		if (m_statOption->locaKruskall[i].contains(QString::fromStdString(m_currentLoca->localizerName())))
-		{
-			std::string possibleFile = provFolder + m_statOption->locaKruskall[i].toStdString() + ".prov";
-			if (EEGFormat::Utility::DoesFileExist(possibleFile))
-			{
-				provFiles.push_back(PROV(possibleFile));
-			}
-		}
-	}
-
-	return provFiles;
 }
 
 InsermLibrary::ProvFile* InsermLibrary::LOCA::LoadProvForTask(std::string taskName, std::string analysisName)

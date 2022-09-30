@@ -39,7 +39,7 @@ void Localizer::ReSetupGUI()
     optPerf = new optionsPerf();
     optStat = new optionsStats();
     picOpt = new picOptions();
-    //optLoca = new ProtocolWindow();
+    //optLoca = new ProtocolWindow(); //TODO : Need to make the new gui for hibop provfiles
 
     ui.progressBar->reset();
 }
@@ -109,8 +109,9 @@ void Localizer::ConnectMenuBar()
     connect(openStatMenu, &QAction::triggered, this, [&] { optStat->exec(); });
     QAction* openPicMenu = ui.menuConfiguration->actions().at(2);
     connect(openPicMenu, &QAction::triggered, this, [&] { picOpt->exec(); });
-    QAction* openLocaMenu = ui.menuConfiguration->actions().at(3);
-    connect(openLocaMenu, &QAction::triggered, this, [&] { optLoca->exec(); });
+    //TODO : need to reactivate that once new ui is done
+    //QAction* openLocaMenu = ui.menuConfiguration->actions().at(3);
+    //connect(openLocaMenu, &QAction::triggered, this, [&] { optLoca->exec(); });
 	QAction* openFilePriorityMenu = ui.menuConfiguration->actions().at(4);
 	connect(openFilePriorityMenu, &QAction::triggered, this, [&] 
 	{ 	

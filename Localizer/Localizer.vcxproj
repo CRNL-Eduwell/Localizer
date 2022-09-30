@@ -363,7 +363,6 @@
     <ClCompile Include="picOptions.cpp" />
     <ClCompile Include="ProtocolFile.cpp" />
     <ClCompile Include="ProtocolWindow.cpp" />
-    <ClCompile Include="PROV.cpp" />
     <ClCompile Include="ProvFile.cpp" />
     <ClCompile Include="singleFile.cpp" />
     <ClCompile Include="SingleFilesWorker.cpp" />
@@ -801,8 +800,6 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -D_CRT_SECURE_NO_WARNINGS -DUNICODE -DWIN32 -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_UITOOLS_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -D%(PreprocessorDefinitions)  "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtUiTools" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtANGLE"</Command>
     </CustomBuild>
-    <ClInclude Include="PROV.h" />
-    <ClInclude Include="PROVParameters.h" />
     <ClInclude Include="singleFile.h" />
     <ClInclude Include="Trigger.h" />
     <ClInclude Include="TriggerContainer.h" />
