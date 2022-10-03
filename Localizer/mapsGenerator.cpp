@@ -144,7 +144,7 @@ void InsermLibrary::DrawCard::mapsGenerator::drawVerticalZeroLine(QPainter* pain
 	painter->drawLine(MatrixRect.x() + zeroBorder, MatrixRect.y() + MatrixRect.height() - ((0.005208333 * MatrixRect.width()) - 2),
 		MatrixRect.x() + zeroBorder, MatrixRect.y() + 1);
 
-	delete windowMS;
+    delete[] windowMS;
 }
 
 void InsermLibrary::DrawCard::mapsGenerator::displayStatsOnMap(QPainter* painter, vec1<PVALUECOORD> significantValue, int electrodeIndex, ProvFile* myprovFile)
@@ -190,7 +190,7 @@ void InsermLibrary::DrawCard::mapsGenerator::displayStatsOnMap(QPainter* painter
 			painter->drawEllipse(QPoint(xBegWin, separationLines[itIndex].y()), 4, 4);
 		}
 	}
-	delete windowMs;
+    delete[] windowMs;
 }
 
 void InsermLibrary::DrawCard::mapsGenerator::drawMapTitle(QPainter* painter, std::string title)
@@ -457,7 +457,6 @@ void InsermLibrary::DrawCard::mapsGenerator::createTimeLegend(QPainter* painter,
 	painter->setFont(font);
 
 	QFontMetrics fm(font);
-	int z = fm.horizontalAdvance("0");
 	int pixelsWide = fm.horizontalAdvance("0");
 
 	int xBeg = MatrixRect.x() + zeroBorder - (0.5 * pixelsWide);
@@ -492,7 +491,7 @@ void InsermLibrary::DrawCard::mapsGenerator::createTimeLegend(QPainter* painter,
 		painter->drawText(legendValueRect, QString(QString().number(0 + (-i * stepTimeLegend))));
 	}
 
-	delete windowMS;
+    delete[] windowMS;
 }
 
 void  InsermLibrary::DrawCard::mapsGenerator::createTrialsLegend(QPainter* painter, std::vector<std::tuple<int, int, int>> codesAndTrials, ProvFile* myprovFile)
@@ -507,7 +506,13 @@ void  InsermLibrary::DrawCard::mapsGenerator::createTrialsLegend(QPainter* paint
 		if (it != codesAndTrials.end())
 		{
 			QString relPath = QString(myprovFile->Blocs()[i].IllustrationPath().c_str());
-			if (QFileInfo(relPath).exists())
+            if(relPath.startsWith("./"))
+            {
+                //If this is an embeded picture we want to search it next to executable
+                relPath.replace("./",  QCoreApplication::applicationDirPath() + "/");
+            }
+
+            if (QFileInfo::exists(relPath))
 			{
 				QRect myLegendRect(0.013020833 * fullMap.width(), subMatrixes[count].y(), 0.1119618055 * fullMap.width(), subMatrixes[count].height());
 				QPixmap image(relPath);

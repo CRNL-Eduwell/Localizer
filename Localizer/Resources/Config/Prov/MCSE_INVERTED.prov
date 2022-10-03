@@ -2,7 +2,7 @@
   "Name": "MCSE_INVERTED",
   "Blocs": [
     {
-      "IllustrationPath": "D:\\HBP\\HiBoP_BDD_Manager_Builds\\resources\\Images localizers\\MCSE_EASY.jpg",
+      "IllustrationPath": "./Resources/Config/Pictures/MCSE/MCSE_EASY.jpg",
       "Name": "POP-OUT",
       "Order": 0,
       "Sort": "Main_RESPONSE_LATENCY;Main_POP-OUT_CODE",
@@ -49,7 +49,7 @@
               "ID": "fd35800f-2f2c-4abe-ba6e-2e486a79eac7"
             },
             {
-              "ImagePath": "D:\\HBP\\HiBoP_BDD_Manager_Builds\\resources\\Images localizers\\MCSE_EASY.jpg",
+              "ImagePath": "./Resources/Config/Pictures/MCSE/MCSE_EASY.jpg",
               "Name": "PIC",
               "Window": {
                 "Start": 0,
@@ -74,7 +74,7 @@
       "ID": "ef133481-aea8-4089-8e59-47e9689c12ed"
     },
     {
-      "IllustrationPath": "D:\\HBP\\HiBoP_BDD_Manager_Builds\\resources\\Images localizers\\MCSE_HARD.jpg",
+      "IllustrationPath": "./Resources/Config/Pictures/MCSE/MCSE_HARD.jpg",
       "Name": "RESEARCH",
       "Order": 1,
       "Sort": "Main_RESPONSE_LATENCY;Main_RESEARCH_CODE",
@@ -121,7 +121,7 @@
               "ID": "3eaa6a6b-70ac-4e32-bbe5-928427001ff1"
             },
             {
-              "ImagePath": "D:\\HBP\\HiBoP_BDD_Manager_Builds\\resources\\Images localizers\\MCSE_HARD.jpg",
+              "ImagePath": "./Resources/Config/Pictures/MCSE/MCSE_HARD.jpg",
               "Name": "PIC",
               "Window": {
                 "Start": 0,

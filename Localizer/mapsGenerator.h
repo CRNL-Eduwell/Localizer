@@ -6,6 +6,7 @@
 #include "ProvFile.h"
 #include "optionsParameters.h"
 
+#include <QCoreApplication>
 #include <QPainter>
 #include <QFileInfo>
 #include <QDir>

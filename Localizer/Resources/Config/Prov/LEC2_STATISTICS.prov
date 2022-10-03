@@ -2,7 +2,7 @@
   "Name": "LEC2_STATISTICS",
   "Blocs": [
     {
-      "IllustrationPath": "D:\\HBP\\HiBoP_BDD_Manager_Builds\\resources\\Images localizers\\LEC1_SEM.jpg",
+      "IllustrationPath": "./Resources/Config/Pictures/LEC2/LEC2_ATT.jpg",
       "Name": "ATTENTION",
       "Order": 0,
       "Sort": "Main_ATTENTION_CODE",
@@ -37,7 +37,7 @@
       "ID": "48ed4ac4-3cb7-4ff0-adec-e96ebb3859b5"
     },
     {
-      "IllustrationPath": "D:\\HBP\\HiBoP_BDD_Manager_Builds\\resources\\Images localizers\\LEC1_PHO.jpg",
+      "IllustrationPath": "./Resources/Config/Pictures/LEC2/LEC2_IGN.jpg",
       "Name": "IGNORE",
       "Order": 1,
       "Sort": "Main_IGNORE_CODE",

@@ -3,7 +3,7 @@
   "Name": "VISU",
   "Blocs": [
     {
-      "IllustrationPath": "",
+      "IllustrationPath": "./Resources/Config/Pictures/VISU/VISU_FRUIT.jpg",
       "ID": "e65e9f04-f626-44e4-9516-97def8fc7c0a",
       "Name": "FRUIT",
       "Order": 8,
@@ -44,7 +44,7 @@
       ]
     },
     {
-      "IllustrationPath": "",
+      "IllustrationPath": "./Resources/Config/Pictures/VISU/VISU_FACE.jpg",
       "ID": "b7bd58e5-8b42-44ec-9f75-360b967d227d",
       "Name": "FACE",
       "Order": 1,
@@ -78,7 +78,7 @@
       ]
     },
     {
-      "IllustrationPath": "",
+      "IllustrationPath": "./Resources/Config/Pictures/VISU/VISU_ANIMAL.jpg",
       "ID": "fa56e7bc-83ef-485b-a38f-31e78e0cb7a0",
       "Name": "ANIMAL",
       "Order": 2,
@@ -112,7 +112,7 @@
       ]
     },
     {
-      "IllustrationPath": "",
+      "IllustrationPath": "./Resources/Config/Pictures/VISU/VISU_LANDSCAPE.jpg",
       "ID": "2630224e-08bc-44c4-9857-93e90002508b",
       "Name": "LANDSCAPE",
       "Order": 3,
@@ -146,7 +146,7 @@
       ]
     },
     {
-      "IllustrationPath": "",
+      "IllustrationPath": "./Resources/Config/Pictures/VISU/VISU_OBJECT.jpg",
       "ID": "87564be1-5fe3-4c84-b9e3-eb890683240d",
       "Name": "OBJECT",
       "Order": 4,
@@ -180,7 +180,7 @@
       ]
     },
     {
-      "IllustrationPath": "",
+      "IllustrationPath": "./Resources/Config/Pictures/VISU/VISU_PWORD.jpg",
       "ID": "5a144fa1-6662-4f97-a3e3-be8197983a49",
       "Name": "PSEUDOWORD",
       "Order": 5,
@@ -214,7 +214,7 @@
       ]
     },
     {
-      "IllustrationPath": "",
+      "IllustrationPath": "./Resources/Config/Pictures/VISU/VISU_CONSON.jpg",
       "ID": "ab59a3d2-1c8f-4c38-9ab6-90a656928aba",
       "Name": "CONSONANT",
       "Order": 6,
@@ -248,7 +248,7 @@
       ]
     },
     {
-      "IllustrationPath": "",
+      "IllustrationPath": "./Resources/Config/Pictures/VISU/VISU_SCRAMB.jpg",
       "ID": "85d1e3aa-ac94-4144-8d27-297695f00f74",
       "Name": "SCRAMBLED",
       "Order": 7,
@@ -282,7 +282,7 @@
       ]
     },
     {
-      "IllustrationPath": "",
+      "IllustrationPath": "./Resources/Config/Pictures/VISU/VISU_HOUSE.jpg",
       "ID": "d876b5ac-c097-46f4-9016-1c359eb4fe1c",
       "Name": "HOUSE",
       "Order": 0,
