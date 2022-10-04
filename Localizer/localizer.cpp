@@ -598,14 +598,8 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 
             if (!isAlreadyRunning)
             {
-                //TODO : QinputDialog is exploding, need to see why since it has been a long time since we reactivated concatenation
-                //QString fileName = QInputDialog::getText(this, "New Name", "Choose New File Name", QLineEdit::Normal, "New Micromed File", nullptr);
-
-                QString fileName = "CONCATENATED_FILE";
-                std::string suffixx = EEGFormat::Utility::GetFileExtension(fileName.toStdString());
-                QString suffix = QString::fromStdString(suffixx).toLower();
-
-                if (!fileName.isEmpty()) //TODO : put that back when issue with qinputdialog is solved => && suffix.contains("trc"))
+                QString fileName = QInputDialog::getText(this, "New Name", "Choose New File Name (without extension)", QLineEdit::Normal, "New Micromed File", nullptr);
+                if (!fileName.isEmpty())
                 {
                     QString dir = QFileInfo(m_localFileSystemModel->filePath(indexes[0])).dir().absolutePath();
                     ProcessMicromedFileConcatenation(files, dir, fileName);
@@ -625,12 +619,11 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
         {
             contextMenu->exec(ui.FileTreeView->viewport()->mapToGlobal(point));
         }
-
-        //Note : intead of using this => connect(contextMenu, &QMenu::aboutToHide, contextMenu, &QMenu::deleteLater);
-        //we delete the menu at the end so whether there was an action or not it is cleaned correctly . This is
-        //due to the need of having gui for user interactions
-        delete contextMenu;
     }
+    //Note : intead of using this => connect(contextMenu, &QMenu::aboutToHide, contextMenu, &QMenu::deleteLater);
+    //we delete the menu at the end so whether there was an action or not it is cleaned correctly . This is
+    //due to the need of having gui for user interactions
+    delete contextMenu;
 }
 
 void Localizer::SelectPtsForCorrelation()
