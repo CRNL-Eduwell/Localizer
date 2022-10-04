@@ -94,7 +94,7 @@ private slots:
 	void ProcessMicromedFileConcatenation(QList<QString> files, QString directoryPath, QString fileName);
     void DisplayLog(QString info);
     void DisplayColoredLog(QString info, QColor color = QColor(Qt::GlobalColor::black));
-	void UpdateProgressBar(int divider);
+    void UpdateProgressBar(int advancement);
 	void CancelAnalysis();
     void ReceiveElectrodeList(std::vector<std::string> ElectrodeList, std::string ConnectCleanerFile);
 

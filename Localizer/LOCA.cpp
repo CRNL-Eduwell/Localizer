@@ -196,8 +196,8 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
             else
             {
                 Barplot(myeegContainer, taskBarPlot, freqFolder);
-                //emit incrementAdavnce(static_cast<int>(provFiles.size()));
             }
+            emit incrementAdavnce(1);
         }
         else
         {
@@ -212,7 +212,7 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
                 {
                     Env2plot(myeegContainer, task, freqFolder);
                 }
-				//emit incrementAdavnce(static_cast<int>(provFiles.size()));
+                emit incrementAdavnce(1);
             }
         }
     }
@@ -231,7 +231,6 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
             {
                 TimeTrialMatrices(myeegContainer, task, freqFolder);
             }
-			//emit incrementAdavnce(static_cast<int>(provFiles.size()));
        }
        if(taskInverted != nullptr)
        {
@@ -244,15 +243,15 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
 			{
 				TimeTrialMatrices(myeegContainer, taskInverted, freqFolder);
 			}
-			//emit incrementAdavnce(static_cast<int>(provFiles.size()));
        }
+       emit incrementAdavnce(1);
    }
 
     //Process Correlation Maps
     if (a.correMaps)
     {
         CorrelationMaps(myeegContainer, freqFolder);
-        //emit incrementAdavnce(static_cast<int>(provFiles.size()));
+        emit incrementAdavnce(1);
     }
 
     //Process Statistical Files
@@ -268,7 +267,7 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
             StatisticalFilesProcessor sfp;
             sfp.Process(m_triggerContainer, myeegContainer, taskStatistics, freqFolder, m_statOption);
         }
-		//emit incrementAdavnce(static_cast<int>(provFiles.size()));
+        emit incrementAdavnce(1);
     }
 
     deleteAndNullify1D(m_triggerContainer);
@@ -820,7 +819,7 @@ void InsermLibrary::LOCA::TimeTrialMatrices(eegContainer* myeegContainer, ProvFi
 		pixmapChanel->save(outputPicPath.c_str(), "JPG");
 	}
 
-	delete windowSam;
+    delete[] windowSam;
 	deleteAndNullify1D(painterChanel);
 	deleteAndNullify1D(pixmapChanel);
 	deleteAndNullify1D(painterSubSubMatrix);

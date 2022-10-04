@@ -429,7 +429,6 @@ void Localizer::InitMultiSubjectProgresBar(std::vector<patientFolder> subjects)
     nbDoneTask = 0;
     nbTaskToDo = 0;
 
-    int nbFolderSelected = GetSelectedFolderCount(ui.FileTreeView->selectionModel()->selectedRows());
     int nbFrequencyBands = 0;
     for (int i = 0; i < ui.FrequencyListWidget->count(); i++)
     {
@@ -864,7 +863,6 @@ void Localizer::ProcessFileConvertion(QList<QString> newFileType)
     nbDoneTask = 0;
     ui.progressBar->reset();
 
-    InsermLibrary::picOption opt = picOpt->getPicOption();
     thread = new QThread;
     worker = new FileConverterWorker(files, provFiles);
 
@@ -932,9 +930,9 @@ void Localizer::DisplayColoredLog(QString messageToDisplay, QColor color)
     ui.messageDisplayer->setTextColor(Qt::GlobalColor::black);
 }
 
-void Localizer::UpdateProgressBar(int divider)
+void Localizer::UpdateProgressBar(int advancement)
 {
-    nbDoneTask = nbDoneTask + (1.0f / divider);
+    nbDoneTask += advancement;
     ui.progressBar->setValue((nbDoneTask / nbTaskToDo) * 100);
 }
 
