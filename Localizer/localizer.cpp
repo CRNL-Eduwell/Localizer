@@ -601,7 +601,14 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
                 if (!fileName.isEmpty())
                 {
                     QString dir = QFileInfo(m_localFileSystemModel->filePath(indexes[0])).dir().absolutePath();
-                    ProcessMicromedFileConcatenation(files, dir, fileName);
+                    if(QFileInfo::exists(dir + "/" + fileName + ".TRC"))
+                    {
+                        QMessageBox::information(this, "NopNopNopNopNop", "File already exists, please check the name.");
+                    }
+                    else
+                    {
+                        ProcessMicromedFileConcatenation(files, dir, fileName);
+                    }
                 }
                 else
                 {
