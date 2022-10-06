@@ -1,6 +1,6 @@
 #include "barsPlotsGenerator.h"
 
-InsermLibrary::DrawbarsPlots::baseCanvas::baseCanvas(InsermLibrary::PROV *myprovFile, int width, int heigth)
+InsermLibrary::DrawbarsPlots::baseCanvas::baseCanvas(InsermLibrary::ProvFile* myprovFile, int width, int heigth)
 {
 	Width = width;
 	Heigth = heigth;
@@ -12,10 +12,10 @@ InsermLibrary::DrawbarsPlots::baseCanvas::~baseCanvas()
 
 }
 
-void InsermLibrary::DrawbarsPlots::baseCanvas::drawTemplate(InsermLibrary::PROV *myprovFile)
+void InsermLibrary::DrawbarsPlots::baseCanvas::drawTemplate(InsermLibrary::ProvFile* myprovFile)
 {
 	//570 = 0.296875 * Width (Scr width = 1920)
-	int nbRow = myprovFile->nbRow();
+	int nbRow = myprovFile->Blocs().size();
 	pixmapTemplate = QPixmap(Width, Heigth);
 	pixmapTemplate.fill(QColor(Qt::white));
 	QPainter painter(&pixmapTemplate);
@@ -49,7 +49,7 @@ void InsermLibrary::DrawbarsPlots::baseCanvas::drawTemplate(InsermLibrary::PROV 
 				painter.setPen(QColor(0, 0, 0, 255)); //black
 				break;
 			}
-			painter.drawText(s_x, s_y, widthLeg, heigthLeg, Qt::AlignLeft | Qt::AlignTop, myprovFile->visuBlocs[j].mainEventBloc.eventLabel.c_str());
+			painter.drawText(s_x, s_y, widthLeg, heigthLeg, Qt::AlignLeft | Qt::AlignTop, myprovFile->Blocs()[j].MainSubBloc().MainEvent().Name().c_str());
 			s_y = s_y + (0.021994147797 * Heigth);   //25; Heig = 1136
 
 			if ((j + 1) % 3 == 0)
@@ -76,7 +76,7 @@ void InsermLibrary::DrawbarsPlots::baseCanvas::drawTemplate(InsermLibrary::PROV 
 	}
 }
 
-InsermLibrary::DrawbarsPlots::drawBars::drawBars(InsermLibrary::PROV *myprovFile, std::string outputFolder, QSize size) : baseCanvas(myprovFile,
+InsermLibrary::DrawbarsPlots::drawBars::drawBars(InsermLibrary::ProvFile* myprovFile, std::string outputFolder, QSize size) : baseCanvas(myprovFile,
 																				   size.width(), 
 																				   size.height())
 {
@@ -97,8 +97,12 @@ void InsermLibrary::DrawbarsPlots::drawBars::drawDataOnTemplate(vec3<float> &big
 	QPixmap *pixmap = nullptr;
 	QColor drawRectColor;
 
-	int *windowSam = myprovFile->getBiggestWindowSam(myeegContainer->DownsampledFrequency());
-	int nbRow = myprovFile->nbRow();
+	// Get biggest window possible, for now we use the assumption that every bloc has the same window
+	// TODO : deal with possible different windows
+	int StartInSam = (myprovFile->Blocs()[0].MainSubBloc().MainWindow().Start() * myeegContainer->DownsampledFrequency()) / 1000;
+	int EndinSam = (myprovFile->Blocs()[0].MainSubBloc().MainWindow().End() * myeegContainer->DownsampledFrequency()) / 1000;
+	int* windowSam = new int[2]{ StartInSam, EndinSam };
+	int nbRow = myprovFile->Blocs().size();
 
 	QString tifName = "";
 	vec1<float> erp = vec1<float>(nbRow);							vec1<float> lim = vec1<float>(nbRow);
@@ -157,7 +161,7 @@ void InsermLibrary::DrawbarsPlots::drawBars::drawDataOnTemplate(vec3<float> &big
 					{
                         int lowTrigg = std::get<1>(CodeAndTrialsIndexes[k]);
                         int highTrigg = std::get<2>(CodeAndTrialsIndexes[k]) - 1;
-						int currentMainCode = myprovFile->visuBlocs[k].mainEventBloc.eventCode[0];
+						int currentMainCode = myprovFile->Blocs()[k].MainSubBloc().MainEvent().Codes()[0];
 
 						if (Triggers[lowTrigg].MainCode() == currentMainCode && Triggers[highTrigg].MainCode() == currentMainCode)
 						{
@@ -183,7 +187,7 @@ void InsermLibrary::DrawbarsPlots::drawBars::drawDataOnTemplate(vec3<float> &big
 						else
 						{
                             std::cout << "ATTENTION, PLEASE : NO EVENT WITH TYPE = "
-                                << myprovFile->visuBlocs[k].mainEventBloc.eventCode[0] << std::endl;
+                                << myprovFile->Blocs()[k].MainSubBloc().MainEvent().Codes()[0] << std::endl;
 						}
 					}
 
@@ -310,7 +314,7 @@ QString InsermLibrary::DrawbarsPlots::drawBars::createPicPath(std::string picFol
 	return tifName.append(".jpg");
 }
 
-InsermLibrary::DrawbarsPlots::drawPlots::drawPlots(InsermLibrary::PROV *myprovFile, std::string outputFolder, QSize size) : baseCanvas(myprovFile,
+InsermLibrary::DrawbarsPlots::drawPlots::drawPlots(InsermLibrary::ProvFile* myprovFile, std::string outputFolder, QSize size) : baseCanvas(myprovFile,
 																					 size.width(),
 																					 size.height())
 {
@@ -330,14 +334,15 @@ void InsermLibrary::DrawbarsPlots::drawPlots::drawDataOnTemplate(vec3<float> &bi
 	QPainter *painter = nullptr;
 	QPixmap *pixmap = nullptr;
 
-	int *windowSam = nullptr; 
+	int SamplingFrequency = card2Draw == 2 ? myeegContainer->DownsampledFrequency() : myeegContainer->SamplingFrequency();
 	
-	if (card2Draw == 2)
-		windowSam = myprovFile->getBiggestWindowSam(myeegContainer->DownsampledFrequency());
-	else
-		windowSam = myprovFile->getBiggestWindowSam(myeegContainer->SamplingFrequency());
-	
-	int nbRow = myprovFile->nbRow();
+	// Get biggest window possible, for now we use the assumption that every bloc has the same window
+	// TODO : deal with possible different windows
+	int StartInSam = (myprovFile->Blocs()[0].MainSubBloc().MainWindow().Start() * SamplingFrequency) / 1000;
+	int EndinSam = (myprovFile->Blocs()[0].MainSubBloc().MainWindow().End() * SamplingFrequency) / 1000;
+	int* windowSam = new int[2]{ StartInSam, EndinSam };
+
+	int nbRow = myprovFile->Blocs().size();
 
 	QString tifName = "";
 	vec1<float> erp = vec1<float>(windowSam[1] - windowSam[0]);		vec1<float> erpPMax = vec1<float>(nbRow);
@@ -385,7 +390,7 @@ void InsermLibrary::DrawbarsPlots::drawPlots::drawDataOnTemplate(vec3<float> &bi
 			bool isElecHere = false;
 			if (card2Draw == 0)
 			{
-				isElecHere = j /*+ 1*/ <= myeegContainer->electrodes[i].id.size();
+				isElecHere = j /*+ 1*/ </*=*/ myeegContainer->electrodes[i].id.size();
 			}
 			else
 			{
@@ -423,7 +428,7 @@ void InsermLibrary::DrawbarsPlots::drawPlots::drawDataOnTemplate(vec3<float> &bi
 					{
                         int lowTrigg = std::get<1>(CodeAndTrialsIndexes[k]);
                         int highTrigg = std::get<2>(CodeAndTrialsIndexes[k]) - 1;
-						int currentMainCode = myprovFile->visuBlocs[k].mainEventBloc.eventCode[0];
+						int currentMainCode = myprovFile->Blocs()[k].MainSubBloc().MainEvent().Codes()[0];
 
 						if (Triggers[lowTrigg].MainCode() == currentMainCode && Triggers[highTrigg].MainCode() == currentMainCode)
 						{
@@ -460,7 +465,7 @@ void InsermLibrary::DrawbarsPlots::drawPlots::drawDataOnTemplate(vec3<float> &bi
 						else
 						{
                             std::cout << "ATTENTION, PLEASE : NO EVENT WITH TYPE = "
-                                << myprovFile->visuBlocs[k].mainEventBloc.eventCode[0] << std::endl;
+                                << myprovFile->Blocs()[k].MainSubBloc().MainEvent().Codes()[0] << std::endl;
 						}
 					}
 

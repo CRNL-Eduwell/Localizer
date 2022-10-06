@@ -1,6 +1,6 @@
 {
   "ID": "xxxxxxxxxxxxxxxxxxxxxxxxx",
-  "Name": "MOTO",
+  "Name": "MOTO_BARPLOT",
   "Blocs": [
     {
       "IllustrationPath": "",
@@ -16,7 +16,7 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 3000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -50,7 +50,7 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 3000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -84,7 +84,7 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 3000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -118,7 +118,7 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 3000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -152,7 +152,7 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 3000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -186,7 +186,7 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 3000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -220,7 +220,7 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 3000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -254,7 +254,7 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 3000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -288,7 +288,7 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 3000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -322,7 +322,7 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 3000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -356,7 +356,7 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 3000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -390,7 +390,7 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 3000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -413,9 +413,9 @@
     {
       "IllustrationPath": "",
       "ID": "23ac3bb6-70bb-45c9-83a4-f825b6020721",
-      "Name": "NO_MOVE",
+      "Name": "NO_MOVE1",
       "Order": 12,
-      "Sort": "Main_NO_MOVE_CODE",
+      "Sort": "Main_NO_MOVE1_CODE",
       "SubBlocs": [
         {
           "ID": "e3e2fd35-26f6-42d0-9172-11356fb68404",
@@ -424,7 +424,7 @@
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 3000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -432,10 +432,43 @@
           },
           "Events": [
             {
-              "Name": "NO_MOVE",
+              "Name": "NO_MOVE1",
               "Codes": [
-                71,
-		72
+                71
+              ],
+              "Type": 0
+            }
+          ],
+          "Icons": [],
+          "Treatments": []
+        }
+      ]
+    },
+    {
+      "IllustrationPath": "",
+      "ID": "23ac3bb6-70bb-45c9-83a4-f825b6020721",
+      "Name": "NO_MOVE2",
+      "Order": 13,
+      "Sort": "Main_NO_MOVE2_CODE",
+      "SubBlocs": [
+        {
+          "ID": "e3e2fd35-26f6-42d0-9172-11356fb68404",
+          "Name": "Main",
+          "Order": 0,
+          "Type": 0,
+          "Window": {
+            "Start": -500,
+            "End": 500
+          },
+          "Baseline": {
+            "Start": -200,
+            "End": 0
+          },
+          "Events": [
+            {
+              "Name": "NO_MOVE2",
+              "Codes": [
+                72
               ],
               "Type": 0
             }

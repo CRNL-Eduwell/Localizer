@@ -14,7 +14,8 @@ namespace InsermLibrary
     public:
         ProvFile(const std::string& filePath);
         ~ProvFile();
-        inline const std::vector<Bloc>& Blocs() { return m_blocs; }
+        inline const std::string FilePath() { return m_filePath; }
+        inline std::vector<Bloc>& Blocs() { return m_blocs; }
 
     private :
         void Load(const std::string& filePath);
@@ -22,6 +23,7 @@ namespace InsermLibrary
         void Save();
 
     private:
+        std::string m_filePath = "";
         std::vector<Bloc> m_blocs;
     };
 }

@@ -9,7 +9,7 @@
 
 #include <string>
 #include <iostream>
-#include "PROV.h"
+//#include "PROV.h"
 #include "../../EEGFormat/EEGFormat/Utility.h"
 
 class ProtocolFile
@@ -24,12 +24,12 @@ public:
 private:
     QStringList GetHeaderList();
     void LoadEmptyModel();
-    void LoadProtocolInModel(InsermLibrary::PROV protocol);
+    //void LoadProtocolInModel(InsermLibrary::PROV protocol);
 
 private:
     QFileInfo m_FileInfo;
     QStandardItemModel* m_ItemModel = nullptr;
-    InsermLibrary::PROV *m_Prov = nullptr;
+    //InsermLibrary::PROV *m_Prov = nullptr;
 };
 
 #endif // PROTOCOLFILE_H

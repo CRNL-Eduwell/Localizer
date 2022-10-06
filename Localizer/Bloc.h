@@ -19,10 +19,16 @@ namespace InsermLibrary
         inline const std::string IllustrationPath() { return m_illustrationPath; }
         inline const std::string Sort() { return m_sort; }
         inline const std::vector<SubBloc>& SubBlocs() { return m_subBlocs; }
-        inline SubBloc MainSubBloc()
+        inline SubBloc& MainSubBloc()
         {
-            auto it = std::find_if(m_subBlocs.begin(), m_subBlocs.end(), [&](SubBloc a){ return a.Type() == MainSecondaryEnum::Main; });
-            return it != m_subBlocs.end() ? *it : SubBloc();
+            for (int i = 0; i < m_subBlocs.size(); i++)
+            {
+                if (m_subBlocs[i].Type() == MainSecondaryEnum::Main)
+                {
+                    return m_subBlocs[i];
+                }
+            }
+            return m_subBlocs[0]; //that's ugly as shit, it should never arrive at this point
         }
         // Setter
         inline void Name(std::string name) { m_name = name; }

@@ -1,0 +1,12 @@
+ROW;COL;Name;Path;Window;BaseLine;Main Event;Maint Event Label;Secondary Events;Secondary Events Label;Sort
+1;1;Maison;/Resources/Config/Pictures/VISU/VISU_HOUSE.jpg;-500:1000;-200:0;10;Maison;0;RESPONSE;C0
+9;1;Fruits;/Resources/Config/Pictures/VISU/VISU_FRUIT.jpg;-500:1000;-200:0;80;Fruits;0;RESPONSE;C0
+2;1;Visage;/Resources/Config/Pictures/VISU/VISU_FACE.jpg;-500:1000;-200:0;20;Visage;0;RESPONSE;C0
+3;1;Animal;/Resources/Config/Pictures/VISU/VISU_ANIMAL.jpg;-500:1000;-200:0;30;Animal;0;RESPONSE;C0
+4;1;Scene;/Resources/Config/Pictures/VISU/VISU_LANDSCAPE.jpg;-500:1000;-200:0;40;Scene;0;RESPONSE;C0
+5;1;Objets;/Resources/Config/Pictures/VISU/VISU_OBJECT.jpg;-500:1000;-200:0;50;Objets;0;RESPONSE;C0
+6;1;Pseudo;/Resources/Config/Pictures/VISU/VISU_PWORD.jpg;-500:1000;-200:0;60;Pseudo;0;RESPONSE;C0
+7;1;Conson;/Resources/Config/Pictures/VISU/VISU_CONSON.jpg;-500:1000;-200:0;70;Conson;0;RESPONSE;C0
+8;1;Scrambled;/Resources/Config/Pictures/VISU/VISU_SCRAMB.jpg;-500:1000;-200:0;90;Scrambled;0;RESPONSE;C0
+NO_CHANGE_CODE
+NO_INVERT

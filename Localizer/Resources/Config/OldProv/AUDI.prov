@@ -1,0 +1,16 @@
+ROW;COL;Name;Path;Window;BaseLine;Main Event;Maint Event Label;Secondary Events;Secondary Events Label;Sort
+1;1;Parol;/home/Parol.jpg;-500:500;-450:-250;1;Parol;0;OSEF;C0
+2;1;Rever;/home/Rever.jpg;-500:500;-450:-250;2;Rever;0;OSEF;C0
+3;1;Suom;/home/Suom.jpg;-500:500;-450:-250;3;Suom;0;OSEF;C0
+4;1;Alpha;/home/Alpha.jpg;-500:500;-450:-250;4;Alpha;0;OSEF;C0
+5;1;Human;/home/Human.jpg;-500:500;-450:-250;5;Human;0;OSEF;C0
+6;1;Pleur;/home/Pleur.jpg;-500:500;-450:-250;6;Pleur;0;OSEF;C0
+7;1;Rires;/home/Rires.jpg;-500:500;-450:-250;7;Rires;0;OSEF;C0
+8;1;Yawny;/home/Yawny.jpg;-500:500;-450:-250;8;Yawny;0;OSEF;C0
+9;1;Cough;/home/Cough.jpg;-500:500;-450:-250;9;Cough;0;OSEF;C0
+10;1;Music;/home/Music.jpg;-500:500;-450:-250;10;Music;0;OSEF;C0
+11;1;Envir;/home/Envir.jpg;-500:500;-450:-250;11;Envir;0;OSEF;C0
+12;1;Animo;/home/Animo.jpg;-500:500;-450:-250;12;Animo;0;OSEF;C0
+13;1;Silen;/home/Silen.jpg;-500:500;-450:-250;20;Silen;0;OSEF;C0
+NO_CHANGE_CODE
+NO_INVERT

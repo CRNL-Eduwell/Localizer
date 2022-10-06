@@ -12,11 +12,11 @@ namespace InsermLibrary
         Window(int start, int end);
         ~Window();
 
-        inline int Start() { return m_Start; }
+        inline int Start() const { return m_Start; }
         inline void Start(int start) { m_Start = start; }
-        inline int End() { return m_End; }
+        inline int End() const { return m_End; }
         inline void End(int end) { m_End = end; }
-        inline int Length() { return m_End - m_Start; }
+        inline int Length() const { return m_End - m_Start; }
 
     private :
         int m_Start = 0;

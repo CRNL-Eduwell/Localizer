@@ -1,10 +1,10 @@
 #include "ProvFile.h"
-#include <QDebug>
 
 InsermLibrary::ProvFile::ProvFile(const std::string& filePath)
 {
     try
     {
+        m_filePath = std::string(filePath);
         Load(filePath);
     }
     catch (std::exception& e)
@@ -81,22 +81,27 @@ void InsermLibrary::ProvFile::FillProtocolInformations(nlohmann::json jsonObject
 
                     events.push_back(Event(name, codes, type));
                 }
-                subBlocs.push_back(SubBloc(subBlocName, subBlocOrder, type, subBlocWIndow, baseLineWindow, events));
 
-//Not used for now
-//                for (nlohmann::json::iterator it3 = jsonArea2["Icons"].begin(); it3 != jsonArea2["Icons"].end(); ++it3)
-//                {
-//                    nlohmann::json jsonArea3 = it3.value();
-//                    qDebug() << jsonArea3["ImagePath"].get<std::string>().c_str();
-//                    qDebug() << jsonArea3["Name"].get<std::string>().c_str();
-//                    qDebug() << jsonArea3["Window"]["Start"].get<int>();
-//                    qDebug() << jsonArea3["Window"]["End"].get<int>();
-//                }
+                std::vector<Icon> icons;
+                for (nlohmann::json::iterator it3 = jsonArea2["Icons"].begin(); it3 != jsonArea2["Icons"].end(); ++it3)
+                {
+                    nlohmann::json jsonArea3 = it3.value();
+                    std::string imagePath = jsonArea3["ImagePath"].get<std::string>();
+                    std::string imageName = jsonArea3["Name"].get<std::string>();
+                    int begWindow = jsonArea3["Window"]["Start"].get<int>();
+                    int endWindow = jsonArea3["Window"]["End"].get<int>();
+
+                    icons.push_back(Icon(imageName, imagePath, Window(begWindow, endWindow)));
+                }
+
+                subBlocs.push_back(SubBloc(subBlocName, subBlocOrder, type, subBlocWIndow, baseLineWindow, events, icons));
             }
-        } // end if subblocs
+        }
 
         m_blocs.push_back(Bloc(blocName, blocOrder, blocIllustrationPath, blocSort, subBlocs));
     }
+
+    std::sort(m_blocs.begin(), m_blocs.end(), [](Bloc a, Bloc b) { return (a.Order() < b.Order()); });
 }
 
 void InsermLibrary::ProvFile::Save()
