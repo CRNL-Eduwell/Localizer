@@ -27,6 +27,8 @@ void InsermLibrary::ProvFile::Load(const std::string& filePath)
         buffer << jsonFile.rdbuf();
         jsonFile.close();
 
+        m_id = nlohmann::json::parse(buffer.str())["ID"].get<std::string>();
+        m_name = nlohmann::json::parse(buffer.str())["Name"].get<std::string>();
         nlohmann::json rawData = nlohmann::json::parse(buffer.str())["Blocs"];
         FillProtocolInformations(rawData);
     }
@@ -78,8 +80,9 @@ void InsermLibrary::ProvFile::FillProtocolInformations(nlohmann::json jsonObject
                         codes.push_back(jsonArea3["Codes"][i].get<int>());
                     }
                     MainSecondaryEnum type = (MainSecondaryEnum)jsonArea3["Type"].get<int>();
+                    std::string uid = jsonArea3["ID"].get<std::string>();
 
-                    events.push_back(Event(name, codes, type));
+                    events.push_back(Event(name, codes, type, uid));
                 }
 
                 std::vector<Icon> icons;
@@ -90,21 +93,119 @@ void InsermLibrary::ProvFile::FillProtocolInformations(nlohmann::json jsonObject
                     std::string imageName = jsonArea3["Name"].get<std::string>();
                     int begWindow = jsonArea3["Window"]["Start"].get<int>();
                     int endWindow = jsonArea3["Window"]["End"].get<int>();
+                    std::string uid = jsonArea3["ID"].get<std::string>();
 
-                    icons.push_back(Icon(imageName, imagePath, Window(begWindow, endWindow)));
+                    icons.push_back(Icon(imageName, imagePath, Window(begWindow, endWindow), uid));
                 }
 
-                subBlocs.push_back(SubBloc(subBlocName, subBlocOrder, type, subBlocWIndow, baseLineWindow, events, icons));
+                std::string uid = jsonArea2["ID"].get<std::string>();
+
+                subBlocs.push_back(SubBloc(subBlocName, subBlocOrder, type, subBlocWIndow, baseLineWindow, events, icons, uid));
             }
         }
+        std::string uid = jsonArea["ID"].get<std::string>();
 
-        m_blocs.push_back(Bloc(blocName, blocOrder, blocIllustrationPath, blocSort, subBlocs));
+        m_blocs.push_back(Bloc(blocName, blocOrder, blocIllustrationPath, blocSort, subBlocs, uid));
     }
 
     std::sort(m_blocs.begin(), m_blocs.end(), [](Bloc a, Bloc b) { return (a.Order() < b.Order()); });
 }
 
-void InsermLibrary::ProvFile::Save()
+nlohmann::ordered_json InsermLibrary::ProvFile::GetWritableJsonObject()
 {
-    throw std::runtime_error("ProvFile Save => : Not implemented yet, oupsi");
+    nlohmann::ordered_json jsonArea;
+    jsonArea["ID"] = m_id;
+    jsonArea["Name"] = m_name;
+    for (int i = 0; i < m_blocs.size(); i++)
+    {
+        Bloc bloc = m_blocs[i];
+
+        nlohmann::ordered_json jsonBloc;
+        jsonBloc["IllustrationPath"] = bloc.IllustrationPath();
+        jsonBloc["Name"] = bloc.Name();
+        jsonBloc["Order"] = bloc.Order();
+        jsonBloc["Sort"] = bloc.Sort();
+        for (int j = 0; j < bloc.SubBlocs().size(); j++)
+        {
+            SubBloc subBloc = bloc.SubBlocs()[j];
+
+            nlohmann::ordered_json jsonSubBloc;
+            jsonSubBloc["Name"] = subBloc.Name();
+            jsonSubBloc["Order"] = subBloc.Order();
+            jsonSubBloc["Type"] = subBloc.Type();
+            jsonSubBloc["Window"] = { { "Start" , subBloc.MainWindow().Start() }, { "End" , subBloc.MainWindow().End() } };
+            jsonSubBloc["Baseline"] = { { "Start" , subBloc.Baseline().Start() }, { "End" , subBloc.Baseline().End() } };
+            jsonSubBloc["Events"] = nlohmann::json::array();
+
+            nlohmann::ordered_json jsonMainEvent;
+            jsonMainEvent["Name"] = subBloc.MainEvent().Name();
+            for (int k = 0; k < subBloc.MainEvent().Codes().size(); k++)
+            {
+                jsonMainEvent["Codes"].push_back(subBloc.MainEvent().Codes()[k]);
+            }
+            jsonMainEvent["Type"] = subBloc.MainEvent().Type();
+            jsonMainEvent["ID"] = subBloc.MainEvent().GUID();
+
+            //==
+            jsonSubBloc["Events"].push_back(jsonMainEvent);
+            //===
+
+            for (int k = 0; k < subBloc.SecondaryEvents().size(); k++)
+            {
+                nlohmann::ordered_json jsonSecondaryEvent;
+                jsonSecondaryEvent["Name"] = subBloc.SecondaryEvents()[k].Name();
+                for (int l = 0; l < subBloc.SecondaryEvents()[k].Codes().size(); l++)
+                {
+                    jsonSecondaryEvent["Codes"].push_back(subBloc.SecondaryEvents()[k].Codes()[l]);
+                }
+                jsonSecondaryEvent["Type"] = subBloc.SecondaryEvents()[k].Type();
+                jsonSecondaryEvent["ID"] = subBloc.SecondaryEvents()[k].GUID();
+
+                //==
+                jsonSubBloc["Events"].push_back(jsonSecondaryEvent);
+                //===
+            }
+
+            jsonSubBloc["Icons"] = nlohmann::json::array();
+            for (int k = 0; k < subBloc.Icons().size(); k++)
+            {
+                Icon icon = subBloc.Icons()[k];
+
+                nlohmann::ordered_json jsonIcon;
+                jsonIcon["ImagePath"] = icon.Path();
+                jsonIcon["Name"] = icon.Name();
+                jsonIcon["Window"] = { { "Start" , icon.DisplayWindow().Start() }, { "End" , icon.DisplayWindow().End() } };
+                jsonIcon["ID"] = icon.GUID();
+
+                //==
+                jsonSubBloc["Icons"].push_back(jsonIcon);
+                //==
+            }
+
+            jsonSubBloc["Treatments"] = nlohmann::json::array();
+            jsonSubBloc["ID"] = subBloc.GUID();
+            //===
+            jsonBloc["SubBlocs"].push_back(jsonSubBloc);
+        }
+        jsonBloc["ID"] = bloc.GUID();
+        //===
+        jsonArea["Blocs"].push_back(jsonBloc);
+    }
+
+    return jsonArea;
+}
+
+void InsermLibrary::ProvFile::SaveAs(const std::string& filePath)
+{
+    std::string outputFile = (filePath == "") ? m_filePath : filePath;
+    std::ofstream jsonFile(outputFile, std::ios::out);
+    if (jsonFile.is_open())
+    {
+        jsonFile << GetWritableJsonObject().dump(2) << std::endl;
+        jsonFile.close();
+    }
+    else
+    {
+        throw std::runtime_error("ProvFile Save => : Could not open json file");
+    }
 }

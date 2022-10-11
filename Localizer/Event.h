@@ -12,7 +12,7 @@ namespace InsermLibrary
     {
     public:
         Event();
-        Event(std::string name, std::vector<int> codes, MainSecondaryEnum type);
+        Event(std::string name, std::vector<int> codes, MainSecondaryEnum type, std::string uid);
         ~Event();
 
         //Getter / Setter
@@ -22,6 +22,7 @@ namespace InsermLibrary
         inline void Codes(const std::vector<int> codes) { m_codes = std::vector<int>(codes); }
         inline MainSecondaryEnum Type() { return m_type; }
         inline void Type(MainSecondaryEnum type) { m_type = type; }
+        inline const std::string GUID() { return m_uid; }
 
         bool operator==(const Event& other) const
         {
@@ -46,6 +47,7 @@ namespace InsermLibrary
         std::string m_name = "";
         std::vector<int> m_codes;
         MainSecondaryEnum m_type;
+        std::string m_uid = "";
     };
 }
 

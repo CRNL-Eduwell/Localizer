@@ -13,7 +13,7 @@ namespace InsermLibrary
     {
     public:
         SubBloc();
-        SubBloc(std::string name, int order, MainSecondaryEnum type, Window window, Window baseline, std::vector<Event> events, std::vector<Icon> icons);
+        SubBloc(std::string name, int order, MainSecondaryEnum type, Window window, Window baseline, std::vector<Event> events, std::vector<Icon> icons, std::string uid);
         ~SubBloc();
 
         inline const std::string Name() { return m_name; }
@@ -42,6 +42,8 @@ namespace InsermLibrary
             }
             return secondaryEvents;
         }
+        inline const std::vector<Icon>& Icons() { return m_icons; }
+        inline const std::string GUID() { return m_uid; }
 
     private :
         std::string m_name;
@@ -50,6 +52,7 @@ namespace InsermLibrary
         Window m_window, m_baseline;
         std::vector<Event> m_events;
         std::vector<Icon> m_icons;
+        std::string m_uid = "";
     };
 }
 #endif // SUBBLOC_H

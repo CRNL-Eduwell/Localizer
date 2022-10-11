@@ -636,6 +636,12 @@
     <ClInclude Include="TriggerContainer.h">
       <Filter>Header Files\Data</Filter>
     </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>Header Files\Data\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="json_fwd.hpp">
+      <Filter>Header Files\Data\Tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="myapp.rc" />
