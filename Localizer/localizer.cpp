@@ -948,10 +948,8 @@ void Localizer::CancelAnalysis()
     if (isAlreadyRunning)
     {
         m_lockLoop.lockForWrite();
-        thread->terminate();
-        while (!thread->isFinished())
-        {
-        }
+        thread->quit();
+        thread->wait();
         isAlreadyRunning = false;
         QMessageBox::information(this, "Canceled", "Analysis has been canceled by the user");
         DisplayLog("");
