@@ -1,0 +1,5 @@
+ROW;COL;Name;Path;Window;BaseLine;Main Event;Maint Event Label;Secondary Events;Secondary Events Label;Sort
+1;1;Attention;/Resources/Config/Pictures/LEC2/LEC2_ATT.jpg;-300:1200;-200:0;10;Attention;0;OSEF;C0
+2;1;Ignore;/Resources/Config/Pictures/LEC2/LEC2_IGN.jpg;-300:1200;-200:0;20;Ignore;0;OSEF;C0
+NO_CHANGE_CODE
+NO_INVERT

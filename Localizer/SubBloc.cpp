@@ -8,9 +8,10 @@ InsermLibrary::SubBloc::SubBloc()
     m_baseline = Window(-300,0);
     m_type = MainSecondaryEnum::Main;
     m_events = std::vector<Event>();
+    m_icons = std::vector<Icon>();
 }
 
-InsermLibrary::SubBloc::SubBloc(std::string name, int order, MainSecondaryEnum type, Window window, Window baseline, std::vector<Event> events)
+InsermLibrary::SubBloc::SubBloc(std::string name, int order, MainSecondaryEnum type, Window window, Window baseline, std::vector<Event> events, std::vector<Icon> icons)
 {
     m_name = name;
     m_order = order;
@@ -18,6 +19,7 @@ InsermLibrary::SubBloc::SubBloc(std::string name, int order, MainSecondaryEnum t
     m_baseline = baseline;
     m_type = type;
     m_events = events;
+    m_icons = icons;
 }
 
 InsermLibrary::SubBloc::~SubBloc()

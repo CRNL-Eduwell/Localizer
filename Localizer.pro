@@ -18,6 +18,7 @@ unix:!macx{
 macx{
     QMAKE_CXXFLAGS += -O3
     QMAKE_CXXFLAGS_WARN_ON += -Wno-maybe-uninitialized -Wno-unused-result -Wno-unused-function -Wno-unused-parameter -Wno-comment -Wno-sign-compare -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-local-typedefs -Wno-reorder -Wno-switch #-Wfatal-errors -Werror
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.15 #allow acces to C++ 17 std::filesystem
 }
 
 macx{
@@ -93,9 +94,9 @@ HEADERS += \
     Localizer/IAlgorithmStrategy.h \
     Localizer/ITxtFile.h \
     Localizer/IWorker.h \
+	Localizer/Icon.h \
     Localizer/LOCA.h \
     Localizer/MultiSubjectWorker.h \
-    Localizer/PROV.h \
     Localizer/PROVParameters.h \
     Localizer/PatientFolderWorker.h \
     Localizer/Protocol.h \
@@ -103,6 +104,7 @@ HEADERS += \
     Localizer/ProtocolWindow.h \
     Localizer/ProvFile.h \
     Localizer/SingleFilesWorker.h \
+    Localizer/StatisticalFilesProcessor.h \
     Localizer/Stats.h \
     Localizer/SubBloc.h \
     Localizer/Trigger.h \
@@ -146,15 +148,16 @@ SOURCES += \
     Localizer/HilbertEnveloppe.cpp \
     Localizer/ITxtFile.cpp \
     Localizer/IWorker.cpp \
+	Localizer/Icon.cpp \
     Localizer/LOCA.cpp \
     Localizer/MultiSubjectWorker.cpp \
-    Localizer/PROV.cpp \
     Localizer/PatientFolderWorker.cpp \
     Localizer/Protocol.cpp \
     Localizer/ProtocolFile.cpp \
     Localizer/ProtocolWindow.cpp \
     Localizer/ProvFile.cpp \
     Localizer/SingleFilesWorker.cpp \
+    Localizer/StatisticalFilesProcessor.cpp \
     Localizer/Stats.cpp \
     Localizer/SubBloc.cpp \
     Localizer/Trigger.cpp \

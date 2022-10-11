@@ -4,6 +4,7 @@
 #include <iostream>
 #include "Window.h"
 #include "Event.h"
+#include "Icon.h"
 #include <algorithm>
 
 namespace InsermLibrary
@@ -12,7 +13,7 @@ namespace InsermLibrary
     {
     public:
         SubBloc();
-        SubBloc(std::string name, int order, MainSecondaryEnum type, Window window, Window baseline, std::vector<Event> events);
+        SubBloc(std::string name, int order, MainSecondaryEnum type, Window window, Window baseline, std::vector<Event> events, std::vector<Icon> icons);
         ~SubBloc();
 
         inline const std::string Name() { return m_name; }
@@ -48,6 +49,7 @@ namespace InsermLibrary
         MainSecondaryEnum m_type;
         Window m_window, m_baseline;
         std::vector<Event> m_events;
+        std::vector<Icon> m_icons;
     };
 }
 #endif // SUBBLOC_H

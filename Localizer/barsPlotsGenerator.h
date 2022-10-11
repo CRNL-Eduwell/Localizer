@@ -4,7 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include "Utility.h"
-#include "PROV.h"
+#include "ProvFile.h"
 #include "eegContainer.h"
 #include "TriggerContainer.h"
 #include <QPixmap>
@@ -19,10 +19,10 @@ namespace InsermLibrary
 		class baseCanvas
 		{
 		public:
-			baseCanvas(PROV *myprovFile, int width, int heigth);
+			baseCanvas(ProvFile* myprovFile, int width, int heigth);
 			~baseCanvas();
 		private:
-			void drawTemplate(PROV *myprovFile);
+			void drawTemplate(ProvFile* myprovFile);
 		public:
 			int nbElecPerFigure = 3;
 			int nbSite = 20;
@@ -34,24 +34,24 @@ namespace InsermLibrary
 		class drawBars : public baseCanvas
 		{
 		public:
-			drawBars(PROV *myprovFile, std::string outputFolder, QSize size);
+			drawBars(ProvFile* myprovFile, std::string outputFolder, QSize size);
 			~drawBars();
 			void drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* triggerContainer, vec1<PVALUECOORD> significantValue, eegContainer* myeegContainer);
 			QString createPicPath(std::string picFolder, eegContainer* myeegContainer, int idElec);
 		public:
-			PROV *myprovFile = nullptr;
+			ProvFile* myprovFile = nullptr;
 			std::string picOutputFolder = "";
 		};
 
 		class drawPlots : public baseCanvas
 		{
 		public:
-			drawPlots(PROV *myprovFile, std::string outputFolder, QSize size);
+			drawPlots(ProvFile* myprovFile, std::string outputFolder, QSize size);
 			~drawPlots();
 			void drawDataOnTemplate(vec3<float> &bigData, TriggerContainer* triggerContainer, eegContainer* myeegContainer, int card2Draw);
 			QString createPicPath(std::string picFolder, eegContainer* myeegContainer, int cards2Draw, int nbFigureDrawn);
 		public:
-			PROV *myprovFile = nullptr;
+			ProvFile* myprovFile = nullptr;
 			std::string picOutputFolder = "";
 		};
 	}

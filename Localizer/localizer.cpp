@@ -39,7 +39,7 @@ void Localizer::ReSetupGUI()
     optPerf = new optionsPerf();
     optStat = new optionsStats();
     picOpt = new picOptions();
-    optLoca = new ProtocolWindow();
+    //optLoca = new ProtocolWindow(); //TODO : Need to make the new gui for hibop provfiles
 
     ui.progressBar->reset();
 }
@@ -109,8 +109,9 @@ void Localizer::ConnectMenuBar()
     connect(openStatMenu, &QAction::triggered, this, [&] { optStat->exec(); });
     QAction* openPicMenu = ui.menuConfiguration->actions().at(2);
     connect(openPicMenu, &QAction::triggered, this, [&] { picOpt->exec(); });
-    QAction* openLocaMenu = ui.menuConfiguration->actions().at(3);
-    connect(openLocaMenu, &QAction::triggered, this, [&] { optLoca->exec(); });
+    //TODO : need to reactivate that once new ui is done
+    //QAction* openLocaMenu = ui.menuConfiguration->actions().at(3);
+    //connect(openLocaMenu, &QAction::triggered, this, [&] { optLoca->exec(); });
 	QAction* openFilePriorityMenu = ui.menuConfiguration->actions().at(4);
 	connect(openFilePriorityMenu, &QAction::triggered, this, [&] 
 	{ 	
@@ -428,7 +429,6 @@ void Localizer::InitMultiSubjectProgresBar(std::vector<patientFolder> subjects)
     nbDoneTask = 0;
     nbTaskToDo = 0;
 
-    int nbFolderSelected = GetSelectedFolderCount(ui.FileTreeView->selectionModel()->selectedRows());
     int nbFrequencyBands = 0;
     for (int i = 0; i < ui.FrequencyListWidget->count(); i++)
     {
@@ -532,7 +532,6 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
     extention << "trc" << "eeg" << "vhdr" << "edf";
 
     QMenu* contextMenu = new QMenu();
-    connect(contextMenu, &QMenu::aboutToHide, contextMenu, &QMenu::deleteLater);
 
     QModelIndex index = ui.FileTreeView->indexAt(point);
     QFileInfo selectedElementInfo = QFileInfo(m_localFileSystemModel->filePath(index));
@@ -552,10 +551,11 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 
             if (!isAlreadyRunning)
             {
-                ErpProcessor* erpWindow = new ErpProcessor(files, this);
-                connect(erpWindow, &ErpProcessor::SendExamCorrespondance, this, &Localizer::ProcessERPAnalysis);
-                erpWindow->exec();
-                delete erpWindow;
+                ErpProcessor erpWindow(files, this);
+                connect(&erpWindow, &ErpProcessor::SendExamCorrespondance, this, &Localizer::ProcessERPAnalysis);
+                erpWindow.exec();
+                disconnect(&erpWindow, nullptr, nullptr, nullptr);
+
             }
             else
             {
@@ -597,17 +597,18 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
 
             if (!isAlreadyRunning)
             {
-                //TODO : QinputDialog is exploding, need to see why since it has been a long time since we reactivated concatenation
-                //QString fileName = QInputDialog::getText(this, "New Name", "Choose New File Name", QLineEdit::Normal, "New Micromed File", nullptr);
-
-                QString fileName = "CONCATENATED_FILE";
-                std::string suffixx = EEGFormat::Utility::GetFileExtension(fileName.toStdString());
-                QString suffix = QString::fromStdString(suffixx).toLower();
-
-                if (!fileName.isEmpty()) //TODO : put that back when issue with qinputdialog is solved => && suffix.contains("trc"))
+                QString fileName = QInputDialog::getText(this, "New Name", "Choose New File Name (without extension)", QLineEdit::Normal, "New Micromed File", nullptr);
+                if (!fileName.isEmpty())
                 {
                     QString dir = QFileInfo(m_localFileSystemModel->filePath(indexes[0])).dir().absolutePath();
-                    ProcessMicromedFileConcatenation(files, dir, fileName);
+                    if(QFileInfo::exists(dir + "/" + fileName + ".TRC"))
+                    {
+                        QMessageBox::information(this, "NopNopNopNopNop", "File already exists, please check the name.");
+                    }
+                    else
+                    {
+                        ProcessMicromedFileConcatenation(files, dir, fileName);
+                    }
                 }
                 else
                 {
@@ -619,11 +620,16 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
                 QMessageBox::information(this, "Error", "Process already running");
             }
         });
-        //processConcatenationAction->setEnabled(false); //TODO : Temporary, until the concatenation worker is verified with the new eegformat lib
     
         if (sender() == ui.FileTreeView)
+        {
             contextMenu->exec(ui.FileTreeView->viewport()->mapToGlobal(point));
+        }
     }
+    //Note : intead of using this => connect(contextMenu, &QMenu::aboutToHide, contextMenu, &QMenu::deleteLater);
+    //we delete the menu at the end so whether there was an action or not it is cleaned correctly . This is
+    //due to the need of having gui for user interactions
+    delete contextMenu;
 }
 
 void Localizer::SelectPtsForCorrelation()
@@ -864,7 +870,6 @@ void Localizer::ProcessFileConvertion(QList<QString> newFileType)
     nbDoneTask = 0;
     ui.progressBar->reset();
 
-    InsermLibrary::picOption opt = picOpt->getPicOption();
     thread = new QThread;
     worker = new FileConverterWorker(files, provFiles);
 
@@ -932,9 +937,9 @@ void Localizer::DisplayColoredLog(QString messageToDisplay, QColor color)
     ui.messageDisplayer->setTextColor(Qt::GlobalColor::black);
 }
 
-void Localizer::UpdateProgressBar(int divider)
+void Localizer::UpdateProgressBar(int advancement)
 {
-    nbDoneTask = nbDoneTask + (1.0f / divider);
+    nbDoneTask += advancement;
     ui.progressBar->setValue((nbDoneTask / nbTaskToDo) * 100);
 }
 
@@ -943,10 +948,8 @@ void Localizer::CancelAnalysis()
     if (isAlreadyRunning)
     {
         m_lockLoop.lockForWrite();
-        thread->terminate();
-        while (!thread->isFinished())
-        {
-        }
+        thread->quit();
+        thread->wait();
         isAlreadyRunning = false;
         QMessageBox::information(this, "Canceled", "Analysis has been canceled by the user");
         DisplayLog("");
@@ -963,7 +966,7 @@ void Localizer::ReceiveElectrodeList(std::vector<std::string> ElectrodeList, std
     if(res == 1)
     {
         worker->SetExternalParameters(elecWin->IndexToDelete(), elecWin->CorrectedLabel(), elecWin->OperationToDo());
-        MontageDone(res);
+        emit MontageDone(res);
     }
     else
     {
