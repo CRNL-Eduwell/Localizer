@@ -112,6 +112,14 @@ void Localizer::ConnectMenuBar()
     //TODO : need to reactivate that once new ui is done
     //QAction* openLocaMenu = ui.menuConfiguration->actions().at(3);
     //connect(openLocaMenu, &QAction::triggered, this, [&] { optLoca->exec(); });
+    //TODO DOING
+    QAction* openLocaMenu = ui.menuConfiguration->actions().at(3);
+    connect(openLocaMenu, &QAction::triggered, this, [&] 
+    { 
+        ProtocolsWindow* protocolsWindow = new ProtocolsWindow(this);
+        protocolsWindow->setAttribute(Qt::WA_DeleteOnClose);
+        protocolsWindow->show();
+    });
 	QAction* openFilePriorityMenu = ui.menuConfiguration->actions().at(4);
 	connect(openFilePriorityMenu, &QAction::triggered, this, [&] 
 	{ 	

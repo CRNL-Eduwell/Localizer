@@ -29,6 +29,11 @@
 #include "ConnectCleaner.h"
 #include "GeneralOptionsWindow.h"
 #include "picOptions.h"
+
+//TODO DOING
+#include "ProtocolsWindow.h"
+//===
+
 #include "ProtocolWindow.h"
 #include "ChooseLocaWindow.h"
 #include "AboutDycog.h"
