@@ -57,12 +57,16 @@ RESOURCES += \
 
 FORMS += \
     Localizer/AboutDycog.ui \
+    Localizer/BlocWindow.ui \
     Localizer/ChooseLocaWindow.ui \
     Localizer/ConnectCleaner.ui \
     Localizer/ErpProcessor.ui \
+    Localizer/EventWindow.ui \
     Localizer/FileConverterProcessor.ui \
     Localizer/GeneralOptionsWindow.ui \
     Localizer/ProtocolWindow.ui \
+    Localizer/ProtocolsWindow.ui \
+    Localizer/SubBlocWindow.ui \
     Localizer/displayprov.ui \
     Localizer/localizer.ui \
     Localizer/optionsPerf.ui \
@@ -74,6 +78,7 @@ HEADERS += \
     Localizer/AlgorithmCalculator.h \
     Localizer/AlgorithmStrategyFactory.h \
     Localizer/Bloc.h \
+    Localizer/BlocWindow.h \
     Localizer/ChooseLocaWindow.h \
     Localizer/CleanConnectFile.h \
     Localizer/ConcatenationWorker.h \
@@ -83,6 +88,7 @@ HEADERS += \
     Localizer/ErpProcessor.h \
     Localizer/ErpWorker.h \
     Localizer/Event.h \
+    Localizer/EventWindow.h \
     Localizer/FileConverterProcessor.h \
     Localizer/FileConverterWorker.h \
     Localizer/FrequencyBand.h \
@@ -94,7 +100,7 @@ HEADERS += \
     Localizer/IAlgorithmStrategy.h \
     Localizer/ITxtFile.h \
     Localizer/IWorker.h \
-	Localizer/Icon.h \
+    Localizer/Icon.h \
     Localizer/LOCA.h \
     Localizer/MultiSubjectWorker.h \
     Localizer/PROVParameters.h \
@@ -102,11 +108,13 @@ HEADERS += \
     Localizer/Protocol.h \
     Localizer/ProtocolFile.h \
     Localizer/ProtocolWindow.h \
+    Localizer/ProtocolsWindow.h \
     Localizer/ProvFile.h \
     Localizer/SingleFilesWorker.h \
     Localizer/StatisticalFilesProcessor.h \
     Localizer/Stats.h \
     Localizer/SubBloc.h \
+    Localizer/SubBlocWindow.h \
     Localizer/Trigger.h \
     Localizer/TriggerContainer.h \
     Localizer/Utility.h \
@@ -130,6 +138,7 @@ SOURCES += \
     Localizer/AlgorithmCalculator.cpp \
     Localizer/AlgorithmStrategyFactory.cpp \
     Localizer/Bloc.cpp \
+    Localizer/BlocWindow.cpp \
     Localizer/ChooseLocaWindow.cpp \
     Localizer/CleanConnectFile.cpp \
     Localizer/ConcatenationWorker.cpp \
@@ -139,6 +148,7 @@ SOURCES += \
     Localizer/ErpProcessor.cpp \
     Localizer/ErpWorker.cpp \
     Localizer/Event.cpp \
+    Localizer/EventWindow.cpp \
     Localizer/FileConverterProcessor.cpp \
     Localizer/FileConverterWorker.cpp \
     Localizer/FrequencyBand.cpp \
@@ -148,18 +158,20 @@ SOURCES += \
     Localizer/HilbertEnveloppe.cpp \
     Localizer/ITxtFile.cpp \
     Localizer/IWorker.cpp \
-	Localizer/Icon.cpp \
+    Localizer/Icon.cpp \
     Localizer/LOCA.cpp \
     Localizer/MultiSubjectWorker.cpp \
     Localizer/PatientFolderWorker.cpp \
     Localizer/Protocol.cpp \
     Localizer/ProtocolFile.cpp \
     Localizer/ProtocolWindow.cpp \
+    Localizer/ProtocolsWindows.cpp \
     Localizer/ProvFile.cpp \
     Localizer/SingleFilesWorker.cpp \
     Localizer/StatisticalFilesProcessor.cpp \
     Localizer/Stats.cpp \
     Localizer/SubBloc.cpp \
+    Localizer/SubBlocWindow.cpp \
     Localizer/Trigger.cpp \
     Localizer/TriggerContainer.cpp \
     Localizer/Utility.cpp \
