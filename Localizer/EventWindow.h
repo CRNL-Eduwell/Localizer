@@ -11,7 +11,7 @@ class EventWindow : public QDialog
 	Q_OBJECT
 
 public:
-	EventWindow(InsermLibrary::Event sbevent, QWidget* parent = nullptr);
+    EventWindow(InsermLibrary::Event& sbevent, QWidget* parent = nullptr);
 	~EventWindow();
 
 private:
@@ -20,10 +20,8 @@ private:
 private slots:
 	void ValidateModifications();
 
-signals:
-	void SendModifiedData(std::string name, std::vector<int> codes, InsermLibrary::MainSecondaryEnum type);
-
 private:
+    InsermLibrary::Event* m_Event = nullptr;
 	Ui::EventWindow ui;
 };
 

@@ -14,11 +14,12 @@ class BlocWindow : public QDialog
 	Q_OBJECT
 
 public:
-	BlocWindow(InsermLibrary::Bloc bloc, QWidget* parent = nullptr);
+    BlocWindow(InsermLibrary::Bloc& bloc, QWidget* parent = nullptr);
 	~BlocWindow();
 
 private:
 	void LoadSubBlocs();
+    void UpdateSubBlocsDisplay(int index);
 
 private slots:
 	void OnSubBlocDoubleClicked();
@@ -31,6 +32,8 @@ private slots:
 private:
 	Ui::BlocWindow ui;
 	InsermLibrary::Bloc* m_bloc = nullptr;
+    int m_subBlocIndex = -1;
+    InsermLibrary::SubBloc m_memorySubbloc;
 };
 
 #endif

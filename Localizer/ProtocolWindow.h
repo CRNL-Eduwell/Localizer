@@ -14,7 +14,7 @@ class ProtocolWindow : public QDialog
 	Q_OBJECT
 
 public:
-    ProtocolWindow(QString protocolPath, QWidget *parent = nullptr);
+    ProtocolWindow(InsermLibrary::ProvFile& prov, QWidget *parent = nullptr);
     ~ProtocolWindow();
 
 private:
@@ -31,6 +31,8 @@ private slots:
 private:
 	Ui::ProtocolWindow ui;
 	InsermLibrary::ProvFile* m_file = nullptr;
+    InsermLibrary::Bloc m_memoryBloc;
+    int m_BlocIndex = -1;
 };
 
 #endif

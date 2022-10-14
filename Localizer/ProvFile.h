@@ -12,10 +12,13 @@ namespace InsermLibrary
     class ProvFile
     {
     public:
+        ProvFile();
         ProvFile(const std::string& filePath);
         ~ProvFile();
         inline const std::string FilePath() { return m_filePath; }
+        inline const std::string Name() { return m_name; }
         inline std::vector<Bloc>& Blocs() { return m_blocs; }
+        inline void Name(std::string name) { m_name = name; }
         void SaveAs(const std::string& filePath = "");
 
     private :

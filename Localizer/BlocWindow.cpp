@@ -1,6 +1,6 @@
 #include "BlocWindow.h"
 
-BlocWindow::BlocWindow(InsermLibrary::Bloc bloc, QWidget* parent) : QDialog(parent)
+BlocWindow::BlocWindow(InsermLibrary::Bloc& bloc, QWidget* parent) : QDialog(parent)
 {
     ui.setupUi(this);
 
@@ -10,7 +10,11 @@ BlocWindow::BlocWindow(InsermLibrary::Bloc bloc, QWidget* parent) : QDialog(pare
     connect(ui.OkCancelButtonBox, &QDialogButtonBox::accepted, this, &BlocWindow::ValidateModifications);
     connect(ui.OkCancelButtonBox, &QDialogButtonBox::rejected, this, [&] { close(); });
 
-    m_bloc = new InsermLibrary::Bloc(bloc);
+    m_bloc = &bloc;
+
+    ui.BlocNameLineEdit->setText(m_bloc->Name().c_str());
+    ui.OrderLineEdit->setText(QString::number(m_bloc->Order()));
+    ui.SortLineEdit->setText(m_bloc->Sort().c_str());
     LoadSubBlocs();
 }
 
@@ -31,14 +35,20 @@ void BlocWindow::LoadSubBlocs()
     }
 }
 
+void BlocWindow::UpdateSubBlocsDisplay(int index)
+{
+
+}
+
 void BlocWindow::OnSubBlocDoubleClicked()
 {
     QModelIndexList indexes = ui.SubBlocsListWidget->selectionModel()->selectedIndexes();
     if (!indexes.isEmpty())
     {
-        int subBlocIndex = indexes[0].row();
+        m_subBlocIndex = indexes[0].row();
 
-        SubBlocWindow* blocWindow = new SubBlocWindow(m_bloc->SubBlocs()[subBlocIndex], this);
+        m_memorySubbloc = InsermLibrary::SubBloc(m_bloc->SubBlocs()[m_subBlocIndex]);
+        SubBlocWindow* blocWindow = new SubBlocWindow(m_bloc->SubBlocs()[m_subBlocIndex], this);
         blocWindow->setAttribute(Qt::WA_DeleteOnClose);
         blocWindow->show();
 
@@ -60,15 +70,21 @@ void BlocWindow::RemoveElement()
 void BlocWindow::OnSubBlocWindowAccepted()
 {
     std::cout << "OnSubBlocWindowAccepted" << std::endl;
+    ui.SubBlocsListWidget->item(m_subBlocIndex)->setText(m_bloc->SubBlocs()[m_subBlocIndex].Name().c_str());
 }
 
 void BlocWindow::OnSubBlocWindowRejected()
 {
     std::cout << "OnSubBlocWindowRejected" << std::endl;
+    m_bloc->SubBlocs()[m_subBlocIndex] = InsermLibrary::SubBloc(m_memorySubbloc);
 }
 
 void BlocWindow::ValidateModifications()
 {
+    m_bloc->Name(ui.BlocNameLineEdit->text().toStdString());
+    m_bloc->Order(ui.OrderLineEdit->text().toInt());
+    m_bloc->Sort(ui.SortLineEdit->text().toStdString());
+
     done(1);
     close();
 }

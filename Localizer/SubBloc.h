@@ -42,6 +42,7 @@ namespace InsermLibrary
             }
             return secondaryEvents;
         }
+        inline std::vector<Event>& Events() { return m_events; }
         inline const std::vector<Icon>& Icons() { return m_icons; }
         inline const std::string GUID() { return m_uid; }
 

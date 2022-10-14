@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "ProtocolWindow.h"
+#include "ProvFile.h"
 
 class ProtocolsWindow : public QDialog
 {
@@ -20,7 +21,7 @@ public:
 
 private:
 	QStringList GetProtocolsFileList();
-	void LoadProtocols(QStringList protocols);
+    void LoadProtocols(std::vector<InsermLibrary::ProvFile> protocols);
 
 private slots:
 	void OnProtocolDoubleClicked(QListWidgetItem* item);
@@ -28,10 +29,15 @@ private slots:
 	void RemoveElement();
 	void OnProtocolWindowAccepted();
 	void OnProtocolWindowRejected();
+    void ValidateAndSave();
 
 private:
 	Ui::ProtocolsWindow ui;
 	QString m_ProtocolFolder = QCoreApplication::applicationDirPath() + "/Resources/Config/Prov";
+    std::vector<InsermLibrary::ProvFile> m_ProvFiles;
+    InsermLibrary::ProvFile m_memoryFile;
+    int m_fileIndex = -1;
+
 };
 
 #endif

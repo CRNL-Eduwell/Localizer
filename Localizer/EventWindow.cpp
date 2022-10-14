@@ -1,9 +1,10 @@
 #include "EventWindow.h"
 
-EventWindow::EventWindow(InsermLibrary::Event sbevent, QWidget* parent) : QDialog(parent)
+EventWindow::EventWindow(InsermLibrary::Event& sbevent, QWidget* parent) : QDialog(parent)
 {
     ui.setupUi(this);
     SetupComboBoxType();
+    m_Event = &sbevent;
     //===
     connect(ui.OkCancelButtonBox, &QDialogButtonBox::accepted, this, &EventWindow::ValidateModifications);
     connect(ui.OkCancelButtonBox, &QDialogButtonBox::rejected, this, [&] { close(); });
@@ -59,7 +60,10 @@ void EventWindow::ValidateModifications()
         codes.push_back(codesListString[i].toInt());
     }
 
-    SendModifiedData(name, codes, type);
-    //done(1);
+    m_Event->Name(name);
+    m_Event->Type(type);
+    m_Event->Codes(codes);
+
+    done(1);
     close();
 }

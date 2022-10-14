@@ -18,7 +18,7 @@ namespace InsermLibrary
         inline int Order() { return m_order; }
         inline const std::string IllustrationPath() { return m_illustrationPath; }
         inline const std::string Sort() { return m_sort; }
-        inline const std::vector<SubBloc>& SubBlocs() { return m_subBlocs; }
+        inline std::vector<SubBloc>& SubBlocs() { return m_subBlocs; }
         inline SubBloc& MainSubBloc()
         {
             for (int i = 0; i < m_subBlocs.size(); i++)

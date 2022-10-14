@@ -1,5 +1,10 @@
 #include "ProvFile.h"
 
+InsermLibrary::ProvFile::ProvFile()
+{
+
+}
+
 InsermLibrary::ProvFile::ProvFile(const std::string& filePath)
 {
     try
