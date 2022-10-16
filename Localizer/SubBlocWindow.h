@@ -15,6 +15,7 @@ public:
 	~SubBlocWindow();
 
 private:
+    void SetupComboBoxType();
     void LoadInUi();
     void UpdateEventDisplay(int index, std::string name);
 	void LoadEvents();
@@ -22,9 +23,11 @@ private:
 
 private slots:
 	void OnEventDoubleClicked();
-	void OnIconDoubleClicked();
+    void AddEventElement();
+    void RemoveEventElement();
     void OnEventWindowAccepted();
 	void OnEventWindowRejected();
+    void OnIconDoubleClicked();
 	void ValidateModifications();
 
 private:

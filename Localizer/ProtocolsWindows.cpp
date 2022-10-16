@@ -66,8 +66,8 @@ void ProtocolsWindow::AddElement()
 {
     QModelIndexList indexes = ui.ProtocolListWidget->selectionModel()->selectedIndexes();
     int insertionIndex = !indexes.isEmpty() ? indexes[0].row() + 1 : ui.ProtocolListWidget->count();
-    ui.ProtocolListWidget->insertItem(insertionIndex, "New Protocol");
-    //add new logic file to list 
+    m_ProvFiles.insert(m_ProvFiles.begin() + insertionIndex, InsermLibrary::ProvFile());
+    ui.ProtocolListWidget->insertItem(insertionIndex, m_ProvFiles[insertionIndex].Name().c_str());
 }
 
 void ProtocolsWindow::RemoveElement()
@@ -77,8 +77,7 @@ void ProtocolsWindow::RemoveElement()
     {
         int indexToDelete = indexes[0].row();
         ui.ProtocolListWidget->item(indexToDelete)->~QListWidgetItem();
-        //remove logic file from list
-        //wantedLocaKW.erase(wantedLocaKW.begin() + rowToDelete);
+        m_ProvFiles.erase(m_ProvFiles.begin() + indexToDelete);
     }
 }
 

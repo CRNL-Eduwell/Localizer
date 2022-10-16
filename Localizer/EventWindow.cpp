@@ -9,24 +9,24 @@ EventWindow::EventWindow(InsermLibrary::Event& sbevent, QWidget* parent) : QDial
     connect(ui.OkCancelButtonBox, &QDialogButtonBox::accepted, this, &EventWindow::ValidateModifications);
     connect(ui.OkCancelButtonBox, &QDialogButtonBox::rejected, this, [&] { close(); });
     //===
-    ui.EventNameLineEdit->setText(sbevent.Name().c_str());
+    ui.EventNameLineEdit->setText(m_Event->Name().c_str());
     //==
     int typeIndex = 0;
-    if (sbevent.Type() == InsermLibrary::MainSecondaryEnum::Main)
+    if (m_Event->Type() == InsermLibrary::MainSecondaryEnum::Main)
     {
         typeIndex = 0;
     }
-    else if (sbevent.Type() == InsermLibrary::MainSecondaryEnum::Main)
+    else if (m_Event->Type() == InsermLibrary::MainSecondaryEnum::Secondary)
     {
         typeIndex = 1;
     }
     ui.TypeComboBox->setCurrentIndex(typeIndex);
     //==
     QString codes;
-    for (int i = 0; i < static_cast<int>(sbevent.Codes().size()); i++)
+    for (int i = 0; i < static_cast<int>(m_Event->Codes().size()); i++)
     {
-        codes.append(QString::number(sbevent.Codes()[i]));
-        if (i + 1 < static_cast<int>(sbevent.Codes().size()))
+        codes.append(QString::number(m_Event->Codes()[i]));
+        if (i + 1 < static_cast<int>(m_Event->Codes().size()))
         {
             codes.append(',');
         }

@@ -2,7 +2,7 @@
 
 InsermLibrary::ProvFile::ProvFile()
 {
-
+    m_name = "New Protocol";
 }
 
 InsermLibrary::ProvFile::ProvFile(const std::string& filePath)

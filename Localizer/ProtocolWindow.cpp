@@ -10,7 +10,7 @@ ProtocolWindow::ProtocolWindow(InsermLibrary::ProvFile& prov, QWidget *parent) :
     connect(ui.OkCancelButtonBox, &QDialogButtonBox::accepted, this, &ProtocolWindow::ValidateModifications);
     connect(ui.OkCancelButtonBox, &QDialogButtonBox::rejected, this, [&] { close(); });
 
-    m_file = &prov;//new InsermLibrary::ProvFile(protocolPath.toStdString());
+    m_file = &prov;
 
     ui.ProtocolNameLineEdit->setText(m_file->Name().c_str());
     LoadBlocs();
@@ -50,18 +50,27 @@ void ProtocolWindow::OnBlocDoubleClicked()
 
 void ProtocolWindow::AddElement()
 {
-
+    QModelIndexList indexes = ui.BlocsListWidget->selectionModel()->selectedIndexes();
+    int insertionIndex = !indexes.isEmpty() ? indexes[0].row() + 1 : ui.BlocsListWidget->count();
+    m_file->Blocs().insert(m_file->Blocs().begin() + insertionIndex, InsermLibrary::Bloc());
+    ui.BlocsListWidget->insertItem(insertionIndex, m_file->Blocs()[insertionIndex].Name().c_str());
 }
 
 void ProtocolWindow::RemoveElement()
 {
-
+    QModelIndexList indexes = ui.BlocsListWidget->selectionModel()->selectedIndexes();
+    if (!indexes.isEmpty())
+    {
+        int indexToDelete = indexes[0].row();
+        ui.BlocsListWidget->item(indexToDelete)->~QListWidgetItem();
+        m_file->Blocs().erase(m_file->Blocs().begin() + indexToDelete);
+    }
 }
 
 void ProtocolWindow::OnProtocolWindowAccepted()
 {
     std::cout << "OnProtocolWindowAccepted" << std::endl;
-    //Update UI
+    ui.BlocsListWidget->item(m_BlocIndex)->setText(m_file->Blocs()[m_BlocIndex].Name().c_str());
 }
 
 void ProtocolWindow::OnProtocolWindowRejected()

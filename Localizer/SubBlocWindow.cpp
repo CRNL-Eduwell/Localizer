@@ -4,8 +4,11 @@
 SubBlocWindow::SubBlocWindow(InsermLibrary::SubBloc& subbloc, QWidget* parent) : QDialog(parent)
 {
     ui.setupUi(this);
+    SetupComboBoxType();
 
     //Event related
+    connect(ui.AddEventPushButton, &QPushButton::clicked, this, &SubBlocWindow::AddEventElement);
+    connect(ui.RemoveEventPushButton, &QPushButton::clicked, this, &SubBlocWindow::RemoveEventElement);
     connect(ui.EventsListWidget, &QListWidget::itemDoubleClicked, this, &SubBlocWindow::OnEventDoubleClicked);
     //Icon related
     connect(ui.IconsListWidget, &QListWidget::itemDoubleClicked, this, &SubBlocWindow::OnIconDoubleClicked);
@@ -15,14 +18,7 @@ SubBlocWindow::SubBlocWindow(InsermLibrary::SubBloc& subbloc, QWidget* parent) :
 
     m_subbloc = &subbloc;
 
-    ui.SubBlocNameLineEdit->setText(m_subbloc->Name().c_str());
-    ui.OrderLineEdit->setText(QString::number(m_subbloc->Order()));
-    //dropdown type
-    ui.WindowStartLineEdit->setText(QString::number(m_subbloc->MainWindow().Start()));
-    ui.WindowEndLineEdit->setText(QString::number(m_subbloc->MainWindow().End()));
-    ui.BaselineStartLineEdit->setText(QString::number(m_subbloc->Baseline().Start()));
-    ui.BaselineEndLineEdit->setText(QString::number(m_subbloc->Baseline().End()));
-
+    LoadInUi();
     LoadEvents();
     LoadIcons();
 }
@@ -32,9 +28,24 @@ SubBlocWindow::~SubBlocWindow()
 
 }
 
+void SubBlocWindow::SetupComboBoxType()
+{
+    QMap<QString, InsermLibrary::MainSecondaryEnum>* flowControlOptions = new QMap<QString, InsermLibrary::MainSecondaryEnum>;
+    flowControlOptions->insert("Main", InsermLibrary::MainSecondaryEnum::Main);
+    flowControlOptions->insert("Secondary", InsermLibrary::MainSecondaryEnum::Secondary);
+    ui.TypeComboBox->addItems(QStringList(flowControlOptions->keys()));
+}
+
 void SubBlocWindow::LoadInUi()
 {
-
+    ui.SubBlocNameLineEdit->setText(m_subbloc->Name().c_str());
+    ui.OrderLineEdit->setText(QString::number(m_subbloc->Order()));
+    int typeIndex = (m_subbloc->Type() == InsermLibrary::MainSecondaryEnum::Main) ? 0 : 1;
+    ui.TypeComboBox->setCurrentIndex(typeIndex);
+    ui.WindowStartLineEdit->setText(QString::number(m_subbloc->MainWindow().Start()));
+    ui.WindowEndLineEdit->setText(QString::number(m_subbloc->MainWindow().End()));
+    ui.BaselineStartLineEdit->setText(QString::number(m_subbloc->Baseline().Start()));
+    ui.BaselineEndLineEdit->setText(QString::number(m_subbloc->Baseline().End()));
 }
 
 void SubBlocWindow::UpdateEventDisplay(int index, std::string name)
@@ -74,9 +85,23 @@ void SubBlocWindow::OnEventDoubleClicked()
     }
 }
 
-void SubBlocWindow::OnIconDoubleClicked()
+void SubBlocWindow::AddEventElement()
 {
+    QModelIndexList indexes = ui.EventsListWidget->selectionModel()->selectedIndexes();
+    int insertionIndex = !indexes.isEmpty() ? indexes[0].row() + 1 : ui.EventsListWidget->count();
+    m_subbloc->Events().insert(m_subbloc->Events().begin() + insertionIndex, InsermLibrary::Event());
+    ui.EventsListWidget->insertItem(insertionIndex, m_subbloc->Events()[insertionIndex].Name().c_str());
+}
 
+void SubBlocWindow::RemoveEventElement()
+{
+    QModelIndexList indexes = ui.EventsListWidget->selectionModel()->selectedIndexes();
+    if (!indexes.isEmpty())
+    {
+        int indexToDelete = indexes[0].row();
+        ui.EventsListWidget->item(indexToDelete)->~QListWidgetItem();
+        m_subbloc->Events().erase(m_subbloc->Events().begin() + indexToDelete);
+    }
 }
 
 void SubBlocWindow::OnEventWindowAccepted()
@@ -89,6 +114,11 @@ void SubBlocWindow::OnEventWindowRejected()
 {
     std::cout << "OnEventWindowRejected" << std::endl;
     m_subbloc->Events()[m_IndexOfEvent] = InsermLibrary::Event(m_memoryEvent);
+}
+
+void SubBlocWindow::OnIconDoubleClicked()
+{
+
 }
 
 void SubBlocWindow::ValidateModifications()

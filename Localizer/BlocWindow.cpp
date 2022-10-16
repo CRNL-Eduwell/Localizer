@@ -59,12 +59,21 @@ void BlocWindow::OnSubBlocDoubleClicked()
 
 void BlocWindow::AddElement()
 {
-
+    QModelIndexList indexes = ui.SubBlocsListWidget->selectionModel()->selectedIndexes();
+    int insertionIndex = !indexes.isEmpty() ? indexes[0].row() + 1 : ui.SubBlocsListWidget->count();
+    m_bloc->SubBlocs().insert(m_bloc->SubBlocs().begin() + insertionIndex, InsermLibrary::SubBloc());
+    ui.SubBlocsListWidget->insertItem(insertionIndex, m_bloc->SubBlocs()[insertionIndex].Name().c_str());
 }
 
 void BlocWindow::RemoveElement()
 {
-
+    QModelIndexList indexes = ui.SubBlocsListWidget->selectionModel()->selectedIndexes();
+    if (!indexes.isEmpty())
+    {
+        int indexToDelete = indexes[0].row();
+        ui.SubBlocsListWidget->item(indexToDelete)->~QListWidgetItem();
+        m_bloc->SubBlocs().erase(m_bloc->SubBlocs().begin() + indexToDelete);
+    }
 }
 
 void BlocWindow::OnSubBlocWindowAccepted()
