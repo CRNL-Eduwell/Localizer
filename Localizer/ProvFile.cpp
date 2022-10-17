@@ -85,8 +85,12 @@ void InsermLibrary::ProvFile::FillProtocolInformations(nlohmann::json jsonObject
                         codes.push_back(jsonArea3["Codes"][i].get<int>());
                     }
                     MainSecondaryEnum type = (MainSecondaryEnum)jsonArea3["Type"].get<int>();
-                    std::string uid = jsonArea3["ID"].get<std::string>();
 
+                    std::string uid = "";
+                    if (!(jsonArea3["ID"].is_null()))
+                    {
+                        uid = jsonArea3["ID"].get<std::string>();
+                    }
                     events.push_back(Event(name, codes, type, uid));
                 }
 
@@ -98,18 +102,28 @@ void InsermLibrary::ProvFile::FillProtocolInformations(nlohmann::json jsonObject
                     std::string imageName = jsonArea3["Name"].get<std::string>();
                     int begWindow = jsonArea3["Window"]["Start"].get<int>();
                     int endWindow = jsonArea3["Window"]["End"].get<int>();
-                    std::string uid = jsonArea3["ID"].get<std::string>();
-
+                    std::string uid = "";
+                    if (!(jsonArea3["ID"].is_null()))
+                    {
+                        uid = jsonArea3["ID"].get<std::string>();
+                    }
                     icons.push_back(Icon(imageName, imagePath, Window(begWindow, endWindow), uid));
                 }
 
-                std::string uid = jsonArea2["ID"].get<std::string>();
-
+                std::string uid = "";
+                if (!(jsonArea2["ID"].is_null()))
+                {
+                    uid = jsonArea2["ID"].get<std::string>();
+                }
                 subBlocs.push_back(SubBloc(subBlocName, subBlocOrder, type, subBlocWIndow, baseLineWindow, events, icons, uid));
             }
         }
-        std::string uid = jsonArea["ID"].get<std::string>();
 
+        std::string uid = "";
+        if (!(jsonArea["ID"].is_null()))
+        {
+            uid = jsonArea["ID"].get<std::string>();
+        }
         m_blocs.push_back(Bloc(blocName, blocOrder, blocIllustrationPath, blocSort, subBlocs, uid));
     }
 
