@@ -138,41 +138,7 @@
         }
       ]
     },
-    {
-      "IllustrationPath": "",
-      "ID": "4d9229c6-9d52-4ce8-84ea-d372ce99471c",
-      "Name": "HUMAN",
-      "Order": 4,
-      "Sort": "Main_HUMAN_CODE",
-      "SubBlocs": [
-        {
-          "ID": "bdb9cf26-a0ae-4431-bc0d-9199dc0ef833",
-          "Name": "Main",
-          "Order": 0,
-          "Type": 0,
-          "Window": {
-            "Start": -500,
-            "End": 500
-          },
-          "Baseline": {
-            "Start": -200,
-            "End": 0
-          },
-          "Events": [
-            {
-              "Name": "HUMAN",
-              "Codes": [
-                5
-              ],
-              "Type": 0
-            }
-          ],
-          "Icons": [],
-          "Treatments": []
-        }
-      ]
-    },
-    {
+     {
       "IllustrationPath": "",
       "ID": "28d96d7e-a1d5-48c3-b723-4b45b771be96",
       "Name": "CRY",

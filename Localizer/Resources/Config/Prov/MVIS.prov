@@ -6,7 +6,7 @@
       "IllustrationPath": "",
       "ID": "d01dec2a-02eb-446a-9d2a-c88d771cf556",
       "Name": "LOAD2",
-      "Order": 0,
+      "Order": 2,
       "Sort": "Main_RESPONSE_LATENCY;Main_LOAD2_CODE",
       "SubBlocs": [
         {
@@ -90,7 +90,7 @@
       "IllustrationPath": "",
       "ID": "483a8d0b-7c7e-4a36-b79a-3ad80cdf29fb",
       "Name": "LOAD6",
-      "Order": 2,
+      "Order": 0,
       "Sort": "Main_RESPONSE_LATENCY;Main_LOAD6_CODE",
       "SubBlocs": [
         {
