@@ -98,35 +98,31 @@ void Localizer::ConnectMenuBar()
     //===Fichier
     QAction* openPatFolder = ui.menuFiles->actions().at(0);
     connect(openPatFolder, &QAction::triggered, this, [&] { LoadPatientFolder(); });
-    QAction* openSpecificFolder = ui.menuFiles->actions().at(1);
-    connect(openSpecificFolder, &QAction::triggered, this, [&] { LoadSpecificFolder(); });
-    QAction* openDatabaseFolder = ui.menuFiles->actions().at(2);
+    QAction* openDatabaseFolder = ui.menuFiles->actions().at(1);
     connect(openDatabaseFolder, &QAction::triggered, this, [&] { LoadDatabaseFolder(); });
+    QAction* openSpecificFolder = ui.menuFiles->actions().at(2);
+    connect(openSpecificFolder, &QAction::triggered, this, [&] { LoadSpecificFolder(); });
     //===Configuration
-    QAction* openPerfMenu = ui.menuConfiguration->actions().at(0);
-    connect(openPerfMenu, &QAction::triggered, this, [&] { optPerf->exec(); });
-    QAction* openStatMenu = ui.menuConfiguration->actions().at(1);
-    connect(openStatMenu, &QAction::triggered, this, [&] { optStat->exec(); });
-    QAction* openPicMenu = ui.menuConfiguration->actions().at(2);
-    connect(openPicMenu, &QAction::triggered, this, [&] { picOpt->exec(); });
-    //TODO : need to reactivate that once new ui is done
-    //QAction* openLocaMenu = ui.menuConfiguration->actions().at(3);
-    //connect(openLocaMenu, &QAction::triggered, this, [&] { optLoca->exec(); });
-    //TODO DOING
-    QAction* openLocaMenu = ui.menuConfiguration->actions().at(3);
+    QAction* openLocaMenu = ui.menuConfiguration->actions().at(0);
     connect(openLocaMenu, &QAction::triggered, this, [&] 
     { 
         ProtocolsWindow* protocolsWindow = new ProtocolsWindow(this);
         protocolsWindow->setAttribute(Qt::WA_DeleteOnClose);
         protocolsWindow->show();
     });
-	QAction* openFilePriorityMenu = ui.menuConfiguration->actions().at(4);
+    QAction* openFilePriorityMenu = ui.menuConfiguration->actions().at(1);
 	connect(openFilePriorityMenu, &QAction::triggered, this, [&] 
-	{ 	
-		generalOptionsWindow = new GeneralOptionsWindow(m_GeneralOptionsFile);
+	{ 	        
+        GeneralOptionsWindow* generalOptionsWindow = new GeneralOptionsWindow(m_GeneralOptionsFile);
 		generalOptionsWindow->setAttribute(Qt::WA_DeleteOnClose);
 		generalOptionsWindow->show(); 
 	});
+    QAction* openStatMenu = ui.menuConfiguration->actions().at(2);
+    connect(openStatMenu, &QAction::triggered, this, [&] { optStat->exec(); });
+    QAction* openPicMenu = ui.menuConfiguration->actions().at(3);
+    connect(openPicMenu, &QAction::triggered, this, [&] { picOpt->exec(); });
+    QAction* openPerfMenu = ui.menuConfiguration->actions().at(4);
+    connect(openPerfMenu, &QAction::triggered, this, [&] { optPerf->exec(); });
     //===Aide
     QAction* openAbout = ui.menuHelp->actions().at(0);
     connect(openAbout, &QAction::triggered, this, [&]
@@ -140,7 +136,7 @@ void Localizer::LoadPatientFolder()
 {
     QFileDialog *fileDial = new QFileDialog(this);
     fileDial->setOption(QFileDialog::ShowDirsOnly, true);
-    QString fileName = fileDial->getExistingDirectory(this, tr("Choose Patient Folder"));
+    QString fileName = fileDial->getExistingDirectory(this, tr("Choose Lyon Patient Folder"));
     if (fileName != "")
     {
         m_isPatFolder = true;
@@ -155,7 +151,7 @@ void Localizer::LoadSpecificFolder()
     QFileDialog *fileDial = new QFileDialog(this);
     fileDial->setFileMode(QFileDialog::FileMode::AnyFile);
     fileDial->setNameFilters(QStringList()<<"*.trc"<<" *.eeg"<<" *.edf");
-    QString fileName = fileDial->getExistingDirectory(this,  tr("Choose folder with generic eeg files : "), tr("C:\\"));
+    QString fileName = fileDial->getExistingDirectory(this,  tr("Choose folder with one or multiple eeg files : "), tr("C:\\"));
     if (fileName != "")
     {
         m_isPatFolder = false;
@@ -168,7 +164,7 @@ void Localizer::LoadDatabaseFolder()
 {
     QFileDialog *fileDial = new QFileDialog(this);
     fileDial->setOption(QFileDialog::ShowDirsOnly, true);
-    QString fileName = fileDial->getExistingDirectory(this, tr("Choose a folder containing multiple Patients"));
+    QString fileName = fileDial->getExistingDirectory(this, tr("Choose a folder containing multiple Lyon Patients"));
     if (fileName != "")
     {
         m_isPatFolder = true;
@@ -309,7 +305,7 @@ int Localizer::PreparePatientFolder()
     return 0;
 }
 
-void Localizer::PrepareSingleFiles()
+int Localizer::PrepareSingleFiles()
 {
     QStringList extention;
     extention << "trc" << "eeg" << "vhdr" << "edf";
@@ -341,6 +337,8 @@ void Localizer::PrepareSingleFiles()
             }
         }
     }
+
+    return currentFiles.size() == 0 ? - 1 : 0;
 }
 
 std::vector<patientFolder> Localizer::PrepareDBFolders()
@@ -727,31 +725,37 @@ void Localizer::ProcessSingleAnalysis()
         std::vector<InsermLibrary::FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
 
         //Should probably senbd back the vector here and not keep a global variable
-        PrepareSingleFiles();
+        int result = PrepareSingleFiles();
+        if(result != -1)
+        {
+            thread = new QThread;
+            worker = new SingleFilesWorker(currentFiles, analysisOptions);
 
-        thread = new QThread;
-        worker = new SingleFilesWorker(currentFiles, analysisOptions);
+            //=== Event update displayer
+            connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
+            connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+            connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
-        //=== Event update displayer
-        connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
-        connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
-        connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
+            //New ping pong order
+            connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
+            connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
+            connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
-        //New ping pong order
-        connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
-        connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
-        connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
+            //=== Event From worker and thread
+            connect(worker, &IWorker::finished, thread, &QThread::quit);
+            connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
+            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+            connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
-        //=== Event From worker and thread
-        connect(worker, &IWorker::finished, thread, &QThread::quit);
-        connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
-        connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-        connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
-
-        //=== Launch Thread and lock possible second launch
-        worker->moveToThread(thread);
-        thread->start();
-        isAlreadyRunning = true;
+            //=== Launch Thread and lock possible second launch
+            worker->moveToThread(thread);
+            thread->start();
+            isAlreadyRunning = true;
+        }
+        else
+        {
+            QMessageBox::critical(this, "No Files Selected", "You need to select at least one eeg file in the user interface");
+        }
     }
     else
     {

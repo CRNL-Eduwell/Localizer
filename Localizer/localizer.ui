@@ -392,7 +392,7 @@
      <x>0</x>
      <y>0</y>
      <width>914</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
@@ -400,18 +400,18 @@
      <string>File</string>
     </property>
     <addaction name="actionLoadPatientFolder"/>
-    <addaction name="actionLoadSpecificFolder"/>
     <addaction name="actionLoad_Database_Folder"/>
+    <addaction name="actionLoadSpecificFolder"/>
    </widget>
    <widget class="QMenu" name="menuConfiguration">
     <property name="title">
      <string>Configuration</string>
     </property>
-    <addaction name="actionPerformance"/>
-    <addaction name="actionStats"/>
-    <addaction name="actionPictures"/>
     <addaction name="actionLocalizers"/>
     <addaction name="actionFilePriority"/>
+    <addaction name="actionStats"/>
+    <addaction name="actionPictures"/>
+    <addaction name="actionPerformance"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -434,12 +434,12 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoadPatientFolder">
    <property name="text">
-    <string>Load Patient Folder</string>
+    <string>Load Lyon Patient Folder</string>
    </property>
   </action>
   <action name="actionLoadSpecificFolder">
    <property name="text">
-    <string>Load Specific Folder</string>
+    <string>Load EEG Files Folder</string>
    </property>
   </action>
   <action name="actionTRSecator">
@@ -484,7 +484,7 @@
   </action>
   <action name="actionLoad_Database_Folder">
    <property name="text">
-    <string>Load Database Folder</string>
+    <string>Load Lyon Database Folder</string>
    </property>
   </action>
  </widget>
