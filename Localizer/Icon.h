@@ -14,8 +14,11 @@ namespace InsermLibrary
         ~Icon();
 
         inline const std::string Name() { return m_name; }
+        inline void Name(std::string name) { m_name = name; }
         inline const std::string Path() { return m_path; }
+        inline void Path(std::string path) { m_path = path; }
         inline Window DisplayWindow() { return m_window; }
+        inline void DisplayWindow(Window window){ m_window = window; }
         inline const std::string GUID() { return m_uid; }
 
     private:

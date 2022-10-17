@@ -64,6 +64,7 @@ FORMS += \
     Localizer/EventWindow.ui \
     Localizer/FileConverterProcessor.ui \
     Localizer/GeneralOptionsWindow.ui \
+    Localizer/IconWindow.ui \
     Localizer/ProtocolWindow.ui \
     Localizer/ProtocolsWindow.ui \
     Localizer/SubBlocWindow.ui \
@@ -101,6 +102,7 @@ HEADERS += \
     Localizer/ITxtFile.h \
     Localizer/IWorker.h \
     Localizer/Icon.h \
+    Localizer/IconWindow.h \
     Localizer/LOCA.h \
     Localizer/MultiSubjectWorker.h \
     Localizer/PROVParameters.h \
@@ -159,6 +161,7 @@ SOURCES += \
     Localizer/ITxtFile.cpp \
     Localizer/IWorker.cpp \
     Localizer/Icon.cpp \
+    Localizer/IconWindow.cpp \
     Localizer/LOCA.cpp \
     Localizer/MultiSubjectWorker.cpp \
     Localizer/PatientFolderWorker.cpp \

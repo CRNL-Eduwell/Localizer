@@ -1,5 +1,6 @@
 #include "SubBlocWindow.h"
 #include "EventWindow.h"
+#include "IconWindow.h"
 
 SubBlocWindow::SubBlocWindow(InsermLibrary::SubBloc& subbloc, QWidget* parent) : QDialog(parent)
 {
@@ -11,6 +12,8 @@ SubBlocWindow::SubBlocWindow(InsermLibrary::SubBloc& subbloc, QWidget* parent) :
     connect(ui.RemoveEventPushButton, &QPushButton::clicked, this, &SubBlocWindow::RemoveEventElement);
     connect(ui.EventsListWidget, &QListWidget::itemDoubleClicked, this, &SubBlocWindow::OnEventDoubleClicked);
     //Icon related
+    connect(ui.AddIconsPushButton, &QPushButton::clicked, this, &SubBlocWindow::AddIconElement);
+    connect(ui.RemoveIconsPushButton, &QPushButton::clicked, this, &SubBlocWindow::RemoveIconElement);
     connect(ui.IconsListWidget, &QListWidget::itemDoubleClicked, this, &SubBlocWindow::OnIconDoubleClicked);
     //===
     connect(ui.OkCancelButtonBox, &QDialogButtonBox::accepted, this, &SubBlocWindow::ValidateModifications);
@@ -53,6 +56,11 @@ void SubBlocWindow::UpdateEventDisplay(int index, std::string name)
     ui.EventsListWidget->item(index)->setText(name.c_str());
 }
 
+void SubBlocWindow::UpdateIconDisplay(int index, std::string name)
+{
+    ui.IconsListWidget->item(index)->setText(name.c_str());
+}
+
 void SubBlocWindow::LoadEvents()
 {
     for (int i = 0; i < m_subbloc->Events().size(); i++)
@@ -65,7 +73,12 @@ void SubBlocWindow::LoadEvents()
 
 void SubBlocWindow::LoadIcons()
 {
-
+    for (int i = 0; i < m_subbloc->Icons().size(); i++)
+    {
+        QListWidgetItem* currentPROV = new QListWidgetItem(ui.IconsListWidget);
+        currentPROV->setText(m_subbloc->Icons()[i].Name().c_str());
+        currentPROV->setFlags(currentPROV->flags() | Qt::ItemIsSelectable);
+    }
 }
 
 void SubBlocWindow::OnEventDoubleClicked()
@@ -118,7 +131,50 @@ void SubBlocWindow::OnEventWindowRejected()
 
 void SubBlocWindow::OnIconDoubleClicked()
 {
+    QModelIndexList indexes = ui.IconsListWidget->selectionModel()->selectedIndexes();
+    if (!indexes.isEmpty())
+    {
+        m_IndexOfIcon = indexes[0].row();
 
+        m_memoryIcon = InsermLibrary::Icon(m_subbloc->Icons()[m_IndexOfIcon]);
+        IconWindow* blocWindow = new IconWindow(m_subbloc->Icons()[m_IndexOfIcon], this);
+        blocWindow->setAttribute(Qt::WA_DeleteOnClose);
+        blocWindow->show();
+
+        connect(blocWindow, &IconWindow::accepted, this, &SubBlocWindow::OnIconWindowAccepted);
+        connect(blocWindow, &IconWindow::rejected, this, &SubBlocWindow::OnIconWindowRejected);
+    }
+}
+
+void SubBlocWindow::AddIconElement()
+{
+    QModelIndexList indexes = ui.IconsListWidget->selectionModel()->selectedIndexes();
+    int insertionIndex = !indexes.isEmpty() ? indexes[0].row() + 1 : ui.IconsListWidget->count();
+    m_subbloc->Icons().insert(m_subbloc->Icons().begin() + insertionIndex, InsermLibrary::Icon());
+    ui.IconsListWidget->insertItem(insertionIndex, m_subbloc->Icons()[insertionIndex].Name().c_str());
+}
+
+void SubBlocWindow::RemoveIconElement()
+{
+    QModelIndexList indexes = ui.IconsListWidget->selectionModel()->selectedIndexes();
+    if (!indexes.isEmpty())
+    {
+        int indexToDelete = indexes[0].row();
+        ui.IconsListWidget->item(indexToDelete)->~QListWidgetItem();
+        m_subbloc->Icons().erase(m_subbloc->Icons().begin() + indexToDelete);
+    }
+}
+
+void SubBlocWindow::OnIconWindowAccepted()
+{
+    std::cout << "OnIconWindowAccepted" << std::endl;
+    UpdateIconDisplay(m_IndexOfIcon, m_subbloc->Icons()[m_IndexOfIcon].Name());
+}
+
+void SubBlocWindow::OnIconWindowRejected()
+{
+    std::cout << "OnIconWindowRejected" << std::endl;
+    m_subbloc->Icons()[m_IndexOfIcon] = InsermLibrary::Icon(m_memoryIcon);
 }
 
 void SubBlocWindow::ValidateModifications()
