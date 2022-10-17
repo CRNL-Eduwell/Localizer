@@ -17,6 +17,7 @@ ProtocolsWindow::ProtocolsWindow(QWidget *parent) : QDialog(parent)
     {
         QString protocolPath = m_ProtocolFolder + "/" + protocolList[i];
         m_ProvFiles.push_back(InsermLibrary::ProvFile(protocolPath.toStdString()));
+        m_ProvFileModifed.push_back(false);
     }
     LoadProtocols(m_ProvFiles);
 }
@@ -67,6 +68,7 @@ void ProtocolsWindow::AddElement()
     QModelIndexList indexes = ui.ProtocolListWidget->selectionModel()->selectedIndexes();
     int insertionIndex = !indexes.isEmpty() ? indexes[0].row() + 1 : ui.ProtocolListWidget->count();
     m_ProvFiles.insert(m_ProvFiles.begin() + insertionIndex, InsermLibrary::ProvFile());
+    m_ProvFileModifed.insert(m_ProvFileModifed.begin() + insertionIndex, true);
     ui.ProtocolListWidget->insertItem(insertionIndex, m_ProvFiles[insertionIndex].Name().c_str());
 }
 
@@ -78,6 +80,7 @@ void ProtocolsWindow::RemoveElement()
         int indexToDelete = indexes[0].row();
         ui.ProtocolListWidget->item(indexToDelete)->~QListWidgetItem();
         m_ProvFiles.erase(m_ProvFiles.begin() + indexToDelete);
+        m_ProvFileModifed.erase(m_ProvFileModifed.begin() + indexToDelete);
     }
 }
 
@@ -85,12 +88,14 @@ void ProtocolsWindow::OnProtocolWindowAccepted()
 {
     std::cout << "Accepted" << std::endl;
     ui.ProtocolListWidget->item(m_fileIndex)->setText(m_ProvFiles[m_fileIndex].Name().c_str());
+    m_ProvFileModifed[m_fileIndex] = true;
 }
 
 void ProtocolsWindow::OnProtocolWindowRejected()
 {
     std::cout << "Rejected" << std::endl;
     m_ProvFiles[m_fileIndex] = InsermLibrary::ProvFile(m_memoryFile);
+    m_ProvFileModifed[m_fileIndex] = false;
 }
 
 void ProtocolsWindow::ValidateAndSave()
@@ -114,8 +119,11 @@ void ProtocolsWindow::ValidateAndSave()
 
     for(int i = 0; i < m_ProvFiles.size(); i++)
     {
-        QString path = m_ProtocolFolder + "/" + m_ProvFiles[i].Name().c_str() + ".prov";
-        m_ProvFiles[i].SaveAs(path.toStdString());
+        if(m_ProvFileModifed[i])
+        {
+            QString path = m_ProtocolFolder + "/" + m_ProvFiles[i].Name().c_str() + ".prov";
+            m_ProvFiles[i].SaveAs(path.toStdString());
+        }
     }
 
     done(1);
