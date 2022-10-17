@@ -1,5 +1,5 @@
 {
-  "Name": "MCSE",
+  "Name": "MCSE_STATISTICS",
   "Blocs": [
     {
       "IllustrationPath": "./Resources/Config/Pictures/MCSE/MCSE_EASY.jpg",
@@ -27,15 +27,6 @@
               ],
               "Type": 0,
               "ID": "90f5d6ce-50fb-48bd-815d-8804d6ae8e35"
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                100,
-                200
-              ],
-              "Type": 1,
-              "ID": "01f28d30-56c9-48a4-90ed-cb8fdbed759c"
             }
           ],
           "Icons": [
@@ -99,15 +90,6 @@
               ],
               "Type": 0,
               "ID": "7f65d7ed-1a7b-4b9d-9173-df0e07e25258"
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                100,
-                200
-              ],
-              "Type": 1,
-              "ID": "794653d2-44a9-47de-9b34-40390a359bb9"
             }
           ],
           "Icons": [

@@ -29,14 +29,6 @@
                 10
               ],
               "Type": 0
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                1,
-				2
-              ],
-              "Type": 1
             }
           ],
           "Icons": [],
@@ -71,14 +63,6 @@
                 20
               ],
               "Type": 0
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                1,
-				2
-              ],
-              "Type": 1
             }
           ],
           "Icons": [],
@@ -113,14 +97,6 @@
                 30
               ],
               "Type": 0
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                1,
-				2
-              ],
-              "Type": 1
             }
           ],
           "Icons": [],
@@ -155,14 +131,6 @@
                 40
               ],
               "Type": 0
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                1,
-				2
-              ],
-              "Type": 1
             }
           ],
           "Icons": [],
@@ -197,14 +165,6 @@
                 50
               ],
               "Type": 0
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                1,
-				2
-              ],
-              "Type": 1
             }
           ],
           "Icons": [],
@@ -239,14 +199,6 @@
                 60
               ],
               "Type": 0
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                1,
-				2
-              ],
-              "Type": 1
             }
           ],
           "Icons": [],
@@ -282,14 +234,6 @@
                 70
               ],
               "Type": 0
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                1,
-				2
-              ],
-              "Type": 1
             }
           ],
           "Icons": [],
@@ -324,14 +268,6 @@
                 80
               ],
               "Type": 0
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                1,
-				2
-              ],
-              "Type": 1
             }
           ],
           "Icons": [],

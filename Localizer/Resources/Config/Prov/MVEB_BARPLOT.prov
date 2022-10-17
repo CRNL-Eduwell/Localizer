@@ -6,7 +6,7 @@
       "IllustrationPath": "",
       "ID": "396782c5-fea9-4b8c-bf59-ea7f4432726d",
       "Name": "LOAD2",
-      "Order": 0,
+      "Order": 2,
       "Sort": "Main_LOAD2_CODE",
       "SubBlocs": [
         {
@@ -74,7 +74,7 @@
       "IllustrationPath": "",
       "ID": "27d5807f-e7b5-46e4-9fc6-03a8a27ab465",
       "Name": "LOAD6",
-      "Order": 2,
+      "Order": 0,
       "Sort": "Main_LOAD6_CODE",
       "SubBlocs": [
         {

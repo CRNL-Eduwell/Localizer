@@ -2,53 +2,37 @@
 #define PROTOCOLWINDOW_H
 
 #include "ui_ProtocolWindow.h"
-
 #include <QtWidgets/QDialog>
-#include <QDir>
-#include <QMenu>
-#include <QList>
-#include <QDebug>
-#include <QKeyEvent>
-#include <QMessageBox>
-#include <QModelIndex>
-#include <QInputDialog>
-#include <QTableWidget>
-#include <QAbstractItemModel>
-#include <QStandardItemModel>
 
 #include <iostream>
-#include "Utility.h"
-#include "ProtocolFile.h"
+#include <vector>
+#include "ProvFile.h"
+#include "BlocWindow.h"
 
 class ProtocolWindow : public QDialog
 {
 	Q_OBJECT
 
 public:
-    ProtocolWindow(QWidget *parent = nullptr);
+    ProtocolWindow(InsermLibrary::ProvFile& prov, QWidget *parent = nullptr);
     ~ProtocolWindow();
 
 private:
-	void ConnectSignals();
-	void InitUiParameters();
-	QStringList GetFilesFromRootFolder(QString fileExt);
-    void LoadProtocolsInUI(QStringList protocols);
+	void LoadBlocs();
 
 private slots:
-    void ShowLocaListContextMenu(QPoint point);
-    void UpdateProtocolOnRowChanged(const QModelIndex current, const QModelIndex previous);
-    void ShowProvTabContextMenu(QPoint point);
-    void AddConditionToExperiment(const QModelIndex index);
-    void RemoveConditionFromExperiment();
-    void ManageChangeItem(QStandardItem* item);
-    void SaveAllProtocols();
+	void OnBlocDoubleClicked();
+	void AddElement();
+	void RemoveElement();
+	void OnProtocolWindowAccepted();
+	void OnProtocolWindowRejected();
+	void ValidateModifications();
 
 private:
-    QList<ProtocolFile*> files;
-	QStringList m_listHeaderProv;
-    bool m_dataChanged = false;
-    QString m_provFolder = QCoreApplication::applicationDirPath() + "/Resources/Config/Prov";
-	Ui::FormLoca ui;
+	Ui::ProtocolWindow ui;
+	InsermLibrary::ProvFile* m_file = nullptr;
+    InsermLibrary::Bloc m_memoryBloc;
+    int m_BlocIndex = -1;
 };
 
 #endif

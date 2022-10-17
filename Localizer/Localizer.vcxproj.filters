@@ -129,6 +129,12 @@
     <Filter Include="Header Files\Controller\DataProcessing">
       <UniqueIdentifier>{8f661712-a30c-4171-beba-7dbb8b2e1e3c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\UI\GUI\Protocols">
+      <UniqueIdentifier>{6c8bc2da-9d74-496d-b5fb-d470675bce0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI\GUI\Protocols">
+      <UniqueIdentifier>{bffa3bb4-771f-4a9f-8cdb-7618e1e2c516}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -308,12 +314,6 @@
     <ClCompile Include="GeneratedFiles\Debug\moc_ProtocolWindow.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_ProtocolWindow.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="ProtocolWindow.cpp">
-      <Filter>Source Files\UI\GUI</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_GeneralOptionsWindow.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -404,6 +404,48 @@
     <ClCompile Include="LOCA.cpp">
       <Filter>Source Files\Controller</Filter>
     </ClCompile>
+    <ClCompile Include="ProtocolWindow.cpp">
+      <Filter>Source Files\UI\GUI\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ProtocolWindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_BlocWindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_BlocWindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_EventWindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_EventWindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ProtocolsWindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ProtocolsWindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_SubBlocWindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_SubBlocWindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="BlocWindow.cpp">
+      <Filter>Source Files\UI\GUI\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="EventWindow.cpp">
+      <Filter>Source Files\UI\GUI\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="ProtocolsWindows.cpp">
+      <Filter>Source Files\UI\GUI\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="SubBlocWindow.cpp">
+      <Filter>Source Files\UI\GUI\Protocols</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="localizer.qrc">
@@ -487,12 +529,6 @@
     <CustomBuild Include="ConnectCleaner.h">
       <Filter>Header Files\UI\GUI</Filter>
     </CustomBuild>
-    <CustomBuild Include="ProtocolWindow.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="ProtocolWindow.h">
-      <Filter>Header Files\UI\GUI</Filter>
-    </CustomBuild>
     <CustomBuild Include="GeneralOptionsWindow.ui">
       <Filter>Form Files</Filter>
     </CustomBuild>
@@ -510,6 +546,36 @@
     </CustomBuild>
     <CustomBuild Include="LOCA.h">
       <Filter>Header Files\Controller</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ProtocolWindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ProtocolWindow.h">
+      <Filter>Header Files\UI\GUI\Protocols</Filter>
+    </CustomBuild>
+    <CustomBuild Include="BlocWindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="EventWindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ProtocolsWindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="SubBlocWindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="BlocWindow.h">
+      <Filter>Header Files\UI\GUI\Protocols</Filter>
+    </CustomBuild>
+    <CustomBuild Include="EventWindow.h">
+      <Filter>Header Files\UI\GUI\Protocols</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ProtocolsWindow.h">
+      <Filter>Header Files\UI\GUI\Protocols</Filter>
+    </CustomBuild>
+    <CustomBuild Include="SubBlocWindow.h">
+      <Filter>Header Files\UI\GUI\Protocols</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -560,9 +626,6 @@
     </ClInclude>
     <ClInclude Include="CleanConnectFile.h">
       <Filter>Header Files\UI\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_ProtocolWindow.h">
-      <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_GeneralOptionsWindow.h">
       <Filter>Generated Files</Filter>
@@ -635,6 +698,21 @@
     </ClInclude>
     <ClInclude Include="TriggerContainer.h">
       <Filter>Header Files\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_ProtocolWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_BlocWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_EventWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_ProtocolsWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_SubBlocWindow.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

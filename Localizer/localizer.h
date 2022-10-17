@@ -29,6 +29,11 @@
 #include "ConnectCleaner.h"
 #include "GeneralOptionsWindow.h"
 #include "picOptions.h"
+
+//TODO DOING
+#include "ProtocolsWindow.h"
+//===
+
 #include "ProtocolWindow.h"
 #include "ChooseLocaWindow.h"
 #include "AboutDycog.h"
@@ -72,7 +77,7 @@ private:
     void LoadTreeViewDatabase(QString rootFolder);
 	void LoadTreeViewUI(QString initialFolder);
     int PreparePatientFolder();
-	void PrepareSingleFiles();
+    int PrepareSingleFiles();
     std::vector<patientFolder> PrepareDBFolders();
 	void InitProgressBar();
     void InitMultiSubjectProgresBar(std::vector<patientFolder> subjects);
@@ -124,7 +129,6 @@ private:
 	optionsStats *optStat = nullptr;
 	optionsPerf *optPerf = nullptr;
 	ProtocolWindow *optLoca = nullptr;
-	GeneralOptionsWindow *generalOptionsWindow = nullptr;
 	//==
 	Ui::LocalizerClass ui;
 	QStringList inputArguments;
