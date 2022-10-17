@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ProtocolWindow</class>
- <widget class="QWidget" name="ProtocolWindow">
+ <class>BlocWindow</class>
+ <widget class="QWidget" name="BlocWindow">
   <property name="windowModality">
    <enum>Qt::WindowModal</enum>
   </property>
@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>452</width>
-    <height>595</height>
+    <width>351</width>
+    <height>437</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -26,24 +26,90 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Protocol</string>
+   <string>Bloc</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QGroupBox" name="TopLayout">
      <property name="title">
       <string>General</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Name :</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="minimumSize">
+           <size>
+            <width>60</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Name :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="BlocNameLineEdit"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="minimumSize">
+           <size>
+            <width>60</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Order :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="OrderLineEdit">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
-       <widget class="QLineEdit" name="ProtocolNameLineEdit"/>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="minimumSize">
+           <size>
+            <width>60</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Sort :</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="SortLineEdit">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -51,7 +117,7 @@
    <item>
     <widget class="QGroupBox" name="MiddleLayout">
      <property name="title">
-      <string>Blocs</string>
+      <string>Sub Blocs</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
@@ -70,7 +136,7 @@
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="AddBlocPushButton">
+         <widget class="QPushButton" name="AddSubBlocPushButton">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -95,7 +161,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="RemoveBlocPushButton">
+         <widget class="QPushButton" name="RemoveSubBlocPushButton">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -135,7 +201,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QListWidget" name="BlocsListWidget"/>
+       <widget class="QListWidget" name="SubBlocsListWidget"/>
       </item>
      </layout>
     </widget>

@@ -1,22 +1,22 @@
 {
   "ID": "xxxxxxxxxxxxxxxxxxxxxxxxx",
-  "Name": "MVIS",
+  "Name": "MVEB-MAINTENANCE_STATISTICS",
   "Blocs": [
     {
       "IllustrationPath": "",
-      "ID": "d01dec2a-02eb-446a-9d2a-c88d771cf556",
+      "ID": "396782c5-fea9-4b8c-bf59-ea7f4432726d",
       "Name": "LOAD2",
       "Order": 2,
-      "Sort": "Main_RESPONSE_LATENCY;Main_LOAD2_CODE",
+      "Sort": "Main_LOAD2_CODE",
       "SubBlocs": [
         {
-          "ID": "19ec52c0-5399-42af-a546-36366bc6e49a",
+          "ID": "bae67547-df47-4a7f-8c48-5c5ecb4d72b8",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 8000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -26,17 +26,9 @@
             {
               "Name": "LOAD2",
               "Codes": [
-                20
+                25
               ],
               "Type": 0
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                1,
-                2
-              ],
-              "Type": 1
             }
           ],
           "Icons": [],
@@ -46,19 +38,19 @@
     },
     {
       "IllustrationPath": "",
-      "ID": "1b74da38-1e0a-4dfd-b0f8-09cf871d5abe",
+      "ID": "2e182205-f047-47a7-a94c-1f598b7a2131",
       "Name": "LOAD4",
       "Order": 1,
-      "Sort": "Main_RESPONSE_LATENCY;Main_LOAD4_CODE",
+      "Sort": "Main_LOAD4_CODE",
       "SubBlocs": [
         {
-          "ID": "d02cf1d2-9d59-4899-a36c-8162f87bcc08",
+          "ID": "6ee3973c-ad10-4306-9b5a-0904a3fd559c",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 8000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -68,17 +60,9 @@
             {
               "Name": "LOAD4",
               "Codes": [
-                40
+                45
               ],
               "Type": 0
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                1,
-                2
-              ],
-              "Type": 1
             }
           ],
           "Icons": [],
@@ -88,19 +72,19 @@
     },
     {
       "IllustrationPath": "",
-      "ID": "483a8d0b-7c7e-4a36-b79a-3ad80cdf29fb",
+      "ID": "27d5807f-e7b5-46e4-9fc6-03a8a27ab465",
       "Name": "LOAD6",
       "Order": 0,
-      "Sort": "Main_RESPONSE_LATENCY;Main_LOAD6_CODE",
+      "Sort": "Main_LOAD6_CODE",
       "SubBlocs": [
         {
-          "ID": "c4e83d67-6418-4dd9-9954-17cfb805ba34",
+          "ID": "f1fbe0bb-8ff9-4005-91cc-7ef92278d202",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 8000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -110,17 +94,9 @@
             {
               "Name": "LOAD6",
               "Codes": [
-                60
+                65
               ],
               "Type": 0
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                1,
-                2
-              ],
-              "Type": 1
             }
           ],
           "Icons": [],
@@ -130,19 +106,19 @@
     },
     {
       "IllustrationPath": "",
-      "ID": "6ec39a57-53ec-4c86-9f90-6820c05bc338",
+      "ID": "13aefc6b-f3e6-4c3e-9166-93bb496b8316",
       "Name": "CONTROL",
       "Order": 3,
-      "Sort": "Main_RESPONSE_LATENCY;Main_CONTROL_CODE",
+      "Sort": "Main_CONTROL_CODE",
       "SubBlocs": [
         {
-          "ID": "0b50b4e3-e67f-4d26-b604-c8117aaaae48",
+          "ID": "3cd59a46-701d-46df-80a0-8a1877876e1d",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
           "Window": {
             "Start": -500,
-            "End": 8000
+            "End": 500
           },
           "Baseline": {
             "Start": -200,
@@ -152,17 +128,9 @@
             {
               "Name": "CONTROL",
               "Codes": [
-                10
+                90
               ],
               "Type": 0
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                1,
-                2
-              ],
-              "Type": 1
             }
           ],
           "Icons": [],

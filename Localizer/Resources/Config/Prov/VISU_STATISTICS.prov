@@ -1,13 +1,13 @@
 {
   "ID": "xxxxxxxxxxxxxxxxxxxxxxxxx",
-  "Name": "VISU",
+  "Name": "VISU_STATISTICS",
   "Blocs": [
     {
       "IllustrationPath": "./Resources/Config/Pictures/VISU/VISU_FRUIT.jpg",
       "ID": "e65e9f04-f626-44e4-9516-97def8fc7c0a",
       "Name": "FRUIT",
       "Order": 8,
-      "Sort": "Main_RESPONSE_LATENCY;Main_FRUIT_CODE",
+      "Sort": "Main_FRUIT_CODE",
       "SubBlocs": [
         {
           "ID": "51bbf696-c698-42a2-9ecb-7b60a8264bd4",
@@ -29,13 +29,6 @@
                 80
               ],
               "Type": 0
-            },
-            {
-              "Name": "RESPONSE",
-              "Codes": [
-                1
-              ],
-              "Type": 1
             }
           ],
           "Icons": [],
