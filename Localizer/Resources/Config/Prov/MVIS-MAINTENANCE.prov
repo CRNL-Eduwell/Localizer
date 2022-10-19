@@ -1,16 +1,16 @@
 {
   "ID": "xxxxxxxxxxxxxxxxxxxxxxxxx",
-  "Name": "MVEB_BARPLOT",
+  "Name": "MVIS-MAINTENANCE",
   "Blocs": [
     {
       "IllustrationPath": "",
-      "ID": "396782c5-fea9-4b8c-bf59-ea7f4432726d",
+      "ID": "c9c988b2-fc2a-4d94-bf27-14838e0ec862",
       "Name": "LOAD2",
       "Order": 2,
       "Sort": "Main_LOAD2_CODE",
       "SubBlocs": [
         {
-          "ID": "bae67547-df47-4a7f-8c48-5c5ecb4d72b8",
+          "ID": "359559c2-deda-463b-9c5c-2f7ccce2ae22",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
@@ -38,13 +38,13 @@
     },
     {
       "IllustrationPath": "",
-      "ID": "2e182205-f047-47a7-a94c-1f598b7a2131",
+      "ID": "a853a4ff-bc83-4b29-b6ac-7927c8501d7f",
       "Name": "LOAD4",
       "Order": 1,
       "Sort": "Main_LOAD4_CODE",
       "SubBlocs": [
         {
-          "ID": "6ee3973c-ad10-4306-9b5a-0904a3fd559c",
+          "ID": "e0d03c33-a48c-4e18-8e85-e1116d7551b5",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
@@ -72,13 +72,13 @@
     },
     {
       "IllustrationPath": "",
-      "ID": "27d5807f-e7b5-46e4-9fc6-03a8a27ab465",
+      "ID": "e576e560-9495-4931-9937-1589a01c959f",
       "Name": "LOAD6",
       "Order": 0,
       "Sort": "Main_LOAD6_CODE",
       "SubBlocs": [
         {
-          "ID": "f1fbe0bb-8ff9-4005-91cc-7ef92278d202",
+          "ID": "fa6e8be6-cf9b-43ba-96b8-22231d7bdaf7",
           "Name": "Main",
           "Order": 0,
           "Type": 0,
@@ -106,13 +106,13 @@
     },
     {
       "IllustrationPath": "",
-      "ID": "13aefc6b-f3e6-4c3e-9166-93bb496b8316",
+      "ID": "5c1a2400-c000-4acb-bdbc-93eabc378fc0",
       "Name": "CONTROL",
       "Order": 3,
       "Sort": "Main_CONTROL_CODE",
       "SubBlocs": [
         {
-          "ID": "3cd59a46-701d-46df-80a0-8a1877876e1d",
+          "ID": "db167792-f07f-4a03-b23b-cc99a34ab68b",
           "Name": "Main",
           "Order": 0,
           "Type": 0,

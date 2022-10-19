@@ -35,6 +35,7 @@ private:
 	Ui::ProtocolsWindow ui;
 	QString m_ProtocolFolder = QCoreApplication::applicationDirPath() + "/Resources/Config/Prov";
     std::vector<InsermLibrary::ProvFile> m_ProvFiles;
+    std::vector<bool> m_ProvFileModifed;
     InsermLibrary::ProvFile m_memoryFile;
     int m_fileIndex = -1;
 

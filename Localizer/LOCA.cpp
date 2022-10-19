@@ -181,43 +181,25 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
         CreateConfFile(myeegContainer);
     }
 
-    //Process Env2Plot
-        //EnvPlot => LOCA
-        //BarPlot => LOCA_BARPLOT
+    //Process Env2Plot => LOCA
     if (a.env2plot)
     {
-        if(taskBarPlot != nullptr)
+        if(task != nullptr)
         {
-            m_triggerContainer->ProcessEventsForExperiment(taskBarPlot, 99);
+            m_triggerContainer->ProcessEventsForExperiment(task, 99);
             if (m_triggerContainer->ProcessedTriggerCount() == 0)
             {
-                emit sendLogInfo("No Trigger found for this experiment, aborting Barplot generation");
+                emit sendLogInfo("No Trigger found for this experiment, aborting Env2Plot generation");
             }
             else
             {
-                Barplot(myeegContainer, taskBarPlot, freqFolder);
+                Env2plot(myeegContainer, task, freqFolder);
             }
             emit incrementAdavnce(1);
         }
-        else
-        {
-            if(task != nullptr)
-            {
-                m_triggerContainer->ProcessEventsForExperiment(task, 99);
-                if (m_triggerContainer->ProcessedTriggerCount() == 0)
-                {
-                    emit sendLogInfo("No Trigger found for this experiment, aborting Env2Plot generation");
-                }
-                else
-                {
-                    Env2plot(myeegContainer, task, freqFolder);
-                }
-                emit incrementAdavnce(1);
-            }
-        }
     }
 
-    //Process Trialmatrices => LOCA and LOCA_INVERTED
+    //Process Trialmatrices => LOCA and LOCA_INVERTED and LOCA_BARPLOT (only AUDI)
    if (a.trialmat)
    {
        if(task != nullptr)
@@ -243,6 +225,18 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
 			{
 				TimeTrialMatrices(myeegContainer, taskInverted, freqFolder);
 			}
+       }
+       if(taskBarPlot != nullptr)
+       {
+           m_triggerContainer->ProcessEventsForExperiment(taskBarPlot, 99);
+           if (m_triggerContainer->ProcessedTriggerCount() == 0)
+           {
+               emit sendLogInfo("No Trigger found for this experiment, aborting Barplot generation");
+           }
+           else
+           {
+               Barplot(myeegContainer, taskBarPlot, freqFolder);
+           }
        }
        emit incrementAdavnce(1);
    }

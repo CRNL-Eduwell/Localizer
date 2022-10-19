@@ -183,11 +183,10 @@ void SubBlocWindow::ValidateModifications()
     m_subbloc->Order(ui.OrderLineEdit->text().toInt());
     InsermLibrary::MainSecondaryEnum type = ui.TypeComboBox->currentIndex() == 0 ? InsermLibrary::MainSecondaryEnum::Main : InsermLibrary::MainSecondaryEnum::Secondary;
     m_subbloc->Type(type);
-    m_subbloc->MainWindow().Start(ui.WindowStartLineEdit->text().toInt());
-    m_subbloc->MainWindow().End(ui.WindowEndLineEdit->text().toInt());
-    m_subbloc->Baseline().Start(ui.BaselineStartLineEdit->text().toInt());
-    m_subbloc->Baseline().End(ui.BaselineEndLineEdit->text().toInt());
-
+    InsermLibrary::Window mainwin(ui.WindowStartLineEdit->text().toInt(), ui.WindowEndLineEdit->text().toInt());
+    m_subbloc->MainWindow(mainwin);
+    InsermLibrary::Window baselinewin(ui.BaselineStartLineEdit->text().toInt(), ui.BaselineEndLineEdit->text().toInt());
+    m_subbloc->Baseline(baselinewin);
     done(1);
     close();
 }
