@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>914</width>
-    <height>605</height>
+    <height>629</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -359,6 +359,13 @@
             </widget>
            </item>
           </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="BypassCCFPushButton">
+          <property name="text">
+           <string>Will Prompt CCF</string>
+          </property>
          </widget>
         </item>
        </layout>

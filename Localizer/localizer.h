@@ -90,6 +90,7 @@ private slots:
 	void ShowFileTreeContextMenu(QPoint point);
 	void SelectPtsForCorrelation();
 	void ClearPtsForCorrelation();
+    void DealWithCCFToggle();
 	void ToggleAllBands();
     void ProcessFolderAnalysis();
     void ProcessSingleAnalysis();
@@ -102,9 +103,11 @@ private slots:
     void UpdateProgressBar(int advancement);
 	void CancelAnalysis();
     void ReceiveElectrodeList(std::vector<std::string> ElectrodeList, std::string ConnectCleanerFile);
+    void LoadCCFFile(std::string path, std::vector<std::string> & uncorrectedLabels, std::vector<int> & states, std::vector<std::string> & correctedLabels);
 
 signals:
     void MontageDone(int);
+    void BypassCCF();
 
 private:
 	//==Visualisation
@@ -133,8 +136,7 @@ private:
 	Ui::LocalizerClass ui;
 	QStringList inputArguments;
 
-
-
+    bool m_CCFToggle = false;
 	ErpProcessor* erpWindow = nullptr;
 };
 

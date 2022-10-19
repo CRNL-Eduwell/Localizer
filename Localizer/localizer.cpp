@@ -88,6 +88,7 @@ void Localizer::ConnectSignals()
     
     connect(ui.BrowsePtsButton, &QPushButton::clicked, this, &Localizer::SelectPtsForCorrelation);
     connect(ui.ClearPtsButton, &QPushButton::clicked, this, &Localizer::ClearPtsForCorrelation);
+    connect(ui.BypassCCFPushButton, &QPushButton::clicked, this, &Localizer::DealWithCCFToggle);
 
     connect(ui.AllBandsCheckBox, &QCheckBox::clicked, this, &Localizer::ToggleAllBands);
     connect(ui.cancelButton, &QPushButton::clicked, this, &Localizer::CancelAnalysis);
@@ -662,6 +663,19 @@ void Localizer::ClearPtsForCorrelation()
     PtsFilePath = "";
 }
 
+void Localizer::DealWithCCFToggle()
+{
+    m_CCFToggle = !m_CCFToggle;
+    if(m_CCFToggle)
+    {
+        ui.BypassCCFPushButton->setText("Will Bypass CCF");
+    }
+    else
+    {
+        ui.BypassCCFPushButton->setText("Will Prompt CCF");
+    }
+}
+
 void Localizer::ToggleAllBands()
 {
     Qt::CheckState status = ui.AllBandsCheckBox->checkState();
@@ -979,16 +993,49 @@ void Localizer::CancelAnalysis()
 
 void Localizer::ReceiveElectrodeList(std::vector<std::string> ElectrodeList, std::string ConnectCleanerFile)
 {
-    ConnectCleaner *elecWin = new ConnectCleaner(ElectrodeList, ConnectCleanerFile.c_str(), nullptr);
-    int res = elecWin->exec();
-    if(res == 1)
+    if(QFileInfo::exists(ConnectCleanerFile.c_str()) && m_CCFToggle)
     {
-        worker->SetExternalParameters(elecWin->IndexToDelete(), elecWin->CorrectedLabel(), elecWin->OperationToDo());
-        emit MontageDone(res);
+        std::vector<std::string> uncorrectedLabels;
+        std::vector<int> states;
+        std::vector<std::string> correctedLabels;
+        LoadCCFFile(ConnectCleanerFile.c_str(), uncorrectedLabels, states, correctedLabels);
+        worker->SetExternalParameters(states, correctedLabels, 1);
+        emit MontageDone(1);
     }
     else
     {
-        CancelAnalysis();
+        ConnectCleaner *elecWin = new ConnectCleaner(ElectrodeList, ConnectCleanerFile.c_str(), nullptr);
+        int res = elecWin->exec();
+        if(res == 1)
+        {
+            worker->SetExternalParameters(elecWin->IndexToDelete(), elecWin->CorrectedLabel(), elecWin->OperationToDo());
+            emit MontageDone(res);
+        }
+        else
+        {
+            CancelAnalysis();
+        }
+        delete elecWin;
     }
-    delete elecWin;
+}
+
+void Localizer::LoadCCFFile(std::string path, std::vector<std::string> & uncorrectedLabels, std::vector<int> & states, std::vector<std::string> & correctedLabels)
+{
+    std::vector<std::string> rawFile = EEGFormat::Utility::ReadTextFile(path);
+    for (uint i = 0; i < rawFile.size(); i++)
+    {
+        std::vector<std::string> rawLine = EEGFormat::Utility::Split<std::string>(rawFile[i], " ");
+        if(rawLine.size() != 3)
+        {
+            std::cerr << "Error, line from connect cleaner file should contain three elements" << std::endl;
+            continue;
+        }
+
+        if(std::stoi(rawLine[0]) == 0)
+        {
+            states.push_back(i);
+        }
+        uncorrectedLabels.push_back(rawLine[1]);
+        correctedLabels.push_back(rawLine[2]);
+    }
 }
