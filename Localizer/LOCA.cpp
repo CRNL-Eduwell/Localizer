@@ -107,6 +107,7 @@ void InsermLibrary::LOCA::Localize(eegContainer* myeegContainer, int idCurrentLo
 		}
 		else
 		{
+            //TODO : in the case of brainvision or other fileformat searching with SM0_ELAN will cause issues, need to correct that
 			int frequencyCount = static_cast<int>(currentLoca->frequencyFolders().size());
 			for (int j = 0; j < frequencyCount; j++)
 			{
@@ -116,20 +117,30 @@ void InsermLibrary::LOCA::Localize(eegContainer* myeegContainer, int idCurrentLo
 
 				if ((currentLoca->frequencyFolders()[j].frequencyName() == "f" + fMin + "f" + fMax) && (sm0Files.size() > 0))
 				{
-					std::vector<std::string> dataFiles = currentLoca->frequencyFolders()[j].FilePaths(SM0_ELAN);
-					int result = myeegContainer->LoadFrequencyData(dataFiles, 0);
-					if (result == 0)
-					{
-						emit incrementAdavnce(1);
-						emit sendLogInfo("Envelloppe File Loaded");
+                    for(int k = 0;k<6;k++)
+                    {
+                        std::vector<std::string> dataFiles;
+                        if(k == 0) { dataFiles = currentLoca->frequencyFolders()[j].FilePaths(SM0_ELAN); }
+                        else if(k == 1) { dataFiles = currentLoca->frequencyFolders()[j].FilePaths(SM250_ELAN); }
+                        else if(k == 2) { dataFiles =  currentLoca->frequencyFolders()[j].FilePaths(SM500_ELAN); }
+                        else if(k == 3) { dataFiles = currentLoca->frequencyFolders()[j].FilePaths(SM1000_ELAN); }
+                        else if(k == 4) {dataFiles = currentLoca->frequencyFolders()[j].FilePaths(SM2500_ELAN); }
+                        else { dataFiles = currentLoca->frequencyFolders()[j].FilePaths(SM5000_ELAN); }
 
-						std::string freqFolder = CreateFrequencyFolder(myeegContainer, currentFrequencyBand);
-						GenerateMapsAndFigures(myeegContainer, freqFolder, m_analysisOpt[i]);
-					}
-					else
-					{
-						emit sendLogInfo("Problem loading file, end of analyse for this frequency");
-					}
+                        int result = myeegContainer->LoadFrequencyData(dataFiles, k);
+                        if (result == 0)
+                        {
+                            emit incrementAdavnce(1);
+                            emit sendLogInfo("Envelloppe File Loaded at place number " + QString::number(k));
+                        }
+                        else
+                        {
+                            emit sendLogInfo("Problem loading file at place number " + QString::number(k));
+                        }
+                    }
+
+                    std::string freqFolder = CreateFrequencyFolder(myeegContainer, currentFrequencyBand);
+                    GenerateMapsAndFigures(myeegContainer, freqFolder, m_analysisOpt[i]);
 				}
 			}
 		}
@@ -259,7 +270,7 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
         else
         {
             StatisticalFilesProcessor sfp;
-            sfp.Process(m_triggerContainer, myeegContainer, taskStatistics, freqFolder, m_statOption);
+            sfp.Process(m_triggerContainer, myeegContainer, a.smoothingIDToUse, taskStatistics, freqFolder, m_statOption);
         }
         emit incrementAdavnce(1);
     }

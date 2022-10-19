@@ -480,6 +480,12 @@ std::vector<InsermLibrary::FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOpt
         analysisOpt[i].correMaps = ui.CorrelationMapsCheckBox->isChecked();
         analysisOpt[i].statFiles = ui.StatFileExportCheckBox->isChecked();
 
+        //TODO : maybe something more clean but since we are not dependant on user input , meh
+        std::string smoothingIDStr = ui.StatSmoothingComboBox->currentText().toStdString();
+        smoothingIDStr.erase(std::remove_if(smoothingIDStr.begin(), smoothingIDStr.end(), [](char c) { return !std::isdigit(c); }), smoothingIDStr.end());
+        int num = std::stoi(smoothingIDStr);
+        analysisOpt[i].smoothingIDToUse = (num == 0) ? 0 : (num == 250) ? 1 : (num == 500) ? 2 : (num == 1000) ? 3 : (num == 2500) ? 4 : 5;
+
         //	- what frequency bands data is
         QString label = ui.FrequencyListWidget->item(indexes[i])->text();
         std::vector<InsermLibrary::FrequencyBand>::iterator it = std::find_if(frequencyBands.begin(), frequencyBands.end(), [&](const InsermLibrary::FrequencyBand &c)

@@ -259,6 +259,40 @@
                    </property>
                   </widget>
                  </item>
+                 <item>
+                  <widget class="QComboBox" name="StatSmoothingComboBox">
+                   <item>
+                    <property name="text">
+                     <string>sm0</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>sm250</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>sm500</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>sm1000</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>sm2500</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>sm5000</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
                 </layout>
                </widget>
               </item>
