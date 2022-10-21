@@ -38,15 +38,14 @@ macx{
 
 unix:!macx{
 ####################################### INCLUDEPATH
-    INCLUDEPATH += "/home/bbontemps/software/boost_1_70_0"
-    INCLUDEPATH += "/home/bbontemps/software/EEGFormat/EEGFormat"
-    INCLUDEPATH += "/home/bbontemps/software/Framework/Framework"
-    INCLUDEPATH += "/home/bbontemps/software/Localizer/Localizer"
+    INCLUDEPATH += "/home/hbp/software/EEGFormat/EEGFormat"
+    INCLUDEPATH += "/home/hbp/software/Framework/Framework"
+    INCLUDEPATH += "/home/hbp/software/Localizer/Localizer"
 
 ####################################### LIBRAIRIES
-    LIBS += -L"/home/bbontemps/software/boost_1_70_0" -lboost_filesystem
-    LIBS += -L"/home/bbontemps/software/EEGFormat/EEGFormat" -lEEGFormat
-    LIBS += -L"/home/bbontemps/software/Framework_x64" -lFramework
+    LIBS += -lboost_filesystem
+    LIBS += -L"/home/hbp/software/EEGFormat/EEGFormat" -lEEGFormat
+    LIBS += -L"/home/hbp/software/Framework_x64" -lFramework
     LIBS += -L"/usr/local/lib" -lfftw3f -lfftw3f_threads
     LIBS += -fopenmp
 }
@@ -105,7 +104,6 @@ HEADERS += \
     Localizer/IconWindow.h \
     Localizer/LOCA.h \
     Localizer/MultiSubjectWorker.h \
-    Localizer/PROVParameters.h \
     Localizer/PatientFolderWorker.h \
     Localizer/Protocol.h \
     Localizer/ProtocolFile.h \
