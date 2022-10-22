@@ -10,14 +10,13 @@ FrequencyFolder::FrequencyFolder(std::string path)
 {
     m_Path = path;
     GetFrequencyBandFromPath(path);
+    GetFrequencyEegFiles(path);
+    GetDataFolders(path);
 }
 
 FrequencyFolder::~FrequencyFolder()
 {
-    for(int i = 0; i < m_SmoothingXFiles.size(); i++)
-    {
-        InsermLibrary::deleteAndNullify1D(m_SmoothingXFiles[i]);
-    }
+
 }
 
 void FrequencyFolder::GetFrequencyBandFromPath(std::string path)
@@ -45,7 +44,8 @@ void FrequencyFolder::GetFrequencyEegFiles(std::string path)
     currentDir.setNameFilters(QStringList() << "*.eeg" /*<< "*.eeg.ent"*/ << "*.vhdr");
     QStringList fileFound = currentDir.entryList();
 
-    m_SmoothingXFiles.resize(6);
+    m_ElanSmoothingXFiles.resize(6);
+    m_BvSmoothingXFiles.resize(6);
     for (int i = 0; i < fileFound.size(); i++)
     {
         for (int j = 0; j < 6; j++)
@@ -57,14 +57,14 @@ void FrequencyFolder::GetFrequencyEegFiles(std::string path)
                 QFileInfo f(filePath);
                 if(f.suffix() == "vhdr")
                 {
-                    m_SmoothingXFiles[j] = new InsermLibrary::BrainVisionFileInfo(filePath.toStdString());
+                    m_BvSmoothingXFiles[j] = std::make_pair(j, InsermLibrary::BrainVisionFileInfo(filePath.toStdString()));
                 }
                 else
                 {
                     //This way we either take Brainvision data or Elan (since bv data file is also a .eeg file)
                     if(f.suffix() == "eeg")
                     {
-                        m_SmoothingXFiles[j] = new InsermLibrary::ElanFileInfo(filePath.toStdString());
+                        m_ElanSmoothingXFiles[j] = std::make_pair(j, InsermLibrary::ElanFileInfo(filePath.toStdString()));
                     }
                 }
             }

@@ -25,10 +25,10 @@ private:
     std::string m_FolderName = "";
     std::string m_ExperimentLabel = "";
 
-    InsermLibrary::MicromedFileInfo* m_MicromedFileInfo = nullptr;
-    InsermLibrary::ElanFileInfo* m_ElanFileInfo = nullptr;
-    InsermLibrary::BrainVisionFileInfo* m_BvFileInfo = nullptr;
-    InsermLibrary::EdfFileInfo* m_EdfFileInfo = nullptr;
+    InsermLibrary::MicromedFileInfo m_MicromedFileInfo;
+    InsermLibrary::ElanFileInfo m_ElanFileInfo;
+    InsermLibrary::BrainVisionFileInfo m_BvFileInfo;
+    InsermLibrary::EdfFileInfo m_EdfFileInfo;
     std::string m_DsPosFile = "";
     std::vector<FrequencyFolder> m_FrequencyFolders;
 };

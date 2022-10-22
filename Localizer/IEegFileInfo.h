@@ -11,6 +11,8 @@ namespace InsermLibrary
     class IEegFileInfo
     {
     public:
+        virtual ~IEegFileInfo() = 0;
+        
         virtual FileType GetFileType() = 0;
         virtual std::vector<std::string> GetFiles() = 0;
         virtual void CheckForErrors() = 0;

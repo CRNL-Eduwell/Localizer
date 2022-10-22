@@ -1,5 +1,10 @@
 #include "EdfFileInfo.h"
 
+InsermLibrary::EdfFileInfo::EdfFileInfo()
+{
+
+}
+
 InsermLibrary::EdfFileInfo::EdfFileInfo(std::string edf)
 {
     m_edf = edf;

@@ -13,10 +13,7 @@ ExperimentFolder::ExperimentFolder(std::string path)
 
 ExperimentFolder::~ExperimentFolder()
 {
-    InsermLibrary::deleteAndNullify1D(m_MicromedFileInfo);
-    InsermLibrary::deleteAndNullify1D(m_ElanFileInfo);
-    InsermLibrary::deleteAndNullify1D(m_BvFileInfo);
-    InsermLibrary::deleteAndNullify1D(m_EdfFileInfo);
+
 }
 
 void ExperimentFolder::GetExperimentNameFromPath(std::string path)
@@ -74,10 +71,10 @@ void ExperimentFolder::GetEegFiles(std::string path)
             bv = path + fileFound[i].toStdString();
     }
 
-    m_MicromedFileInfo = new InsermLibrary::MicromedFileInfo(trc);
-    m_ElanFileInfo = new InsermLibrary::ElanFileInfo(eeg, pos, "");
-    m_BvFileInfo = new InsermLibrary::BrainVisionFileInfo(bv);
-    m_EdfFileInfo = new InsermLibrary::EdfFileInfo(edf);
+    m_MicromedFileInfo = InsermLibrary::MicromedFileInfo(trc);
+    m_ElanFileInfo = InsermLibrary::ElanFileInfo(eeg, pos, "");
+    m_BvFileInfo = InsermLibrary::BrainVisionFileInfo(bv);
+    m_EdfFileInfo = InsermLibrary::EdfFileInfo(edf);
     m_DsPosFile = dspos;
 }
 

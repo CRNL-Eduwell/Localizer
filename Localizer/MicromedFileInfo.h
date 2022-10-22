@@ -8,6 +8,7 @@ namespace InsermLibrary
     class MicromedFileInfo : public InsermLibrary::IEegFileInfo
     {
     public:
+        MicromedFileInfo();
         MicromedFileInfo(std::string path);
         ~MicromedFileInfo();
 

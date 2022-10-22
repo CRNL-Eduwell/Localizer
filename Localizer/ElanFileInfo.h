@@ -8,6 +8,7 @@ namespace InsermLibrary
     class ElanFileInfo : public InsermLibrary::IEegFileInfo
     {
     public:
+        ElanFileInfo();
         ElanFileInfo(std::string eeg, std::string pos = "", std::string notes = "");
         ~ElanFileInfo();
 

@@ -1,5 +1,10 @@
 #include "ElanFileInfo.h"
 
+InsermLibrary::ElanFileInfo::ElanFileInfo()
+{
+
+}
+
 InsermLibrary::ElanFileInfo::ElanFileInfo(std::string eeg, std::string pos, std::string notes)
 {
     m_Eeg = eeg;

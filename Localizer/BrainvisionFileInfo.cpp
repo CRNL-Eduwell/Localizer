@@ -1,5 +1,10 @@
 #include "BrainvisionFileInfo.h"
 
+InsermLibrary::BrainVisionFileInfo::BrainVisionFileInfo()
+{
+
+}
+
 InsermLibrary::BrainVisionFileInfo::BrainVisionFileInfo(std::string bvheader)
 {
     m_BvHeader = bvheader;

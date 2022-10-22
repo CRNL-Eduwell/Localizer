@@ -8,6 +8,7 @@ namespace InsermLibrary
     class EdfFileInfo : public InsermLibrary::IEegFileInfo
     {
     public:
+        EdfFileInfo();
         EdfFileInfo(std::string edf);
         ~EdfFileInfo();
 

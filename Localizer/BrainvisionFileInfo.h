@@ -8,6 +8,7 @@ namespace InsermLibrary
     class BrainVisionFileInfo : public InsermLibrary::IEegFileInfo
     {
     public:
+        BrainVisionFileInfo();
         BrainVisionFileInfo(std::string bvheader);
         ~BrainVisionFileInfo();
 

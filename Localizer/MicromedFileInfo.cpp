@@ -1,5 +1,10 @@
 #include "MicromedFileInfo.h"
 
+InsermLibrary::MicromedFileInfo::MicromedFileInfo()
+{
+
+}
+
 InsermLibrary::MicromedFileInfo::MicromedFileInfo(std::string path)
 {
     m_TRC = path;

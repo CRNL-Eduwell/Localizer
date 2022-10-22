@@ -9,9 +9,10 @@ class SubjectFolder
 public:
     SubjectFolder(std::string path);
     ~SubjectFolder();
+    inline const std::string Path() { return m_Path; }
+    inline const std::string SubjectLabel() { return m_FolderName; }
 
 private :
-//    void GetFrequencyBandFromPath(std::string path);
     void GetExperimentFolder(std::string path);
 
 private:

@@ -2,7 +2,8 @@
 #define FREQUENCYFOLDER_H
 
 #include <iostream>
-#include "IEegFileInfo.h"
+#include "ElanFileInfo.h"
+#include "BrainvisionFileInfo.h"
 #include "AnalysisFolder.h"
 
 enum class SmoothingWindow { SM0, SM250, SM500, SM1000, SM2500, SM5000 };
@@ -22,7 +23,8 @@ private:
     std::string m_Path = "";
     std::string m_FolderName = "";
     std::string m_FrequencyBandLabel = "";
-    std::vector<InsermLibrary::IEegFileInfo*> m_SmoothingXFiles;
+    std::vector<std::pair<int, InsermLibrary::ElanFileInfo>> m_ElanSmoothingXFiles;
+    std::vector<std::pair<int, InsermLibrary::BrainVisionFileInfo>> m_BvSmoothingXFiles;
     std::vector<AnalysisFolder> m_DataFolder;
 };
 
