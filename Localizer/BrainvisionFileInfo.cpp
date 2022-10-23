@@ -26,7 +26,24 @@ std::vector<std::string> InsermLibrary::BrainVisionFileInfo::GetFiles()
     return files;
 }
 
-void InsermLibrary::BrainVisionFileInfo::CheckForErrors()
+int InsermLibrary::BrainVisionFileInfo::CheckForErrors()
 {
+    std::filesystem::path fspath(Header());
 
+    if(fspath.empty())
+    {
+        return -3;
+    }
+    else if(fspath.extension() != ".vhdr")
+    {
+        return -2;
+    }
+    else if(!std::filesystem::exists(Header()))
+    {
+        return -1;
+    }
+    else
+    {
+        return 0;
+    }
 }

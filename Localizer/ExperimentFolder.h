@@ -14,6 +14,7 @@ class ExperimentFolder
 public:
     ExperimentFolder(std::string path);
     ~ExperimentFolder();
+    inline bool IsValid() { return m_MicromedFileInfo.CheckForErrors() == 0 || m_ElanFileInfo.CheckForErrors() == 0 || m_BvFileInfo.CheckForErrors() == 0 || m_EdfFileInfo.CheckForErrors() == 0; }
 
 private:
     void GetExperimentNameFromPath(std::string path);

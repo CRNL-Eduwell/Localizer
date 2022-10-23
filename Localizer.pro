@@ -173,6 +173,7 @@ SOURCES += \
     Localizer/GeneralOptionsFile.cpp \
     Localizer/GeneralOptionsWindow.cpp \
     Localizer/HilbertEnveloppe.cpp \
+    Localizer/IEegFileInfo.cpp \
     Localizer/ITxtFile.cpp \
     Localizer/IWorker.cpp \
     Localizer/Icon.cpp \

@@ -1,4 +1,5 @@
 #include "ElanFileInfo.h"
+#include <filesystem>
 
 InsermLibrary::ElanFileInfo::ElanFileInfo()
 {
@@ -28,7 +29,25 @@ std::vector<std::string> InsermLibrary::ElanFileInfo::GetFiles()
     return files;
 }
 
-void InsermLibrary::ElanFileInfo::CheckForErrors()
+int InsermLibrary::ElanFileInfo::CheckForErrors()
 {
+    std::filesystem::path fseegpath(Eeg());
+    std::filesystem::path fsentpath(Ent());
 
+    if(fseegpath.empty() || fseegpath.empty())
+    {
+        return -3;
+    }
+    else if((fseegpath.extension() != ".eeg") && (fseegpath.extension() != ".eeg.ent"))
+    {
+        return -2;
+    }
+    else if(!std::filesystem::exists(Eeg()) || !std::filesystem::exists(Ent()))
+    {
+        return -1;
+    }
+    else
+    {
+        return 0;
+    }
 }

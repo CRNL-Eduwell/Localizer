@@ -26,7 +26,24 @@ std::vector<std::string> InsermLibrary::EdfFileInfo::GetFiles()
     return files;
 }
 
-void InsermLibrary::EdfFileInfo::CheckForErrors()
+int InsermLibrary::EdfFileInfo::CheckForErrors()
 {
+    std::filesystem::path fspath(FilePath());
 
+    if(fspath.empty())
+    {
+        return -3;
+    }
+    else if(fspath.extension() != ".edf")
+    {
+        return -2;
+    }
+    else if(!std::filesystem::exists(FilePath()))
+    {
+        return -1;
+    }
+    else
+    {
+        return 0;
+    }
 }

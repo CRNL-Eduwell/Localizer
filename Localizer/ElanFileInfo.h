@@ -2,6 +2,9 @@
 #define ELANFILEINFO_H
 
 #include "IEegFileInfo.h"
+#include <iostream>
+#include <vector>
+#include <filesystem>
 
 namespace InsermLibrary
 {
@@ -20,7 +23,7 @@ namespace InsermLibrary
         FileType GetFileType();
         //Header-Data-Events-Notes
         std::vector<std::string> GetFiles();
-        void CheckForErrors();
+        int CheckForErrors();
 
     private:
         std::string m_Eeg = "";

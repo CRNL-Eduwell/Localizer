@@ -26,7 +26,24 @@ std::vector<std::string> InsermLibrary::MicromedFileInfo::GetFiles()
     return files;
 }
 
-void InsermLibrary::MicromedFileInfo::CheckForErrors()
+int InsermLibrary::MicromedFileInfo::CheckForErrors()
 {
+    std::filesystem::path fspath(m_TRC);
 
+    if(fspath.empty())
+    {
+        return -3;
+    }
+    else if((fspath.extension() != ".trc") && (fspath.extension() != ".TRC"))
+    {
+        return -2;
+    }
+    else if(!std::filesystem::exists(m_TRC))
+    {
+        return -1;
+    }
+    else
+    {
+        return 0;
+    }
 }
