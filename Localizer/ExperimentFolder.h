@@ -15,6 +15,10 @@ public:
     ExperimentFolder(std::string path);
     ~ExperimentFolder();
     inline bool IsValid() { return m_MicromedFileInfo.CheckForErrors() == 0 || m_ElanFileInfo.CheckForErrors() == 0 || m_BvFileInfo.CheckForErrors() == 0 || m_EdfFileInfo.CheckForErrors() == 0; }
+    inline const std::string Path() { return m_Path; }
+    inline const std::string ExperimentLabel() { return m_ExperimentLabel; }
+    InsermLibrary::IEegFileInfo* GetEegFileInfo(InsermLibrary::FileType fileType);
+    inline std::vector<FrequencyFolder>& FrequencyFolders() { return m_FrequencyFolders; }
 
 private:
     void GetExperimentNameFromPath(std::string path);

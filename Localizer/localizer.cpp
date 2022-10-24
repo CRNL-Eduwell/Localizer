@@ -265,10 +265,10 @@ int Localizer::PreparePatientFolder()
     if (currentFiles.size() > 0)
         currentFiles.clear();
     deleteAndNullify1D(currentPat);
-    currentPat = new patientFolder(m_localFileSystemModel->rootPath().toStdString());
+    currentPat = new SubjectFolder(m_localFileSystemModel->rootPath().toStdString());
 
     //check which elements to keep and delete since the ui can show single files with folders
-    std::vector<bool> deleteMe = std::vector<bool>(currentPat->localizerFolder().size(), true);
+    std::vector<bool> deleteMe = std::vector<bool>(currentPat->ExperimentFolders().size(), true);
     for (int i = 0; i < selectedRows.size(); i++)
     {
         bool isRoot = selectedRows[i].parent() == ui.FileTreeView->rootIndex();
@@ -276,9 +276,9 @@ int Localizer::PreparePatientFolder()
         if(isRoot && info.isDir())
         {
             int idToKeep = -1;
-            for(int j = 0; j < currentPat->localizerFolder().size(); j++)
+            for(int j = 0; j < currentPat->ExperimentFolders().size(); j++)
             {
-                QString internalPath = QString::fromStdString(currentPat->localizerFolder()[j].rootLocaFolder());
+                QString internalPath = QString::fromStdString(currentPat->ExperimentFolders()[j].Path());
                 QString uiPath = QString(info.absoluteFilePath() + "/");
                 if (internalPath.compare(uiPath, Qt::CaseSensitive) == 0)
                 {
@@ -299,7 +299,7 @@ int Localizer::PreparePatientFolder()
     {
         if (deleteMe[i])
         {
-            currentPat->localizerFolder().erase(currentPat->localizerFolder().begin() + i);
+            currentPat->ExperimentFolders().erase(currentPat->ExperimentFolders().begin() + i);
         }
     }
 
@@ -696,7 +696,7 @@ void Localizer::ProcessFolderAnalysis()
         //UI
         InitProgressBar();
         std::vector<InsermLibrary::FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
-		std::vector<InsermLibrary::FileExt> filePriority = std::vector<InsermLibrary::FileExt>(m_GeneralOptionsFile->FileExtensionsFavorite());
+        std::vector<InsermLibrary::FileType> filePriority = std::vector<InsermLibrary::FileType>(m_GeneralOptionsFile->FileExtensionsFavorite());
 
         //Should probably senbd back the struct here and not keep a global variable
         int result = PreparePatientFolder();
@@ -715,7 +715,7 @@ void Localizer::ProcessFolderAnalysis()
             connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
             connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
-			//=== Event From worker and thread
+            //=== Event From worker and thread
             connect(worker, &IWorker::finished, thread, &QThread::quit);
             connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
             connect(thread, &QThread::finished, thread, &QThread::deleteLater);
@@ -791,7 +791,7 @@ void Localizer::ProcessMultiFolderAnalysis()
         InsermLibrary::picOption optpic = picOpt->getPicOption();
         InsermLibrary::statOption optstat = optStat->getStatOption();
         std::vector<InsermLibrary::FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
-        std::vector<InsermLibrary::FileExt> filePriority = std::vector<InsermLibrary::FileExt>(m_GeneralOptionsFile->FileExtensionsFavorite());
+        std::vector<InsermLibrary::FileType> filePriority = std::vector<InsermLibrary::FileType>(m_GeneralOptionsFile->FileExtensionsFavorite());
 
         //Should probably senbd back the struct here and not keep a global variable
         std::vector<patientFolder> subjects = PrepareDBFolders();
@@ -800,27 +800,27 @@ void Localizer::ProcessMultiFolderAnalysis()
         if(subjects.size() > 0)
         {
             thread = new QThread;
-            worker = new MultiSubjectWorker(subjects, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
+//            worker = new MultiSubjectWorker(subjects, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
 
-            //=== Event update displayer
-            connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
-            connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
-            connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
+//            //=== Event update displayer
+//            connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
+//            connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+//            connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
-            //New ping pong order
-            connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
-            connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
-            connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
+//            //New ping pong order
+//            connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
+//            connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
+//            connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
-            //=== Event From worker and thread
-            connect(worker, &IWorker::finished, thread, &QThread::quit);
-            connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
-            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-            connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
+//            //=== Event From worker and thread
+//            connect(worker, &IWorker::finished, thread, &QThread::quit);
+//            connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
+//            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+//            connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
-            //=== Launch Thread and lock possible second launch
-            worker->moveToThread(thread);
-            thread->start();
+//            //=== Launch Thread and lock possible second launch
+//            worker->moveToThread(thread);
+//            thread->start();
             isAlreadyRunning = true;
         }
         else

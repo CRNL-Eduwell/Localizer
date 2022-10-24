@@ -30,7 +30,7 @@ public:
 
 private:
 	void ConnectSignals();
-	void LoadFileTypeInUi(std::vector<InsermLibrary::FileExt> fileTypes);
+    void LoadFileTypeInUi(std::vector<InsermLibrary::FileType> fileTypes);
 	void SaveFromModel();
 
 private slots:

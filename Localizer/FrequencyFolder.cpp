@@ -19,6 +19,103 @@ FrequencyFolder::~FrequencyFolder()
 
 }
 
+InsermLibrary::IEegFileInfo* FrequencyFolder::GetEegFileInfo(SmoothingWindow smoothingWindow, InsermLibrary::FileType fileType)
+{
+    switch(smoothingWindow)
+    {
+        case SmoothingWindow::SM0:
+        {
+            if(fileType == InsermLibrary::FileType::Elan)
+            {
+                return &m_ElanSmoothingXFiles[0].second;
+            }
+            else if(fileType == InsermLibrary::FileType::Brainvision)
+            {
+                return &m_BvSmoothingXFiles[0].second;
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+        case SmoothingWindow::SM250:
+        {
+            if(fileType == InsermLibrary::FileType::Elan)
+            {
+                return &m_ElanSmoothingXFiles[1].second;
+            }
+            else if(fileType == InsermLibrary::FileType::Brainvision)
+            {
+                return &m_BvSmoothingXFiles[1].second;
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+        case SmoothingWindow::SM500:
+        {
+            if(fileType == InsermLibrary::FileType::Elan)
+            {
+                return &m_ElanSmoothingXFiles[2].second;
+            }
+            else if(fileType == InsermLibrary::FileType::Brainvision)
+            {
+                return &m_BvSmoothingXFiles[2].second;
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+        case SmoothingWindow::SM1000:
+        {
+            if(fileType == InsermLibrary::FileType::Elan)
+            {
+                return &m_ElanSmoothingXFiles[3].second;
+            }
+            else if(fileType == InsermLibrary::FileType::Brainvision)
+            {
+                return &m_BvSmoothingXFiles[3].second;
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+        case SmoothingWindow::SM2500:
+        {
+            if(fileType == InsermLibrary::FileType::Elan)
+            {
+                return &m_ElanSmoothingXFiles[4].second;
+            }
+            else if(fileType == InsermLibrary::FileType::Brainvision)
+            {
+                return &m_BvSmoothingXFiles[4].second;
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+        case SmoothingWindow::SM5000:
+        {
+            if(fileType == InsermLibrary::FileType::Elan)
+            {
+                return &m_ElanSmoothingXFiles[5].second;
+            }
+            else if(fileType == InsermLibrary::FileType::Brainvision)
+            {
+                return &m_BvSmoothingXFiles[5].second;
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+    }
+}
+
 void FrequencyFolder::GetFrequencyBandFromPath(std::string path)
 {
     std::vector<std::string> SplitFolderPath = InsermLibrary::split<std::string>(path, "\\/");
@@ -32,7 +129,7 @@ void FrequencyFolder::GetFrequencyEegFiles(std::string path)
 {
     std::vector<QRegularExpression> rxEegSmX;
     QString rxBaseName = QString::fromStdString(m_FolderName + "_ds" + "(\\d+)");
-    QString rxExtensions = "(.eeg|.eeg.ent|.vhdr)";
+    QString rxExtensions = "(.eeg|.vhdr)"; //|.eeg.ent
     rxEegSmX.push_back(QRegularExpression(rxBaseName + "_sm0" + rxExtensions));
     rxEegSmX.push_back(QRegularExpression(rxBaseName + "_sm250" + rxExtensions));
     rxEegSmX.push_back(QRegularExpression(rxBaseName + "_sm500" + rxExtensions));
@@ -53,8 +150,9 @@ void FrequencyFolder::GetFrequencyEegFiles(std::string path)
             QRegularExpressionMatch smxMatch = rxEegSmX[j].match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
             if (smxMatch.hasMatch())
             {
-                QString filePath = QString::fromStdString(m_FolderName) + fileFound[i];
+                QString filePath = QString::fromStdString(m_Path) + fileFound[i];
                 QFileInfo f(filePath);
+                std::cout << filePath.toStdString() << std::endl;
                 if(f.suffix() == "vhdr")
                 {
                     m_BvSmoothingXFiles[j] = std::make_pair(j, InsermLibrary::BrainVisionFileInfo(filePath.toStdString()));

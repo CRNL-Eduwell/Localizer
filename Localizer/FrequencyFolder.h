@@ -13,6 +13,8 @@ class FrequencyFolder
 public:
     FrequencyFolder(std::string path);
     ~FrequencyFolder();
+    inline const std::string FrequencyBandLabel() { return m_FrequencyBandLabel; }
+    InsermLibrary::IEegFileInfo* GetEegFileInfo(SmoothingWindow smoothingWindow, InsermLibrary::FileType fileType);
 
 private :
     void GetFrequencyBandFromPath(std::string path);

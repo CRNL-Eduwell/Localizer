@@ -22,7 +22,8 @@
 #include "ui_localizer.h"
 #include "DeselectableTreeView.h"
 #include "optionsParameters.h"
-#include "patientFolder.h"
+//#include "patientFolder.h"
+#include "SubjectFolder.h"
 #include "singleFile.h"
 #include "optionsPerf.h"
 #include "optionsStats.h"
@@ -117,7 +118,8 @@ private:
     InsermLibrary::FrequencyFile *m_frequencyFile = nullptr;
 	bool m_isPatFolder = false;
 	//userOption userOpt;
-	patientFolder* currentPat = nullptr;
+    //patientFolder* currentPat = nullptr;
+    SubjectFolder* currentPat = nullptr;
 	std::vector<singleFile> currentFiles;
 	//==Thread and Worker
 	QReadWriteLock m_lockLoop;  

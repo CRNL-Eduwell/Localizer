@@ -9,6 +9,7 @@ class SubjectFolder
 public:
     SubjectFolder(std::string path);
     ~SubjectFolder();
+    inline const std::string FolderLabel() { return m_FolderName; }
     inline const std::string Path() { return m_Path; }
     inline const std::string SubjectLabel() { return m_FolderName; }
     inline bool IsValid()
@@ -22,6 +23,7 @@ public:
         }
         return hasValidExperiments;
     }
+    inline std::vector<ExperimentFolder>& ExperimentFolders() { return m_ExperimentFolders; }
 
 private :
     void GetExperimentFolder(std::string path);

@@ -31,7 +31,7 @@ void GeneralOptionsWindow::ConnectSignals()
     connect(ui.SaveCancelButtonbox, &QDialogButtonBox::rejected, this, [&] { close(); });
 }
 
-void GeneralOptionsWindow::LoadFileTypeInUi(std::vector<InsermLibrary::FileExt> fileTypes)
+void GeneralOptionsWindow::LoadFileTypeInUi(std::vector<InsermLibrary::FileType> fileTypes)
 {
     for(int i = 0; i < fileTypes.size(); i++)
     {
@@ -39,22 +39,22 @@ void GeneralOptionsWindow::LoadFileTypeInUi(std::vector<InsermLibrary::FileExt> 
 
 		switch (fileTypes[i])
 		{
-			case InsermLibrary::FileExt::TRC:
+            case InsermLibrary::FileType::Micromed:
 			{
 				currentFileType->setText("Micromed");
 				break;
 			}
-			case InsermLibrary::FileExt::EEG_ELAN:
+            case InsermLibrary::FileType::Elan:
 			{				
 				currentFileType->setText("Elan");
 				break;
 			}
-			case InsermLibrary::FileExt::BRAINVISION:
+            case InsermLibrary::FileType::Brainvision:
 			{
 				currentFileType->setText("BrainVision");
 				break;
 			}
-			case InsermLibrary::FileExt::EDF:
+            case InsermLibrary::FileType::EuropeanDataFormat:
 			{
 				currentFileType->setText("European Data Format");
 				break;
@@ -103,19 +103,19 @@ void GeneralOptionsWindow::SaveFromModel()
 		QString text = ui.listWidget_fileTypes->item(i)->text();
 		if (text.compare("Micromed") == 0)
 		{
-			m_GeneralOptionsFile->FileExtensionsFavorite().push_back(InsermLibrary::FileExt::TRC);
+            m_GeneralOptionsFile->FileExtensionsFavorite().push_back(InsermLibrary::FileType::Micromed);
 		}
 		else if (text.compare("Elan") == 0)
 		{
-			m_GeneralOptionsFile->FileExtensionsFavorite().push_back(InsermLibrary::FileExt::EEG_ELAN);
+            m_GeneralOptionsFile->FileExtensionsFavorite().push_back(InsermLibrary::FileType::Elan);
 		}
 		else if (text.compare("BrainVision") == 0)
 		{
-			m_GeneralOptionsFile->FileExtensionsFavorite().push_back(InsermLibrary::FileExt::BRAINVISION);
+            m_GeneralOptionsFile->FileExtensionsFavorite().push_back(InsermLibrary::FileType::Brainvision);
 		}
 		else if (text.compare("European Data Format") == 0)
 		{
-			m_GeneralOptionsFile->FileExtensionsFavorite().push_back(InsermLibrary::FileExt::EDF);
+            m_GeneralOptionsFile->FileExtensionsFavorite().push_back(InsermLibrary::FileType::EuropeanDataFormat);
 		}
 	}
 }

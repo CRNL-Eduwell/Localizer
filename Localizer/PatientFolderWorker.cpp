@@ -1,10 +1,10 @@
 #include "PatientFolderWorker.h"
 
-PatientFolderWorker::PatientFolderWorker(patientFolder currentPatient, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& analysisOpt, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::vector<InsermLibrary::FileExt> filePriority, std::string ptsFilePath)
+PatientFolderWorker::PatientFolderWorker(SubjectFolder currentPatient, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& analysisOpt, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::vector<InsermLibrary::FileType> filePriority, std::string ptsFilePath)
 {
-    m_Patient = new patientFolder(currentPatient);
+    m_Patient = new SubjectFolder(currentPatient);
     m_FrequencyBands = std::vector<InsermLibrary::FrequencyBandAnalysisOpt>(analysisOpt);
-	m_filePriority = std::vector<InsermLibrary::FileExt>(filePriority);
+    m_filePriority = std::vector<InsermLibrary::FileType>(filePriority);
     m_Loca = new InsermLibrary::LOCA(m_FrequencyBands, new InsermLibrary::statOption(statOption), new InsermLibrary::picOption(picOption), ptsFilePath);
 }
 
@@ -17,12 +17,12 @@ PatientFolderWorker::~PatientFolderWorker()
 void PatientFolderWorker::Process()
 {
     InsermLibrary::eegContainer *myContainer = nullptr;
-    int localizerCount = static_cast<int>(m_Patient->localizerFolder().size());
+    int localizerCount = static_cast<int>(m_Patient->ExperimentFolders().size());
     for (int i = 0; i < localizerCount; i++)
 	{
-        emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + m_Patient->localizerFolder()[i].rootLocaFolder() + " ==="));
+        emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + m_Patient->ExperimentFolders()[i].Path() + " ==="));
         bool extractData = m_FrequencyBands.size() > 0 ? m_FrequencyBands[0].analysisParameters.eeg2env2 : false; //for now it's the same analysus choice for each band , might change in the future
-        myContainer = ExtractData(m_Patient->localizerFolder()[i], extractData);
+        myContainer = ExtractData(m_Patient->ExperimentFolders()[i], extractData);
 
 		if (myContainer != nullptr)
 		{
@@ -31,7 +31,7 @@ void PatientFolderWorker::Process()
             emit sendLogInfo("");
             emit sendLogInfo(QString::fromStdString("Begin time : ") + GetCurrentTime().c_str());
             emit sendLogInfo("");
-            m_Loca->Localize(myContainer, i, &m_Patient->localizerFolder()[i]);
+            m_Loca->Localize(myContainer, i, &m_Patient->ExperimentFolders()[i]);
             emit sendLogInfo("");
             emit sendLogInfo(QString::fromStdString("End time : ") + GetCurrentTime().c_str());
             emit sendLogInfo("");
@@ -48,7 +48,7 @@ void PatientFolderWorker::Process()
 
 void PatientFolderWorker::ExtractElectrodeList()
 {
-	if (m_Patient->localizerFolder().size() == 0)
+    if (m_Patient->ExperimentFolders().size() == 0)
 	{
         emit sendLogInfo("Error, there is no localizer folder in this patient, aborting analysis.\n");
 		emit finished();
@@ -57,56 +57,69 @@ void PatientFolderWorker::ExtractElectrodeList()
     int filePriorityCount = static_cast<int>(m_filePriority.size());
     for (int i = 0; i < filePriorityCount; i++)
 	{
-		std::string currentFilePath = m_Patient->localizerFolder()[0].filePath(m_filePriority[i]);
-		if (EEGFormat::Utility::DoesFileExist(currentFilePath))
-		{
-			std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(currentFilePath);
-			std::string connectCleanerFilePath = m_Patient->rootFolder() + "/" + m_Patient->patientName() + ".ccf";
-			emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
-			return;
-		}
+        InsermLibrary::IEegFileInfo* ifileInfo = m_Patient->ExperimentFolders()[0].GetEegFileInfo(m_filePriority[i]);
+        //if (EEGFormat::Utility::DoesFileExist(currentFilePath))
+        if(ifileInfo != nullptr)
+        {
+            if(ifileInfo->CheckForErrors() == 0)
+            {
+                std::vector<std::string> filePaths = ifileInfo->GetFiles();
+                std::string currentFilePath = filePaths.size() > 1 ? filePaths[1] : filePaths[0];
+                std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(currentFilePath);
+                std::string connectCleanerFilePath = m_Patient->Path() + "/" + m_Patient->FolderLabel() + ".ccf";
+                emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
+                return;
+            }
+        }
 	}
 
     emit sendLogInfo("No Compatible file format detected, aborting analysis.\n");
 	emit finished();
 }
 
-InsermLibrary::eegContainer* PatientFolderWorker::ExtractData(locaFolder currentLoca, bool extractOriginalData)
+InsermLibrary::eegContainer* PatientFolderWorker::ExtractData(ExperimentFolder currentLoca, bool extractOriginalData)
 {
     int filePriorityCount = static_cast<int>(m_filePriority.size());
     for (int i = 0; i < filePriorityCount; i++)
 	{
-		std::string currentFilePath = currentLoca.filePath(m_filePriority[i]);
-		if (EEGFormat::Utility::DoesFileExist(currentFilePath))
-		{
-            InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData);
-			myContainer->DeleteElectrodes(m_IndexToDelete);
-			myContainer->GetElectrodes();
-
-            switch(m_ElectrodeOperation)
+        InsermLibrary::IEegFileInfo* ifileInfo = currentLoca.GetEegFileInfo(m_filePriority[i]);
+        //std::string currentFilePath = currentLoca.filePath(m_filePriority[i]);
+        //if (EEGFormat::Utility::DoesFileExist(currentFilePath))
+        if(ifileInfo != nullptr)
+        {
+            if(ifileInfo->CheckForErrors() == 0)
             {
-                case 0: //mono
+                std::vector<std::string> filePaths = ifileInfo->GetFiles();
+                std::string currentFilePath = filePaths.size() > 1 ? filePaths[1] : filePaths[0];
+                InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData);
+                myContainer->DeleteElectrodes(m_IndexToDelete);
+                myContainer->GetElectrodes();
+
+                switch(m_ElectrodeOperation)
                 {
-                    myContainer->MonoElectrodes();
-                    emit sendLogInfo(QString::fromStdString("Single channel created !"));
-                    break;
+                    case 0: //mono
+                    {
+                        myContainer->MonoElectrodes();
+                        emit sendLogInfo(QString::fromStdString("Single channel created !"));
+                        break;
+                    }
+                    case 1: //bipo
+                    {
+                        myContainer->BipolarizeElectrodes();
+                        emit sendLogInfo(QString::fromStdString("Bipole created !"));
+                        break;
+                    }
+                    default:
+                    {
+                        emit sendLogInfo(QString::fromStdString("Error, operation unknow, aborting"));
+                        return nullptr;
+                    }
                 }
-                case 1: //bipo
-                {
-                    myContainer->BipolarizeElectrodes();
-                    emit sendLogInfo(QString::fromStdString("Bipole created !"));
-                    break;
-                }
-                default:
-                {
-                    emit sendLogInfo(QString::fromStdString("Error, operation unknow, aborting"));
-                    return nullptr;
-                }
+
+
+                return myContainer;
             }
-
-
-			return myContainer;
-		}
+        }
 	}
 
 	//if we arrive at this point, no compatible file has been detected, aborting 
