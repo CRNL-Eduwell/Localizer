@@ -79,9 +79,9 @@ private:
 	void LoadTreeViewUI(QString initialFolder);
     int PreparePatientFolder();
     int PrepareSingleFiles();
-    std::vector<patientFolder> PrepareDBFolders();
+    std::vector<SubjectFolder> PrepareDBFolders();
 	void InitProgressBar();
-    void InitMultiSubjectProgresBar(std::vector<patientFolder> subjects);
+    void InitMultiSubjectProgresBar(std::vector<SubjectFolder> subjects);
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> GetUIAnalysisOption();
 	int GetSelectedFolderCount(QModelIndexList selectedIndexes);
 

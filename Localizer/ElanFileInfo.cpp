@@ -29,6 +29,11 @@ std::vector<std::string> InsermLibrary::ElanFileInfo::GetFiles()
     return files;
 }
 
+std::string InsermLibrary::ElanFileInfo::GetFilesString()
+{
+    return Ent() + ";" + Eeg() + ";" + Pos() ;
+}
+
 int InsermLibrary::ElanFileInfo::CheckForErrors()
 {
     std::filesystem::path fseegpath(Eeg());

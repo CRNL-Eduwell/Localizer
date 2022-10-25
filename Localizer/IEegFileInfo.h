@@ -15,6 +15,7 @@ namespace InsermLibrary
         
         virtual FileType GetFileType() = 0;
         virtual std::vector<std::string> GetFiles() = 0;
+        virtual std::string GetFilesString() = 0;
         virtual int CheckForErrors() = 0;
     };
 }

@@ -26,6 +26,11 @@ std::vector<std::string> InsermLibrary::MicromedFileInfo::GetFiles()
     return files;
 }
 
+std::string InsermLibrary::MicromedFileInfo::GetFilesString()
+{
+    return m_TRC;
+}
+
 int InsermLibrary::MicromedFileInfo::CheckForErrors()
 {
     std::filesystem::path fspath(m_TRC);

@@ -26,6 +26,12 @@ std::vector<std::string> InsermLibrary::BrainVisionFileInfo::GetFiles()
     return files;
 }
 
+std::string InsermLibrary::BrainVisionFileInfo::GetFilesString()
+{
+    return Header();
+}
+
+
 int InsermLibrary::BrainVisionFileInfo::CheckForErrors()
 {
     std::filesystem::path fspath(Header());

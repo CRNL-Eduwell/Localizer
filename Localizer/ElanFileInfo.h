@@ -23,6 +23,7 @@ namespace InsermLibrary
         FileType GetFileType();
         //Header-Data-Events-Notes
         std::vector<std::string> GetFiles();
+        std::string GetFilesString();
         int CheckForErrors();
 
     private:

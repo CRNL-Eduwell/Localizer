@@ -152,7 +152,6 @@ void FrequencyFolder::GetFrequencyEegFiles(std::string path)
             {
                 QString filePath = QString::fromStdString(m_Path) + fileFound[i];
                 QFileInfo f(filePath);
-                std::cout << filePath.toStdString() << std::endl;
                 if(f.suffix() == "vhdr")
                 {
                     m_BvSmoothingXFiles[j] = std::make_pair(j, InsermLibrary::BrainVisionFileInfo(filePath.toStdString()));

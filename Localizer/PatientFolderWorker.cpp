@@ -58,14 +58,11 @@ void PatientFolderWorker::ExtractElectrodeList()
     for (int i = 0; i < filePriorityCount; i++)
 	{
         InsermLibrary::IEegFileInfo* ifileInfo = m_Patient->ExperimentFolders()[0].GetEegFileInfo(m_filePriority[i]);
-        //if (EEGFormat::Utility::DoesFileExist(currentFilePath))
         if(ifileInfo != nullptr)
         {
             if(ifileInfo->CheckForErrors() == 0)
             {
-                std::vector<std::string> filePaths = ifileInfo->GetFiles();
-                std::string currentFilePath = filePaths.size() > 1 ? filePaths[1] : filePaths[0];
-                std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(currentFilePath);
+                std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(ifileInfo->GetFilesString());
                 std::string connectCleanerFilePath = m_Patient->Path() + "/" + m_Patient->FolderLabel() + ".ccf";
                 emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
                 return;
@@ -83,15 +80,11 @@ InsermLibrary::eegContainer* PatientFolderWorker::ExtractData(ExperimentFolder c
     for (int i = 0; i < filePriorityCount; i++)
 	{
         InsermLibrary::IEegFileInfo* ifileInfo = currentLoca.GetEegFileInfo(m_filePriority[i]);
-        //std::string currentFilePath = currentLoca.filePath(m_filePriority[i]);
-        //if (EEGFormat::Utility::DoesFileExist(currentFilePath))
         if(ifileInfo != nullptr)
         {
             if(ifileInfo->CheckForErrors() == 0)
             {
-                std::vector<std::string> filePaths = ifileInfo->GetFiles();
-                std::string currentFilePath = filePaths.size() > 1 ? filePaths[1] : filePaths[0];
-                InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData);
+                InsermLibrary::eegContainer *myContainer = GetEegContainer(ifileInfo->GetFilesString(), extractOriginalData);
                 myContainer->DeleteElectrodes(m_IndexToDelete);
                 myContainer->GetElectrodes();
 

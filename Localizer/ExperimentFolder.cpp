@@ -69,11 +69,11 @@ void ExperimentFolder::GetEegFiles(std::string path)
     QStringList fileFound = currentDir.entryList();
     for (int i = 0; i < fileFound.size(); i++)
     {
-        QRegularExpressionMatch trcMatch = rxTRC.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+        QRegularExpressionMatch trcMatch = rxTRC.match(fileFound[i], 0, QRegularExpression::NormalMatch);
         if (trcMatch.hasMatch())
             trc = path + fileFound[i].toStdString();
 
-        QRegularExpressionMatch eegMatch = rxEeg.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+        QRegularExpressionMatch eegMatch = rxEeg.match(fileFound[i], 0, QRegularExpression::NormalMatch);
         if (eegMatch.hasMatch())
             eeg = path + fileFound[i].toStdString();
 
@@ -81,19 +81,19 @@ void ExperimentFolder::GetEegFiles(std::string path)
 //        if (entMatch.hasMatch())
 //            eegent = path + fileFound[i].toStdString();
 
-        QRegularExpressionMatch posMatch = rxPos.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+        QRegularExpressionMatch posMatch = rxPos.match(fileFound[i], 0, QRegularExpression::NormalMatch);
         if (posMatch.hasMatch())
             pos = path + fileFound[i].toStdString();
 
-        QRegularExpressionMatch dsPosMatch = rxDsPos.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+        QRegularExpressionMatch dsPosMatch = rxDsPos.match(fileFound[i], 0, QRegularExpression::NormalMatch);
         if (dsPosMatch.hasMatch())
             dspos = path + fileFound[i].toStdString();
 
-        QRegularExpressionMatch edfMatch = rxEdf.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+        QRegularExpressionMatch edfMatch = rxEdf.match(fileFound[i], 0, QRegularExpression::NormalMatch);
         if (edfMatch.hasMatch())
             edf = path + fileFound[i].toStdString();
 
-        QRegularExpressionMatch bvMatch = rxBrainVision.match(fileFound[i], 0, QRegularExpression::PartialPreferCompleteMatch);
+        QRegularExpressionMatch bvMatch = rxBrainVision.match(fileFound[i], 0, QRegularExpression::NormalMatch);
         if (bvMatch.hasMatch())
             bv = path + fileFound[i].toStdString();
     }

@@ -342,7 +342,7 @@ int Localizer::PrepareSingleFiles()
     return currentFiles.size() == 0 ? - 1 : 0;
 }
 
-std::vector<patientFolder> Localizer::PrepareDBFolders()
+std::vector<SubjectFolder> Localizer::PrepareDBFolders()
 {
     std::vector<std::string> locaToSearchFor;
     ChooseLocaWindow* elecWin = new ChooseLocaWindow(nullptr);
@@ -351,13 +351,13 @@ std::vector<patientFolder> Localizer::PrepareDBFolders()
     delete elecWin;
 
     QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
-    if(GetSelectedFolderCount(selectedRows) == 0) return std::vector<patientFolder>();
+    if(GetSelectedFolderCount(selectedRows) == 0) return std::vector<SubjectFolder>();
 
     //Create data structure used by the processing part
     if (currentFiles.size() > 0) currentFiles.clear();
     deleteAndNullify1D(currentPat);
 
-    std::vector<patientFolder> subjects;
+    std::vector<SubjectFolder> subjects;
     for (int i = 0; i < selectedRows.size(); i++)
     {
         bool isRoot = selectedRows[i].parent() == ui.FileTreeView->rootIndex();
@@ -367,19 +367,14 @@ std::vector<patientFolder> Localizer::PrepareDBFolders()
             QString subjectRoot = info.absoluteFilePath();
             try
             {
-                patientFolder pat = patientFolder(subjectRoot.toStdString());
+                SubjectFolder pat = SubjectFolder(subjectRoot.toStdString());
 
                 //check which elements to keep and delete
-                std::vector<bool> deleteMe = std::vector<bool>(pat.localizerFolder().size(), true);
+                std::vector<bool> deleteMe = std::vector<bool>(pat.ExperimentFolders().size(), true);
                 int idToKeep = -1;
-                for(int j = 0; j < pat.localizerFolder().size(); j++)
+                for(int j = 0; j < pat.ExperimentFolders().size(); j++)
                 {
-                    //if(pat.localizerFolder()[j].localizerName() == "ARFA" || pat.localizerFolder()[j].localizerName() == "AUDI" ||
-                    //   pat.localizerFolder()[j].localizerName() == "LEC1" || pat.localizerFolder()[j].localizerName() == "LEC2" ||
-                    //   pat.localizerFolder()[j].localizerName() == "MCSE" || pat.localizerFolder()[j].localizerName() == "MOTO" ||
-                    //   pat.localizerFolder()[j].localizerName() == "MVEB" || pat.localizerFolder()[j].localizerName() == "MVIS" ||
-                    //   pat.localizerFolder()[j].localizerName() == "REST" || pat.localizerFolder()[j].localizerName() == "VISU")
-                    if(std::find(locaToSearchFor.begin(), locaToSearchFor.end(), pat.localizerFolder()[j].localizerName()) != locaToSearchFor.end())
+                    if(std::find(locaToSearchFor.begin(), locaToSearchFor.end(), pat.ExperimentFolders()[j].ExperimentLabel()) != locaToSearchFor.end())
                     {
                         deleteMe[j] = false;
                     }
@@ -390,7 +385,7 @@ std::vector<patientFolder> Localizer::PrepareDBFolders()
                 {
                     if (deleteMe[j])
                     {
-                        pat.localizerFolder().erase(pat.localizerFolder().begin() + j);
+                        pat.ExperimentFolders().erase(pat.ExperimentFolders().begin() + j);
                     }
                 }
 
@@ -430,7 +425,7 @@ void Localizer::InitProgressBar()
     nbTaskToDo *= nbFolderSelected * nbFrequencyBands;
 }
 
-void Localizer::InitMultiSubjectProgresBar(std::vector<patientFolder> subjects)
+void Localizer::InitMultiSubjectProgresBar(std::vector<SubjectFolder> subjects)
 {
     ui.progressBar->reset();
     nbDoneTask = 0;
@@ -447,7 +442,7 @@ void Localizer::InitMultiSubjectProgresBar(std::vector<patientFolder> subjects)
     for(int i = 0; i < subjectCount; i++)
     {
         int nbTaskPerExam = 0;
-        int examCount = static_cast<int>(subjects[i].localizerFolder().size());
+        int examCount = static_cast<int>(subjects[i].ExperimentFolders().size());
 
         ui.Eeg2envCheckBox->isChecked() ? nbTaskPerExam++ : nbTaskPerExam++; //eeg2env, wheter we need to compute or load
         ui.Env2plotCheckBox->isChecked() ? nbTaskPerExam++ : nbTaskPerExam;
@@ -794,33 +789,33 @@ void Localizer::ProcessMultiFolderAnalysis()
         std::vector<InsermLibrary::FileType> filePriority = std::vector<InsermLibrary::FileType>(m_GeneralOptionsFile->FileExtensionsFavorite());
 
         //Should probably senbd back the struct here and not keep a global variable
-        std::vector<patientFolder> subjects = PrepareDBFolders();
+        std::vector<SubjectFolder> subjects = PrepareDBFolders();
         InitMultiSubjectProgresBar(subjects);
 
         if(subjects.size() > 0)
         {
             thread = new QThread;
-//            worker = new MultiSubjectWorker(subjects, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
+            worker = new MultiSubjectWorker(subjects, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
 
-//            //=== Event update displayer
-//            connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
-//            connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
-//            connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
+            //=== Event update displayer
+            connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
+            connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+            connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
-//            //New ping pong order
-//            connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
-//            connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
-//            connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
+            //New ping pong order
+            connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
+            connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
+            connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
-//            //=== Event From worker and thread
-//            connect(worker, &IWorker::finished, thread, &QThread::quit);
-//            connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
-//            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-//            connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
+            //=== Event From worker and thread
+            connect(worker, &IWorker::finished, thread, &QThread::quit);
+            connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
+            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+            connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
-//            //=== Launch Thread and lock possible second launch
-//            worker->moveToThread(thread);
-//            thread->start();
+            //=== Launch Thread and lock possible second launch
+            worker->moveToThread(thread);
+            thread->start();
             isAlreadyRunning = true;
         }
         else

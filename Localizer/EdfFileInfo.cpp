@@ -26,6 +26,11 @@ std::vector<std::string> InsermLibrary::EdfFileInfo::GetFiles()
     return files;
 }
 
+std::string InsermLibrary::EdfFileInfo::GetFilesString()
+{
+    return FilePath();
+}
+
 int InsermLibrary::EdfFileInfo::CheckForErrors()
 {
     std::filesystem::path fspath(FilePath());
