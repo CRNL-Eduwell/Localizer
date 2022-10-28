@@ -84,7 +84,7 @@ void InsermLibrary::LOCA::Eeg2erp(eegContainer* myeegContainer, ProvFile* myprov
 	delete[] windowSam;
 }
 
-void InsermLibrary::LOCA::Localize(eegContainer* myeegContainer, int idCurrentLoca, locaFolder* currentLoca)
+void InsermLibrary::LOCA::Localize(eegContainer* myeegContainer, int idCurrentLoca, ExperimentFolder* currentLoca)
 {
 	m_idCurrentLoca = idCurrentLoca;
 	m_currentLoca = currentLoca;
@@ -107,30 +107,37 @@ void InsermLibrary::LOCA::Localize(eegContainer* myeegContainer, int idCurrentLo
 		}
 		else
 		{
-			int frequencyCount = static_cast<int>(currentLoca->frequencyFolders().size());
+            //TODO : in the case of brainvision or other fileformat searching with SM0_ELAN will cause issues, need to correct that
+            int frequencyCount = static_cast<int>(currentLoca->FrequencyFolders().size());
 			for (int j = 0; j < frequencyCount; j++)
 			{
 				std::string fMin = std::to_string(currentFrequencyBand.FMin());
 				std::string fMax = std::to_string(currentFrequencyBand.FMax());
-				std::vector<std::string> sm0Files = currentLoca->frequencyFolders()[j].FilePaths(SM0_ELAN);
+                IEegFileInfo *sm0fileInfo = currentLoca->FrequencyFolders()[j].GetEegFileInfo(SmoothingWindow::SM0, InsermLibrary::FileType::Elan);
+                if( sm0fileInfo != nullptr)
+                {
+                    if ((currentLoca->FrequencyFolders()[j].FrequencyBandLabel() == "f" + fMin + "f" + fMax) && sm0fileInfo->CheckForErrors() == 0)
+                    {
+                        int loadedCount = 0;
+                        loadedCount += LoadProcessedData(myeegContainer, currentLoca->FrequencyFolders()[j], SmoothingWindow::SM0, 0, InsermLibrary::FileType::Elan);
+                        loadedCount += LoadProcessedData(myeegContainer, currentLoca->FrequencyFolders()[j], SmoothingWindow::SM250, 1, InsermLibrary::FileType::Elan);
+                        loadedCount += LoadProcessedData(myeegContainer, currentLoca->FrequencyFolders()[j], SmoothingWindow::SM500, 2, InsermLibrary::FileType::Elan);
+                        loadedCount += LoadProcessedData(myeegContainer, currentLoca->FrequencyFolders()[j], SmoothingWindow::SM1000, 3, InsermLibrary::FileType::Elan);
+                        loadedCount += LoadProcessedData(myeegContainer, currentLoca->FrequencyFolders()[j], SmoothingWindow::SM2500, 4, InsermLibrary::FileType::Elan);
+                        loadedCount += LoadProcessedData(myeegContainer, currentLoca->FrequencyFolders()[j], SmoothingWindow::SM5000, 5, InsermLibrary::FileType::Elan);
 
-				if ((currentLoca->frequencyFolders()[j].frequencyName() == "f" + fMin + "f" + fMax) && (sm0Files.size() > 0))
-				{
-					std::vector<std::string> dataFiles = currentLoca->frequencyFolders()[j].FilePaths(SM0_ELAN);
-					int result = myeegContainer->LoadFrequencyData(dataFiles, 0);
-					if (result == 0)
-					{
-						emit incrementAdavnce(1);
-						emit sendLogInfo("Envelloppe File Loaded");
-
-						std::string freqFolder = CreateFrequencyFolder(myeegContainer, currentFrequencyBand);
-						GenerateMapsAndFigures(myeegContainer, freqFolder, m_analysisOpt[i]);
-					}
-					else
-					{
-						emit sendLogInfo("Problem loading file, end of analyse for this frequency");
-					}
-				}
+                        if (loadedCount > 0)
+                        {
+                            emit incrementAdavnce(1);
+                            std::string freqFolder = CreateFrequencyFolder(myeegContainer, currentFrequencyBand);
+                            GenerateMapsAndFigures(myeegContainer, freqFolder, m_analysisOpt[i]);
+                        }
+                        else
+                        {
+                            emit sendLogInfo("Problem loading files for this frequency, aborting");
+                        }
+                    }
+                }
 			}
 		}
 	}
@@ -162,6 +169,31 @@ void InsermLibrary::LOCA::LocalizeMapsOnly(eegContainer* myeegContainer, int idC
 	deleteAndNullify1D(m_triggerContainer);
 }
 
+int InsermLibrary::LOCA::LoadProcessedData(eegContainer* myeegContainer, FrequencyFolder folder, SmoothingWindow smoothingWindow, int index, InsermLibrary::FileType fileType)
+{
+    InsermLibrary::IEegFileInfo* ifileInfo = folder.GetEegFileInfo(smoothingWindow, fileType);
+    if(ifileInfo->CheckForErrors() == 0)
+    {
+        std::vector<std::string> dataFiles = ifileInfo->GetFiles();
+        int result = myeegContainer->LoadFrequencyData(dataFiles, index);
+        if (result == 0)
+        {
+            emit sendLogInfo("Envelloppe File Loaded at place number " + QString::number(index));
+            return 1;
+        }
+        else
+        {
+            emit sendLogInfo("Problem loading file at place number " + QString::number(index));
+            return 0;
+        }
+    }
+    else
+    {
+        emit sendLogInfo("The data for this smoothing window / Filetype seems to have a problem");
+        return 0;
+    }
+}
+
 void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, std::string freqFolder, FrequencyBandAnalysisOpt a)
 {
     std::vector<EEGFormat::ITrigger> triggers = myeegContainer->Triggers();
@@ -170,10 +202,10 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
 
     //We generate file.pos and file_dsX.pos if we find a prov file
     //with the exact same name as the experiment.
-    ProvFile* task = LoadProvForTask(m_currentLoca->localizerName());
-    ProvFile* taskInverted = LoadProvForTask(m_currentLoca->localizerName(), "INVERTED");
-    ProvFile* taskBarPlot = LoadProvForTask(m_currentLoca->localizerName(), "BARPLOT");
-    ProvFile* taskStatistics = LoadProvForTask(m_currentLoca->localizerName(), "STATISTICS");
+    ProvFile* task = LoadProvForTask(m_currentLoca->ExperimentLabel());
+    ProvFile* taskInverted = LoadProvForTask(m_currentLoca->ExperimentLabel(), "INVERTED");
+    ProvFile* taskBarPlot = LoadProvForTask(m_currentLoca->ExperimentLabel(), "BARPLOT");
+    ProvFile* taskStatistics = LoadProvForTask(m_currentLoca->ExperimentLabel(), "STATISTICS");
 
     if (task != nullptr)
     {
@@ -259,7 +291,7 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
         else
         {
             StatisticalFilesProcessor sfp;
-            sfp.Process(m_triggerContainer, myeegContainer, taskStatistics, freqFolder, m_statOption);
+            sfp.Process(m_triggerContainer, myeegContainer, a.smoothingIDToUse, taskStatistics, freqFolder, m_statOption);
         }
         emit incrementAdavnce(1);
     }
@@ -671,7 +703,7 @@ void InsermLibrary::LOCA::TimeTrialMatrices(eegContainer* myeegContainer, ProvFi
 	myeegContainer->GetFrequencyBlocData(bigData, 0, m_triggerContainer->ProcessedTriggers(), windowSam);
 
 	//== calculate stat
-	if (ShouldPerformTrialmatStats(m_currentLoca->localizerName()))
+    if (ShouldPerformTrialmatStats(m_currentLoca->ExperimentLabel()))
 		significantValue = ProcessWilcoxonStatistic(bigData, myeegContainer, myprovFile, mapsFolder);
 
 	//== Draw for each plot and according to a template to reduce drawing time

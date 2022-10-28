@@ -22,7 +22,8 @@
 #include "ui_localizer.h"
 #include "DeselectableTreeView.h"
 #include "optionsParameters.h"
-#include "patientFolder.h"
+//#include "patientFolder.h"
+#include "SubjectFolder.h"
 #include "singleFile.h"
 #include "optionsPerf.h"
 #include "optionsStats.h"
@@ -33,7 +34,7 @@
 //TODO DOING
 #include "ProtocolsWindow.h"
 //===
-
+#include "FileHealthCheckerWindow.h"
 #include "ProtocolWindow.h"
 #include "ChooseLocaWindow.h"
 #include "AboutDycog.h"
@@ -78,9 +79,9 @@ private:
 	void LoadTreeViewUI(QString initialFolder);
     int PreparePatientFolder();
     int PrepareSingleFiles();
-    std::vector<patientFolder> PrepareDBFolders();
+    std::vector<SubjectFolder*> PrepareDBFolders();
 	void InitProgressBar();
-    void InitMultiSubjectProgresBar(std::vector<patientFolder> subjects);
+    void InitMultiSubjectProgresBar(std::vector<SubjectFolder*> subjects);
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> GetUIAnalysisOption();
 	int GetSelectedFolderCount(QModelIndexList selectedIndexes);
 
@@ -90,6 +91,7 @@ private slots:
 	void ShowFileTreeContextMenu(QPoint point);
 	void SelectPtsForCorrelation();
 	void ClearPtsForCorrelation();
+    void DealWithCCFToggle();
 	void ToggleAllBands();
     void ProcessFolderAnalysis();
     void ProcessSingleAnalysis();
@@ -102,9 +104,11 @@ private slots:
     void UpdateProgressBar(int advancement);
 	void CancelAnalysis();
     void ReceiveElectrodeList(std::vector<std::string> ElectrodeList, std::string ConnectCleanerFile);
+    void LoadCCFFile(std::string path, std::vector<std::string> & uncorrectedLabels, std::vector<int> & states, std::vector<std::string> & correctedLabels);
 
 signals:
     void MontageDone(int);
+    void BypassCCF();
 
 private:
 	//==Visualisation
@@ -114,7 +118,8 @@ private:
     InsermLibrary::FrequencyFile *m_frequencyFile = nullptr;
 	bool m_isPatFolder = false;
 	//userOption userOpt;
-	patientFolder* currentPat = nullptr;
+    //patientFolder* currentPat = nullptr;
+    SubjectFolder* currentPat = nullptr;
 	std::vector<singleFile> currentFiles;
 	//==Thread and Worker
 	QReadWriteLock m_lockLoop;  
@@ -133,8 +138,7 @@ private:
 	Ui::LocalizerClass ui;
 	QStringList inputArguments;
 
-
-
+    bool m_CCFToggle = false;
 	ErpProcessor* erpWindow = nullptr;
 };
 

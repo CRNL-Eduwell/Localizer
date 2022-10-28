@@ -24,6 +24,7 @@ namespace InsermLibrary
 		bool trialmat;
 		bool correMaps;
         bool statFiles;
+        int smoothingIDToUse = 0;
 		FrequencyBand Band;
 	};
 }

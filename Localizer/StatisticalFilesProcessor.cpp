@@ -1,6 +1,6 @@
 #include "StatisticalFilesProcessor.h"
 
-void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* triggerContainer, eegContainer* myeegContainer, ProvFile* myprovFile, std::string freqFolder, statOption* statOption)
+void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* triggerContainer, eegContainer* myeegContainer, int smoothingID, ProvFile* myprovFile, std::string freqFolder, statOption* statOption)
 {
     int StartInSam = (myprovFile->Blocs()[0].MainSubBloc().MainWindow().Start() * myeegContainer->DownsampledFrequency()) / 1000;
     int EndinSam = (myprovFile->Blocs()[0].MainSubBloc().MainWindow().End() * myeegContainer->DownsampledFrequency()) / 1000;
@@ -9,7 +9,7 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
     //== get Bloc of eeg data we want to display center around events
     vec3<float> bigData;
     bigData.resize(myeegContainer->BipoleCount(), vec2<float>(triggerContainer->ProcessedTriggerCount(), vec1<float>(windowSam[1] - windowSam[0])));
-    myeegContainer->GetFrequencyBlocData(bigData, 0, triggerContainer->ProcessedTriggers(), windowSam);
+    myeegContainer->GetFrequencyBlocData(bigData, smoothingID, triggerContainer->ProcessedTriggers(), windowSam);
 
     std::vector<std::vector<std::vector<double>>> Stat_Z_CCS, Stat_P_CCS;
     for(int i = 0;i < bigData.size(); i++)
@@ -452,7 +452,7 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
         }
     }
 
-    WriteResultFile(ChannelDataToWrite, posSampleCodeToWrite, triggerContainer, myeegContainer, freqFolder);
+    WriteResultFile(ChannelDataToWrite, posSampleCodeToWrite, triggerContainer, myeegContainer, smoothingID, freqFolder);
 
     //Delete what needs to be deleted
     delete[] windowSam;
@@ -578,7 +578,7 @@ std::vector<InsermLibrary::PVALUECOORD_KW> InsermLibrary::StatisticalFilesProces
     return pValues;
 }
 
-void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(std::vector<std::vector<double>> ChannelDataToWrite, std::vector<std::pair<int, int>> posSampleCodeToWrite, TriggerContainer* triggerContainer, eegContainer* eegContainer, std::string freqFolder)
+void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(std::vector<std::vector<double>> ChannelDataToWrite, std::vector<std::pair<int, int>> posSampleCodeToWrite, TriggerContainer* triggerContainer, eegContainer* eegContainer, int smoothingID, std::string freqFolder)
 {
     EEGFormat::ElanFile *outputFile = new EEGFormat::ElanFile();
     outputFile->ElectrodeCount((int)ChannelDataToWrite.size());
@@ -609,7 +609,9 @@ void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(std::vector<std::
     vec1<std::string> pathSplit = split<std::string>(freqFolder, "/");
     std::string newPath = freqFolder;
     newPath.append(pathSplit[pathSplit.size() - 1]);
-    std::string baseName = newPath  + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_sm0";
+
+    std::string smoothing = (smoothingID == 0) ? "sm0" : (smoothingID == 1) ? "sm250" : (smoothingID == 2) ? "sm500" : (smoothingID == 3) ? "sm1000" : (smoothingID == 4) ? "sm2500" : "sm5000";
+    std::string baseName = newPath  + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_" + smoothing;
 
 //    std::string rootFileFolder = EEGFormat::Utility::GetDirectoryPath(myeegContainer->elanFrequencyBand[0]->DefaultFilePath());
 //    std::string fileNameRoot = EEGFormat::Utility::GetFileName(myeegContainer->elanFrequencyBand[0]->DefaultFilePath(), false);
