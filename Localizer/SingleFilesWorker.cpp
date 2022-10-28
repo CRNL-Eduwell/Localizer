@@ -31,7 +31,7 @@ void SingleFilesWorker::Process()
         emit sendLogInfo(QString::fromStdString("End time : ") + GetCurrentTime().c_str());
         emit sendLogInfo("");
 
-        sendLogInfo("End of processing for file " + QString::number(m_CurrentProcessId+1) + " out of " + QString::number(static_cast<int>(m_currentFiles.size())) + "\n");
+        emit sendLogInfo("End of processing for file " + QString::number(m_CurrentProcessId+1) + " out of " + QString::number(static_cast<int>(m_currentFiles.size())) + "\n");
         deleteAndNullify1D(myContainer);
     }
 
