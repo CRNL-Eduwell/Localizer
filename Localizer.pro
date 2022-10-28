@@ -63,6 +63,7 @@ FORMS += \
     Localizer/ErpProcessor.ui \
     Localizer/EventWindow.ui \
     Localizer/FileConverterProcessor.ui \
+    Localizer/FileHealthCheckerWindow.ui \
     Localizer/GeneralOptionsWindow.ui \
     Localizer/IconWindow.ui \
     Localizer/ProtocolWindow.ui \
@@ -78,32 +79,41 @@ HEADERS += \
     Localizer/AboutDycog.h \
     Localizer/AlgorithmCalculator.h \
     Localizer/AlgorithmStrategyFactory.h \
+    Localizer/AnalysisFolder.h \
     Localizer/Bloc.h \
     Localizer/BlocWindow.h \
+    Localizer/BrainvisionFileInfo.h \
     Localizer/ChooseLocaWindow.h \
     Localizer/CleanConnectFile.h \
     Localizer/ConcatenationWorker.h \
     Localizer/ConnectCleaner.h \
     Localizer/DataContainer.h \
     Localizer/DeselectableTreeView.h \
+    Localizer/EdfFileInfo.h \
+    Localizer/ElanFileInfo.h \
     Localizer/ErpProcessor.h \
     Localizer/ErpWorker.h \
     Localizer/Event.h \
     Localizer/EventWindow.h \
+    Localizer/ExperimentFolder.h \
     Localizer/FileConverterProcessor.h \
     Localizer/FileConverterWorker.h \
+    Localizer/FileHealthCheckerWindow.h \
     Localizer/FrequencyBand.h \
     Localizer/FrequencyBandAnalysisOpt.h \
     Localizer/FrequencyFile.h \
+    Localizer/FrequencyFolder.h \
     Localizer/GeneralOptionsFile.h \
     Localizer/GeneralOptionsWindow.h \
     Localizer/HilbertEnveloppe.h \
     Localizer/IAlgorithmStrategy.h \
+    Localizer/IEegFileInfo.h \
     Localizer/ITxtFile.h \
     Localizer/IWorker.h \
     Localizer/Icon.h \
     Localizer/IconWindow.h \
     Localizer/LOCA.h \
+    Localizer/MicromedFileInfo.h \
     Localizer/MultiSubjectWorker.h \
     Localizer/PROVParameters.h \
     Localizer/PatientFolderWorker.h \
@@ -117,6 +127,7 @@ HEADERS += \
     Localizer/Stats.h \
     Localizer/SubBloc.h \
     Localizer/SubBlocWindow.h \
+    Localizer/SubjectFolder.h \
     Localizer/Trigger.h \
     Localizer/TriggerContainer.h \
     Localizer/Utility.h \
@@ -139,30 +150,39 @@ SOURCES += \
     Localizer/AboutDycog.cpp \
     Localizer/AlgorithmCalculator.cpp \
     Localizer/AlgorithmStrategyFactory.cpp \
+    Localizer/AnalysisFolder.cpp \
     Localizer/Bloc.cpp \
     Localizer/BlocWindow.cpp \
+    Localizer/BrainvisionFileInfo.cpp \
     Localizer/ChooseLocaWindow.cpp \
     Localizer/CleanConnectFile.cpp \
     Localizer/ConcatenationWorker.cpp \
     Localizer/ConnectCleaner.cpp \
     Localizer/DataContainer.cpp \
     Localizer/DeselectableTreeView.cpp \
+    Localizer/EdfFileInfo.cpp \
+    Localizer/ElanFileInfo.cpp \
     Localizer/ErpProcessor.cpp \
     Localizer/ErpWorker.cpp \
     Localizer/Event.cpp \
     Localizer/EventWindow.cpp \
+    Localizer/ExperimentFolder.cpp \
     Localizer/FileConverterProcessor.cpp \
     Localizer/FileConverterWorker.cpp \
+    Localizer/FileHealthCheckerWindow.cpp \
     Localizer/FrequencyBand.cpp \
     Localizer/FrequencyFile.cpp \
+    Localizer/FrequencyFolder.cpp \
     Localizer/GeneralOptionsFile.cpp \
     Localizer/GeneralOptionsWindow.cpp \
     Localizer/HilbertEnveloppe.cpp \
+    Localizer/IEegFileInfo.cpp \
     Localizer/ITxtFile.cpp \
     Localizer/IWorker.cpp \
     Localizer/Icon.cpp \
     Localizer/IconWindow.cpp \
     Localizer/LOCA.cpp \
+    Localizer/MicromedFileInfo.cpp \
     Localizer/MultiSubjectWorker.cpp \
     Localizer/PatientFolderWorker.cpp \
     Localizer/Protocol.cpp \
@@ -175,6 +195,7 @@ SOURCES += \
     Localizer/Stats.cpp \
     Localizer/SubBloc.cpp \
     Localizer/SubBlocWindow.cpp \
+    Localizer/SubjectFolder.cpp \
     Localizer/Trigger.cpp \
     Localizer/TriggerContainer.cpp \
     Localizer/Utility.cpp \

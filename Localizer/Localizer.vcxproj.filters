@@ -75,12 +75,6 @@
     <Filter Include="Header Files\Data\FrequencyBand">
       <UniqueIdentifier>{0271e7bf-24c2-4e8d-a842-e86f32a7daaf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Data\Filesystem">
-      <UniqueIdentifier>{60f5e783-e037-42bc-aa24-68f2c89f1766}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Data\Filesystem">
-      <UniqueIdentifier>{3913c319-a016-4211-80a9-e080107064ad}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\UI">
       <UniqueIdentifier>{ca32cd27-b5fd-43ba-a734-2c3224299e91}</UniqueIdentifier>
     </Filter>
@@ -134,6 +128,24 @@
     </Filter>
     <Filter Include="Source Files\UI\GUI\Protocols">
       <UniqueIdentifier>{bffa3bb4-771f-4a9f-8cdb-7618e1e2c516}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Data\OldFilesystem">
+      <UniqueIdentifier>{3913c319-a016-4211-80a9-e080107064ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Data\OldFilesystem">
+      <UniqueIdentifier>{60f5e783-e037-42bc-aa24-68f2c89f1766}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Data\Filesystem">
+      <UniqueIdentifier>{2fb065de-965e-4f07-a16e-35dad63d5a04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Data\Filesystem">
+      <UniqueIdentifier>{4be531f8-420d-4dc1-9441-4c74be729153}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Data\Filesystem\FileInfo">
+      <UniqueIdentifier>{650c78fd-45f7-43d6-bc66-4888e11ddf97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Data\Filesystem\FileInfo">
+      <UniqueIdentifier>{ecf47a51-876b-44f0-a6e6-fdd43d36d8a9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -378,10 +390,10 @@
       <Filter>Source Files\Data\FrequencyBand</Filter>
     </ClCompile>
     <ClCompile Include="patientFolder.cpp">
-      <Filter>Source Files\Data\Filesystem</Filter>
+      <Filter>Source Files\Data\OldFilesystem</Filter>
     </ClCompile>
     <ClCompile Include="singleFile.cpp">
-      <Filter>Source Files\Data\Filesystem</Filter>
+      <Filter>Source Files\Data\OldFilesystem</Filter>
     </ClCompile>
     <ClCompile Include="Stats.cpp">
       <Filter>Source Files\Data\Tools</Filter>
@@ -445,6 +457,42 @@
     </ClCompile>
     <ClCompile Include="SubBlocWindow.cpp">
       <Filter>Source Files\UI\GUI\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_IconWindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_IconWindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="IconWindow.cpp">
+      <Filter>Source Files\UI\GUI\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="AnalysisFolder.cpp">
+      <Filter>Source Files\Data\Filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ExperimentFolder.cpp">
+      <Filter>Source Files\Data\Filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="FrequencyFolder.cpp">
+      <Filter>Source Files\Data\Filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="BrainvisionFileInfo.cpp">
+      <Filter>Source Files\Data\Filesystem\FileInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="EdfFileInfo.cpp">
+      <Filter>Source Files\Data\Filesystem\FileInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="ElanFileInfo.cpp">
+      <Filter>Source Files\Data\Filesystem\FileInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="MicromedFileInfo.cpp">
+      <Filter>Source Files\Data\Filesystem\FileInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="SubjectFolder.cpp">
+      <Filter>Source Files\Data\Filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="IEegFileInfo.cpp">
+      <Filter>Source Files\Data\Filesystem\FileInfo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -577,6 +625,12 @@
     <CustomBuild Include="SubBlocWindow.h">
       <Filter>Header Files\UI\GUI\Protocols</Filter>
     </CustomBuild>
+    <CustomBuild Include="IconWindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="IconWindow.h">
+      <Filter>Header Files\UI\GUI\Protocols</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_localizer.h">
@@ -673,10 +727,10 @@
       <Filter>Header Files\Data\FrequencyBand</Filter>
     </ClInclude>
     <ClInclude Include="patientFolder.h">
-      <Filter>Header Files\Data\Filesystem</Filter>
+      <Filter>Header Files\Data\OldFilesystem</Filter>
     </ClInclude>
     <ClInclude Include="singleFile.h">
-      <Filter>Header Files\Data\Filesystem</Filter>
+      <Filter>Header Files\Data\OldFilesystem</Filter>
     </ClInclude>
     <ClInclude Include="Stats.h">
       <Filter>Header Files\Data\Tools</Filter>
@@ -713,6 +767,36 @@
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_SubBlocWindow.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_IconWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AnalysisFolder.h">
+      <Filter>Header Files\Data\Filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ExperimentFolder.h">
+      <Filter>Header Files\Data\Filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="FrequencyFolder.h">
+      <Filter>Header Files\Data\Filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="BrainvisionFileInfo.h">
+      <Filter>Header Files\Data\Filesystem\FileInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="EdfFileInfo.h">
+      <Filter>Header Files\Data\Filesystem\FileInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="ElanFileInfo.h">
+      <Filter>Header Files\Data\Filesystem\FileInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="MicromedFileInfo.h">
+      <Filter>Header Files\Data\Filesystem\FileInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="SubjectFolder.h">
+      <Filter>Header Files\Data\Filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="IEegFileInfo.h">
+      <Filter>Header Files\Data\Filesystem\FileInfo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

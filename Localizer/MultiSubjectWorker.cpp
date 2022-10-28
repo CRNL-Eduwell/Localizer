@@ -1,10 +1,10 @@
 #include "MultiSubjectWorker.h"
 
-MultiSubjectWorker::MultiSubjectWorker(std::vector<patientFolder> subjects, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& analysisOpt, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::vector<InsermLibrary::FileExt> filePriority, std::string ptsFilePath)
+MultiSubjectWorker::MultiSubjectWorker(std::vector<SubjectFolder*> subjects, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& analysisOpt, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::vector<InsermLibrary::FileType> filePriority, std::string ptsFilePath)
 {
-    m_Subjects = std::vector<patientFolder>(subjects);
+    m_Subjects = subjects;
     m_FrequencyBands = std::vector<InsermLibrary::FrequencyBandAnalysisOpt>(analysisOpt);
-    m_filePriority = std::vector<InsermLibrary::FileExt>(filePriority);
+    m_filePriority = std::vector<InsermLibrary::FileType>(filePriority);
     m_Loca = new InsermLibrary::LOCA(m_FrequencyBands, new InsermLibrary::statOption(statOption), new InsermLibrary::picOption(picOption), ptsFilePath);
 }
 
@@ -15,16 +15,16 @@ MultiSubjectWorker::~MultiSubjectWorker()
 
 void MultiSubjectWorker::Process()
 {
-    patientFolder pat = m_Subjects[m_CurrentProcessId];
-    emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + pat.rootFolder() + " ==="));
+    SubjectFolder pat = *m_Subjects[m_CurrentProcessId];
+    emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + pat.Path() + " ==="));
 
     InsermLibrary::eegContainer *myContainer = nullptr;
-    int localizerCount = static_cast<int>(pat.localizerFolder().size());
+    int localizerCount = static_cast<int>(pat.ExperimentFolders().size());
     for (int i = 0; i < localizerCount; i++)
     {
-        emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + pat.localizerFolder()[i].rootLocaFolder() + " ==="));
+        emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + pat.ExperimentFolders()[i].Path() + " ==="));
         bool extractData = m_FrequencyBands.size() > 0 ? m_FrequencyBands[0].analysisParameters.eeg2env2 : false; //for now it's the same analysus choice for each band , might change in the future
-        myContainer = ExtractData(pat.localizerFolder()[i], extractData);
+        myContainer = ExtractData(pat.ExperimentFolders()[i], extractData);
 
         if (myContainer != nullptr)
         {
@@ -33,12 +33,12 @@ void MultiSubjectWorker::Process()
             emit sendLogInfo("");
             emit sendLogInfo(QString::fromStdString("Begin time : ") + GetCurrentTime().c_str());
             emit sendLogInfo("");
-            m_Loca->Localize(myContainer, i, &pat.localizerFolder()[i]);
+            m_Loca->Localize(myContainer, i, &pat.ExperimentFolders()[i]);
             emit sendLogInfo("");
             emit sendLogInfo(QString::fromStdString("End time : ") + GetCurrentTime().c_str());
             emit sendLogInfo("");
 
-            sendLogInfo("End of processing for experiment " + QString::number(i+1) + " out of " + QString::number(localizerCount) + "\n");
+            emit sendLogInfo("End of processing for experiment " + QString::number(i+1) + " out of " + QString::number(localizerCount) + "\n");
             deleteAndNullify1D(myContainer);
         }
     }
@@ -61,65 +61,73 @@ void MultiSubjectWorker::ExtractElectrodeList()
         throw new std::runtime_error("Error ExtractElectrodeList : ProcessID is greater than the number of subjects to process");
     }
 
-    patientFolder pat = m_Subjects[m_CurrentProcessId];
-    if (pat.localizerFolder().size() == 0)
+    SubjectFolder pat = *m_Subjects[m_CurrentProcessId];
+    if (pat.ExperimentFolders().size() == 0)
     {
         emit sendLogInfo("Error, there is no localizer folder in this patient, aborting analysis.\n");
         emit finished();
+        return;
     }
 
-    int filePriorityCount = static_cast<int>(m_filePriority.size());
-    for (int i = 0; i < filePriorityCount; i++)
+    for(int k = 0; k < pat.ExperimentFolders().size(); k++)
     {
-        std::string currentFilePath = pat.localizerFolder()[0].filePath(m_filePriority[i]);
-        if (EEGFormat::Utility::DoesFileExist(currentFilePath))
+        int filePriorityCount = static_cast<int>(m_filePriority.size());
+        for (int i = 0; i < filePriorityCount; i++)
         {
-            std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(currentFilePath);
-            std::string connectCleanerFilePath = pat.rootFolder() + "/" + pat.patientName() + ".ccf";
-            emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
-            return;
+            InsermLibrary::IEegFileInfo* ifileInfo = pat.ExperimentFolders()[k].GetEegFileInfo(m_filePriority[i]);
+            if(ifileInfo != nullptr)
+            {
+                if(ifileInfo->CheckForErrors() == 0)
+                {
+                    std::vector<std::string> ElectrodeList = ExtractElectrodeListFromFile(ifileInfo->GetFilesString());
+                    std::string connectCleanerFilePath = pat.Path() + "/" + pat.SubjectLabel() + ".ccf";
+                    emit sendElectrodeList(ElectrodeList, connectCleanerFilePath);
+                    return;
+                }
+            }
         }
     }
 
     emit sendLogInfo("No Compatible file format detected, aborting analysis.\n");
-    emit finished();
+    //emit finished();
 }
 
-InsermLibrary::eegContainer* MultiSubjectWorker::ExtractData(locaFolder currentLoca, bool extractOriginalData)
+InsermLibrary::eegContainer* MultiSubjectWorker::ExtractData(ExperimentFolder currentLoca, bool extractOriginalData)
 {
     int filePriorityCount = static_cast<int>(m_filePriority.size());
     for (int i = 0; i < filePriorityCount; i++)
     {
-        std::string currentFilePath = currentLoca.filePath(m_filePriority[i]);
-        if (EEGFormat::Utility::DoesFileExist(currentFilePath))
+        InsermLibrary::IEegFileInfo* ifileInfo = currentLoca.GetEegFileInfo(m_filePriority[i]);
+        if(ifileInfo != nullptr)
         {
-            InsermLibrary::eegContainer *myContainer = GetEegContainer(currentFilePath, extractOriginalData);
-            myContainer->DeleteElectrodes(m_IndexToDelete);
-            myContainer->GetElectrodes();
-
-            switch(m_ElectrodeOperation)
+            if(ifileInfo->CheckForErrors() == 0)
             {
-                case 0: //mono
+                InsermLibrary::eegContainer *myContainer = GetEegContainer(ifileInfo->GetFilesString(), extractOriginalData);
+                myContainer->DeleteElectrodes(m_IndexToDelete);
+                myContainer->GetElectrodes();
+
+                switch(m_ElectrodeOperation)
                 {
-                    myContainer->MonoElectrodes();
-                    emit sendLogInfo(QString::fromStdString("Single channel created !"));
-                    break;
+                    case 0: //mono
+                    {
+                        myContainer->MonoElectrodes();
+                        emit sendLogInfo(QString::fromStdString("Single channel created !"));
+                        break;
+                    }
+                    case 1: //bipo
+                    {
+                        myContainer->BipolarizeElectrodes();
+                        emit sendLogInfo(QString::fromStdString("Bipole created !"));
+                        break;
+                    }
+                    default:
+                    {
+                        emit sendLogInfo(QString::fromStdString("Error, operation unknow, aborting"));
+                        return nullptr;
+                    }
                 }
-                case 1: //bipo
-                {
-                    myContainer->BipolarizeElectrodes();
-                    emit sendLogInfo(QString::fromStdString("Bipole created !"));
-                    break;
-                }
-                default:
-                {
-                    emit sendLogInfo(QString::fromStdString("Error, operation unknow, aborting"));
-                    return nullptr;
-                }
+                return myContainer;
             }
-
-
-            return myContainer;
         }
     }
 

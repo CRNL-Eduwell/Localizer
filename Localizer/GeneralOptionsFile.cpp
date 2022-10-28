@@ -12,25 +12,25 @@ void InsermLibrary::GeneralOptionsFile::Load()
 	{
 		if (i == 0) 
 		{
-			m_fileExtensions = std::vector<InsermLibrary::FileExt>();
+            m_fileExtensions = std::vector<InsermLibrary::FileType>();
 			std::vector <std::string> RawFileOrderList = EEGFormat::Utility::Split<std::string>(m_rawTextFileData[i], "-");
 			for (int j = 0; j < RawFileOrderList.size(); j++)
 			{
 				if (RawFileOrderList[j].compare("Micromed") == 0)
 				{
-					m_fileExtensions.push_back(InsermLibrary::FileExt::TRC);
+                    m_fileExtensions.push_back(InsermLibrary::FileType::Micromed);
 				}
 				else if (RawFileOrderList[j].compare("Elan") == 0)
 				{
-					m_fileExtensions.push_back(InsermLibrary::FileExt::EEG_ELAN);
+                    m_fileExtensions.push_back(InsermLibrary::FileType::Elan);
 				}
 				else if (RawFileOrderList[j].compare("BrainVision") == 0)
 				{
-					m_fileExtensions.push_back(InsermLibrary::FileExt::BRAINVISION);
+                    m_fileExtensions.push_back(InsermLibrary::FileType::Brainvision);
 				}
 				else if (RawFileOrderList[j].compare("Edf") == 0)
 				{
-					m_fileExtensions.push_back(InsermLibrary::FileExt::EDF);
+                    m_fileExtensions.push_back(InsermLibrary::FileType::EuropeanDataFormat);
 				}
 				else
 				{
@@ -48,22 +48,22 @@ void InsermLibrary::GeneralOptionsFile::Save()
 	{
 		switch (m_fileExtensions[i])
 		{
-			case InsermLibrary::FileExt::TRC:
+            case InsermLibrary::FileType::Micromed:
 			{
 				optionFileStream << "Micromed";
 				break;
 			}
-			case InsermLibrary::FileExt::EEG_ELAN:
+            case InsermLibrary::FileType::Elan:
 			{
 				optionFileStream << "Elan";
 				break;
 			}
-			case InsermLibrary::FileExt::BRAINVISION:
+            case InsermLibrary::FileType::Brainvision:
 			{
 				optionFileStream << "BrainVision";
 				break;
 			}
-			case InsermLibrary::FileExt::EDF:
+            case InsermLibrary::FileType::EuropeanDataFormat:
 			{
 				optionFileStream << "Edf";
 				break;
