@@ -5,7 +5,6 @@
 #include <iostream>
 #include <ctime>
 #include "IWorker.h"
-#include "patientFolder.h"
 #include "SubjectFolder.h"
 #include "FrequencyBandAnalysisOpt.h"
 #include "optionsParameters.h" //pour stat et pic options, a separer
