@@ -1,8 +1,8 @@
 #include "MultiSubjectWorker.h"
 
-MultiSubjectWorker::MultiSubjectWorker(std::vector<SubjectFolder> subjects, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& analysisOpt, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::vector<InsermLibrary::FileType> filePriority, std::string ptsFilePath)
+MultiSubjectWorker::MultiSubjectWorker(std::vector<SubjectFolder*> subjects, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& analysisOpt, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::vector<InsermLibrary::FileType> filePriority, std::string ptsFilePath)
 {
-    m_Subjects = std::vector<SubjectFolder>(subjects);
+    m_Subjects = subjects;
     m_FrequencyBands = std::vector<InsermLibrary::FrequencyBandAnalysisOpt>(analysisOpt);
     m_filePriority = std::vector<InsermLibrary::FileType>(filePriority);
     m_Loca = new InsermLibrary::LOCA(m_FrequencyBands, new InsermLibrary::statOption(statOption), new InsermLibrary::picOption(picOption), ptsFilePath);
@@ -15,7 +15,7 @@ MultiSubjectWorker::~MultiSubjectWorker()
 
 void MultiSubjectWorker::Process()
 {
-    SubjectFolder pat = m_Subjects[m_CurrentProcessId];
+    SubjectFolder pat = *m_Subjects[m_CurrentProcessId];
     emit sendLogInfo(QString::fromStdString("=== PROCESSING : " + pat.Path() + " ==="));
 
     InsermLibrary::eegContainer *myContainer = nullptr;
@@ -41,10 +41,6 @@ void MultiSubjectWorker::Process()
             emit sendLogInfo("End of processing for experiment " + QString::number(i+1) + " out of " + QString::number(localizerCount) + "\n");
             deleteAndNullify1D(myContainer);
         }
-        else
-        {
-            std::cout << "zeub" << std::endl;
-        }
     }
 
     m_CurrentProcessId++;
@@ -65,11 +61,12 @@ void MultiSubjectWorker::ExtractElectrodeList()
         throw new std::runtime_error("Error ExtractElectrodeList : ProcessID is greater than the number of subjects to process");
     }
 
-    SubjectFolder pat = m_Subjects[m_CurrentProcessId];
+    SubjectFolder pat = *m_Subjects[m_CurrentProcessId];
     if (pat.ExperimentFolders().size() == 0)
     {
         emit sendLogInfo("Error, there is no localizer folder in this patient, aborting analysis.\n");
         emit finished();
+        return;
     }
 
     for(int k = 0; k < pat.ExperimentFolders().size(); k++)

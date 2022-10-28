@@ -16,6 +16,20 @@ ExperimentFolder::~ExperimentFolder()
 
 }
 
+std::vector<std::string> ExperimentFolder::GetErrorMessages()
+{
+    std::vector<std::string> messages;
+    if(!IsValid())
+    {
+        GetErrorMessagesForFileInfo(messages, InsermLibrary::FileType::Micromed);
+        GetErrorMessagesForFileInfo(messages, InsermLibrary::FileType::Elan);
+        GetErrorMessagesForFileInfo(messages, InsermLibrary::FileType::Brainvision);
+        GetErrorMessagesForFileInfo(messages, InsermLibrary::FileType::EuropeanDataFormat);
+    }
+
+    return messages;
+}
+
 InsermLibrary::IEegFileInfo* ExperimentFolder::GetEegFileInfo(InsermLibrary::FileType fileType)
 {
     switch(fileType)
@@ -40,6 +54,67 @@ InsermLibrary::IEegFileInfo* ExperimentFolder::GetEegFileInfo(InsermLibrary::Fil
         {
             return nullptr;
         }
+    }
+}
+
+void ExperimentFolder::GetErrorMessagesForFileInfo(std::vector<std::string>& messages, InsermLibrary::FileType fileType)
+{
+    InsermLibrary::IEegFileInfo* fileInfo = GetEegFileInfo(fileType);
+    if(fileInfo != nullptr)
+    {
+        std::string errorMessage = ErrorCodesToString(fileInfo->CheckForErrors());
+        if(errorMessage != "")
+        {
+            switch(fileType)
+            {
+            case InsermLibrary::FileType::Micromed:
+                {
+                    errorMessage = "Micromed Dataset : " + errorMessage;
+                    break;
+                }
+            case InsermLibrary::FileType::Elan:
+                {
+                    errorMessage = "Elan Dataset : " + errorMessage;
+                    break;
+                }
+            case InsermLibrary::FileType::Brainvision:
+                {
+                    errorMessage = "Brainvision Dataset : " + errorMessage;
+                    break;
+                }
+            case InsermLibrary::FileType::EuropeanDataFormat:
+                {
+                    errorMessage = "EuropeanDataFormat Dataset : " + errorMessage;
+                    break;
+                }
+            default:
+                {
+                    errorMessage = "This should not have goten to this point : " + errorMessage;
+                    break;
+                }
+            }
+            messages.push_back(errorMessage);
+        }
+    }
+}
+
+std::string ExperimentFolder::ErrorCodesToString(int code)
+{
+    if(code == -3)
+    {
+        return "FilePath is empty";
+    }
+    else if(code == -2)
+    {
+        return "File extension does not seems to be the one we are looking for";
+    }
+    else if(code == -1)
+    {
+        return "File path seems to point to a file that does not exist";
+    }
+    else
+    {
+        return "";
     }
 }
 

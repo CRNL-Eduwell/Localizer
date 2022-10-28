@@ -63,6 +63,7 @@ FORMS += \
     Localizer/ErpProcessor.ui \
     Localizer/EventWindow.ui \
     Localizer/FileConverterProcessor.ui \
+    Localizer/FileHealthCheckerWindow.ui \
     Localizer/GeneralOptionsWindow.ui \
     Localizer/IconWindow.ui \
     Localizer/ProtocolWindow.ui \
@@ -97,6 +98,7 @@ HEADERS += \
     Localizer/ExperimentFolder.h \
     Localizer/FileConverterProcessor.h \
     Localizer/FileConverterWorker.h \
+    Localizer/FileHealthCheckerWindow.h \
     Localizer/FrequencyBand.h \
     Localizer/FrequencyBandAnalysisOpt.h \
     Localizer/FrequencyFile.h \
@@ -167,6 +169,7 @@ SOURCES += \
     Localizer/ExperimentFolder.cpp \
     Localizer/FileConverterProcessor.cpp \
     Localizer/FileConverterWorker.cpp \
+    Localizer/FileHealthCheckerWindow.cpp \
     Localizer/FrequencyBand.cpp \
     Localizer/FrequencyFile.cpp \
     Localizer/FrequencyFolder.cpp \

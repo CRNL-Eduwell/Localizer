@@ -50,8 +50,9 @@ void PatientFolderWorker::ExtractElectrodeList()
 {
     if (m_Patient->ExperimentFolders().size() == 0)
 	{
-        emit sendLogInfo("Error, there is no localizer folder in this patient, aborting analysis.\n");
+        emit sendLogInfo("Error, there does not seem to be any valid localizer folder for this patient, aborting analysis.\n");
 		emit finished();
+        return;
 	}
 
     int filePriorityCount = static_cast<int>(m_filePriority.size());

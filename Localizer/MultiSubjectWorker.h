@@ -15,7 +15,7 @@ class MultiSubjectWorker : public IWorker
     Q_OBJECT
 
 public:
-    MultiSubjectWorker(std::vector<SubjectFolder> subjects, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& frequencyBands, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::vector<InsermLibrary::FileType> filePriority, std::string ptsFilePath);
+    MultiSubjectWorker(std::vector<SubjectFolder*> subjects, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& frequencyBands, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::vector<InsermLibrary::FileType> filePriority, std::string ptsFilePath);
     ~MultiSubjectWorker();
     void Process();
     void ExtractElectrodeList();
@@ -25,7 +25,7 @@ private:
 
 private:
     int m_CurrentProcessId = 0;
-    std::vector<SubjectFolder> m_Subjects;
+    std::vector<SubjectFolder*> m_Subjects;
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> m_FrequencyBands;
     std::vector<InsermLibrary::FileType> m_filePriority;
 };

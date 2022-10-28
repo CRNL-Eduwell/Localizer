@@ -34,7 +34,7 @@
 //TODO DOING
 #include "ProtocolsWindow.h"
 //===
-
+#include "FileHealthCheckerWindow.h"
 #include "ProtocolWindow.h"
 #include "ChooseLocaWindow.h"
 #include "AboutDycog.h"
@@ -79,9 +79,9 @@ private:
 	void LoadTreeViewUI(QString initialFolder);
     int PreparePatientFolder();
     int PrepareSingleFiles();
-    std::vector<SubjectFolder> PrepareDBFolders();
+    std::vector<SubjectFolder*> PrepareDBFolders();
 	void InitProgressBar();
-    void InitMultiSubjectProgresBar(std::vector<SubjectFolder> subjects);
+    void InitMultiSubjectProgresBar(std::vector<SubjectFolder*> subjects);
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> GetUIAnalysisOption();
 	int GetSelectedFolderCount(QModelIndexList selectedIndexes);
 

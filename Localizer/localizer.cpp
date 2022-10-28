@@ -342,7 +342,7 @@ int Localizer::PrepareSingleFiles()
     return currentFiles.size() == 0 ? - 1 : 0;
 }
 
-std::vector<SubjectFolder> Localizer::PrepareDBFolders()
+std::vector<SubjectFolder*> Localizer::PrepareDBFolders()
 {
     std::vector<std::string> locaToSearchFor;
     ChooseLocaWindow* elecWin = new ChooseLocaWindow(nullptr);
@@ -351,13 +351,13 @@ std::vector<SubjectFolder> Localizer::PrepareDBFolders()
     delete elecWin;
 
     QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
-    if(GetSelectedFolderCount(selectedRows) == 0) return std::vector<SubjectFolder>();
+    if(GetSelectedFolderCount(selectedRows) == 0) return std::vector<SubjectFolder*>();
 
     //Create data structure used by the processing part
     if (currentFiles.size() > 0) currentFiles.clear();
     deleteAndNullify1D(currentPat);
 
-    std::vector<SubjectFolder> subjects;
+    std::vector<SubjectFolder*> subjects;
     for (int i = 0; i < selectedRows.size(); i++)
     {
         bool isRoot = selectedRows[i].parent() == ui.FileTreeView->rootIndex();
@@ -367,14 +367,14 @@ std::vector<SubjectFolder> Localizer::PrepareDBFolders()
             QString subjectRoot = info.absoluteFilePath();
             try
             {
-                SubjectFolder pat = SubjectFolder(subjectRoot.toStdString());
+                SubjectFolder* pat = new SubjectFolder(subjectRoot.toStdString());
 
                 //check which elements to keep and delete
-                std::vector<bool> deleteMe = std::vector<bool>(pat.ExperimentFolders().size(), true);
+                std::vector<bool> deleteMe = std::vector<bool>(pat->ExperimentFolders().size(), true);
                 int idToKeep = -1;
-                for(int j = 0; j < pat.ExperimentFolders().size(); j++)
+                for(int j = 0; j < pat->ExperimentFolders().size(); j++)
                 {
-                    if(std::find(locaToSearchFor.begin(), locaToSearchFor.end(), pat.ExperimentFolders()[j].ExperimentLabel()) != locaToSearchFor.end())
+                    if(std::find(locaToSearchFor.begin(), locaToSearchFor.end(), pat->ExperimentFolders()[j].ExperimentLabel()) != locaToSearchFor.end())
                     {
                         deleteMe[j] = false;
                     }
@@ -385,7 +385,7 @@ std::vector<SubjectFolder> Localizer::PrepareDBFolders()
                 {
                     if (deleteMe[j])
                     {
-                        pat.ExperimentFolders().erase(pat.ExperimentFolders().begin() + j);
+                        pat->ExperimentFolders().erase(pat->ExperimentFolders().begin() + j);
                     }
                 }
 
@@ -425,7 +425,7 @@ void Localizer::InitProgressBar()
     nbTaskToDo *= nbFolderSelected * nbFrequencyBands;
 }
 
-void Localizer::InitMultiSubjectProgresBar(std::vector<SubjectFolder> subjects)
+void Localizer::InitMultiSubjectProgresBar(std::vector<SubjectFolder*> subjects)
 {
     ui.progressBar->reset();
     nbDoneTask = 0;
@@ -442,7 +442,7 @@ void Localizer::InitMultiSubjectProgresBar(std::vector<SubjectFolder> subjects)
     for(int i = 0; i < subjectCount; i++)
     {
         int nbTaskPerExam = 0;
-        int examCount = static_cast<int>(subjects[i].ExperimentFolders().size());
+        int examCount = static_cast<int>(subjects[i]->ExperimentFolders().size());
 
         ui.Eeg2envCheckBox->isChecked() ? nbTaskPerExam++ : nbTaskPerExam++; //eeg2env, wheter we need to compute or load
         ui.Env2plotCheckBox->isChecked() ? nbTaskPerExam++ : nbTaskPerExam;
@@ -697,29 +697,35 @@ void Localizer::ProcessFolderAnalysis()
         int result = PreparePatientFolder();
         if(result != -1)
         {
-            thread = new QThread;
-            worker = new PatientFolderWorker(*currentPat, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
+            FileHealthCheckerWindow *fileHealthWindow = new FileHealthCheckerWindow(*currentPat, nullptr);
+            int res = fileHealthWindow->exec();
+            if(res == 1)
+            {
+                thread = new QThread;
+                worker = new PatientFolderWorker(*currentPat, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
 
-            //=== Event update displayer
-            connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
-            connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
-            connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
+                //=== Event update displayer
+                connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
+                connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+                connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
-            //New ping pong order
-            connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
-            connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
-            connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
+                //New ping pong order
+                connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
+                connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
+                connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
-            //=== Event From worker and thread
-            connect(worker, &IWorker::finished, thread, &QThread::quit);
-            connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
-            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-            connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
+                //=== Event From worker and thread
+                connect(worker, &IWorker::finished, thread, &QThread::quit);
+                connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
+                connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+                connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
 
-            //=== Launch Thread and lock possible second launch
-            worker->moveToThread(thread);
-            thread->start();
-            isAlreadyRunning = true;
+                //=== Launch Thread and lock possible second launch
+                worker->moveToThread(thread);
+                thread->start();
+                isAlreadyRunning = true;
+            }
+            delete fileHealthWindow;
         }
         else
         {
@@ -789,34 +795,49 @@ void Localizer::ProcessMultiFolderAnalysis()
         std::vector<InsermLibrary::FileType> filePriority = std::vector<InsermLibrary::FileType>(m_GeneralOptionsFile->FileExtensionsFavorite());
 
         //Should probably senbd back the struct here and not keep a global variable
-        std::vector<SubjectFolder> subjects = PrepareDBFolders();
-        InitMultiSubjectProgresBar(subjects);
-
+        std::vector<SubjectFolder*> subjects = PrepareDBFolders();
         if(subjects.size() > 0)
         {
-            thread = new QThread;
-            worker = new MultiSubjectWorker(subjects, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
+            FileHealthCheckerWindow *fileHealthWindow = new FileHealthCheckerWindow(subjects, nullptr);
+            int res = fileHealthWindow->exec();
+            if(res == 1)
+            {
+                InitMultiSubjectProgresBar(subjects);
 
-            //=== Event update displayer
-            connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
-            connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
-            connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
+                thread = new QThread;
+                worker = new MultiSubjectWorker(subjects, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
 
-            //New ping pong order
-            connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
-            connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
-            connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
+                //=== Event update displayer
+                connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
+                connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+                connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Localizer::UpdateProgressBar);
 
-            //=== Event From worker and thread
-            connect(worker, &IWorker::finished, thread, &QThread::quit);
-            connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
-            connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-            connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
+                //New ping pong order
+                connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
+                connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
+                connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
 
-            //=== Launch Thread and lock possible second launch
-            worker->moveToThread(thread);
-            thread->start();
-            isAlreadyRunning = true;
+                //=== Event From worker and thread
+                connect(worker, &IWorker::finished, thread, &QThread::quit);
+                connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
+                connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+                connect(worker, &IWorker::finished, this, [&]
+                {
+                    for(int i = 0;i<subjects.size();i++)
+                    {
+                        delete subjects[i];
+                    }
+                    subjects.clear();
+
+                    isAlreadyRunning = false;
+                });
+
+                //=== Launch Thread and lock possible second launch
+                worker->moveToThread(thread);
+                thread->start();
+                isAlreadyRunning = true;
+            }
+            delete fileHealthWindow;
         }
         else
         {
