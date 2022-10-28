@@ -140,7 +140,6 @@ HEADERS += \
     Localizer/optionsParameters.h \
     Localizer/optionsPerf.h \
     Localizer/optionsStats.h \
-    Localizer/patientFolder.h \
     Localizer/picOptions.h \
     Localizer/singleFile.h
 
@@ -206,7 +205,6 @@ SOURCES += \
     Localizer/mapsGenerator.cpp \
     Localizer/optionsPerf.cpp \
     Localizer/optionsStats.cpp \
-    Localizer/patientFolder.cpp \
     Localizer/picOptions.cpp \
     Localizer/singleFile.cpp
 
