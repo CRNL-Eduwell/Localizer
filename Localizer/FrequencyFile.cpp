@@ -29,5 +29,18 @@ void InsermLibrary::FrequencyFile::Load()
 
 void InsermLibrary::FrequencyFile::Save()
 {
-	throw new std::logic_error("Error : Save Frequency File not implemented yet");
+    std::ofstream frequencyFile(m_originalFilePath, std::ios::out);
+    if (frequencyFile.is_open())
+    {
+        for(int i = 0; i < m_frequencyBands.size(); i++)
+        {
+            frequencyFile << m_frequencyBands[i].Label() << std::endl;
+            frequencyFile << m_frequencyBands[i].FMin() << ":" << m_frequencyBands[i].Step() << ":" << m_frequencyBands[i].FMax() << std::endl;
+        }
+        frequencyFile.close();
+    }
+    else
+    {
+        throw std::runtime_error("FrequencyFile Save => : Could not open file");
+    }
 }

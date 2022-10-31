@@ -64,6 +64,8 @@ FORMS += \
     Localizer/EventWindow.ui \
     Localizer/FileConverterProcessor.ui \
     Localizer/FileHealthCheckerWindow.ui \
+    Localizer/FrequenciesWindow.ui \
+    Localizer/FrequencyWindow.ui \
     Localizer/GeneralOptionsWindow.ui \
     Localizer/IconWindow.ui \
     Localizer/ProtocolWindow.ui \
@@ -99,10 +101,12 @@ HEADERS += \
     Localizer/FileConverterProcessor.h \
     Localizer/FileConverterWorker.h \
     Localizer/FileHealthCheckerWindow.h \
+    Localizer/FrequenciesWindow.h \
     Localizer/FrequencyBand.h \
     Localizer/FrequencyBandAnalysisOpt.h \
     Localizer/FrequencyFile.h \
     Localizer/FrequencyFolder.h \
+    Localizer/FrequencyWindow.h \
     Localizer/GeneralOptionsFile.h \
     Localizer/GeneralOptionsWindow.h \
     Localizer/HilbertEnveloppe.h \
@@ -169,9 +173,11 @@ SOURCES += \
     Localizer/FileConverterProcessor.cpp \
     Localizer/FileConverterWorker.cpp \
     Localizer/FileHealthCheckerWindow.cpp \
+    Localizer/FrequenciesWindow.cpp \
     Localizer/FrequencyBand.cpp \
     Localizer/FrequencyFile.cpp \
     Localizer/FrequencyFolder.cpp \
+    Localizer/FrequencyWindow.cpp \
     Localizer/GeneralOptionsFile.cpp \
     Localizer/GeneralOptionsWindow.cpp \
     Localizer/HilbertEnveloppe.cpp \

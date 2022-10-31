@@ -11,7 +11,7 @@ namespace InsermLibrary
 	{
 	public:
         FrequencyFile(const std::string& filePath = QCoreApplication::applicationDirPath().toStdString() +  "/Resources/Config/frequencyBand.txt");
-		inline const std::vector<FrequencyBand>& FrequencyBands() 
+        inline std::vector<FrequencyBand>& FrequencyBands()
 		{
 			return m_frequencyBands;
 		}

@@ -115,7 +115,7 @@ private:
 	QFileSystemModel *m_localFileSystemModel = nullptr;
 	//==Data for analysis
 	InsermLibrary::GeneralOptionsFile *m_GeneralOptionsFile = nullptr;
-    InsermLibrary::FrequencyFile *m_frequencyFile = nullptr;
+    InsermLibrary::FrequencyFile m_frequencyFile;
 	bool m_isPatFolder = false;
 	//userOption userOpt;
     //patientFolder* currentPat = nullptr;

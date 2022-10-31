@@ -1,4 +1,5 @@
 #include "localizer.h"
+#include "FrequenciesWindow.h"
 
 Localizer::Localizer(QWidget *parent) : QMainWindow(parent)
 {
@@ -31,15 +32,14 @@ void Localizer::ReSetupGUI()
 {
     m_GeneralOptionsFile = new InsermLibrary::GeneralOptionsFile();
 	m_GeneralOptionsFile->Load();
-    m_frequencyFile = new InsermLibrary::FrequencyFile();
-    m_frequencyFile->Load();
+    m_frequencyFile = InsermLibrary::FrequencyFile();
+    m_frequencyFile.Load();
 	//==
-    LoadFrequencyBandsUI(m_frequencyFile->FrequencyBands());
+    LoadFrequencyBandsUI(m_frequencyFile.FrequencyBands());
 	//==
     optPerf = new optionsPerf();
     optStat = new optionsStats();
     picOpt = new picOptions();
-    //optLoca = new ProtocolWindow(); //TODO : Need to make the new gui for hibop provfiles
 
     ui.progressBar->reset();
 }
@@ -124,6 +124,19 @@ void Localizer::ConnectMenuBar()
     connect(openPicMenu, &QAction::triggered, this, [&] { picOpt->exec(); });
     QAction* openPerfMenu = ui.menuConfiguration->actions().at(4);
     connect(openPerfMenu, &QAction::triggered, this, [&] { optPerf->exec(); });
+    QAction* openFreqBandMenu = ui.menuConfiguration->actions().at(5);
+    connect(openFreqBandMenu, &QAction::triggered, this, [&]
+    {
+        FrequenciesWindow* frequenciesWindow = new FrequenciesWindow(this);
+        connect(frequenciesWindow, &FrequenciesWindow::accepted, this, [&]
+        {
+            m_frequencyFile = InsermLibrary::FrequencyFile();
+            m_frequencyFile.Load();
+            LoadFrequencyBandsUI(m_frequencyFile.FrequencyBands());
+        });
+        frequenciesWindow->setAttribute(Qt::WA_DeleteOnClose);
+        frequenciesWindow->show();
+    });
     //===Aide
     QAction* openAbout = ui.menuHelp->actions().at(0);
     connect(openAbout, &QAction::triggered, this, [&]
@@ -456,7 +469,7 @@ void Localizer::InitMultiSubjectProgresBar(std::vector<SubjectFolder*> subjects)
 
 std::vector<InsermLibrary::FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
 {
-    std::vector<InsermLibrary::FrequencyBand> frequencyBands = m_frequencyFile->FrequencyBands();
+    std::vector<InsermLibrary::FrequencyBand> frequencyBands = m_frequencyFile.FrequencyBands();
     std::vector<int> indexes;
     for (int i = 0; i < ui.FrequencyListWidget->count(); i++)
     {

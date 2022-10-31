@@ -453,6 +453,7 @@
     <addaction name="actionStats"/>
     <addaction name="actionPictures"/>
     <addaction name="actionPerformance"/>
+    <addaction name="actionFrequency_Bands"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -526,6 +527,11 @@
   <action name="actionLoad_Database_Folder">
    <property name="text">
     <string>Load Lyon Database Folder</string>
+   </property>
+  </action>
+  <action name="actionFrequency_Bands">
+   <property name="text">
+    <string>Frequency Bands</string>
    </property>
   </action>
  </widget>
