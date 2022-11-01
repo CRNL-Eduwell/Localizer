@@ -78,12 +78,6 @@
     <Filter Include="Header Files\UI">
       <UniqueIdentifier>{ca32cd27-b5fd-43ba-a734-2c3224299e91}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\UI\GUI">
-      <UniqueIdentifier>{cd16a60f-9c5c-4799-8e52-9b4fa62f853a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\UI\GUI\QtUiElement">
-      <UniqueIdentifier>{f8a199f8-bb29-4fbf-8a98-70b2f3b6edfa}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\UI\Draw">
       <UniqueIdentifier>{bcd67d41-b8ef-45dd-8dda-0ccc821e6d4a}</UniqueIdentifier>
     </Filter>
@@ -123,9 +117,6 @@
     <Filter Include="Header Files\Controller\DataProcessing">
       <UniqueIdentifier>{8f661712-a30c-4171-beba-7dbb8b2e1e3c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\UI\GUI\Protocols">
-      <UniqueIdentifier>{6c8bc2da-9d74-496d-b5fb-d470675bce0c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\UI\GUI\Protocols">
       <UniqueIdentifier>{bffa3bb4-771f-4a9f-8cdb-7618e1e2c516}</UniqueIdentifier>
     </Filter>
@@ -146,6 +137,15 @@
     </Filter>
     <Filter Include="Source Files\Data\Filesystem\FileInfo">
       <UniqueIdentifier>{ecf47a51-876b-44f0-a6e6-fdd43d36d8a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\UI\GUI">
+      <UniqueIdentifier>{cd16a60f-9c5c-4799-8e52-9b4fa62f853a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\UI\GUI\QtUiElement">
+      <UniqueIdentifier>{f8a199f8-bb29-4fbf-8a98-70b2f3b6edfa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\UI\GUI\Protocols">
+      <UniqueIdentifier>{6c8bc2da-9d74-496d-b5fb-d470675bce0c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -389,9 +389,6 @@
     <ClCompile Include="FrequencyBand.cpp">
       <Filter>Source Files\Data\FrequencyBand</Filter>
     </ClCompile>
-    <ClCompile Include="patientFolder.cpp">
-      <Filter>Source Files\Data\OldFilesystem</Filter>
-    </ClCompile>
     <ClCompile Include="singleFile.cpp">
       <Filter>Source Files\Data\OldFilesystem</Filter>
     </ClCompile>
@@ -493,6 +490,30 @@
     </ClCompile>
     <ClCompile Include="IEegFileInfo.cpp">
       <Filter>Source Files\Data\Filesystem\FileInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="FrequenciesWindow.cpp">
+      <Filter>Source Files\UI\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="FrequencyWindow.cpp">
+      <Filter>Source Files\UI\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_FrequenciesWindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_FrequencyWindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_FileHealthCheckerWindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_FileHealthCheckerWindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="FileHealthCheckerWindow.cpp">
+      <Filter>Source Files\UI\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol.cpp">
+      <Filter>Source Files\Data\Files\Prov</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -631,6 +652,24 @@
     <CustomBuild Include="IconWindow.h">
       <Filter>Header Files\UI\GUI\Protocols</Filter>
     </CustomBuild>
+    <CustomBuild Include="FileHealthCheckerWindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="FrequenciesWindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="FrequencyWindow.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="FrequenciesWindow.h">
+      <Filter>Header Files\UI\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="FrequencyWindow.h">
+      <Filter>Header Files\UI\GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="FileHealthCheckerWindow.h">
+      <Filter>Header Files\UI\GUI</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_localizer.h">
@@ -726,9 +765,6 @@
     <ClInclude Include="FrequencyBand.h">
       <Filter>Header Files\Data\FrequencyBand</Filter>
     </ClInclude>
-    <ClInclude Include="patientFolder.h">
-      <Filter>Header Files\Data\OldFilesystem</Filter>
-    </ClInclude>
     <ClInclude Include="singleFile.h">
       <Filter>Header Files\Data\OldFilesystem</Filter>
     </ClInclude>
@@ -797,6 +833,18 @@
     </ClInclude>
     <ClInclude Include="IEegFileInfo.h">
       <Filter>Header Files\Data\Filesystem\FileInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_FileHealthCheckerWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_FrequenciesWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_FrequencyWindow.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>Header Files\Data\Files\Prov</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
