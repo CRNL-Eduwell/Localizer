@@ -515,6 +515,18 @@
     <ClCompile Include="Protocol.cpp">
       <Filter>Source Files\Data\Files\Prov</Filter>
     </ClCompile>
+    <ClCompile Include="TrialMatricesProcessor.cpp">
+      <Filter>Source Files\Controller\DataProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="CorrelationMapProcessor.cpp">
+      <Filter>Source Files\Controller\DataProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="EnvplotProcessor.cpp">
+      <Filter>Source Files\Controller\DataProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="BarplotProcessor.cpp">
+      <Filter>Source Files\Controller\DataProcessing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="localizer.qrc">
@@ -845,6 +857,18 @@
     </ClInclude>
     <ClInclude Include="Protocol.h">
       <Filter>Header Files\Data\Files\Prov</Filter>
+    </ClInclude>
+    <ClInclude Include="TrialMatricesProcessor.h">
+      <Filter>Header Files\Controller\DataProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="CorrelationMapsProcessor.h">
+      <Filter>Header Files\Controller\DataProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="EnvplotProcessor.h">
+      <Filter>Header Files\Controller\DataProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="BarplotProcessor.h">
+      <Filter>Header Files\Controller\DataProcessing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

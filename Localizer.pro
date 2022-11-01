@@ -82,6 +82,7 @@ HEADERS += \
     Localizer/AlgorithmCalculator.h \
     Localizer/AlgorithmStrategyFactory.h \
     Localizer/AnalysisFolder.h \
+	Localizer/BarplotProcessor.h \
     Localizer/Bloc.h \
     Localizer/BlocWindow.h \
     Localizer/BrainvisionFileInfo.h \
@@ -89,10 +90,12 @@ HEADERS += \
     Localizer/CleanConnectFile.h \
     Localizer/ConcatenationWorker.h \
     Localizer/ConnectCleaner.h \
+	Localizer/CorrelationMapsProcessor.h \
     Localizer/DataContainer.h \
     Localizer/DeselectableTreeView.h \
     Localizer/EdfFileInfo.h \
     Localizer/ElanFileInfo.h \
+	Localizer/EnvplotProcessor.h \
     Localizer/ErpProcessor.h \
     Localizer/ErpWorker.h \
     Localizer/Event.h \
@@ -132,6 +135,7 @@ HEADERS += \
     Localizer/SubBloc.h \
     Localizer/SubBlocWindow.h \
     Localizer/SubjectFolder.h \
+	Localizer/TrialMatricesProcessor.h
     Localizer/Trigger.h \
     Localizer/TriggerContainer.h \
     Localizer/Utility.h \
@@ -154,6 +158,7 @@ SOURCES += \
     Localizer/AlgorithmCalculator.cpp \
     Localizer/AlgorithmStrategyFactory.cpp \
     Localizer/AnalysisFolder.cpp \
+	Localizer/BarplotProcessor.cpp \
     Localizer/Bloc.cpp \
     Localizer/BlocWindow.cpp \
     Localizer/BrainvisionFileInfo.cpp \
@@ -161,10 +166,12 @@ SOURCES += \
     Localizer/CleanConnectFile.cpp \
     Localizer/ConcatenationWorker.cpp \
     Localizer/ConnectCleaner.cpp \
+	Localizer/CorrelationMapsProcessor.cpp \
     Localizer/DataContainer.cpp \
     Localizer/DeselectableTreeView.cpp \
     Localizer/EdfFileInfo.cpp \
     Localizer/ElanFileInfo.cpp \
+	Localizer/EnvplotProcessor.cpp \
     Localizer/ErpProcessor.cpp \
     Localizer/ErpWorker.cpp \
     Localizer/Event.cpp \
@@ -201,6 +208,7 @@ SOURCES += \
     Localizer/SubBloc.cpp \
     Localizer/SubBlocWindow.cpp \
     Localizer/SubjectFolder.cpp \
+	Localizer/TrialMatricesProcessor.cpp \
     Localizer/Trigger.cpp \
     Localizer/TriggerContainer.cpp \
     Localizer/Utility.cpp \
