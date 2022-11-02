@@ -287,18 +287,21 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
     }
 
     //Process Statistical Files
-    if(a.statFiles && taskStatistics != nullptr)
+    if(a.statFiles)
     {
-        m_triggerContainer->ProcessEventsForExperiment(taskStatistics, 99);
-        if (m_triggerContainer->ProcessedTriggerCount() == 0)
+        if(taskStatistics != nullptr)
         {
-            emit sendLogInfo("No Trigger found for this experiment, aborting trialmats generation");
-        }
-        else
-        {
-            StatisticalFilesProcessor sfp;
-            sfp.Process(m_triggerContainer, myeegContainer, a.smoothingIDToUse, taskStatistics, freqFolder, m_statOption);
-			emit sendLogInfo("Statistical files generated");
+            m_triggerContainer->ProcessEventsForExperiment(taskStatistics, 99);
+            if (m_triggerContainer->ProcessedTriggerCount() == 0)
+            {
+                emit sendLogInfo("No Trigger found for this experiment, aborting trialmats generation");
+            }
+            else
+            {
+                StatisticalFilesProcessor sfp;
+                sfp.Process(m_triggerContainer, myeegContainer, a.smoothingIDToUse, taskStatistics, freqFolder, m_statOption);
+                emit sendLogInfo("Statistical files generated");
+            }
         }
         emit incrementAdavnce(1);
     }
