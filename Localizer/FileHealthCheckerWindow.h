@@ -13,7 +13,7 @@ class FileHealthCheckerWindow : public QDialog
 
 public:
     FileHealthCheckerWindow(SubjectFolder& filesystem, QWidget *parent = nullptr);
-    FileHealthCheckerWindow(std::vector<SubjectFolder*> &filesystems, QWidget *parent = nullptr);
+    FileHealthCheckerWindow(std::vector<SubjectFolder*>& filesystems, QWidget *parent = nullptr);
     ~FileHealthCheckerWindow();
 
 private:
@@ -25,6 +25,6 @@ private:
 private:
     Ui::FileHealthCheckerWindow ui;
     SubjectFolder *m_fileSystem = nullptr;
-    std::vector<SubjectFolder*> m_fileSystems;
+    std::vector<SubjectFolder*>* m_fileSystems = nullptr;
 };
 #endif // FILEHEALTHCHECKERWINDOW_H

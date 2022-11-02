@@ -808,17 +808,17 @@ void Localizer::ProcessMultiFolderAnalysis()
         std::vector<InsermLibrary::FileType> filePriority = std::vector<InsermLibrary::FileType>(m_GeneralOptionsFile->FileExtensionsFavorite());
 
         //Should probably senbd back the struct here and not keep a global variable
-        std::vector<SubjectFolder*> subjects = PrepareDBFolders();
-        if(subjects.size() > 0)
+        m_MultipleSubjects = PrepareDBFolders();
+        if(m_MultipleSubjects.size() > 0)
         {
-            FileHealthCheckerWindow *fileHealthWindow = new FileHealthCheckerWindow(subjects, nullptr);
+            FileHealthCheckerWindow *fileHealthWindow = new FileHealthCheckerWindow(m_MultipleSubjects, nullptr);
             int res = fileHealthWindow->exec();
             if(res == 1)
             {
-                InitMultiSubjectProgresBar(subjects);
+                InitMultiSubjectProgresBar(m_MultipleSubjects);
 
                 thread = new QThread;
-                worker = new MultiSubjectWorker(subjects, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
+                worker = new MultiSubjectWorker(m_MultipleSubjects, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
 
                 //=== Event update displayer
                 connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
@@ -834,16 +834,7 @@ void Localizer::ProcessMultiFolderAnalysis()
                 connect(worker, &IWorker::finished, thread, &QThread::quit);
                 connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
                 connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-                connect(worker, &IWorker::finished, this, [&]
-                {
-                    for(int i = 0;i<subjects.size();i++)
-                    {
-                        delete subjects[i];
-                    }
-                    subjects.clear();
-
-                    isAlreadyRunning = false;
-                });
+                connect(worker, &IWorker::finished, this, &Localizer::CleanUpAfterMultiSubjectAnalysis);
 
                 //=== Launch Thread and lock possible second launch
                 worker->moveToThread(thread);
@@ -1067,4 +1058,15 @@ void Localizer::LoadCCFFile(std::string path, std::vector<std::string> & uncorre
         uncorrectedLabels.push_back(rawLine[1]);
         correctedLabels.push_back(rawLine[2]);
     }
+}
+
+void Localizer::CleanUpAfterMultiSubjectAnalysis()
+{
+    for(int i = 0; i < m_MultipleSubjects.size(); i++)
+    {
+        delete m_MultipleSubjects[i];
+    }
+    m_MultipleSubjects.clear();
+
+    isAlreadyRunning = false;
 }

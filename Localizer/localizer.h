@@ -105,6 +105,7 @@ private slots:
 	void CancelAnalysis();
     void ReceiveElectrodeList(std::vector<std::string> ElectrodeList, std::string ConnectCleanerFile);
     void LoadCCFFile(std::string path, std::vector<std::string> & uncorrectedLabels, std::vector<int> & states, std::vector<std::string> & correctedLabels);
+    void CleanUpAfterMultiSubjectAnalysis();
 
 signals:
     void MontageDone(int);
@@ -121,6 +122,7 @@ private:
     //patientFolder* currentPat = nullptr;
     SubjectFolder* currentPat = nullptr;
 	std::vector<singleFile> currentFiles;
+    std::vector<SubjectFolder*> m_MultipleSubjects;
 	//==Thread and Worker
 	QReadWriteLock m_lockLoop;  
 	QThread* thread = nullptr;

@@ -12,9 +12,9 @@ FileHealthCheckerWindow::FileHealthCheckerWindow(SubjectFolder& filesystem, QWid
     connect(ui.CancelPushButton, &QPushButton::clicked, this, [&]{ close(); });
 }
 
-FileHealthCheckerWindow::FileHealthCheckerWindow(std::vector<SubjectFolder*> &filesystems, QWidget *parent) : QDialog(parent)
+FileHealthCheckerWindow::FileHealthCheckerWindow(std::vector<SubjectFolder*>& filesystems, QWidget *parent) : QDialog(parent)
 {
-    m_fileSystems = filesystems;
+    m_fileSystems = &filesystems;
 
     ui.setupUi(this);
     std::vector<std::pair<std::string, std::string>> errors = ParseFileSystemsData();
@@ -70,9 +70,9 @@ std::vector<std::pair<std::string, std::string>> FileHealthCheckerWindow::ParseF
 std::vector<std::pair<std::string, std::string>> FileHealthCheckerWindow::ParseFileSystemsData()
 {
     std::vector<std::pair<std::string, std::string>> errorsToDisplay;
-    for(int k = 0; k < m_fileSystems.size(); k++)
+    for(int k = 0; k < m_fileSystems->size(); k++)
     {
-        SubjectFolder* f = m_fileSystems[k];
+        SubjectFolder* f = (*m_fileSystems)[k];
 
         bool atLeastOneError = false, firstError = true;
         for(int i = 0; i < f->ExperimentFolders().size(); i++)
@@ -139,15 +139,23 @@ void FileHealthCheckerWindow::RemoveIssuesAndValidate()
     }
     else
     {
-        for(int i = 0; i < m_fileSystems.size(); i++)
+        for(int i = 0; i < m_fileSystems->size(); i++)
         {
-            SubjectFolder* f = m_fileSystems[i];
+            SubjectFolder* f = (*m_fileSystems)[i];
             for(int j = f->ExperimentFolders().size() - 1; j >= 0; j--)
             {
                 if(!f->ExperimentFolders()[j].IsValid())
                 {
                     f->ExperimentFolders().erase(f->ExperimentFolders().begin() + j);
                 }
+            }
+        }
+
+        for(int i = m_fileSystems->size() - 1; i >= 0; i--)
+        {
+            if(!(*m_fileSystems)[i]->IsValid())
+            {
+                m_fileSystems->erase(m_fileSystems->begin() + i);
             }
         }
     }

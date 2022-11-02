@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>197</width>
+    <width>211</width>
     <height>566</height>
    </rect>
   </property>
@@ -36,6 +36,13 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="SelectUnselectAllCheckBox">
+         <property name="text">
+          <string>Select / Unselect all</string>
          </property>
         </widget>
        </item>
