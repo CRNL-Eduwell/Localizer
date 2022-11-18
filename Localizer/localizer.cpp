@@ -1,4 +1,5 @@
 #include "localizer.h"
+#include "FrequenciesWindow.h"
 
 Localizer::Localizer(QWidget *parent) : QMainWindow(parent)
 {
@@ -31,15 +32,14 @@ void Localizer::ReSetupGUI()
 {
     m_GeneralOptionsFile = new InsermLibrary::GeneralOptionsFile();
 	m_GeneralOptionsFile->Load();
-    m_frequencyFile = new InsermLibrary::FrequencyFile();
-    m_frequencyFile->Load();
+    m_frequencyFile = InsermLibrary::FrequencyFile();
+    m_frequencyFile.Load();
 	//==
-    LoadFrequencyBandsUI(m_frequencyFile->FrequencyBands());
+    LoadFrequencyBandsUI(m_frequencyFile.FrequencyBands());
 	//==
     optPerf = new optionsPerf();
     optStat = new optionsStats();
     picOpt = new picOptions();
-    //optLoca = new ProtocolWindow(); //TODO : Need to make the new gui for hibop provfiles
 
     ui.progressBar->reset();
 }
@@ -124,6 +124,19 @@ void Localizer::ConnectMenuBar()
     connect(openPicMenu, &QAction::triggered, this, [&] { picOpt->exec(); });
     QAction* openPerfMenu = ui.menuConfiguration->actions().at(4);
     connect(openPerfMenu, &QAction::triggered, this, [&] { optPerf->exec(); });
+    QAction* openFreqBandMenu = ui.menuConfiguration->actions().at(5);
+    connect(openFreqBandMenu, &QAction::triggered, this, [&]
+    {
+        FrequenciesWindow* frequenciesWindow = new FrequenciesWindow(this);
+        connect(frequenciesWindow, &FrequenciesWindow::accepted, this, [&]
+        {
+            m_frequencyFile = InsermLibrary::FrequencyFile();
+            m_frequencyFile.Load();
+            LoadFrequencyBandsUI(m_frequencyFile.FrequencyBands());
+        });
+        frequenciesWindow->setAttribute(Qt::WA_DeleteOnClose);
+        frequenciesWindow->show();
+    });
     //===Aide
     QAction* openAbout = ui.menuHelp->actions().at(0);
     connect(openAbout, &QAction::triggered, this, [&]
@@ -456,7 +469,7 @@ void Localizer::InitMultiSubjectProgresBar(std::vector<SubjectFolder*> subjects)
 
 std::vector<InsermLibrary::FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOption()
 {
-    std::vector<InsermLibrary::FrequencyBand> frequencyBands = m_frequencyFile->FrequencyBands();
+    std::vector<InsermLibrary::FrequencyBand> frequencyBands = m_frequencyFile.FrequencyBands();
     std::vector<int> indexes;
     for (int i = 0; i < ui.FrequencyListWidget->count(); i++)
     {
@@ -795,17 +808,17 @@ void Localizer::ProcessMultiFolderAnalysis()
         std::vector<InsermLibrary::FileType> filePriority = std::vector<InsermLibrary::FileType>(m_GeneralOptionsFile->FileExtensionsFavorite());
 
         //Should probably senbd back the struct here and not keep a global variable
-        std::vector<SubjectFolder*> subjects = PrepareDBFolders();
-        if(subjects.size() > 0)
+        m_MultipleSubjects = PrepareDBFolders();
+        if(m_MultipleSubjects.size() > 0)
         {
-            FileHealthCheckerWindow *fileHealthWindow = new FileHealthCheckerWindow(subjects, nullptr);
+            FileHealthCheckerWindow *fileHealthWindow = new FileHealthCheckerWindow(m_MultipleSubjects, nullptr);
             int res = fileHealthWindow->exec();
             if(res == 1)
             {
-                InitMultiSubjectProgresBar(subjects);
+                InitMultiSubjectProgresBar(m_MultipleSubjects);
 
                 thread = new QThread;
-                worker = new MultiSubjectWorker(subjects, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
+                worker = new MultiSubjectWorker(m_MultipleSubjects, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
 
                 //=== Event update displayer
                 connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
@@ -821,16 +834,7 @@ void Localizer::ProcessMultiFolderAnalysis()
                 connect(worker, &IWorker::finished, thread, &QThread::quit);
                 connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
                 connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-                connect(worker, &IWorker::finished, this, [&]
-                {
-                    for(int i = 0;i<subjects.size();i++)
-                    {
-                        delete subjects[i];
-                    }
-                    subjects.clear();
-
-                    isAlreadyRunning = false;
-                });
+                connect(worker, &IWorker::finished, this, &Localizer::CleanUpAfterMultiSubjectAnalysis);
 
                 //=== Launch Thread and lock possible second launch
                 worker->moveToThread(thread);
@@ -1054,4 +1058,15 @@ void Localizer::LoadCCFFile(std::string path, std::vector<std::string> & uncorre
         uncorrectedLabels.push_back(rawLine[1]);
         correctedLabels.push_back(rawLine[2]);
     }
+}
+
+void Localizer::CleanUpAfterMultiSubjectAnalysis()
+{
+    for(int i = 0; i < m_MultipleSubjects.size(); i++)
+    {
+        delete m_MultipleSubjects[i];
+    }
+    m_MultipleSubjects.clear();
+
+    isAlreadyRunning = false;
 }

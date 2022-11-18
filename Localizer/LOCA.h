@@ -27,6 +27,10 @@
 #include "../../Framework/Framework/Pearson.h"
 
 #include <filesystem>
+#include "EnvplotProcessor.h"
+#include "BarplotProcessor.h"
+#include "TrialMatricesProcessor.h"
+#include "CorrelationMapsProcessor.h"
 #include "StatisticalFilesProcessor.h"
 
 namespace InsermLibrary
@@ -53,36 +57,6 @@ namespace InsermLibrary
 		//==
         std::string CreateFrequencyFolder(eegContainer *myeegContainer, FrequencyBand currentFreq);
         ProvFile* LoadProvForTask(std::string taskName, std::string analysisName = "");
-        bool ShouldPerformBarPlot(std::string locaName);
-        bool IsBarPlot(std::string provFile);
-		//==
-        void Barplot(eegContainer *myeegContainer, ProvFile* myprovFile, std::string freqFolder);
-        std::string GetBarplotMapsFolder(std::string freqFolder, ProvFile* myprovFile);
-        std::string PrepareFolderAndPathsBar(std::string freqFolder, int dsSampFreq);
-        std::vector<PVALUECOORD> ProcessKruskallStatistic(vec3<float> &bigData, eegContainer *myeegContainer, ProvFile* myprovFile, std::string freqFolder);
-		//==
-        void Env2plot(eegContainer *myeegContainer, ProvFile* myprovFile, std::string freqFolder);
-        std::string GetEnv2PlotMapsFolder(std::string freqFolder, ProvFile* myprovFile);
-        std::string PrepareFolderAndPathsPlot(std::string freqFolder, int dsSampFreq);
-
-		//==
-        void TimeTrialMatrices(eegContainer *myeegContainer, ProvFile* myprovFile, std::string freqFolder);
-        std::string GetTrialmatFolder(ProvFile* myprovFile, std::string freqFolder);
-        std::string PrepareFolderAndPathsTrial(std::string freqFolder, int dsSampFreq);
-        bool ShouldPerformTrialmatStats(std::string locaName);
-        std::vector<PVALUECOORD> ProcessWilcoxonStatistic(vec3<float> &bigData, eegContainer *myeegContainer, ProvFile* myprovFile, std::string freqFolder);
-
-		//==
-		void CorrelationMaps(eegContainer* myeegContainer, std::string freqFolder);
-        std::string DefineMapPath(std::string freqFolder, int dsSampFreq, int windowSizeInSec);
-        std::vector<int> DefineCorrelationWindowsCenter(int halfWindowSizeInSample, int fileSizeInSample);
-        std::vector<std::vector<float>> ComputeElectrodesDistances(eegContainer* myeegContainer);
-        std::vector<std::vector<float>> ComputeElectrodesDistancesFromPts(eegContainer* myeegContainer);
-        float ComputeSurrogate(int electrodeCount, int triggerCount, int surrogateCount, vec2<float> distances, vec3<float> eegData);
-		void DrawCorrelationCircle(QPainter* painterChanel, eegContainer* myeegContainer, int halfwidth, int halfheight, int offset);
-		void DrawCorrelationOnCircle(QPainter* painterChanel, int halfheight, int offset, std::vector<std::vector<float>> dist, std::vector<std::vector<float>> corre);
-		int GetIndexFromElectrodeLabel(std::string myString);
-		QColor GetColorFromLabel(std::string label, std::string& memoryLabel);
 
 	signals:
 		void sendLogInfo(QString);
@@ -96,7 +70,6 @@ namespace InsermLibrary
 		statOption* m_statOption;
 		picOption* m_picOption;
 		std::string m_PtsFilePath = "";
-		int m_colorId = -1;
 	};
 }
 

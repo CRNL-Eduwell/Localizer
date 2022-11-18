@@ -7,6 +7,7 @@ ChooseLocaWindow::ChooseLocaWindow(QWidget *parent) : QDialog(parent)
 	QStringList provFiles = GetFilesFromRootFolder("*.prov");
 	LoadProtocolsInUI(provFiles);
 
+    connect(ui.SelectUnselectAllCheckBox, &QCheckBox::clicked, this, &ChooseLocaWindow::SelectUnselectAll);
     connect(ui.ValidatePushButton, &QPushButton::clicked, this, &ChooseLocaWindow::ValidateExperimentList);
 }
 
@@ -44,6 +45,15 @@ Qt::CheckState ChooseLocaWindow::GetDefaultState(QString label)
         return Qt::CheckState::Checked;
     else
         return Qt::CheckState::Unchecked;
+}
+
+void ChooseLocaWindow::SelectUnselectAll(bool checked)
+{
+    Qt::CheckState checkSate = checked ? Qt::CheckState::Checked : Qt::CheckState::Unchecked;
+    for(int i = 0; i < ui.listProv->count(); i++)
+    {
+        ui.listProv->item(i)->setCheckState(checkSate);
+    }
 }
 
 void ChooseLocaWindow::ValidateExperimentList()

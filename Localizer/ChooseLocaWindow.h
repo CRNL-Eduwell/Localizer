@@ -26,6 +26,9 @@ private:
 	Qt::CheckState GetDefaultState(QString label);
 	void ValidateExperimentList();
 
+private slots:
+    void SelectUnselectAll(bool checked);
+
 private:
 	std::vector<std::string> m_ElementsToLookFor;
 	QString m_provFolder = QCoreApplication::applicationDirPath() + "/Resources/Config/Prov";
