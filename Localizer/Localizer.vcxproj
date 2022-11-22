@@ -72,8 +72,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-    <IncludePath>D:\Users\Florian\Documents\Arbeit\Repository\C++\EEGFormat\EEGFormat;D:\Users\Florian\Documents\Arbeit\Repository\C++\Framework\Framework;D:\Users\Florian\Documents\Arbeit\Software\DLL\FFTW 3.3.4 x64;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Users\Florian\Documents\Arbeit\Software\DLL\FFTW 3.3.4 x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Florian\Documents\Arbeit\Repository\C++\EEGFormat\EEGFormat;C:\Users\Florian\Documents\Arbeit\Repository\C++\Framework\Framework;C:\Users\Florian\Documents\Arbeit\Software\DLL\FFTW 3.3.4 x64;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Florian\Documents\Arbeit\Software\DLL\FFTW 3.3.4 x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -143,7 +143,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>D:\Users\Florian\Documents\Arbeit\Software\DLL\FFTW 3.3.4 x64\libfftw3-3.lib;D:\Users\Florian\Documents\Arbeit\Software\DLL\FFTW 3.3.4 x64\libfftw3f-3.lib;D:\Users\Florian\Documents\Arbeit\Software\DLL\FFTW 3.3.4 x64\libfftw3l-3.lib;Qt6EntryPoint.lib;Qt6Gui.lib;Qt6Core.lib;Qt6UiTools.lib;Qt6Widgets.lib;Qt6Core5Compat.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Users\Florian\Documents\Arbeit\Software\DLL\FFTW 3.3.4 x64\libfftw3-3.lib;C:\Users\Florian\Documents\Arbeit\Software\DLL\FFTW 3.3.4 x64\libfftw3f-3.lib;C:\Users\Florian\Documents\Arbeit\Software\DLL\FFTW 3.3.4 x64\libfftw3l-3.lib;Qt6EntryPoint.lib;Qt6Gui.lib;Qt6Core.lib;Qt6UiTools.lib;Qt6Widgets.lib;Qt6Core5Compat.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -159,7 +159,7 @@
     <ClCompile Include="CleanConnectFile.cpp" />
     <ClCompile Include="ConcatenationWorker.cpp" />
     <ClCompile Include="ConnectCleaner.cpp" />
-    <ClCompile Include="CorrelationMapProcessor.cpp" />
+    <ClCompile Include="CorrelationMapsProcessor.cpp" />
     <ClCompile Include="DataContainer.cpp" />
     <ClCompile Include="DeselectableTreeView.cpp" />
     <ClCompile Include="displayProv.cpp" />

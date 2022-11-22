@@ -9,6 +9,7 @@
 #include "eegContainerParameters.h"
 #include "DataContainer.h"
 #include "Trigger.h"
+#include "Utility.h"
 
 #include <iostream>
 #include <vector>

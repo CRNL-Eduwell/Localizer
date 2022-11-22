@@ -6,7 +6,7 @@
 #include <QDir>
 #include <QThread>
 
-#include "Wrapper.h"
+#include "../../../Framework/Framework/Wrapper.h"
 
 #include "LOCA.h"
 

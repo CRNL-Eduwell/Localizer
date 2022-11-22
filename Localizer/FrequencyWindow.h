@@ -3,6 +3,7 @@
 
 #include "ui_FrequencyWindow.h"
 #include <QtWidgets/QDialog>
+#include <QLineEdit>
 #include "FrequencyBand.h"
 
 class FrequencyWindow : public QDialog
