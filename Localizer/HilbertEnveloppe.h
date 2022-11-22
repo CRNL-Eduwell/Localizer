@@ -4,7 +4,7 @@
 #include <iostream>
 #include "IAlgorithmStrategy.h"
 #include "eegContainer.h"
-#include "../../../Framework/Framework/Convolution.h"
+#include "./../../Framework/Framework/Convolution.h"
 
 namespace Algorithm
 {

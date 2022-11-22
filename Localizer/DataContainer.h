@@ -1,8 +1,8 @@
 #ifndef _DATACONTAINER_H
 #define _DATACONTAINER_H
 
-#include "../../../EEGFormat/EEGFormat/IFile.h"
-#include "../../../Framework/Framework/FirBandPass.h"	
+#include "./../../EEGFormat/EEGFormat/IFile.h"
+#include "./../../Framework/Framework/FirBandPass.h"
 
 namespace InsermLibrary
 {
