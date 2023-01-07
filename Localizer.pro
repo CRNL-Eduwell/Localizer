@@ -8,8 +8,13 @@ CONFIG += c++1z
 CONFIG -= console
 QT += core gui widgets core5compat
 
+COMPUTER = "flo_win_home" # ben_win_work, flo_win_home, flo_mac_work, ben_linux_work
+
 ####################################### COMPILATION FLAGS
-#Windows is done by VisualStudio
+win32{
+    QMAKE_CXXFLAGS += /O2 /openmp /W3
+    DEFINES += _CRT_SECURE_NO_WARNINGS
+}
 unix:!macx{
     QMAKE_CXXFLAGS += -fopenmp -O3 -fpermissive
     QMAKE_CXXFLAGS_WARN_ON += -Wno-maybe-uninitialized -Wno-unused-result -Wno-unused-function -Wno-unused-parameter -Wno-comment -Wno-sign-compare -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-local-typedefs -Wno-reorder -Wno-switch #-Wfatal-errors -Werror
@@ -21,35 +26,80 @@ macx{
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.15 #allow acces to C++ 17 std::filesystem
 }
 
-macx{
-####################################### INCLUDEPATH
-    INCLUDEPATH += "/usr/local/Cellar/boost/1.76.0/include"
-    INCLUDEPATH += "/usr/local/Cellar/fftw/3.3.8_2/include"
-    INCLUDEPATH += "/Users/florian/Documents/Arbeit/Repository/C++/EEGFormat/EEGFormat"
-    INCLUDEPATH += "/Users/florian/Documents/Arbeit/Repository/C++/Framework/Framework"
-    INCLUDEPATH += "/Users/florian/Documents/Arbeit/Repository/C++/Localizer/Localizer"
+INCLUDE_BOOST = ""
+INCLUDE_FFTW = ""
+INCLUDE_EEGFORMAT = ""
+INCLUDE_FRAMEWORK = ""
+INCLUDE_LOCALIZER = ""
+LIB_BOOST = ""
+LIB_FFTW = ""
+LIB_EEGFORMAT = ""
+LIB_FRAMEWORK = ""
+LIB_MISC = ""
 
-####################################### LIBRAIRIES
-    LIBS += -L"/usr/local/Cellar/boost/1.76.0/lib" -lboost_filesystem
-    LIBS += -L"/usr/local/Cellar/fftw/3.3.8_2/lib" -lfftw3f.3 -lfftw3f_threads.3
-    LIBS += -L"/Users/florian/Documents/Arbeit/Repository/C++/EEGFormat/EEGFormat" -lEEGFormat
-    LIBS += -L"/Users/florian/Documents/Arbeit/Repository/C++/Framework/Framework" -lFramework
+equals(COMPUTER, "ben_win_work"){
+    INCLUDE_BOOST = "C:/boost/boost_1_78_0"
+    INCLUDE_FFTW = "D:/HBP/FFTW_3.3.4_x64"
+    INCLUDE_EEGFORMAT = "D:/HBP/EEGFormat/EEGFormat/EEGFormat"
+    INCLUDE_FRAMEWORK = "D:/HBP/Framework/Framework"
+    INCLUDE_LOCALIZER = "D:/HBP/Localizer"
+    LIB_BOOST = -L"C:/boost/boost_1_78_0/lib64-msvc-14.2" -l"libboost_filesystem-vc142-mt-x64-1_78"
+    LIB_FFTW = -L"D:/HBP/FFTW_3.3.4_x64" -llibfftw3f-3
+    LIB_EEGFORMAT = -L"D:/HBP/EEGFormat/EEGFormat/x64/Release/" -lEEGFormat
+    LIB_FRAMEWORK = -L"D:/HBP/Framework_x64/release" -lFramework
+    LIB_MISC = Comdlg32.lib shell32.lib
 }
 
-unix:!macx{
-####################################### INCLUDEPATH
-    INCLUDEPATH += "/home/bbontemps/software/boost_1_70_0"
-    INCLUDEPATH += "/home/bbontemps/software/EEGFormat/EEGFormat"
-    INCLUDEPATH += "/home/bbontemps/software/Framework/Framework"
-    INCLUDEPATH += "/home/bbontemps/software/Localizer/Localizer"
-
-####################################### LIBRAIRIES
-    LIBS += -L"/home/bbontemps/software/boost_1_70_0" -lboost_filesystem
-    LIBS += -L"/home/bbontemps/software/EEGFormat/EEGFormat" -lEEGFormat
-    LIBS += -L"/home/bbontemps/software/Framework_x64" -lFramework
-    LIBS += -L"/usr/local/lib" -lfftw3f -lfftw3f_threads
-    LIBS += -fopenmp
+equals(COMPUTER, "flo_win_home"){
+    INCLUDE_BOOST = "" #C:/boost/boost_1_78_0" ###################################################################################### DOME
+    INCLUDE_FFTW = "C:/Users/Florian/Documents/Arbeit/Software/DLL/FFTW_3.3.4_x64"
+    INCLUDE_EEGFORMAT = "C:/Users/Florian/Documents/Arbeit/Repository/C++/EEGFormat/EEGFormat"
+    INCLUDE_FRAMEWORK = "C:/Users/Florian/Documents/Arbeit/Repository/C++/Framework/Framework"
+    INCLUDE_LOCALIZER = "C:/Users/Florian/Documents/Arbeit/Repository/C++/Localizer"
+    LIB_BOOST = ""#-L"C:/boost/boost_1_78_0/lib64-msvc-14.2" -l"libboost_filesystem-vc142-mt-x64-1_78"######### DOME
+    LIB_FFTW = -L"C:/Users/Florian/Documents/Arbeit/Software/DLL/FFTW_3.3.4_x64" -llibfftw3f-3
+    LIB_EEGFORMAT = -L"C:/Users/Florian/Documents/Arbeit/Repository/C++/EEGFormat/x64/Release/" -lEEGFormat
+    LIB_FRAMEWORK = -L"C:/Users/Florian/Documents/Arbeit/Repository/C++/Framework/x64/Release/" -lFramework
+    LIB_MISC = Comdlg32.lib shell32.lib
 }
+
+equals(COMPUTER, "flo_mac_work"){
+    INCLUDE_BOOST = "/usr/local/Cellar/boost/1.76.0/include"
+    INCLUDE_FFTW = "/usr/local/Cellar/fftw/3.3.8_2/include"
+    INCLUDE_EEGFORMAT = "/Users/florian/Documents/Arbeit/Repository/C++/EEGFormat/EEGFormat"
+    INCLUDE_FRAMEWORK = "/Users/florian/Documents/Arbeit/Repository/C++/Framework/Framework"
+    INCLUDE_LOCALIZER = "/Users/florian/Documents/Arbeit/Repository/C++/Localizer/Localizer"
+    LIB_BOOST = -L"/usr/local/Cellar/boost/1.76.0/lib" -lboost_filesystem
+    LIB_FFTW = -L"/usr/local/Cellar/fftw/3.3.8_2/lib" -lfftw3f.3 -lfftw3f_threads.3
+    LIB_EEGFORMAT = -L"/Users/florian/Documents/Arbeit/Repository/C++/EEGFormat/EEGFormat" -lEEGFormat
+    LIB_FRAMEWORK = -L"/Users/florian/Documents/Arbeit/Repository/C++/Framework/Framework" -lFramework
+    LIB_MISC = ""
+}
+
+equals(COMPUTER, "ben_linux_work"){
+    INCLUDE_BOOST = ""
+    INCLUDE_FFTW = ""
+    INCLUDE_EEGFORMAT = "/home/hbp/software/EEGFormat/EEGFormat"
+    INCLUDE_FRAMEWORK = "/home/hbp/software/Framework/Framework"
+    INCLUDE_LOCALIZER = "/home/hbp/software/Localizer/Localizer"
+    LIB_BOOST = -lboost_filesystem
+    LIB_FFTW = -L"/usr/local/lib" -lfftw3f -lfftw3f_threads
+    LIB_EEGFORMAT = -L"/home/hbp/software/EEGFormat/EEGFormat" -lEEGFormat
+    LIB_FRAMEWORK = -L"/home/hbp/software/Framework_x64" -lFramework
+    LIB_MISC = -fopenmp
+}
+
+INCLUDEPATH += $$INCLUDE_BOOST
+INCLUDEPATH += $$INCLUDE_FFTW
+INCLUDEPATH += $$INCLUDE_EEGFORMAT
+INCLUDEPATH += $$INCLUDE_FRAMEWORK
+INCLUDEPATH += $$INCLUDE_LOCALIZER
+
+LIBS += $$LIB_BOOST
+LIBS += $$LIB_FFTW
+LIBS += $$LIB_EEGFORMAT
+LIBS += $$LIB_FRAMEWORK
+LIBS += $$LIB_MISC
 
 ####################################### PROJECT FILES
 RESOURCES += \
@@ -122,7 +172,6 @@ HEADERS += \
     Localizer/LOCA.h \
     Localizer/MicromedFileInfo.h \
     Localizer/MultiSubjectWorker.h \
-    Localizer/PROVParameters.h \
     Localizer/PatientFolderWorker.h \
     Localizer/Protocol.h \
     Localizer/ProtocolFile.h \

@@ -518,13 +518,13 @@
     <ClCompile Include="TrialMatricesProcessor.cpp">
       <Filter>Source Files\Controller\DataProcessing</Filter>
     </ClCompile>
-    <ClCompile Include="CorrelationMapProcessor.cpp">
-      <Filter>Source Files\Controller\DataProcessing</Filter>
-    </ClCompile>
     <ClCompile Include="EnvplotProcessor.cpp">
       <Filter>Source Files\Controller\DataProcessing</Filter>
     </ClCompile>
     <ClCompile Include="BarplotProcessor.cpp">
+      <Filter>Source Files\Controller\DataProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="CorrelationMapsProcessor.cpp">
       <Filter>Source Files\Controller\DataProcessing</Filter>
     </ClCompile>
   </ItemGroup>

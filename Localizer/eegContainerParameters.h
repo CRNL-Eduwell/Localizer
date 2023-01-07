@@ -3,8 +3,6 @@
 
 #include <iostream>
 #include <vector>
-#include "Utility.h"
-#include "ITrigger.h"
 
 namespace InsermLibrary
 {

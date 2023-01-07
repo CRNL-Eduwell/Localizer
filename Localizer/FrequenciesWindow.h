@@ -4,6 +4,9 @@
 #include "ui_FrequenciesWindow.h"
 #include <QtWidgets/QDialog>
 #include "FrequencyFile.h"
+#include <QListWidgetItem>
+#include <iostream>
+#include <vector>
 
 class FrequenciesWindow : public QDialog
 {
