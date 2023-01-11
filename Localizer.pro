@@ -8,7 +8,7 @@ CONFIG += c++1z
 CONFIG -= console
 QT += core gui widgets core5compat
 
-COMPUTER = "flo_win_home" # ben_win_work, flo_win_home, flo_mac_work, ben_linux_work
+COMPUTER = "flo_mac_work" # ben_win_work, flo_win_home, flo_mac_work, ben_linux_work
 
 ####################################### COMPILATION FLAGS
 win32{
@@ -64,13 +64,13 @@ equals(COMPUTER, "flo_win_home"){
 }
 
 equals(COMPUTER, "flo_mac_work"){
-    INCLUDE_BOOST = "/usr/local/Cellar/boost/1.76.0/include"
-    INCLUDE_FFTW = "/usr/local/Cellar/fftw/3.3.8_2/include"
+    INCLUDE_BOOST = "/opt/homebrew/Cellar/boost/1.80.0/include"
+    INCLUDE_FFTW = "/opt/homebrew/Cellar/fftw/3.3.10_1/include"
     INCLUDE_EEGFORMAT = "/Users/florian/Documents/Arbeit/Repository/C++/EEGFormat/EEGFormat"
     INCLUDE_FRAMEWORK = "/Users/florian/Documents/Arbeit/Repository/C++/Framework/Framework"
     INCLUDE_LOCALIZER = "/Users/florian/Documents/Arbeit/Repository/C++/Localizer/Localizer"
-    LIB_BOOST = -L"/usr/local/Cellar/boost/1.76.0/lib" -lboost_filesystem
-    LIB_FFTW = -L"/usr/local/Cellar/fftw/3.3.8_2/lib" -lfftw3f.3 -lfftw3f_threads.3
+    LIB_BOOST = -L"/opt/homebrew/Cellar/boost/1.80.0/lib" -lboost_filesystem
+    LIB_FFTW = -L"/opt/homebrew/Cellar/fftw/3.3.10_1/lib" -lfftw3f.3 -lfftw3f_threads.3
     LIB_EEGFORMAT = -L"/Users/florian/Documents/Arbeit/Repository/C++/EEGFormat/EEGFormat" -lEEGFormat
     LIB_FRAMEWORK = -L"/Users/florian/Documents/Arbeit/Repository/C++/Framework/Framework" -lFramework
     LIB_MISC = ""
