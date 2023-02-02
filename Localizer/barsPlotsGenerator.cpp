@@ -156,6 +156,8 @@ void InsermLibrary::DrawbarsPlots::drawBars::drawDataOnTemplate(vec3<float> &big
 					}
 					countBipole++;
 
+                    //patch for correct positionning of electrodes bipole. need a correct do over
+                    int electrodeIdNumber = myeegContainer->electrodes[i].id[j];
 					//Loop accross conditions
 					for (int k = 0; k < nbRow; k++)
 					{
@@ -209,7 +211,7 @@ void InsermLibrary::DrawbarsPlots::drawBars::drawDataOnTemplate(vec3<float> &big
 
 					painter->setPen(QColor(255, 0, 255, 255)); //pink petant
 					painter->drawText((Width * 0.04) + ((0.296875 * Width) * (i % 3)), (Heigth * 0.107) + (Heigth * 0.0203) + 
-									  (Heigth * 0.0406 * (j)), QString().setNum(round(maxCurveLegend)));
+                                      (Heigth * 0.0406 * (electrodeIdNumber)), QString().setNum(round(maxCurveLegend)));
 					painter->setPen(QColor(0, 0, 0, 255)); //noir
 
 				   // 20 => (0.01041666 * Width) Scr width 1920
@@ -219,7 +221,7 @@ void InsermLibrary::DrawbarsPlots::drawBars::drawDataOnTemplate(vec3<float> &big
 					//450 = (0.234375 * Width) Scr width 1920
 					int coeffEsp = ceil((0.234375 * Width) / nbRow);
 					double x = (Width * 0.0586) + ((0.296875 * Width) * (i % 3));
-					double y = (Heigth * 0.107) + (Heigth * 0.0173) + (Heigth * 0.0406 * (j));
+                    double y = (Heigth * 0.107) + (Heigth * 0.0173) + (Heigth * 0.0406 * (electrodeIdNumber));
 
 					bool firstE = false;
 					for (int k = 0; k < nbRow; k++)
@@ -287,7 +289,7 @@ void InsermLibrary::DrawbarsPlots::drawBars::drawDataOnTemplate(vec3<float> &big
 
 	pixmap->save(tifName, "JPG");
 
-	delete windowSam;
+    delete[] windowSam;
 }
 
 QString InsermLibrary::DrawbarsPlots::drawBars::createPicPath(std::string picFolder, eegContainer* myeegContainer, int idElec)
@@ -574,7 +576,7 @@ void InsermLibrary::DrawbarsPlots::drawPlots::drawDataOnTemplate(vec3<float> &bi
 
 	pixmap->save(tifName, "JPG");
 
-	delete windowSam;
+    delete[] windowSam;
 }
 
 QString InsermLibrary::DrawbarsPlots::drawPlots::createPicPath(std::string picFolder, eegContainer* myeegContainer, int cards2Draw, int nbFigureDrawn)

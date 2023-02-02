@@ -83,6 +83,8 @@ void CleanConnectFile::LoadDataInModel(const std::vector<std::string> & labels, 
         check_item->setFlags(check_item->flags() ^ Qt::ItemIsEditable); // Item not editable since we have correctedLabel_item
 
         QStandardItem *correctedLabel_item = new QStandardItem(CorrectElectrodeNaming(correctedLabels[i], ShouldCorrectNaming));
+        correctedLabel_item->setCheckable(false);
+
         m_ItemModel->setItem(static_cast<int>(i), 0, check_item);
         m_ItemModel->setItem(static_cast<int>(i), 1, correctedLabel_item);
     }
