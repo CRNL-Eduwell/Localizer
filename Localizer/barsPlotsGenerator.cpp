@@ -30,7 +30,8 @@ void InsermLibrary::DrawbarsPlots::baseCanvas::drawTemplate(InsermLibrary::ProvF
 	{
 		//Write legend
 		int s_x = (Width * 0.0586) + ((0.296875 * Width) * (i % 3));
-		int s_y = Heigth * 0.0325;
+        int s_y = (Heigth * 0.0325) + 50;
+        int coeffEsp = ceil((0.234375 * Width) / nbRow);
 
 		for (int j = 0; j < nbRow; j++)
 		{
@@ -49,14 +50,15 @@ void InsermLibrary::DrawbarsPlots::baseCanvas::drawTemplate(InsermLibrary::ProvF
 				painter.setPen(QColor(0, 0, 0, 255)); //black
 				break;
 			}
-			painter.drawText(s_x, s_y, widthLeg, heigthLeg, Qt::AlignLeft | Qt::AlignTop, myprovFile->Blocs()[j].MainSubBloc().MainEvent().Name().c_str());
-			s_y = s_y + (0.021994147797 * Heigth);   //25; Heig = 1136
 
-			if ((j + 1) % 3 == 0)
-			{
-				s_x = s_x + ((0.25 * Width) / nbColLegend); //480 = 0.25 * Width (Scr width = 1920)
-				s_y = Heigth * 0.0325;
-			}
+            painter.save();
+            painter.translate(s_x, s_y);
+            painter.rotate(-45);
+            painter.drawText(0, 0, widthLeg, heigthLeg, Qt::AlignLeft | Qt::AlignTop, myprovFile->Blocs()[j].MainSubBloc().MainEvent().Name().c_str());
+            painter.rotate(45);
+            painter.restore();
+
+            s_x = s_x + coeffEsp;
 		}
 
 		//On repasse en noir

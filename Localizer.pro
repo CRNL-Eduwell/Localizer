@@ -71,8 +71,8 @@ equals(COMPUTER, "flo_win_work"){
     INCLUDE_LOCALIZER = "D:/Users/Florian/Documents/Arbeit/Repository/C++/Localizer"
     LIB_BOOST = ""
     LIB_FFTW = -L"D:/Users/Florian/Documents/Arbeit/Software/DLL/FFTW_3.3.4_x64" -llibfftw3f-3
-    LIB_EEGFORMAT = -L"D:/Users/Florian/Documents/Arbeit/Repository/C++/EEGFormat/x64/Debug/" -lEEGFormat
-    LIB_FRAMEWORK = -L"D:/Users/Florian/Documents/Arbeit/Repository/C++/Framework/x64/Debug/" -lFramework
+    LIB_EEGFORMAT = -L"D:/Users/Florian/Documents/Arbeit/Repository/C++/EEGFormat/x64/Release/" -lEEGFormat
+    LIB_FRAMEWORK = -L"D:/Users/Florian/Documents/Arbeit/Repository/C++/Framework/x64/Release/" -lFramework
     LIB_MISC = Comdlg32.lib shell32.lib
 }
 
