@@ -593,10 +593,10 @@ void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(std::vector<std::
     }
     outputFile->Electrodes(bipolesList);
     //Define type of elec : label + "EEG" + "uV"
-    outputFile->Data(EEGFormat::DataConverterType::Digital).resize((int)bipolesList.size(), std::vector<float>(ChannelDataToWrite[0].size()));
+    outputFile->Data(EEGFormat::DataConverterType::Digital).resize((int)bipolesList.size(), std::vector<float>(ChannelDataToWrite[0].size() + 10));
     for (int i = 0; i < ChannelDataToWrite.size(); i++)
     {
-        for (int j = 0; j < ChannelDataToWrite[i].size(); j++)
+        for (int j = 0; j < ChannelDataToWrite[i].size() - 10; j++)
         {
             outputFile->Data(EEGFormat::DataConverterType::Digital)[i][j] = ChannelDataToWrite[i][j];
         }
