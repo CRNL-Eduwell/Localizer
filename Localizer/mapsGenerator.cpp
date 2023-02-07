@@ -174,7 +174,11 @@ void InsermLibrary::DrawCard::mapsGenerator::displayStatsOnMap(QPainter* painter
 		auto it = std::find_if(subMatrixesCodes.begin(), subMatrixesCodes.end(), [&](const int& c) { return c == blocs[conditionIndex].MainSubBloc().MainEvent().Codes()[0]; });
 		if (it != subMatrixesCodes.end())
 		{
-			int itIndex = /*subMatrixesCodes.size() - 1 -*/ std::distance(subMatrixesCodes.begin(), it);
+            int itIndex = std::distance(subMatrixesCodes.begin(), it);
+
+            // if the height of the matrix is this small there is no trials and so we
+            // don't want to display statistics since there will be no data
+            if(subMatrixes[itIndex].height() < 5) continue;
 
 			int xTimeMs = (significantValue[i].window * 100);
 			double MsByPx = separationLines[itIndex].width() / (double)(windowMs[1] - windowMs[0]);
@@ -533,7 +537,7 @@ void  InsermLibrary::DrawCard::mapsGenerator::createTrialsLegend(QPainter* paint
 			{
 				painter->setPen(QColor(Qt::darkRed));
 				int offset = subMatrixes[count].height() / 2;
-				QRect myLegendRect(0.013020833 * fullMap.width(), subMatrixes[count].y() + offset, 0.1119618055 * fullMap.width(), subMatrixes[0].height());
+                QRect myLegendRect(0.013020833 * fullMap.width(), subMatrixes[count].y() + offset, 0.1119618055 * fullMap.width(), subMatrixes[count].height());
 				painter->drawText(myLegendRect, QString::fromStdString(myprovFile->Blocs()[i].Name()));
 			}
 
