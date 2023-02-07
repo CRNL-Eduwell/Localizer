@@ -2,7 +2,6 @@
 
 void InsermLibrary::Stats::pValuesWilcoxon(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata, TriggerContainer* triggerContainer, int samplingFreq, ProvFile* myprovFile)
 {
-	//std::vector<int> SubGroupStimTrials = triggerContainer->SubGroupStimTrials();
 	std::vector<std::tuple<int, int, int>> CodeAndTrialsIndexes = triggerContainer->CodeAndTrialsIndexes();
     int ConditionCount = static_cast<int>(CodeAndTrialsIndexes.size());
     int ChannelCount = static_cast<int>(bigdata.size());
@@ -12,22 +11,30 @@ void InsermLibrary::Stats::pValuesWilcoxon(vec3<float> &pValue3D, vec3<int> &pSi
 		vec2<int> p_signeBig;
 		for (int j = 0; j < ConditionCount; j++)
 		{
-			int lowTrial = std::get<1>(CodeAndTrialsIndexes[j]);// SubGroupStimTrials[j];
-			int highTrial = std::get<2>(CodeAndTrialsIndexes[j]); // SubGroupStimTrials[j + 1];
+            int windowCount = GetNumberOfWindowForBloc(myprovFile, j);
+
+            int lowTrial = std::get<1>(CodeAndTrialsIndexes[j]);
+            int highTrial = std::get<2>(CodeAndTrialsIndexes[j]);
 			int numberSubTrial = highTrial - lowTrial;
+            if(numberSubTrial > 0)
+            {
+                vec1<double> baseLine = getBaselineBlocWilcoxon(i, lowTrial, numberSubTrial, samplingFreq, myprovFile->Blocs()[j].MainSubBloc(), bigdata);
+                vec2<double> eegDataBig = getEegDataBlocWilcoxon(i, lowTrial, numberSubTrial, windowCount, samplingFreq, bigdata);
 
-            vec1<double> baseLine = getBaselineBlocWilcoxon(i, lowTrial, numberSubTrial, samplingFreq, myprovFile->Blocs()[j].MainSubBloc(), bigdata);
-            vec2<double> eegDataBig = getEegDataBlocWilcoxon(i, lowTrial, numberSubTrial, samplingFreq, j, myprovFile, bigdata);
-
-			vec1<float> p_value;
-            for (int l = 0; l < static_cast<int>(eegDataBig.size()); l++)
-			{
-                std::pair<double,double> pz = Framework::Calculations::Stats::wilcoxon_rank_sum(baseLine, eegDataBig[l]);
-                p_value.push_back(pz.first);
-			}
-			p_valueBig.push_back(p_value);
-
-			p_signeBig.push_back(getEegSignBlocWilcoxon(baseLine, eegDataBig));
+                vec1<float> p_value;
+                for (int l = 0; l < static_cast<int>(eegDataBig.size()); l++)
+                {
+                    std::pair<double,double> pz = Framework::Calculations::Stats::wilcoxon_rank_sum(baseLine, eegDataBig[l]);
+                    p_value.push_back(pz.first);
+                }
+                p_valueBig.push_back(p_value);
+                p_signeBig.push_back(getEegSignBlocWilcoxon(baseLine, eegDataBig));
+            }
+            else
+            {
+                p_valueBig.push_back(std::vector<float>(windowCount, 0));
+                p_signeBig.push_back(std::vector<int>(windowCount, 0));
+            }
 		}
 		pSign3D.push_back(p_signeBig);
 		pValue3D.push_back(p_valueBig);
@@ -198,8 +205,7 @@ void InsermLibrary::Stats::exportStatsData(eegContainer *myEegContainer, ProvFil
 	fichierSt.close();
 }
 
-InsermLibrary::vec1<double> InsermLibrary::Stats::getBaselineBlocWilcoxon(int currentChanel, int lowTrial, int numberSubTrial,
-														  int samplingFreq, SubBloc dispBloc, vec3<float> &bigdata)
+InsermLibrary::vec1<double> InsermLibrary::Stats::getBaselineBlocWilcoxon(int currentChanel, int lowTrial, int numberSubTrial, int samplingFreq, SubBloc dispBloc, vec3<float> &bigdata)
 {
     vec1<double> baseLine;
 	for (int k = 0; k < numberSubTrial; k++)
@@ -217,33 +223,33 @@ InsermLibrary::vec1<double> InsermLibrary::Stats::getBaselineBlocWilcoxon(int cu
 	return baseLine;
 }
 
-InsermLibrary::vec2<double> InsermLibrary::Stats::getEegDataBlocWilcoxon(int currentChanel, int lowTrial, int numberSubTrial,
-														 int samplingFreq, int idBloc, ProvFile* myprovFile,
-														 vec3<float> &bigdata)
+int InsermLibrary::Stats::GetNumberOfWindowForBloc(ProvFile* myprovFile, int blocIndex)
+{
+    int numberWindows = 0;
+    if (myprovFile->FilePath().find("INVERTED") != std::string::npos)
+    {	//100 because 200ms window with overlap 50%
+        numberWindows = myprovFile->Blocs()[blocIndex].MainSubBloc().MainWindow().Length() / 100;
+    }
+    else
+    {
+        numberWindows = myprovFile->Blocs()[blocIndex].MainSubBloc().MainWindow().End() / 100;
+    }
+    return numberWindows;
+}
+
+InsermLibrary::vec2<double> InsermLibrary::Stats::getEegDataBlocWilcoxon(int currentChanel, int lowTrial, int numberSubTrial, int numberWindows, int samplingFreq, vec3<float> &bigdata)
 {
     vec2<double> eegDataBig;
-
-	int numberWindows = 0;
-	if (myprovFile->FilePath().find("INVERTED") != std::string::npos)
-	{	//100 because 200ms window with overlap 50%
-		numberWindows = myprovFile->Blocs()[idBloc].MainSubBloc().MainWindow().Length() / 100;
-	}
-	else
-	{
-		numberWindows = myprovFile->Blocs()[idBloc].MainSubBloc().MainWindow().End() / 100;
-	}
-
-	int StartInMs = myprovFile->Blocs()[0].MainSubBloc().MainWindow().Start();
-	int EndinMs = myprovFile->Blocs()[0].MainSubBloc().MainWindow().End();
-	int* windowMs = new int[2]{ StartInMs, EndinMs };
 	for (int k = 0; k < numberWindows - 1; k++)
 	{
+        int windowLengthMs = 100 * k;
+
         vec1<double> eegData;
 		for (int l = 0; l < numberSubTrial; l++)
 		{
             double sum = 0.0;
-			int begWindow = round((samplingFreq * (0 + (100 * k) + (myprovFile->Blocs()[idBloc].MainSubBloc().MainWindow().Start() - windowMs[0]))) / 1000);
-			int endWindow = round((samplingFreq * (200 + (100 * k) + (myprovFile->Blocs()[idBloc].MainSubBloc().MainWindow().Start() - windowMs[0]))) / 1000);
+            int begWindow = round((samplingFreq * (0 + windowLengthMs)) / 1000);
+            int endWindow = round((samplingFreq * (200 + windowLengthMs)) / 1000);
 
 			for (int m = 0; m < (endWindow - begWindow); m++)
 			{
@@ -253,7 +259,6 @@ InsermLibrary::vec2<double> InsermLibrary::Stats::getEegDataBlocWilcoxon(int cur
 		}
 		eegDataBig.push_back(eegData);
 	}
-	delete[] windowMs;
 
 	return eegDataBig;
 }
