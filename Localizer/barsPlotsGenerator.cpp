@@ -141,12 +141,12 @@ void InsermLibrary::DrawbarsPlots::drawBars::drawDataOnTemplate(vec3<float> &big
 		painter->drawText((Width * 0.028) + 8 + ((0.296875 * Width) * (i % 3)), Heigth * 0.090, 
 						   myeegContainer->electrodes[i].label.c_str());
 
-		for (int j = 0; j < nbSite; j++)
+        bool isBipolar = myeegContainer->BipoleNegativLabel(0) != "" && myeegContainer->BipoleNegativLabel(1) != "" && myeegContainer->BipoleNegativLabel(2) != "";
+        for (int j = 0; j < nbSite; j++)
 		{
-			if (j + 1 < myeegContainer->electrodes[i].id.size())
-			{
-				if (myeegContainer->BipolePositivLabel(countBipole) ==
-                    myeegContainer->electrodes[i].label + std::to_string(myeegContainer->electrodes[i].id[j + 1]))
+            if (isBipolar ? (j + 1) : j < myeegContainer->electrodes[i].id.size())
+            {
+                if (myeegContainer->BipolePositivLabel(countBipole) == myeegContainer->electrodes[i].label + std::to_string(myeegContainer->electrodes[i].id[isBipolar ? (j + 1) : j ]))
 				{
 					//Extract Data
 					for (int k = 0; k < triggerContainer->ProcessedTriggerCount(); k++)
@@ -159,7 +159,7 @@ void InsermLibrary::DrawbarsPlots::drawBars::drawDataOnTemplate(vec3<float> &big
 					countBipole++;
 
                     //patch for correct positionning of electrodes bipole. need a correct do over
-                    int electrodeIdNumber = myeegContainer->electrodes[i].id[j];
+                    int electrodeIdNumber = isBipolar ? myeegContainer->electrodes[i].id[j] : myeegContainer->electrodes[i].id[j] - 1;
 					//Loop accross conditions
 					for (int k = 0; k < nbRow; k++)
 					{
