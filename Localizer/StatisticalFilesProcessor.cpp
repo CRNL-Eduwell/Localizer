@@ -35,35 +35,37 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
                 int codeIndex = std::distance(CodeAndTrialsIndexes.begin(), it);
                 int beg = std::get<1>(CodeAndTrialsIndexes[codeIndex]);
                 int end = std::get<2>(CodeAndTrialsIndexes[codeIndex]);
-
-                //Copy needed data , all trials for one condition and the associated samples
-                baselineData = vec1<double>();
-                conditionData = vec2<double>(end-beg, vec1<double>());
-                for(int k = 0; k < conditionData.size(); k++)
+                if(end - beg > 0)
                 {
-                    int sum = std::accumulate(bigData[i][beg+k].begin() + baselineBegin, bigData[i][beg+k].begin() + baselineEnd, 0);
-                    double bl = static_cast<double>(sum) / (baselineEnd - baselineBegin);
-                    baselineData.push_back(bl); //baseline mean for this trial
-
-                    //copy relevant data
-                    std::vector<float>::iterator begIter = bigData[i][beg + k].begin() + windowBegin;
-                    std::vector<float>::iterator endIter = bigData[i][beg + k].begin() + windowEnd;
-                    conditionData[k] = vec1<double>(begIter, endIter);
-                }
-
-                //loop over timebins
-                int timeBinsCount = static_cast<int>(conditionData[0].size());
-                for(int k = 0; k < timeBinsCount; k++)
-                {
-                    std::vector<double> dataToCompare;
-                    for(int l = 0; l < conditionData.size(); l++)
+                    //Copy needed data , all trials for one condition and the associated samples
+                    baselineData = vec1<double>();
+                    conditionData = vec2<double>(end-beg, vec1<double>());
+                    for(int k = 0; k < conditionData.size(); k++)
                     {
-                        dataToCompare.push_back(conditionData[l][k]);
+                        int sum = std::accumulate(bigData[i][beg+k].begin() + baselineBegin, bigData[i][beg+k].begin() + baselineEnd, 0);
+                        double bl = static_cast<double>(sum) / (baselineEnd - baselineBegin);
+                        baselineData.push_back(bl); //baseline mean for this trial
+
+                        //copy relevant data
+                        std::vector<float>::iterator begIter = bigData[i][beg + k].begin() + windowBegin;
+                        std::vector<float>::iterator endIter = bigData[i][beg + k].begin() + windowEnd;
+                        conditionData[k] = vec1<double>(begIter, endIter);
                     }
 
-                    std::pair<double, double> pz = Framework::Calculations::Stats::wilcoxon_rank_sum(dataToCompare, baselineData);
-                    v_stat_P.push_back(pz.first);
-                    v_stat_Z.push_back(pz.second);
+                    //loop over timebins
+                    int timeBinsCount = static_cast<int>(conditionData[0].size());
+                    for(int k = 0; k < timeBinsCount; k++)
+                    {
+                        std::vector<double> dataToCompare;
+                        for(int l = 0; l < conditionData.size(); l++)
+                        {
+                            dataToCompare.push_back(conditionData[l][k]);
+                        }
+
+                        std::pair<double, double> pz = Framework::Calculations::Stats::wilcoxon_rank_sum(dataToCompare, baselineData);
+                        v_stat_P.push_back(pz.first);
+                        v_stat_Z.push_back(pz.second);
+                    }
                 }
             }
 
