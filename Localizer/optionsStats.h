@@ -7,7 +7,6 @@
 #include <QLocale>
 #include <QDebug>
 
-#include "displayProv.h"
 #include "Utility.h"
 #include "ui_optionsStats.h"
 #include <QMouseEvent>
@@ -24,25 +23,14 @@ public :
 
 private:
 	void connectSignals();
-	void displayLoca(QListWidget *uiList, std::vector<QString> wantedLoca);
-	void readList();
 
 private slots:
-	void openProvWindow();
-	void deleteProvFromList();
-	void getProvList(std::vector<QString> provList);
-	void saveListsandClose();
 	void pValueKruskall();
 	void pValueWilcoxon();
 	void updateWilOpt();
 	void updateKWOpt();
+
 private:
-	std::vector<QString> wantedLocaKW;
-	std::vector<QString> wantedLocaWil;
-	bool toggle = false;
-	displayProv *prov = nullptr;
-    QString kwFilePath = QCoreApplication::applicationDirPath() + "/Resources/Config/statKW.txt";
-    QString wilFilePath = QCoreApplication::applicationDirPath() + "/Resources/Config/statWil.txt";
 	Ui::FormStat ui;
 };
 

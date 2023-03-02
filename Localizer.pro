@@ -8,7 +8,7 @@ CONFIG += c++1z
 CONFIG -= console
 QT += core gui widgets core5compat
 
-COMPUTER = "flo_win_work" # ben_win_work, flo_win_home, flo_win_work, flo_mac_work, ben_linux_work
+COMPUTER = "flo_mac_work" # ben_win_work, flo_win_home, flo_win_work, flo_mac_work, ben_linux_work
 
 ####################################### COMPILATION FLAGS
 win32{

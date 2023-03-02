@@ -15,11 +15,10 @@ namespace InsermLibrary
 		bool wilcoxon = true;
 		bool FDRwilcoxon = true;
         float pWilcoxon = 0.05;
-		std::vector<QString> locaWilcoxon;
 		bool kruskall = true;
 		bool FDRkruskall = true;
         float pKruskall = 0.05;
-		std::vector<QString> locaKruskall;
+        bool AverageTrials = false;
 	};
 
 	struct picOption

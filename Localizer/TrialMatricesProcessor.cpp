@@ -23,7 +23,6 @@ void InsermLibrary::TrialMatricesProcessor::Process(TriggerContainer* triggerCon
     myeegContainer->GetFrequencyBlocData(bigData, 0, triggerContainer->ProcessedTriggers(), windowSam);
 
     //== calculate stat
-    //if (ShouldPerformTrialmatStats(m_currentLoca->ExperimentLabel()))
     significantValue = ProcessWilcoxonStatistic(bigData, triggerContainer, myeegContainer, myprovFile, mapsFolder, statOption);
 
     //== Draw for each plot and according to a template to reduce drawing time
@@ -214,19 +213,6 @@ std::string InsermLibrary::TrialMatricesProcessor::PrepareFolderAndPathsTrial(st
     vec1<std::string> pathSplit = split<std::string>(mapsFolder, "/");
 
     return std::string(mapsFolder + "/" + pathSplit[pathSplit.size() - 2] + "_ds" + std::to_string(dsSampFreq) + "_sm0_trials_");
-}
-
-bool InsermLibrary::TrialMatricesProcessor::ShouldPerformTrialmatStats(std::string locaName, statOption* statOption)
-{
-    for (int i = 0; i < static_cast<int>(statOption->locaWilcoxon.size()); i++)
-    {
-        if (statOption->locaWilcoxon[i].contains(QString::fromStdString(locaName)))
-        {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 InsermLibrary::vec1<InsermLibrary::PVALUECOORD> InsermLibrary::TrialMatricesProcessor::ProcessWilcoxonStatistic(vec3<float>& bigData, TriggerContainer* triggerContainer, eegContainer* myeegContainer, ProvFile* myprovFile, std::string freqFolder, statOption* statOption)
