@@ -174,7 +174,7 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
                     std::vector<float>::iterator endIter = bigData[i][firstConditionBeg + k].begin() + firstConditionWindowEnd;
                     std::vector<double> data = vec1<double>(begIter, endIter);
 
-                    if(statOption->AverageTrials)
+                    if(statOption->BlocWiseStatistics)
                     {
                         firstConditionData.push_back(std::vector<double>{ std::reduce(data.begin(), data.end()) / data.size() });
                     }
@@ -212,7 +212,7 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
                         std::vector<float>::iterator endIter = bigData[i][secondConditionBeg + l].begin() + secondConditionWindowEnd;
                         std::vector<double> data = vec1<double>(begIter, endIter);
 
-                        if(statOption->AverageTrials)
+                        if(statOption->BlocWiseStatistics)
                         {
                             secondConditionData.push_back(std::vector<double>{ std::reduce(data.begin(), data.end()) / data.size() });
                         }
@@ -272,7 +272,7 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
 
     //Fill the arrays with the same value in case of average to be viewable under hibop
     //otherwise with 0 when the condition is not present
-    if(statOption->AverageTrials)
+    if(statOption->BlocWiseStatistics)
     {
         for(int i = 0; i < v_stat_K4.size(); i++)
         {

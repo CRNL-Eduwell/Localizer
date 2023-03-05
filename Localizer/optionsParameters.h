@@ -18,7 +18,7 @@ namespace InsermLibrary
 		bool kruskall = true;
 		bool FDRkruskall = true;
         float pKruskall = 0.05;
-        bool AverageTrials = false;
+        bool BlocWiseStatistics = false;
 	};
 
 	struct picOption

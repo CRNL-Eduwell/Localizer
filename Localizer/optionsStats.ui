@@ -31,9 +31,9 @@
       </widget>
      </item>
      <item row="1" column="0">
-      <widget class="QCheckBox" name="AverageTrialsCheckBox">
+      <widget class="QCheckBox" name="BlocWiseStatisticsCheckBox">
        <property name="text">
-        <string>Average Condition Trials</string>
+        <string>Bloc Wise Statistics</string>
        </property>
       </widget>
      </item>

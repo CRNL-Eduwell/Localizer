@@ -22,7 +22,7 @@ InsermLibrary::statOption optionsStats::getStatOption()
 	statOpt.FDRwilcoxon = ui.FDRCheckBoxWil->isChecked();
     statOpt.pWilcoxon = ui.pValueLE_Wil->text().toFloat();
     //===
-    statOpt.AverageTrials = ui.AverageTrialsCheckBox->isChecked();
+    statOpt.BlocWiseStatistics = ui.BlocWiseStatisticsCheckBox->isChecked();
     //===
     return statOpt;
 }
