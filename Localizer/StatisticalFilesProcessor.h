@@ -10,6 +10,7 @@
 #include "ProvFile.h"
 #include "optionsParameters.h"
 #include "Stats.h"
+#include <regex>
 
 namespace InsermLibrary
 {
@@ -23,7 +24,9 @@ namespace InsermLibrary
         std::vector<PVALUECOORD> loadPValues(vec3<double>& pValues3D, float pLimit);
         std::vector<PVALUECOORD_KW> loadPValues_KW(vec4<double>& pValues4D);
         std::vector<PVALUECOORD_KW> loadPValues_KW(vec4<double>& pValues4D, float pLimit);
-        void WriteResultFile(std::vector<std::vector<double>> ChannelDataToWrite, std::vector<std::pair<int, int>> posSampleCodeToWrite, TriggerContainer* triggerContainer, eegContainer* eegContainer, int smoothingID, std::string freqFolder);
+        EEGFormat::ElanFile* LoadDataInStructure(std::vector<std::vector<double>> ChannelDataToWrite, eegContainer* eegContainer);
+        std::vector<std::string> DefinePathForFiles(eegContainer* eegContainer, int smoothingID, ProvFile* myprovFile, std::string freqFolder);
+        void WriteResultFile(EEGFormat::ElanFile* outputFile, std::vector<std::string> filesPath, std::vector<std::pair<int, int>> posSampleCodeToWrite);
     };
 }
 

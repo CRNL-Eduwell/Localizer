@@ -203,6 +203,7 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
     ProvFile* taskInverted = LoadProvForTask(m_currentLoca->ExperimentLabel(), "INVERTED");
     ProvFile* taskBarPlot = LoadProvForTask(m_currentLoca->ExperimentLabel(), "BARPLOT");
     ProvFile* taskStatistics = LoadProvForTask(m_currentLoca->ExperimentLabel(), "STATISTICS");
+    ProvFile* taskMaintenanceStatistics = LoadProvForTask(m_currentLoca->ExperimentLabel(), "MAINTENANCE_STATISTICS");
 
     if (task != nullptr)
     {
@@ -303,6 +304,20 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
                 emit sendLogInfo("Statistical files generated");
             }
         }
+        if(taskMaintenanceStatistics != nullptr)
+        {
+            m_triggerContainer->ProcessEventsForExperiment(taskMaintenanceStatistics, 99);
+            if (m_triggerContainer->ProcessedTriggerCount() == 0)
+            {
+                emit sendLogInfo("No Trigger found for this experiment, aborting trialmats generation");
+            }
+            else
+            {
+                StatisticalFilesProcessor sfp;
+                sfp.Process(m_triggerContainer, myeegContainer, a.smoothingIDToUse, taskMaintenanceStatistics, freqFolder, m_statOption);
+                emit sendLogInfo("Statistical files generated");
+            }
+        }
         emit incrementAdavnce(1);
     }
 
@@ -311,6 +326,7 @@ void InsermLibrary::LOCA::GenerateMapsAndFigures(eegContainer* myeegContainer, s
     EEGFormat::Utility::DeleteAndNullify(taskInverted);
     EEGFormat::Utility::DeleteAndNullify(taskBarPlot);
     EEGFormat::Utility::DeleteAndNullify(taskStatistics);
+    EEGFormat::Utility::DeleteAndNullify(taskMaintenanceStatistics);
 }
 
 void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt, eegContainer* myeegContainer, TriggerContainer* triggerContainer, ProvFile* myprovFile)

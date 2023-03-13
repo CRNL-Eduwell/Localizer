@@ -501,7 +501,9 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
         }
     }
 
-    WriteResultFile(ChannelDataToWrite, posSampleCodeToWrite, triggerContainer, myeegContainer, smoothingID, freqFolder);
+    EEGFormat::ElanFile *outputFile = LoadDataInStructure(ChannelDataToWrite, myeegContainer);
+    std::vector<std::string> filesPath = DefinePathForFiles(myeegContainer, smoothingID, myprovFile, freqFolder);
+    WriteResultFile(outputFile, filesPath, posSampleCodeToWrite);
 
     //Delete what needs to be deleted
     delete[] windowSam;
@@ -627,7 +629,7 @@ std::vector<InsermLibrary::PVALUECOORD_KW> InsermLibrary::StatisticalFilesProces
     return pValues;
 }
 
-void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(std::vector<std::vector<double>> ChannelDataToWrite, std::vector<std::pair<int, int>> posSampleCodeToWrite, TriggerContainer* triggerContainer, eegContainer* eegContainer, int smoothingID, std::string freqFolder)
+EEGFormat::ElanFile* InsermLibrary::StatisticalFilesProcessor::LoadDataInStructure(std::vector<std::vector<double>> ChannelDataToWrite, eegContainer* eegContainer)
 {
     EEGFormat::ElanFile *outputFile = new EEGFormat::ElanFile();
     outputFile->ElectrodeCount((int)ChannelDataToWrite.size());
@@ -651,25 +653,43 @@ void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(std::vector<std::
         }
     }
 
-    //TODO : right name name is reprocessed based on freqfolder name , see to fill default filepath when processing envellopes
-    //to use the name of the file as commented below
+    return outputFile;
+}
 
-    //then save eegdata
-    vec1<std::string> pathSplit = split<std::string>(freqFolder, "/");
-    std::string newPath = freqFolder;
-    newPath.append(pathSplit[pathSplit.size() - 1]);
+std::vector<std::string> InsermLibrary::StatisticalFilesProcessor::DefinePathForFiles(eegContainer* eegContainer, int smoothingID, ProvFile* myprovFile, std::string freqFolder)
+{
+    std::vector<std::string> filesPath;
 
     std::string smoothing = (smoothingID == 0) ? "sm0" : (smoothingID == 1) ? "sm250" : (smoothingID == 2) ? "sm500" : (smoothingID == 3) ? "sm1000" : (smoothingID == 4) ? "sm2500" : "sm5000";
+    vec1<std::string> pathSplit = split<std::string>(freqFolder, "/");
+
+    std::string newPath = freqFolder;
+    newPath.append(pathSplit[pathSplit.size() - 1]);
     std::string baseName = newPath  + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_" + smoothing;
 
-//    std::string rootFileFolder = EEGFormat::Utility::GetDirectoryPath(myeegContainer->elanFrequencyBand[0]->DefaultFilePath());
-//    std::string fileNameRoot = EEGFormat::Utility::GetFileName(myeegContainer->elanFrequencyBand[0]->DefaultFilePath(), false);
+    //If this is not the prov for the task and some other way to visualise data, we need to precise it in the file name
+    std::string suffix = myprovFile->Name();
+    suffix = std::regex_replace(suffix, std::regex("_STATISTICS"), "");
+    if(pathSplit[pathSplit.size() - 1].find(suffix) != std::string::npos)
+    {
+        suffix = "";
+    }
+    else
+    {
+        suffix = "_" + suffix;
+    }
 
-    std::string entFile = baseName + "_stats.eeg.ent";
-    std::string eegFile = baseName + "_stats.eeg";
-    outputFile->SaveAs(entFile,eegFile, "","");
+    filesPath.push_back(baseName + "_stats" + suffix + ".eeg.ent");
+    filesPath.push_back(baseName + "_stats" + suffix + ".eeg");
+    filesPath.push_back(eegContainer->RootFileFolder() + eegContainer->RootFileName() + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_stats" + suffix + ".pos");
+    return filesPath;
+}
 
-    //and trigger in pos
+void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(EEGFormat::ElanFile* outputFile, std::vector<std::string> filesPath, std::vector<std::pair<int, int>> posSampleCodeToWrite)
+{
+    //Save ent and eeg
+    outputFile->SaveAs(filesPath[0], filesPath[1], "","");
+    //then triggers in pos
     std::vector<EEGFormat::ITrigger> iTriggers(posSampleCodeToWrite.size());
     for (int i = 0; i < posSampleCodeToWrite.size(); i++)
     {
@@ -677,10 +697,7 @@ void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(std::vector<std::
         long sample = posSampleCodeToWrite[i].first;
         iTriggers[i] = EEGFormat::ElanTrigger(code, sample);
     }
-    std::string fileNameBase = eegContainer->RootFileFolder() + eegContainer->RootFileName();
-    std::string posFile = fileNameBase + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_stats.pos";
-    EEGFormat::ElanFile::SaveTriggers(posFile, iTriggers);
-
+    EEGFormat::ElanFile::SaveTriggers(filesPath[2], iTriggers);
     //and delete pointer
     DeleteGenericFile(outputFile);
 }
