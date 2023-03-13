@@ -1,4 +1,6 @@
 #include "barsPlotsGenerator.h"
+#include <QApplication>
+#include <QScreen>
 
 InsermLibrary::DrawbarsPlots::baseCanvas::baseCanvas(InsermLibrary::ProvFile* myprovFile, int width, int heigth)
 {
@@ -18,9 +20,21 @@ void InsermLibrary::DrawbarsPlots::baseCanvas::drawTemplate(InsermLibrary::ProvF
 	int nbRow = myprovFile->Blocs().size();
 	pixmapTemplate = QPixmap(Width, Heigth);
 	pixmapTemplate.fill(QColor(Qt::white));
+    //====
+    #ifdef WIN32
+    qreal RENDER_DPI = 96;
+    #else
+    qreal RENDER_DPI = 72;
+    #endif
+
+    QFont font("Arial", 12, 1, false);
+    qreal screenDPI = QApplication::primaryScreen()->physicalDotsPerInch();
+    int pixelSize = (int)((qreal)12 * screenDPI / RENDER_DPI);
+    font.setPixelSize(pixelSize);
+    //====
 	QPainter painter(&pixmapTemplate);
 	painter.setBackgroundMode(Qt::BGMode::OpaqueMode);
-	painter.setFont(QFont("Arial", 12, 1, false));
+    painter.setFont(font);
 
 	nbColLegend = ceil((double)nbRow / 3);
 
