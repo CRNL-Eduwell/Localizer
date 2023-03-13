@@ -21,16 +21,18 @@ void InsermLibrary::DrawbarsPlots::baseCanvas::drawTemplate(InsermLibrary::ProvF
 	pixmapTemplate = QPixmap(Width, Heigth);
 	pixmapTemplate.fill(QColor(Qt::white));
     //====
-    #ifdef WIN32
-    qreal RENDER_DPI = 96;
-    #else
-    qreal RENDER_DPI = 72;
-    #endif
-
     QFont font("Arial", 12, 1, false);
+    #ifdef __APPLE__
+    qreal RENDER_DPI = 72;
     qreal screenDPI = QApplication::primaryScreen()->physicalDotsPerInch();
-    int pixelSize = (int)((qreal)12 * screenDPI / RENDER_DPI);
+    int pixelSize = (int)((qreal)12 * (screenDPI / QApplication::primaryScreen()->devicePixelRatio() / RENDER_DPI));
     font.setPixelSize(pixelSize);
+    #elif _WIN32
+    qreal RENDER_DPI = 96;
+    qreal screenDPI = QApplication::primaryScreen()->physicalDotsPerInch();
+    int pixelSize = (int)((qreal)12 * (screenDPI / QApplication::primaryScreen()->devicePixelRatio() / RENDER_DPI));
+    font.setPixelSize(pixelSize);
+    #endif
     //====
 	QPainter painter(&pixmapTemplate);
 	painter.setBackgroundMode(Qt::BGMode::OpaqueMode);
