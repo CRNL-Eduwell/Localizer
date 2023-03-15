@@ -287,7 +287,9 @@ SOURCES += \
     Localizer/singleFile.cpp
 
 ### Define Icon on Mac : https://doc.qt.io/qt-5/appicon.html
-### Windows is done with vs studio and an rc file per the doc
+win32{
+    RC_FILE = Localizer/myapp.rc
+}
 macx{
     ICON = Localizer/Resources/localizer_mac.icns
 }
