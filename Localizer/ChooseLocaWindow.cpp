@@ -21,7 +21,19 @@ QStringList ChooseLocaWindow::GetFilesFromRootFolder(QString fileExt)
     QDir currentDir(m_provFolder);
     currentDir.setFilter(QDir::Files);
     currentDir.setNameFilters(QStringList() << fileExt);
-    return currentDir.entryList();
+    QStringList allFiles = currentDir.entryList();
+
+    QStringList matchingFiles;
+    QRegularExpression rxProv("^[a-zA-Z]+[0-9]*.prov$");
+    for (int i = 0; i < allFiles.size(); i++)
+    {
+        if (rxProv.match(allFiles[i]).hasMatch())
+        {
+            matchingFiles.push_back(allFiles[i]);
+        }
+    }
+
+    return matchingFiles;
 }
 
 void ChooseLocaWindow::LoadProtocolsInUI(QStringList protocols)
