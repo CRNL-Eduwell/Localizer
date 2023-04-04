@@ -50,6 +50,19 @@ equals(COMPUTER, "ben_win_work"){
     LIB_MISC = Comdlg32.lib shell32.lib
 }
 
+equals(COMPUTER, "ben_win_work_new"){
+    INCLUDE_BOOST = "C:/local/boost_1_78_0"
+    INCLUDE_FFTW = "C:/local/FFTW_3.3.4_x64"
+    INCLUDE_EEGFORMAT = "C:/HBP/Software/EEGFormat/EEGFormat"
+    INCLUDE_FRAMEWORK = "C:/HBP/Software/Framework/Framework"
+    INCLUDE_LOCALIZER = "C:/HBP/Software/Localizer"
+    LIB_BOOST = -L"C:/local/boost_1_78_0/lib64-msvc-14.2" -l"libboost_filesystem-vc142-mt-x64-1_78"
+    LIB_FFTW = -L"C:/local/FFTW_3.3.4_x64" -llibfftw3f-3
+    LIB_EEGFORMAT = -L"C:/HBP/Software/EEGFormat/x64/Release/" -lEEGFormat
+    LIB_FRAMEWORK = -L"C:/HBP/Software/Framework_x64/release" -lFramework
+    LIB_MISC = Comdlg32.lib shell32.lib
+}
+
 equals(COMPUTER, "flo_win_home"){
     INCLUDE_BOOST = ""
     INCLUDE_FFTW = "C:/Users/Florian/Documents/Arbeit/Software/DLL/FFTW_3.3.4_x64"
