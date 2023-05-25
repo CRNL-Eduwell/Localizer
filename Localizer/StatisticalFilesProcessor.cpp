@@ -1,4 +1,5 @@
 #include "StatisticalFilesProcessor.h"
+#include <QDebug>
 
 void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* triggerContainer, eegContainer* myeegContainer, int smoothingID, ProvFile* myprovFile, std::string freqFolder, statOption* statOption)
 {
@@ -141,6 +142,7 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
     }
 
     //Kruskall
+    int windowSize = 0;
     int countFDR = 0;
     std::vector<std::vector<std::vector<std::vector<double>>>> v_stat_K4, v_stat_P4;
     for (int i = 0; i < bigData.size(); i++)
@@ -153,6 +155,8 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
             SubBloc subBloc = myprovFile->Blocs()[j].MainSubBloc();
             int firstConditionWindowBegin = (((float)myeegContainer->DownsampledFrequency() * subBloc.MainWindow().Start()) / 1000) - windowSam[0];
             int firstConditionWindowEnd = (((float)myeegContainer->DownsampledFrequency() * subBloc.MainWindow().End()) / 1000)  - windowSam[0];
+
+            windowSize = firstConditionWindowEnd - firstConditionWindowBegin;
 
             //copy relevant data
             std::vector<std::vector<double>> firstConditionData;
@@ -168,7 +172,16 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
                 {
                     std::vector<float>::iterator begIter = bigData[i][firstConditionBeg + k].begin() + firstConditionWindowBegin;
                     std::vector<float>::iterator endIter = bigData[i][firstConditionBeg + k].begin() + firstConditionWindowEnd;
-                    firstConditionData.push_back(vec1<double>(begIter, endIter));
+                    std::vector<double> data = vec1<double>(begIter, endIter);
+
+                    if(statOption->BlocWiseStatistics)
+                    {
+                        firstConditionData.push_back(std::vector<double>{ std::reduce(data.begin(), data.end()) / data.size() });
+                    }
+                    else
+                    {
+                        firstConditionData.push_back(data);
+                    }
                 }
             }
 
@@ -178,6 +191,8 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
                 SubBloc secondSubBloc = myprovFile->Blocs()[k].MainSubBloc();
                 int secondConditionWindowBegin = (((float)myeegContainer->DownsampledFrequency() * secondSubBloc.MainWindow().Start()) / 1000) - windowSam[0];
                 int secondConditionWindowEnd = (((float)myeegContainer->DownsampledFrequency() * secondSubBloc.MainWindow().End()) / 1000) - windowSam[0];
+
+                //qDebug() << firstConditionWindowEnd - firstConditionWindowBegin;
 
                 std::vector<std::vector<double>> secondConditionData;
                 std::vector<double> v_stat_K, v_stat_P;
@@ -195,7 +210,16 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
                     {
                         std::vector<float>::iterator begIter = bigData[i][secondConditionBeg + l].begin() + secondConditionWindowBegin;
                         std::vector<float>::iterator endIter = bigData[i][secondConditionBeg + l].begin() + secondConditionWindowEnd;
-                        secondConditionData.push_back(vec1<double>(begIter, endIter));
+                        std::vector<double> data = vec1<double>(begIter, endIter);
+
+                        if(statOption->BlocWiseStatistics)
+                        {
+                            secondConditionData.push_back(std::vector<double>{ std::reduce(data.begin(), data.end()) / data.size() });
+                        }
+                        else
+                        {
+                            secondConditionData.push_back(data);
+                        }
                     }
 
                     //loop over timebins
@@ -246,28 +270,51 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
         v_stat_P4.push_back(v_stat_P3);
     }
 
-    for(int i = 0; i < v_stat_K4.size(); i++)
+    //Fill the arrays with the same value in case of average to be viewable under hibop
+    //otherwise with 0 when the condition is not present
+    if(statOption->BlocWiseStatistics)
     {
-        int nbOfSample = 0;
-        for(int j = 0; j < v_stat_K4[i].size(); j++)
+        for(int i = 0; i < v_stat_K4.size(); i++)
         {
-            for(int k = 0; k < v_stat_K4[i][j].size(); k++)
+            for(int j = 0; j < v_stat_K4[i].size(); j++)
             {
-                if(v_stat_K4[i][j][k].size() != nbOfSample && v_stat_K4[i][j][k].size() > 0)
+                for(int k = 0; k < v_stat_K4[i][j].size(); k++)
                 {
-                    nbOfSample = v_stat_K4[i][j][k].size();
+                    if(v_stat_P4[i][j][k].size() == 1)
+                    {
+                        //qDebug() << v_stat_P4[i][j][k].size();
+                        v_stat_K4[i][j][k].resize(2 * windowSize, v_stat_K4[i][j][k][0]);
+                        v_stat_P4[i][j][k].resize(2 * windowSize, v_stat_P4[i][j][k][0]);
+                    }
                 }
             }
         }
-
-        for(int j = 0; j < v_stat_K4[i].size(); j++)
+    }
+    else
+    {
+        for(int i = 0; i < v_stat_K4.size(); i++)
         {
-            for(int k = 0; k < v_stat_K4[i][j].size(); k++)
+            int nbOfSample = 0;
+            for(int j = 0; j < v_stat_K4[i].size(); j++)
             {
-                if(v_stat_K4[i][j][k].size() == 0)
+                for(int k = 0; k < v_stat_K4[i][j].size(); k++)
                 {
-                    v_stat_K4[i][j][k].resize(nbOfSample, 0);
-                    v_stat_P4[i][j][k].resize(nbOfSample, 0);
+                    if(v_stat_K4[i][j][k].size() != nbOfSample && v_stat_K4[i][j][k].size() > 0)
+                    {
+                        nbOfSample = v_stat_K4[i][j][k].size();
+                    }
+                }
+            }
+
+            for(int j = 0; j < v_stat_K4[i].size(); j++)
+            {
+                for(int k = 0; k < v_stat_K4[i][j].size(); k++)
+                {
+                    if(v_stat_P4[i][j][k].size() == 0)
+                    {
+                        v_stat_K4[i][j][k].resize(nbOfSample, 0);
+                        v_stat_P4[i][j][k].resize(nbOfSample, 0);
+                    }
                 }
             }
         }
@@ -278,7 +325,7 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
     {
         int V = v_stat_P4.size() * v_stat_P4[0].size() * v_stat_P4[0][0].size() * v_stat_P4[0][0][0].size();
         float CV = log(countFDR) + 0.5772;
-        float slope = statOption->pWilcoxon / (countFDR * CV);
+        float slope = statOption->pKruskall / (countFDR * CV);
 
         std::vector<PVALUECOORD_KW> preFDRValues = loadPValues_KW(v_stat_P4);
 
@@ -454,7 +501,9 @@ void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* trigger
         }
     }
 
-    WriteResultFile(ChannelDataToWrite, posSampleCodeToWrite, triggerContainer, myeegContainer, smoothingID, freqFolder);
+    EEGFormat::ElanFile *outputFile = LoadDataInStructure(ChannelDataToWrite, myeegContainer);
+    std::vector<std::string> filesPath = DefinePathForFiles(myeegContainer, smoothingID, myprovFile, freqFolder);
+    WriteResultFile(outputFile, filesPath, posSampleCodeToWrite);
 
     //Delete what needs to be deleted
     delete[] windowSam;
@@ -580,7 +629,7 @@ std::vector<InsermLibrary::PVALUECOORD_KW> InsermLibrary::StatisticalFilesProces
     return pValues;
 }
 
-void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(std::vector<std::vector<double>> ChannelDataToWrite, std::vector<std::pair<int, int>> posSampleCodeToWrite, TriggerContainer* triggerContainer, eegContainer* eegContainer, int smoothingID, std::string freqFolder)
+EEGFormat::ElanFile* InsermLibrary::StatisticalFilesProcessor::LoadDataInStructure(std::vector<std::vector<double>> ChannelDataToWrite, eegContainer* eegContainer)
 {
     EEGFormat::ElanFile *outputFile = new EEGFormat::ElanFile();
     outputFile->ElectrodeCount((int)ChannelDataToWrite.size());
@@ -604,25 +653,43 @@ void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(std::vector<std::
         }
     }
 
-    //TODO : right name name is reprocessed based on freqfolder name , see to fill default filepath when processing envellopes
-    //to use the name of the file as commented below
+    return outputFile;
+}
 
-    //then save eegdata
-    vec1<std::string> pathSplit = split<std::string>(freqFolder, "/");
-    std::string newPath = freqFolder;
-    newPath.append(pathSplit[pathSplit.size() - 1]);
+std::vector<std::string> InsermLibrary::StatisticalFilesProcessor::DefinePathForFiles(eegContainer* eegContainer, int smoothingID, ProvFile* myprovFile, std::string freqFolder)
+{
+    std::vector<std::string> filesPath;
 
     std::string smoothing = (smoothingID == 0) ? "sm0" : (smoothingID == 1) ? "sm250" : (smoothingID == 2) ? "sm500" : (smoothingID == 3) ? "sm1000" : (smoothingID == 4) ? "sm2500" : "sm5000";
+    vec1<std::string> pathSplit = split<std::string>(freqFolder, "/");
+
+    std::string newPath = freqFolder;
+    newPath.append(pathSplit[pathSplit.size() - 1]);
     std::string baseName = newPath  + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_" + smoothing;
 
-//    std::string rootFileFolder = EEGFormat::Utility::GetDirectoryPath(myeegContainer->elanFrequencyBand[0]->DefaultFilePath());
-//    std::string fileNameRoot = EEGFormat::Utility::GetFileName(myeegContainer->elanFrequencyBand[0]->DefaultFilePath(), false);
+    //If this is not the prov for the task and some other way to visualise data, we need to precise it in the file name
+    std::string suffix = myprovFile->Name();
+    suffix = std::regex_replace(suffix, std::regex("_STATISTICS"), "");
+    if(pathSplit[pathSplit.size() - 1].find(suffix) != std::string::npos)
+    {
+        suffix = "";
+    }
+    else
+    {
+        suffix = "_" + suffix;
+    }
 
-    std::string entFile = baseName + "_stats.eeg.ent";
-    std::string eegFile = baseName + "_stats.eeg";
-    outputFile->SaveAs(entFile,eegFile, "","");
+    filesPath.push_back(baseName + "_stats" + suffix + ".eeg.ent");
+    filesPath.push_back(baseName + "_stats" + suffix + ".eeg");
+    filesPath.push_back(eegContainer->RootFileFolder() + eegContainer->RootFileName() + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_stats" + suffix + ".pos");
+    return filesPath;
+}
 
-    //and trigger in pos
+void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(EEGFormat::ElanFile* outputFile, std::vector<std::string> filesPath, std::vector<std::pair<int, int>> posSampleCodeToWrite)
+{
+    //Save ent and eeg
+    outputFile->SaveAs(filesPath[0], filesPath[1], "","");
+    //then triggers in pos
     std::vector<EEGFormat::ITrigger> iTriggers(posSampleCodeToWrite.size());
     for (int i = 0; i < posSampleCodeToWrite.size(); i++)
     {
@@ -630,10 +697,7 @@ void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(std::vector<std::
         long sample = posSampleCodeToWrite[i].first;
         iTriggers[i] = EEGFormat::ElanTrigger(code, sample);
     }
-    std::string fileNameBase = eegContainer->RootFileFolder() + eegContainer->RootFileName();
-    std::string posFile = fileNameBase + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_stats.pos";
-    EEGFormat::ElanFile::SaveTriggers(posFile, iTriggers);
-
+    EEGFormat::ElanFile::SaveTriggers(filesPath[2], iTriggers);
     //and delete pointer
     DeleteGenericFile(outputFile);
 }

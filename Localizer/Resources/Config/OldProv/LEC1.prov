@@ -1,6 +1,0 @@
-ROW;COL;Name;Path;Window;BaseLine;Main Event;Maint Event Label;Secondary Events;Secondary Events Label;Sort
-1;1;SEMAN;/Resources/Config/Pictures/LEC1/LEC1_SEM.jpg;-500:3500;-200:0;10;Seman;1:2;RESPONSE;C0_L1
-2;1;PHONO;/Resources/Config/Pictures/LEC1/LEC1_PHO.jpg;-500:3500;-200:0;20;Phono;1:2;RESPONSE;C0_L1
-3;1;VISUAL;/Resources/Config/Pictures/LEC1/LEC1_CONS.jpg;-500:3500;-200:0;30;Visual;1:2;RESPONSE;C0_L1
-NO_CHANGE_CODE
-NO_INVERT

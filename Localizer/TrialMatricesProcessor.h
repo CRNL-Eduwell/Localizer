@@ -19,7 +19,6 @@ namespace InsermLibrary
     private:
         std::string GetTrialmatFolder(ProvFile* myprovFile, std::string freqFolder, statOption* statOption);
         std::string PrepareFolderAndPathsTrial(std::string freqFolder, int dsSampFreq);
-        bool ShouldPerformTrialmatStats(std::string locaName, statOption* statOption);
         std::vector<PVALUECOORD> ProcessWilcoxonStatistic(vec3<float>& bigData, TriggerContainer* triggerContainer, eegContainer* myeegContainer, ProvFile* myprovFile, std::string freqFolder, statOption* statOption);
     };
 }

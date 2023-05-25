@@ -1,5 +1,0 @@
-ROW;COL;Name;Path;Window;BaseLine;Main Event;Maint Event Label;Secondary Events;Secondary Events Label;Sort
-1;1;OK;/home/MAthilde;-300:0;-200:0;41;OK;0;RESPONSE;C0
-1;1;NOK;/home/MAthilde;-300:0;-200:0;42;NOK;0;RESPONSE;C0
-NO_CHANGE_CODE
-NO_INVERT

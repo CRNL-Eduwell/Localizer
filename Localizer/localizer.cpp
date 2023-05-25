@@ -98,11 +98,41 @@ void Localizer::ConnectMenuBar()
 {
     //===Fichier
     QAction* openPatFolder = ui.menuFiles->actions().at(0);
-    connect(openPatFolder, &QAction::triggered, this, [&] { LoadPatientFolder(); });
+    connect(openPatFolder, &QAction::triggered, this, [&]
+    {
+        if(!isAlreadyRunning)
+        {
+            LoadPatientFolder();
+        }
+        else
+        {
+            QMessageBox::information(this, "Error", "Wait until end of analysis or cancel it");
+        }
+    });
     QAction* openDatabaseFolder = ui.menuFiles->actions().at(1);
-    connect(openDatabaseFolder, &QAction::triggered, this, [&] { LoadDatabaseFolder(); });
+    connect(openDatabaseFolder, &QAction::triggered, this, [&]
+    {
+        if(!isAlreadyRunning)
+        {
+            LoadDatabaseFolder();
+        }
+        else
+        {
+            QMessageBox::information(this, "Error", "Wait until end of analysis or cancel it");
+        }
+    });
     QAction* openSpecificFolder = ui.menuFiles->actions().at(2);
-    connect(openSpecificFolder, &QAction::triggered, this, [&] { LoadSpecificFolder(); });
+    connect(openSpecificFolder, &QAction::triggered, this, [&]
+    {
+        if(!isAlreadyRunning)
+        {
+            LoadSpecificFolder();
+        }
+        else
+        {
+            QMessageBox::information(this, "Error", "Wait until end of analysis or cancel it");
+        }
+    });
     //===Configuration
     QAction* openLocaMenu = ui.menuConfiguration->actions().at(0);
     connect(openLocaMenu, &QAction::triggered, this, [&] 

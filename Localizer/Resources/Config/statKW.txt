@@ -1,5 +1,0 @@
-ARFA
-AUDI
-MOTO_barplot
-MVEB_barplot
-MVIS_barplot
