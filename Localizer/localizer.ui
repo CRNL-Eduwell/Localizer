@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>914</width>
-    <height>629</height>
+    <width>1100</width>
+    <height>780</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,17 +18,36 @@
     <normaloff>:/Localizer/Resources/localizer.ico</normaloff>:/Localizer/Resources/localizer.ico</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout_3">
-    <item>
-     <layout class="QHBoxLayout" name="TopHorizontalLayout">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="0" rowspan="2">
+     <widget class="DeselectableTreeView" name="FileTreeView">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::ExtendedSelection</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" rowspan="2" colspan="2">
+     <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
-       <widget class="DeselectableTreeView" name="FileTreeView">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+       <widget class="QLabel" name="FolderCountLabel">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -41,46 +60,27 @@
           <height>16777215</height>
          </size>
         </property>
-        <property name="selectionMode">
-         <enum>QAbstractItemView::ExtendedSelection</enum>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="AnalysisVerticalLayout">
-        <item>
-         <widget class="QLabel" name="FolderCountLabel">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QGroupBox" name="AnalysisGroupBox">
           <property name="minimumSize">
            <size>
-            <width>0</width>
+            <width>550</width>
             <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>583</width>
+            <width>550</width>
             <height>16777215</height>
            </size>
           </property>
@@ -90,217 +90,278 @@
           <property name="checkable">
            <bool>false</bool>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <layout class="QVBoxLayout" name="verticalLayout">
            <item>
-            <widget class="QFrame" name="AnalysisChoiceFrame">
+            <widget class="QFrame" name="AnalysisFrame">
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+              <enum>QFrame::Plain</enum>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout">
+             <property name="lineWidth">
+              <number>0</number>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
               <item>
-               <widget class="QFrame" name="AnalysisFrame">
-                <property name="frameShape">
-                 <enum>QFrame::NoFrame</enum>
+               <widget class="QCheckBox" name="Eeg2envCheckBox">
+                <property name="text">
+                 <string>Generate Analysis File</string>
                 </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Plain</enum>
-                </property>
-                <property name="lineWidth">
-                 <number>0</number>
-                </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_3">
-                 <item>
-                  <widget class="QCheckBox" name="Eeg2envCheckBox">
-                   <property name="text">
-                    <string>Generate Analysis File</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QComboBox" name="AnalysisCcomboBox">
-                   <item>
-                    <property name="text">
-                     <string>Hilbert Transform</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QComboBox" name="FileOutputComboBox">
-                   <item>
-                    <property name="text">
-                     <string>Elan</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>BrainVision</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                </layout>
                </widget>
               </item>
               <item>
-               <widget class="QFrame" name="EnvPlotFrame">
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
                 </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
                 </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_2">
-                 <item>
-                  <widget class="QCheckBox" name="Env2plotCheckBox">
-                   <property name="layoutDirection">
-                    <enum>Qt::LeftToRight</enum>
-                   </property>
-                   <property name="text">
-                    <string>Generate Envellope Plots                           </string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QComboBox" name="AnalysisCcomboBox">
+                <item>
+                 <property name="text">
+                  <string>Hilbert Transform</string>
+                 </property>
+                </item>
                </widget>
               </item>
               <item>
-               <widget class="QFrame" name="TrialMatFrame">
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_4">
-                 <item>
-                  <widget class="QCheckBox" name="TrialmatCheckBox">
-                   <property name="text">
-                    <string>Generate Maps (trialmat)</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QFrame" name="CorrelationMapFrame">
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_6">
-                 <item>
-                  <widget class="QCheckBox" name="CorrelationMapsCheckBox">
-                   <property name="text">
-                    <string>Generate Correlation Map</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="BrowsePtsButton">
-                   <property name="minimumSize">
-                    <size>
-                     <width>80</width>
-                     <height>23</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>80</width>
-                     <height>23</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>Browse</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="ClearPtsButton">
-                   <property name="minimumSize">
-                    <size>
-                     <width>80</width>
-                     <height>23</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>80</width>
-                     <height>23</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>Clear</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QFrame" name="StatFileExportFrame">
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_7">
-                 <item>
-                  <widget class="QCheckBox" name="StatFileExportCheckBox">
-                   <property name="text">
-                    <string>Generate Statistical Export Files</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QComboBox" name="StatSmoothingComboBox">
-                   <item>
-                    <property name="text">
-                     <string>sm0</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>sm250</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>sm500</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>sm1000</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>sm2500</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>sm5000</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                </layout>
+               <widget class="QComboBox" name="FileOutputComboBox">
+                <item>
+                 <property name="text">
+                  <string>Elan</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>BrainVision</string>
+                 </property>
+                </item>
                </widget>
               </item>
              </layout>
             </widget>
            </item>
            <item>
-            <widget class="QFrame" name="FrequencyBandsFrame">
+            <widget class="QFrame" name="EnvPlotFrame">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QCheckBox" name="Env2plotCheckBox">
+                <property name="layoutDirection">
+                 <enum>Qt::LeftToRight</enum>
+                </property>
+                <property name="text">
+                 <string>Generate Envellope Plots                           </string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QFrame" name="TrialMatFrame">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <widget class="QCheckBox" name="TrialmatCheckBox">
+                <property name="text">
+                 <string>Generate Maps (trialmat)</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QFrame" name="CorrelationMapFrame">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_6">
+              <item>
+               <widget class="QCheckBox" name="CorrelationMapsCheckBox">
+                <property name="text">
+                 <string>Generate Correlation Map</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="BrowsePtsButton">
+                <property name="minimumSize">
+                 <size>
+                  <width>80</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>80</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Browse</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="ClearPtsButton">
+                <property name="minimumSize">
+                 <size>
+                  <width>80</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>80</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Clear</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QFrame" name="StatFileExportFrame">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <item>
+               <widget class="QCheckBox" name="StatFileExportCheckBox">
+                <property name="text">
+                 <string>Generate Statistical Export Files</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_3">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QComboBox" name="StatSmoothingComboBox">
+                <item>
+                 <property name="text">
+                  <string>sm0</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>sm250</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>sm500</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>sm1000</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>sm2500</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>sm5000</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="minimumSize">
+           <size>
+            <width>200</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Frequency Bands</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <widget class="QCheckBox" name="AllBandsCheckBox">
              <property name="minimumSize">
               <size>
                <width>0</width>
@@ -309,70 +370,46 @@
              </property>
              <property name="maximumSize">
               <size>
-               <width>150</width>
+               <width>16777215</width>
                <height>16777215</height>
               </size>
              </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+             <property name="text">
+              <string>Check / Uncheck All</string>
              </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+            </widget>
+           </item>
+           <item>
+            <widget class="QListWidget" name="FrequencyListWidget">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_2">
-              <item>
-               <widget class="QCheckBox" name="AllBandsCheckBox">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Process all bands</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QListWidget" name="FrequencyListWidget">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
             </widget>
            </item>
           </layout>
          </widget>
         </item>
-        <item>
-         <widget class="QPushButton" name="BypassCCFPushButton">
-          <property name="text">
-           <string>Will Prompt CCF</string>
-          </property>
-         </widget>
-        </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="BypassCCFPushButton">
+        <property name="text">
+         <string>Will Prompt CCF</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
-    <item>
+    <item row="3" column="0" colspan="3">
      <widget class="QTextBrowser" name="messageDisplayer">
       <property name="minimumSize">
        <size>
@@ -388,7 +425,7 @@
       </property>
      </widget>
     </item>
-    <item>
+    <item row="5" column="0" colspan="3">
      <layout class="QHBoxLayout" name="BottomHorizontalLayout">
       <item>
        <widget class="QProgressBar" name="progressBar">
@@ -432,8 +469,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>914</width>
-     <height>24</height>
+     <width>1100</width>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
@@ -443,6 +480,7 @@
     <addaction name="actionLoadPatientFolder"/>
     <addaction name="actionLoad_Database_Folder"/>
     <addaction name="actionLoadSpecificFolder"/>
+    <addaction name="actionLoad_Bids_Subject_Folder"/>
    </widget>
    <widget class="QMenu" name="menuConfiguration">
     <property name="title">
@@ -532,6 +570,11 @@
   <action name="actionFrequency_Bands">
    <property name="text">
     <string>Frequency Bands</string>
+   </property>
+  </action>
+  <action name="actionLoad_Bids_Subject_Folder">
+   <property name="text">
+    <string>Load Bids Subject Folder</string>
    </property>
   </action>
  </widget>

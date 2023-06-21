@@ -51,9 +51,12 @@
 #include "PatientFolderWorker.h"
 #include "SingleFilesWorker.h"
 #include "MultiSubjectWorker.h"
+#include "BidsSubjectWorker.h"
 #include "FileConverterWorker.h"
 #include "ErpWorker.h"
 #include "ConcatenationWorker.h"
+
+#include "BidsSubject.h"
 
 class Localizer : public QMainWindow
 {
@@ -73,12 +76,17 @@ private:
     void LoadPatientFolder();
     void LoadSpecificFolder();
     void LoadDatabaseFolder();
+    void LoadBidsSubject();
+    bool SeemsToBeBidsSubject(QString rootFolder);
+    BidsSubject ParseBidsSubjectInfo(QString rootFolder);
     void LoadTreeViewFolder(QString rootFolder);
     void LoadTreeViewFiles(QString rootFolder);
     void LoadTreeViewDatabase(QString rootFolder);
+    void LoadTreeViewBids(QString rootFolder);
 	void LoadTreeViewUI(QString initialFolder);
     int PreparePatientFolder();
     int PrepareSingleFiles();
+    int PrepareBidsSubjectFolder();
     std::vector<SubjectFolder*> PrepareDBFolders();
 	void InitProgressBar();
     void InitMultiSubjectProgresBar(std::vector<SubjectFolder*> subjects);
@@ -96,6 +104,7 @@ private slots:
     void ProcessFolderAnalysis();
     void ProcessSingleAnalysis();
     void ProcessMultiFolderAnalysis();
+    void ProcessBidsSubjectAnalysis();
     void ProcessERPAnalysis(QList<QString> examCorrespondance);
     void ProcessFileConvertion(QList<QString> newFileType);
 	void ProcessMicromedFileConcatenation(QList<QString> files, QString directoryPath, QString fileName);
@@ -123,6 +132,8 @@ private:
     SubjectFolder* currentPat = nullptr;
 	std::vector<singleFile> currentFiles;
     std::vector<SubjectFolder*> m_MultipleSubjects;
+    BidsSubject m_bidsSubject;
+    BidsSubject workingCopy;
 	//==Thread and Worker
 	QReadWriteLock m_lockLoop;  
 	QThread* thread = nullptr;

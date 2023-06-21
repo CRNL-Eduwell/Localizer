@@ -133,6 +133,18 @@ void Localizer::ConnectMenuBar()
             QMessageBox::information(this, "Error", "Wait until end of analysis or cancel it");
         }
     });
+    QAction* openLoadBidsSubjectFolder = ui.menuFiles->actions().at(3);
+    connect(openLoadBidsSubjectFolder, &QAction::triggered, this, [&]
+    {
+        if(!isAlreadyRunning)
+        {
+            LoadBidsSubject();
+        }
+        else
+        {
+            QMessageBox::information(this, "Error", "Wait until end of analysis or cancel it");
+        }
+    });
     //===Configuration
     QAction* openLocaMenu = ui.menuConfiguration->actions().at(0);
     connect(openLocaMenu, &QAction::triggered, this, [&] 
@@ -218,6 +230,98 @@ void Localizer::LoadDatabaseFolder()
     }
 }
 
+void Localizer::LoadBidsSubject()
+{
+    QFileDialog *fileDial = new QFileDialog(this);
+    fileDial->setOption(QFileDialog::ShowDirsOnly, true);
+    QString fileName = fileDial->getExistingDirectory(this, tr("Choose Bids Subject Folder"));
+    if (fileName != "")
+    {
+        QString rootFolderPath = QDir(fileName).absolutePath();
+        LoadTreeViewBids(rootFolderPath);
+        bool seemsBids = SeemsToBeBidsSubject(rootFolderPath);
+        if(seemsBids)
+        {
+            m_bidsSubject = ParseBidsSubjectInfo(rootFolderPath);
+        }
+        else
+        {
+            QMessageBox::information(this, "Error", "It does not seem to be a valid Bids subject, please check your data");
+        }
+    }
+}
+
+bool Localizer::SeemsToBeBidsSubject(QString rootFolder)
+{
+    QDir root = QDir(rootFolder);
+    bool rootNameOk = root.dirName().contains("sub-");
+    bool hasPostSession = false;
+    bool hasIeegFolder = false;
+
+    QString NamePostSession = "";
+    root.setFilter(QDir::Dirs);
+    QStringList entries = root.entryList();
+    for (QStringList::ConstIterator entry = entries.begin(); entry != entries.end(); ++entry)
+    {
+        QString dirname = *entry;
+        if (dirname != QObject::tr(".") && dirname != QObject::tr(".."))
+        {
+            if(dirname.contains("ses-post"))
+            {
+                NamePostSession = dirname;
+                hasPostSession = true;
+
+                if(hasPostSession)
+                {
+                    QString postSessionIeegFolderToLookFor = rootFolder + "/" + NamePostSession + "/ieeg";
+
+                    QDirIterator it(rootFolder, QStringList() << "anat" << "ieeg", QDir::AllEntries | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+                    while(it.hasNext())
+                    {
+                        QString folder = it.next();
+                        if(folder == postSessionIeegFolderToLookFor)
+                        {
+                            hasIeegFolder = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+//    qDebug() << rootNameOk;
+//    qDebug() << hasPostSession;
+//    qDebug() << hasIeegFolder;
+
+    return rootNameOk && hasPostSession && hasIeegFolder;
+}
+
+BidsSubject Localizer::ParseBidsSubjectInfo(QString rootFolder)
+{
+    std::vector<std::string> tasks;
+    std::vector<InsermLibrary::BrainVisionFileInfo> fileInfos;
+    QDirIterator it(rootFolder, QStringList() << "*.vhdr", QDir::Files, QDirIterator::Subdirectories);
+    while(it.hasNext())
+    {
+        QString vhdr = it.next();
+        QStringList split = vhdr.split("_task-");
+        QString task = split[1].split("_").first();
+
+        tasks.push_back(task.toStdString());
+        fileInfos.push_back(InsermLibrary::BrainVisionFileInfo(vhdr.toStdString()));
+    }
+
+    if(tasks.size() == fileInfos.size())
+    {
+        return BidsSubject(rootFolder.toStdString(), tasks, fileInfos);
+    }
+    else
+    {
+        return BidsSubject();
+    }
+}
+
 void Localizer::LoadTreeViewFolder(QString rootFolder)
 {
     ResetUiCheckboxes();
@@ -270,6 +374,23 @@ void Localizer::LoadTreeViewDatabase(QString rootFolder)
     connect(ui.FileTreeView, &QTreeView::clicked, this, &Localizer::ModelClicked);
     //==[Event for rest of UI]
     connect(ui.processButton, &QPushButton::clicked, this, &Localizer::ProcessMultiFolderAnalysis);
+    SetLabelCount(0);
+}
+
+void Localizer::LoadTreeViewBids(QString rootFolder)
+{
+    ResetUiCheckboxes();
+    disconnect(ui.processButton, nullptr, nullptr, nullptr);
+    if (ui.FileTreeView->selectionModel() != nullptr)
+        disconnect(ui.FileTreeView->selectionModel(), nullptr, nullptr, nullptr);
+
+    LoadTreeViewUI(rootFolder);
+
+    //TODO : voir si y'en a besoin
+    //==[Event connected to model of treeview]
+    //connect(ui.FileTreeView, &QTreeView::clicked, this, &Localizer::ModelClicked);
+    //==[Event for rest of UI]
+    connect(ui.processButton, &QPushButton::clicked, this, &Localizer::ProcessBidsSubjectAnalysis);
     SetLabelCount(0);
 }
 
@@ -443,6 +564,55 @@ std::vector<SubjectFolder*> Localizer::PrepareDBFolders()
     }
 
     return subjects;
+}
+
+int Localizer::PrepareBidsSubjectFolder()
+{
+    QStringList extention;
+    extention << "vhdr";
+
+    std::vector<std::string> tasksToKeep;
+    QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
+    for (int i = 0; i < selectedRows.size(); i++)
+    {
+        bool isRoot = selectedRows[i].parent() == ui.FileTreeView->rootIndex();
+        QFileInfo info = m_localFileSystemModel->fileInfo(selectedRows[i]);
+        if(!isRoot && info.isFile())
+        {
+            if(extention.contains(info.suffix().toLower()))
+            {
+                QStringList split = info.absoluteFilePath().split("_task-");
+                QString task = split[1].split("_").first();
+                tasksToKeep.push_back(task.toStdString());
+            }
+        }
+    }
+
+    std::vector<bool> deleteMe = std::vector<bool>(m_bidsSubject.Tasks().size(), true);
+    for (int i = 0; i < tasksToKeep.size(); i++)
+    {
+        std::vector<std::string>::iterator it = std::find(m_bidsSubject.Tasks().begin(), m_bidsSubject.Tasks().end(), tasksToKeep[i]);
+        if (it != m_bidsSubject.Tasks().end()) //if the pair already exists
+        {
+            int index = std::distance(m_bidsSubject.Tasks().begin(), it);
+            deleteMe[index] = false;
+        }
+    }
+
+    if(tasksToKeep.size() == 0) { qDebug() << "no selected "; return -1; }
+
+    workingCopy = BidsSubject(m_bidsSubject);
+    int ExamCount = static_cast<int>(deleteMe.size());
+    for (int i = ExamCount - 1; i >= 0; i--)
+    {
+        if (deleteMe[i])
+        {
+            qDebug() << "Should delete " << m_bidsSubject.Tasks()[i].c_str();
+            workingCopy.DeleteTask(m_bidsSubject.Tasks()[i]);
+        }
+    }
+
+    return 0;
 }
 
 void Localizer::InitProgressBar()
@@ -882,6 +1052,53 @@ void Localizer::ProcessMultiFolderAnalysis()
     {
         QMessageBox::critical(this, "Analysis already running", "Please wait until the current analysis if finished");
     }
+}
+
+void Localizer::ProcessBidsSubjectAnalysis()
+{
+    if (isAlreadyRunning)
+    {
+        QMessageBox::critical(this, "Analysis already running", "Please wait until the current analysis if finished");
+        return;
+    }
+
+    //Get info from ui and check that at least one task can be analyzed
+    InsermLibrary::picOption optpic = picOpt->getPicOption();
+    InsermLibrary::statOption optstat = optStat->getStatOption();
+    InitProgressBar();
+    std::vector<InsermLibrary::FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
+    //for now no file priority, if we add edf and/or other we will put the system back in place
+
+    int result = PrepareBidsSubjectFolder();
+    if(result == -1)
+    {
+        QMessageBox::critical(this, "No Tasks Selected", "You need to select at least one task to process in the user interface");
+        return;
+    }
+
+    thread = new QThread;
+    worker = new BidsSubjectWorker(workingCopy, analysisOptions, optstat, optpic, PtsFilePath);
+
+    //=== Event update displayer
+    connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
+    connect(worker->GetLoca(), &InsermLibrary::LOCA::sendLogInfo, this, &Localizer::DisplayLog);
+    //connect(worker->GetLoca(), &InsermLibrary::LOCA::incrementAdavnce, this, &Bidsalyzer::UpdateProgressBar);
+
+    //New ping pong order
+    connect(thread, &QThread::started, this, [&]{ worker->ExtractElectrodeList(); });
+    connect(worker, &IWorker::sendElectrodeList, this, &Localizer::ReceiveElectrodeList);
+    connect(this, &Localizer::MontageDone, worker, &IWorker::Process);
+
+    //=== Event From worker and thread
+    connect(worker, &IWorker::finished, thread, &QThread::quit);
+    connect(worker, &IWorker::finished, worker, &IWorker::deleteLater);
+    connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+    connect(worker, &IWorker::finished, this, [&] { isAlreadyRunning = false; });
+
+    //=== Launch Thread and lock possible second launch
+    worker->moveToThread(thread);
+    thread->start();
+    isAlreadyRunning = true;
 }
 
 void Localizer::ProcessERPAnalysis(QList<QString> exams)
