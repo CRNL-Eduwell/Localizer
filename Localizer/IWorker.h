@@ -22,7 +22,7 @@ public:
 
 protected:
     std::vector<std::string> ExtractElectrodeListFromFile(std::string currentFilePath);
-    InsermLibrary::eegContainer* GetEegContainer(std::string currentFilePath, bool shouldExtractData);
+    InsermLibrary::eegContainer* GetEegContainer(std::string currentFilePath, bool shouldExtractData, bool isBids = false);
     std::string GetCurrentTime();
 
 private :

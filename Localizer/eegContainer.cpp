@@ -1,12 +1,13 @@
 #include "eegContainer.h"
 
-InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFrequency)
+InsermLibrary::eegContainer::eegContainer(EEGFormat::IFile* file, int downsampFrequency, bool isBids)
 {
 	fftwf_init_threads();
 	fftwf_plan_with_nthreads(5);
 
 	elanFrequencyBand = std::vector<EEGFormat::IFile*>(6);
 
+    m_isBids = isBids;
 	m_file = file;
 	GetElectrodes(m_file);
 	//==
@@ -84,24 +85,18 @@ void InsermLibrary::eegContainer::BipolarizeElectrodes()
 
 void InsermLibrary::eegContainer::SaveFrequencyData(EEGFormat::FileType FileType, const std::vector<int>& frequencyBand)
 {
-	std::string rootFileFolder = EEGFormat::Utility::GetDirectoryPath(m_file->DefaultFilePath());
-	std::string patientName = EEGFormat::Utility::GetFileName(m_file->DefaultFilePath(), false);
-    std::string frequencyFolder = "_f" + std::to_string(frequencyBand[0]) + "f" + std::to_string(frequencyBand[frequencyBand.size() - 1]);
-	std::string rootFrequencyFolder = rootFileFolder + "/" + patientName + frequencyFolder + "/";
+    std::string frequencyFolder = "f" + std::to_string(frequencyBand[0]) + "f" + std::to_string(frequencyBand[frequencyBand.size() - 1]);
+    std::string rootFrequencyFolder = GetFrequencyFolderName(frequencyFolder);
 
-    //TODO : When eeg format does not need boost::filesystem anymore
-    //replace functions with those from std::filesystem
     if(!EEGFormat::Utility::IsValidDirectory(rootFrequencyFolder.c_str()))
     {
-        std::cout << "Creating freQ FOLDER" << std::endl;
-		CREATE_DIRECTORY(rootFrequencyFolder.c_str());
+        std::filesystem::create_directories(rootFrequencyFolder);
     }
 
 	for (int i = 0; i < 6; i++)
 	{
-		std::string directory = rootFrequencyFolder;
-        std::string baseFileName = patientName + frequencyFolder + "_ds" + std::to_string(DownsamplingFactor()) + "_sm" + std::to_string((int)m_smoothingMilliSec[i]);
-		switch (FileType)
+        std::string baseFileName = GetFrequencyFileBaseName(frequencyFolder, std::to_string((int)m_smoothingMilliSec[i]));
+        switch (FileType)
 		{
 			case EEGFormat::FileType::Micromed:
 			{

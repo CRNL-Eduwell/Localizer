@@ -32,7 +32,7 @@ void BidsSubjectWorker::Process()
             emit sendLogInfo(QString::fromStdString("Begin time : ") + GetCurrentTime().c_str());
             emit sendLogInfo("");
             //TODO
-            //m_Loca->Localize(myContainer, i, m_Patient->FileInfo(i), m_Patient->Tasks()[i]);
+            m_Loca->Localize(myContainer, i, m_Patient->FileInfo(i), m_Patient->Tasks()[i]);
             emit sendLogInfo("");
             emit sendLogInfo(QString::fromStdString("End time : ") + GetCurrentTime().c_str());
             emit sendLogInfo("");
@@ -79,7 +79,7 @@ InsermLibrary::eegContainer* BidsSubjectWorker::ExtractData(InsermLibrary::IEegF
         {
             if(ifileInfo->CheckForErrors() == 0)
             {
-                InsermLibrary::eegContainer *myContainer = GetEegContainer(ifileInfo->GetFilesString(), extractOriginalData);
+                InsermLibrary::eegContainer *myContainer = GetEegContainer(ifileInfo->GetFilesString(), extractOriginalData, true);
                 myContainer->DeleteElectrodes(m_IndexToDelete);
                 myContainer->GetElectrodes();
 

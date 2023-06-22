@@ -15,13 +15,14 @@
 #include <vector>
 #include <thread>
 #include <mutex> 
+#include <filesystem>
 
 namespace InsermLibrary
 {
 	class eegContainer
 	{
 	public:
-        eegContainer(EEGFormat::IFile* file, int downsampFrequency);
+        eegContainer(EEGFormat::IFile* file, int downsampFrequency, bool isBids = false);
 		~eegContainer();		
 
 		//===[ Getter / Setter ]===
@@ -29,10 +30,64 @@ namespace InsermLibrary
 		{
 			return EEGFormat::Utility::GetDirectoryPath(m_file->DefaultFilePath());
 		}
-		inline std::string RootFileName(bool withExtension = false)
+        inline std::string RootOutputFileFolder()
+        {
+            if(m_isBids)
+            {
+                std::filesystem::path root(m_file->DefaultFilePath());
+                std::string rootFileFolder = root.parent_path().parent_path().parent_path().parent_path().string() + "/derivatives";
+                std::string patientName = EEGFormat::Utility::GetFileName(m_file->DefaultFilePath(), false);
+                vec1<std::string> patientNameSplit = split<std::string>(patientName, "_");
+                patientName = patientNameSplit[0];
+                return rootFileFolder + "/" + patientName + "/ieeg/";
+            }
+            else
+            {
+                return EEGFormat::Utility::GetDirectoryPath(m_file->DefaultFilePath());
+            }
+        }
+        inline std::string RootFileName(bool withExtension = false, bool withTask = false)
 		{
-			return EEGFormat::Utility::GetFileName(m_file->DefaultFilePath(), withExtension);
-		}
+            if(m_isBids)
+            {
+                std::string patientName = EEGFormat::Utility::GetFileName(m_file->DefaultFilePath(), false);
+                vec1<std::string> patientNameSplit = split<std::string>(patientName, "_");
+                if(withTask)
+                {
+                    return patientNameSplit[0] + "_" + patientNameSplit[2];
+                }
+                else
+                {
+                    return patientNameSplit[0];
+                }
+            }
+            else
+            {
+                return EEGFormat::Utility::GetFileName(m_file->DefaultFilePath(), withExtension);
+            }
+        }
+        inline std::string GetFrequencyFolderName(std::string frequencyFolder)
+        {
+            if(m_isBids)
+            {
+                return RootOutputFileFolder() + "/" + frequencyFolder + "/";
+            }
+            else
+            {
+                return RootOutputFileFolder() + "/" + RootFileName() + "_" + frequencyFolder + "/";
+            }
+        }
+        inline std::string GetFrequencyFileBaseName(std::string frequencyFolder, std::string smoothing)
+        {
+            if(m_isBids)
+            {
+                return RootFileName(false, true) + "_acq-" + frequencyFolder + "ds" + std::to_string(DownsamplingFactor()) + "sm" + smoothing + "_ieeg";
+            }
+            else
+            {
+                return RootFileName() + "_" + frequencyFolder + "_ds" + std::to_string(DownsamplingFactor()) + "_sm" + smoothing;
+            }
+        }
 		inline int SamplingFrequency()
 		{
 			return m_originalSamplingFrequency;
@@ -126,6 +181,7 @@ namespace InsermLibrary
         std::vector<std::string> flatElectrodes;
 
 	private:
+        bool m_isBids = false;
 		int m_originalSamplingFrequency = 0;
 		int m_downsampledFrequency = 0;
 		int m_nbSample = 0; //Original size of one channel (no downsamp)
