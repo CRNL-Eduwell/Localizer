@@ -19,7 +19,7 @@ namespace InsermLibrary
 
     private:
         std::string GetBarplotMapsFolder(std::string freqFolder, ProvFile* myprovFile, statOption* statOption);
-        std::string PrepareFolderAndPathsBar(std::string freqFolder, int dsSampFreq);
+        std::string PrepareFolderAndPathsBar(std::string freqFolder, eegContainer* myeegContainer);
         std::vector<PVALUECOORD> ProcessKruskallStatistic(vec3<float>& bigData, TriggerContainer* triggerContainer, eegContainer* myeegContainer, ProvFile* myprovFile, std::string freqFolder, statOption* statOption);
     };
 }

@@ -661,28 +661,51 @@ std::vector<std::string> InsermLibrary::StatisticalFilesProcessor::DefinePathFor
     std::vector<std::string> filesPath;
 
     std::string smoothing = (smoothingID == 0) ? "sm0" : (smoothingID == 1) ? "sm250" : (smoothingID == 2) ? "sm500" : (smoothingID == 3) ? "sm1000" : (smoothingID == 4) ? "sm2500" : "sm5000";
-    vec1<std::string> pathSplit = split<std::string>(freqFolder, "/");
 
-    std::string newPath = freqFolder;
-    newPath.append(pathSplit[pathSplit.size() - 1]);
-    std::string baseName = newPath  + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_" + smoothing;
-
-    //If this is not the prov for the task and some other way to visualise data, we need to precise it in the file name
-    std::string suffix = myprovFile->Name();
-    suffix = std::regex_replace(suffix, std::regex("_STATISTICS"), "");
-    if(pathSplit[pathSplit.size() - 1].find(suffix) != std::string::npos)
+    if(eegContainer->IsBids())
     {
-        suffix = "";
+        std::string patientName = eegContainer->RootFileName();
+        vec1<std::string> patientNameSplit = split<std::string>(patientName, "_");
+        patientName = patientNameSplit[0];
+
+        vec1<std::string> pathSplit = split<std::string>(freqFolder, "/");
+        std::string frequencyFolder = pathSplit[pathSplit.size() - 1];
+
+        //If this is not the prov for the task and some other way to visualise data, we need to precise it in the file name
+        std::string suffix = myprovFile->Name();
+        std::string directory = eegContainer->RootOutputFileFolder();
+        std::string baseName = patientName + "_task-" + suffix + "_acq-" + frequencyFolder + "ds" + std::to_string(eegContainer->DownsamplingFactor()) + smoothing + "_ieeg";
+
+        filesPath.push_back(directory + frequencyFolder + "/" + baseName + ".eeg.ent");
+        filesPath.push_back(directory + frequencyFolder + "/" + baseName + ".eeg");
+        filesPath.push_back(directory + baseName + ".pos");
+        return filesPath;
     }
     else
     {
-        suffix = "_" + suffix;
-    }
+        vec1<std::string> pathSplit = split<std::string>(freqFolder, "/");
 
-    filesPath.push_back(baseName + "_stats" + suffix + ".eeg.ent");
-    filesPath.push_back(baseName + "_stats" + suffix + ".eeg");
-    filesPath.push_back(eegContainer->RootFileFolder() + eegContainer->RootFileName() + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_stats" + suffix + ".pos");
-    return filesPath;
+        std::string newPath = freqFolder;
+        newPath.append(pathSplit[pathSplit.size() - 1]);
+        std::string baseName = newPath  + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_" + smoothing;
+
+        //If this is not the prov for the task and some other way to visualise data, we need to precise it in the file name
+        std::string suffix = myprovFile->Name();
+        suffix = std::regex_replace(suffix, std::regex("_STATISTICS"), "");
+        if(pathSplit[pathSplit.size() - 1].find(suffix) != std::string::npos)
+        {
+            suffix = "";
+        }
+        else
+        {
+            suffix = "_" + suffix;
+        }
+
+        filesPath.push_back(baseName + "_stats" + suffix + ".eeg.ent");
+        filesPath.push_back(baseName + "_stats" + suffix + ".eeg");
+        filesPath.push_back(eegContainer->RootFileFolder() + eegContainer->RootFileName() + "_ds" + std::to_string(eegContainer->DownsamplingFactor()) + "_stats" + suffix + ".pos");
+        return filesPath;
+    }
 }
 
 void InsermLibrary::StatisticalFilesProcessor::WriteResultFile(EEGFormat::ElanFile* outputFile, std::vector<std::string> filesPath, std::vector<std::pair<int, int>> posSampleCodeToWrite)

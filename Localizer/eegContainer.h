@@ -25,7 +25,8 @@ namespace InsermLibrary
         eegContainer(EEGFormat::IFile* file, int downsampFrequency, bool isBids = false);
 		~eegContainer();		
 
-		//===[ Getter / Setter ]===
+        //===[ Getter / Setter ]===
+        inline bool IsBids() { return m_isBids; }
 		inline std::string RootFileFolder()
 		{
 			return EEGFormat::Utility::GetDirectoryPath(m_file->DefaultFilePath());
