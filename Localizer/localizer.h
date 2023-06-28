@@ -58,6 +58,8 @@
 
 #include "BidsSubject.h"
 
+enum class SubjectType { UNKNOWN, Subject, MultiSubject, SingleFile, BidsSubject };
+
 class Localizer : public QMainWindow
 {
 	Q_OBJECT
@@ -91,7 +93,7 @@ private:
 	void InitProgressBar();
     void InitMultiSubjectProgresBar(std::vector<SubjectFolder*> subjects);
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> GetUIAnalysisOption();
-	int GetSelectedFolderCount(QModelIndexList selectedIndexes);
+    int GetSelectedElementCount(QModelIndexList selectedIndexes);
 
 private slots:
 	void SetLabelCount(int count);
@@ -153,6 +155,7 @@ private:
 
     bool m_CCFToggle = false;
 	ErpProcessor* erpWindow = nullptr;
+    SubjectType m_subjectType = SubjectType::UNKNOWN;
 };
 
 #endif // LOCALIZER_H

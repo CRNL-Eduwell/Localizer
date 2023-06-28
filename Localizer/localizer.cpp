@@ -15,7 +15,7 @@ Localizer::Localizer(QWidget *parent) : QMainWindow(parent)
             QString fileName = inputArguments[2];
             if (fileName != "")
             {
-                m_isPatFolder = true;
+                m_subjectType = SubjectType::Subject;
                 QString rootFolderPath = QDir(fileName).absolutePath();
                 LoadTreeViewFolder(rootFolderPath);
             }
@@ -195,7 +195,7 @@ void Localizer::LoadPatientFolder()
     QString fileName = fileDial->getExistingDirectory(this, tr("Choose Lyon Patient Folder"));
     if (fileName != "")
     {
-        m_isPatFolder = true;
+        m_subjectType = SubjectType::Subject;
         QString rootFolderPath = QDir(fileName).absolutePath();
         LoadTreeViewFolder(rootFolderPath);
         ClearPtsForCorrelation();
@@ -210,7 +210,7 @@ void Localizer::LoadSpecificFolder()
     QString fileName = fileDial->getExistingDirectory(this,  tr("Choose folder with one or multiple eeg files : "), tr("C:\\"));
     if (fileName != "")
     {
-        m_isPatFolder = false;
+        m_subjectType = SubjectType::SingleFile;
         QString rootFolderPath = QDir(fileName).absolutePath();
         LoadTreeViewFiles(rootFolderPath);
     }
@@ -223,7 +223,7 @@ void Localizer::LoadDatabaseFolder()
     QString fileName = fileDial->getExistingDirectory(this, tr("Choose a folder containing multiple Lyon Patients"));
     if (fileName != "")
     {
-        m_isPatFolder = true;
+        m_subjectType = SubjectType::MultiSubject;
         QString rootFolderPath = QDir(fileName).absolutePath();
         LoadTreeViewDatabase(rootFolderPath);
         ClearPtsForCorrelation();
@@ -237,6 +237,7 @@ void Localizer::LoadBidsSubject()
     QString fileName = fileDial->getExistingDirectory(this, tr("Choose Bids Subject Folder"));
     if (fileName != "")
     {
+        m_subjectType = SubjectType::BidsSubject;
         QString rootFolderPath = QDir(fileName).absolutePath();
         LoadTreeViewBids(rootFolderPath);
         bool seemsBids = SeemsToBeBidsSubject(rootFolderPath);
@@ -386,9 +387,8 @@ void Localizer::LoadTreeViewBids(QString rootFolder)
 
     LoadTreeViewUI(rootFolder);
 
-    //TODO : voir si y'en a besoin
     //==[Event connected to model of treeview]
-    //connect(ui.FileTreeView, &QTreeView::clicked, this, &Localizer::ModelClicked);
+    connect(ui.FileTreeView, &QTreeView::clicked, this, &Localizer::ModelClicked);
     //==[Event for rest of UI]
     connect(ui.processButton, &QPushButton::clicked, this, &Localizer::ProcessBidsSubjectAnalysis);
     SetLabelCount(0);
@@ -423,7 +423,7 @@ void Localizer::LoadTreeViewUI(QString initialFolder)
 int Localizer::PreparePatientFolder()
 {
     QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
-    if(GetSelectedFolderCount(selectedRows) == 0) return -1;
+    if(GetSelectedElementCount(selectedRows) == 0) return -1;
 
     //Create data structure used by the processing part
     if (currentFiles.size() > 0)
@@ -515,7 +515,7 @@ std::vector<SubjectFolder*> Localizer::PrepareDBFolders()
     delete elecWin;
 
     QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
-    if(GetSelectedFolderCount(selectedRows) == 0) return std::vector<SubjectFolder*>();
+    if(GetSelectedElementCount(selectedRows) == 0) return std::vector<SubjectFolder*>();
 
     //Create data structure used by the processing part
     if (currentFiles.size() > 0) currentFiles.clear();
@@ -621,7 +621,7 @@ void Localizer::InitProgressBar()
     nbDoneTask = 0;
     nbTaskToDo = 0;
 
-    int nbFolderSelected = GetSelectedFolderCount(ui.FileTreeView->selectionModel()->selectedRows());
+    int nbFolderSelected = GetSelectedElementCount(ui.FileTreeView->selectionModel()->selectedRows());
     int nbFrequencyBands = 0;
     for (int i = 0; i < ui.FrequencyListWidget->count(); i++)
     {
@@ -710,15 +710,51 @@ std::vector<InsermLibrary::FrequencyBandAnalysisOpt> Localizer::GetUIAnalysisOpt
     return analysisOpt;
 }
 
-int Localizer::GetSelectedFolderCount(QModelIndexList selectedIndexes)
+int Localizer::GetSelectedElementCount(QModelIndexList selectedIndexes)
 {
     int nbElementSelected = 0;
     for (int i = 0; i < selectedIndexes.size(); i++)
     {
-        bool isRoot = selectedIndexes[i].parent() == ui.FileTreeView->rootIndex();
         QFileInfo info = m_localFileSystemModel->fileInfo(selectedIndexes[i]);
-        bool wantedElement = m_isPatFolder ? info.isDir() : info.isFile();
-        if (wantedElement && isRoot)
+        bool isRoot = false;
+        bool gothrough = false;
+        switch(m_subjectType)
+        {
+            case SubjectType::Subject:
+            {
+                isRoot = selectedIndexes[i].parent() == ui.FileTreeView->rootIndex();
+                gothrough = info.isDir() && isRoot;
+                break;
+            }
+            case SubjectType::MultiSubject:
+            {
+                isRoot = selectedIndexes[i].parent() == ui.FileTreeView->rootIndex();
+                gothrough = info.isDir() && isRoot;
+                break;
+            }
+            case SubjectType::SingleFile:
+            {
+                bool isCorrectFile = info.suffix() == "trc" || info.suffix() == "TRC" || info.suffix() == "eeg" || info.suffix() == "vhdr" || info.suffix() == "edf";
+                isRoot = selectedIndexes[i].parent() == ui.FileTreeView->rootIndex();
+                gothrough = info.isFile() && isRoot && isCorrectFile;
+                break;
+            }
+            case SubjectType::BidsSubject:
+            {
+                //TODO : add edf later when validated
+                bool isCorrectFile = info.suffix() == "vhdr";
+                isRoot = selectedIndexes[i].parent().parent().parent() == ui.FileTreeView->rootIndex();
+                gothrough = info.isFile() && isRoot && isCorrectFile ;
+                break;
+            }
+            default:
+            {
+                gothrough = false;
+                break;
+            }
+        }
+
+        if (gothrough)
         {
             if (ui.FileTreeView->selectionModel()->isSelected(selectedIndexes[i]))
                 nbElementSelected++;
@@ -736,19 +772,50 @@ int Localizer::GetSelectedFolderCount(QModelIndexList selectedIndexes)
 //=== Slots	
 void Localizer::SetLabelCount(int count)
 {
-    QString label = m_isPatFolder ? (count > 1 ? " patient folders" : " patient folder") : (count > 1 ? "single files" : "single file");
+    QString label = "";
+    switch(m_subjectType)
+    {
+        case SubjectType::Subject:
+        {
+            label = " experiment folders";
+            break;
+        }
+        case SubjectType::MultiSubject:
+        {
+            label = " patient folders";
+            break;
+        }
+        case SubjectType::SingleFile:
+        {
+            label = " single files";
+            break;
+        }
+        case SubjectType::BidsSubject:
+        {
+            label = " experiment files";
+            break;
+        }
+        default:
+        {
+            label = " UNKNOWN LABEL";
+            break;
+        }
+    }
+
     ui.FolderCountLabel->setText(QString::number(count) + label + " selected for Analysis");
 }
 
 void Localizer::ModelClicked(const QModelIndex &current)
 {
     QModelIndexList selectedIndexes = ui.FileTreeView->selectionModel()->selectedRows();
-    int nbFolderSelected = GetSelectedFolderCount(selectedIndexes);
-    SetLabelCount(nbFolderSelected);
+    int selectedElementCount = GetSelectedElementCount(selectedIndexes);
+    SetLabelCount(selectedElementCount);
 }
 
 void Localizer::ShowFileTreeContextMenu(QPoint point)
 {
+    if(m_subjectType != SubjectType::Subject) return;
+
     QStringList extention;
     extention << "trc" << "eeg" << "vhdr" << "edf";
 
@@ -758,7 +825,7 @@ void Localizer::ShowFileTreeContextMenu(QPoint point)
     QFileInfo selectedElementInfo = QFileInfo(m_localFileSystemModel->filePath(index));
     QString suffix = selectedElementInfo.suffix().toLower();
 
-    bool isRootFile = m_isPatFolder ? (index.parent().parent() == ui.FileTreeView->rootIndex()) : (index.parent() == ui.FileTreeView->rootIndex());
+    bool isRootFile = (m_subjectType == SubjectType::Subject) ? (index.parent().parent() == ui.FileTreeView->rootIndex()) : (index.parent() == ui.FileTreeView->rootIndex());
     if (isRootFile && extention.contains(suffix)) //if it is a recognized eeg file at the root level
     {
         QAction* processErpAction = contextMenu->addAction("Process ERP", [=]
