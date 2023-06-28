@@ -24,6 +24,7 @@ public:
         return hasValidExperiments;
     }
     inline std::vector<ExperimentFolder>& ExperimentFolders() { return m_ExperimentFolders; }
+    InsermLibrary::IEegFileInfo* GetEegFileInfo(int i);
 
 private :
     void GetExperimentFolder(std::string path);

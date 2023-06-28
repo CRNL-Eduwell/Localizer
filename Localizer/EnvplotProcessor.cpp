@@ -39,8 +39,10 @@ std::string InsermLibrary::EnvplotProcessor::GetEnv2PlotMapsFolder(std::string f
 
 std::string InsermLibrary::EnvplotProcessor::PrepareFolderAndPathsPlot(std::string mapsFolder, eegContainer* myeegContainer)
 {
-	if (!QDir(&mapsFolder.c_str()[0]).exists())
-		QDir().mkdir(&mapsFolder.c_str()[0]);
+    if(!std::filesystem::exists(mapsFolder))
+    {
+        std::filesystem::create_directory(mapsFolder);
+    }
 
     vec1<std::string> pathSplit = split<std::string>(mapsFolder, "/");
     if(myeegContainer->IsBids())

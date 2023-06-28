@@ -3,6 +3,7 @@
 #include "../../Framework/Framework/Measure.h"
 #include "mapsGenerator.h"
 #include "barsPlotsGenerator.h"
+#include <filesystem>
 
 void InsermLibrary::TrialMatricesProcessor::Process(TriggerContainer* triggerContainer, eegContainer* myeegContainer, ProvFile* myprovFile, std::string freqFolder, statOption* statOption, picOption* picOption)
 {
@@ -207,8 +208,10 @@ std::string InsermLibrary::TrialMatricesProcessor::GetTrialmatFolder(ProvFile* m
 
 std::string InsermLibrary::TrialMatricesProcessor::PrepareFolderAndPathsTrial(std::string mapsFolder, eegContainer* myeegContainer)
 {
-    if (!QDir(&mapsFolder.c_str()[0]).exists())
-        QDir().mkdir(&mapsFolder.c_str()[0]);
+    if(!std::filesystem::exists(mapsFolder))
+    {
+        std::filesystem::create_directory(mapsFolder);
+    }
 
     vec1<std::string> pathSplit = split<std::string>(mapsFolder, "/");
     if(myeegContainer->IsBids())

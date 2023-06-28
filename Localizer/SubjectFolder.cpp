@@ -43,3 +43,38 @@ void SubjectFolder::GetExperimentFolder(std::string path)
         }
     }
 }
+
+InsermLibrary::IEegFileInfo* SubjectFolder::GetEegFileInfo(int i)
+{
+    if(i >= m_ExperimentFolders.size())
+    {
+        std::cerr << "Error, Experiment Folder count is smaller or equals to the requested index" << std::endl;
+        return nullptr;
+    }
+
+    InsermLibrary::IEegFileInfo* fileInfo = m_ExperimentFolders[i].GetEegFileInfo(InsermLibrary::FileType::Micromed);
+    if(fileInfo != nullptr)
+    {
+        return fileInfo;
+    }
+
+    fileInfo = m_ExperimentFolders[i].GetEegFileInfo(InsermLibrary::FileType::Elan);
+    if(fileInfo != nullptr)
+    {
+        return fileInfo;
+    }
+
+    fileInfo = m_ExperimentFolders[i].GetEegFileInfo(InsermLibrary::FileType::Brainvision);
+    if(fileInfo != nullptr)
+    {
+        return fileInfo;
+    }
+
+    fileInfo = m_ExperimentFolders[i].GetEegFileInfo(InsermLibrary::FileType::EuropeanDataFormat);
+    if(fileInfo != nullptr)
+    {
+        return fileInfo;
+    }
+
+    return nullptr;
+}

@@ -31,7 +31,7 @@ void PatientFolderWorker::Process()
             emit sendLogInfo("");
             emit sendLogInfo(QString::fromStdString("Begin time : ") + GetCurrentTime().c_str());
             emit sendLogInfo("");
-            m_Loca->Localize(myContainer, i, &m_Patient->ExperimentFolders()[i]);
+            m_Loca->Localize(myContainer, i, m_Patient->GetEegFileInfo(i), m_Patient->ExperimentFolders()[i].ExperimentLabel());
             emit sendLogInfo("");
             emit sendLogInfo(QString::fromStdString("End time : ") + GetCurrentTime().c_str());
             emit sendLogInfo("");
