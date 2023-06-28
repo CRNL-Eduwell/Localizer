@@ -34,6 +34,8 @@
 #include "CorrelationMapsProcessor.h"
 #include "StatisticalFilesProcessor.h"
 
+#include "./../../EEGFormat/EEGFormat/Wrapper.h"
+
 namespace InsermLibrary
 {
 	class LOCA : public QObject

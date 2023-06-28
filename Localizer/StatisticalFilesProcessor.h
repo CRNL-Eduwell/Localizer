@@ -11,6 +11,7 @@
 #include "optionsParameters.h"
 #include "Stats.h"
 #include <regex>
+#include "../EEGFormat/EEGFormat/ElanFile.h"
 
 namespace InsermLibrary
 {

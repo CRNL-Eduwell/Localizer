@@ -5,9 +5,6 @@
 #include <QtWidgets/QMainWindow>
 #include <QDir>
 #include <QThread>
-
-#include "./../../Framework/Framework/Wrapper.h"
-
 #include "LOCA.h"
 
 class IWorker : public QObject

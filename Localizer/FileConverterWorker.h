@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <string>
-#include "../../EEGFormat/EEGFormat/Wrapper.h"
 #include "IWorker.h"
 
 #include <QCoreApplication>

@@ -17,7 +17,6 @@
 #include <QStandardItemModel>
 
 #include <iostream>
-#include "Utility.h"
 #include "GeneralOptionsFile.h"
 
 class GeneralOptionsWindow : public QDialog

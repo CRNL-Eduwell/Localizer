@@ -15,8 +15,6 @@ public:
     IconWindow(InsermLibrary::Icon& sbicon, QWidget* parent = nullptr);
     ~IconWindow();
 
-//private:
-
 private slots:
     void BrowseIcon();
 	void ValidateModifications();

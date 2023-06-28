@@ -1,9 +1,8 @@
 #include "TrialMatricesProcessor.h"
-#include <QDir>
 #include "../../Framework/Framework/Measure.h"
 #include "mapsGenerator.h"
-#include "barsPlotsGenerator.h"
 #include <filesystem>
+#include "Stats.h"
 
 void InsermLibrary::TrialMatricesProcessor::Process(TriggerContainer* triggerContainer, eegContainer* myeegContainer, ProvFile* myprovFile, std::string freqFolder, statOption* statOption, picOption* picOption)
 {

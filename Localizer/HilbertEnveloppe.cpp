@@ -1,4 +1,6 @@
 #include "HilbertEnveloppe.h"
+#include "./../../EEGFormat/EEGFormat/ElanFile.h"
+#include "./../../Framework/Framework/Convolution.h"
 
 using Framework::Filtering::Linear::Convolution;
 

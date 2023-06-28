@@ -7,8 +7,6 @@
 #include "TriggerContainer.h"
 #include "eegContainer.h"
 
-#include "./../../Framework/Framework/Wilcox.h"
-#include "./../../Framework/Framework/Kruskall.h"
 #include "Utility.h"
 #include "optionsParameters.h"
 

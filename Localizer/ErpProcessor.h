@@ -2,7 +2,6 @@
 #define ERPPROCESSOR_H
 
 #include "ui_ErpProcessor.h"
-#include "../../EEGFormat/EEGFormat/Utility.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QList>

@@ -8,7 +8,6 @@
 #include "eegContainer.h"
 #include "ProvFile.h"
 #include "optionsParameters.h"
-#include "Stats.h"
 
 namespace InsermLibrary
 {

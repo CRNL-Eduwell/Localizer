@@ -1,4 +1,6 @@
 #include "IWorker.h"
+#include "./../../Framework/Framework/Wrapper.h"
+#include "./../../EEGFormat/EEGFormat/Wrapper.h"
 
 IWorker::IWorker()
 {

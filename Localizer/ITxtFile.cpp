@@ -1,4 +1,5 @@
 #include "ITxtFile.h"
+#include "../../EEGFormat/EEGFormat/Utility.h"
 
 InsermLibrary::ITxtFile::ITxtFile(const std::string& filePath)
 {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include "Utility.h"
 #include "ITxtFile.h"
 #include "IEegFileInfo.h"
 #include <QCoreApplication>

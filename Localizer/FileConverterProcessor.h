@@ -2,7 +2,6 @@
 #define FILECONVERTERPROCESSOR_H
 
 #include "ui_FileConverterProcessor.h"
-#include "../../EEGFormat/EEGFormat/Utility.h"
 #include <QDir>
 #include <QList>
 #include <QComboBox>

@@ -5,7 +5,6 @@
 #include <iomanip>      // std::setw
 #include <string>
 #include <vector>
-#include "../../EEGFormat/EEGFormat/Utility.h"
 #include <QFileInfo>
 #include <QTextStream>
 #include <QStandardItemModel>

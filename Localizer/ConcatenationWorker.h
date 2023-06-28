@@ -5,8 +5,6 @@
 #include <iostream>
 #include <vector>
 #include "IWorker.h"
-#include "../../EEGFormat/EEGFormat/Utility.h"
-#include "../../EEGFormat/EEGFormat/MicromedFile.h"
 
 class ConcatenationWorker : public IWorker
 {

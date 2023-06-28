@@ -1,4 +1,7 @@
 #include "StatisticalFilesProcessor.h"
+#include "./../../EEGFormat/EEGFormat/Wrapper.h"
+#include "./../../Framework/Framework/Wilcox.h"
+#include "./../../Framework/Framework/Kruskall.h"
 #include <QDebug>
 
 void InsermLibrary::StatisticalFilesProcessor::Process(TriggerContainer* triggerContainer, eegContainer* myeegContainer, int smoothingID, ProvFile* myprovFile, std::string freqFolder, statOption* statOption)

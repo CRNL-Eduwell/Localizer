@@ -1,4 +1,5 @@
 #include "GeneralOptionsFile.h"
+#include "../../EEGFormat/EEGFormat/Utility.h"
 
 InsermLibrary::GeneralOptionsFile::GeneralOptionsFile(const std::string& filePath) : ITxtFile(filePath)
 {

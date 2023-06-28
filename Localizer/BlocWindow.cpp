@@ -1,4 +1,5 @@
 #include "BlocWindow.h"
+#include "SubBlocWindow.h"
 
 BlocWindow::BlocWindow(InsermLibrary::Bloc& bloc, QWidget* parent) : QDialog(parent)
 {
