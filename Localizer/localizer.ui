@@ -155,7 +155,10 @@
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>0</number>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
@@ -177,7 +180,10 @@
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>0</number>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_4">
               <item>
@@ -196,7 +202,10 @@
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>0</number>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_6">
               <item>
@@ -266,7 +275,10 @@
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="lineWidth">
+              <number>0</number>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
               <item>
@@ -470,7 +482,7 @@
      <x>0</x>
      <y>0</y>
      <width>1100</width>
-     <height>37</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">

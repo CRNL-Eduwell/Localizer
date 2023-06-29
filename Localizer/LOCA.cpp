@@ -224,7 +224,7 @@ InsermLibrary::IEegFileInfo* InsermLibrary::LOCA::GetEegFileInfo(eegContainer* m
         }
         else if(p.path().extension() == ".ent")
         {
-            std::string parent = std::filesystem::path(kvp.second).parent_path();
+            std::string parent = std::filesystem::path(kvp.second).parent_path().string();
             std::string pos = p.path().stem().string();
             std::vector<std::string> posSplit = split<std::string>(pos, "_");
             pos = parent + "/" + posSplit[0] + "_" + posSplit[1] + "_" + posSplit[2] + "_" + posSplit[3] + "_" + posSplit[5] + ".pos";
