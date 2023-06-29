@@ -345,21 +345,8 @@ QColor InsermLibrary::CorrelationMapsProcessor::GetColorFromLabel(std::string la
 {
 	QColor colors[]{ QColor(Qt::red), QColor(Qt::blue), QColor(Qt::darkYellow), QColor(Qt::green), QColor(Qt::gray), QColor(Qt::cyan), QColor(Qt::black), QColor(Qt::magenta) };
 
-	std::string result = "";
-	int resId = -1;
-
 	int goodId = GetIndexFromElectrodeLabel(label);
-
-	if (goodId != -1)
-	{
-		result = label.substr(0, goodId);
-		resId = stoi(label.substr(goodId, label.size()));
-	}
-	else
-	{
-		result = label;
-	}
-
+    std::string result = (goodId != -1) ? label.substr(0, goodId) : label;
 	if (result.find(memoryLabel) != std::string::npos && (result.length() == memoryLabel.length()))
 	{
 		return colors[m_colorId];

@@ -7,7 +7,6 @@
 #include "ui_ChooseLocaWindow.h"
 #include <iostream>
 #include <fstream>
-#include "Utility.h"
 #include <QDir>
 
 class ChooseLocaWindow : public QDialog

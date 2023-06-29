@@ -5,9 +5,6 @@
 #include <QtWidgets/QMainWindow>
 #include <QDir>
 #include <QThread>
-
-#include "./../../Framework/Framework/Wrapper.h"
-
 #include "LOCA.h"
 
 class IWorker : public QObject
@@ -22,7 +19,7 @@ public:
 
 protected:
     std::vector<std::string> ExtractElectrodeListFromFile(std::string currentFilePath);
-    InsermLibrary::eegContainer* GetEegContainer(std::string currentFilePath, bool shouldExtractData);
+    InsermLibrary::eegContainer* GetEegContainer(std::string currentFilePath, bool shouldExtractData, bool isBids = false);
     std::string GetCurrentTime();
 
 private :

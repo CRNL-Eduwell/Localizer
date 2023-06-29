@@ -1,15 +1,15 @@
 #include "TrialMatricesProcessor.h"
-#include <QDir>
 #include "../../Framework/Framework/Measure.h"
 #include "mapsGenerator.h"
-#include "barsPlotsGenerator.h"
+#include <filesystem>
+#include "Stats.h"
 
 void InsermLibrary::TrialMatricesProcessor::Process(TriggerContainer* triggerContainer, eegContainer* myeegContainer, ProvFile* myprovFile, std::string freqFolder, statOption* statOption, picOption* picOption)
 {
     std::vector<PVALUECOORD> significantValue;
     //== get some useful information
     std::string mapsFolder = GetTrialmatFolder(myprovFile, freqFolder, statOption);
-    std::string mapPath = PrepareFolderAndPathsTrial(mapsFolder, myeegContainer->DownsamplingFactor());
+    std::string mapPath = PrepareFolderAndPathsTrial(mapsFolder, myeegContainer);
 
     // Get biggest window possible, for now we use the assumption that every bloc has the same window
     // TODO : deal with possible different windows
@@ -205,14 +205,24 @@ std::string InsermLibrary::TrialMatricesProcessor::GetTrialmatFolder(ProvFile* m
     return mapsFolder;
 }
 
-std::string InsermLibrary::TrialMatricesProcessor::PrepareFolderAndPathsTrial(std::string mapsFolder, int dsSampFreq)
+std::string InsermLibrary::TrialMatricesProcessor::PrepareFolderAndPathsTrial(std::string mapsFolder, eegContainer* myeegContainer)
 {
-    if (!QDir(&mapsFolder.c_str()[0]).exists())
-        QDir().mkdir(&mapsFolder.c_str()[0]);
+    if(!std::filesystem::exists(mapsFolder))
+    {
+        std::filesystem::create_directory(mapsFolder);
+    }
 
     vec1<std::string> pathSplit = split<std::string>(mapsFolder, "/");
-
-    return std::string(mapsFolder + "/" + pathSplit[pathSplit.size() - 2] + "_ds" + std::to_string(dsSampFreq) + "_sm0_trials_");
+    if(myeegContainer->IsBids())
+    {
+        vec1<std::string> frequencySuffixSplit =  split<std::string>(pathSplit[pathSplit.size() - 1], "_");
+        std::string labelName = myeegContainer->RootFileName(false, true) + "_acq-" + frequencySuffixSplit[0] + "ds" +   std::to_string(myeegContainer->DownsamplingFactor());
+        return std::string(mapsFolder + "/" + labelName + "sm0trials_");
+    }
+    else
+    {
+        return std::string(mapsFolder + "/" + pathSplit[pathSplit.size() - 2] + "_ds" + std::to_string(myeegContainer->DownsamplingFactor()) + "_sm0_trials_");
+    }
 }
 
 InsermLibrary::vec1<InsermLibrary::PVALUECOORD> InsermLibrary::TrialMatricesProcessor::ProcessWilcoxonStatistic(vec3<float>& bigData, TriggerContainer* triggerContainer, eegContainer* myeegContainer, ProvFile* myprovFile, std::string freqFolder, statOption* statOption)

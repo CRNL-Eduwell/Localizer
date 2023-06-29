@@ -159,6 +159,8 @@ HEADERS += \
     Localizer/AlgorithmStrategyFactory.h \
     Localizer/AnalysisFolder.h \
     Localizer/BarplotProcessor.h \
+    Localizer/BidsSubject.h \
+    Localizer/BidsSubjectWorker.h \
     Localizer/Bloc.h \
     Localizer/BlocWindow.h \
     Localizer/BrainvisionFileInfo.h \
@@ -234,6 +236,8 @@ SOURCES += \
     Localizer/AlgorithmStrategyFactory.cpp \
     Localizer/AnalysisFolder.cpp \
     Localizer/BarplotProcessor.cpp \
+    Localizer/BidsSubject.cpp \
+    Localizer/BidsSubjectWorker.cpp \
     Localizer/Bloc.cpp \
     Localizer/BlocWindow.cpp \
     Localizer/BrainvisionFileInfo.cpp \

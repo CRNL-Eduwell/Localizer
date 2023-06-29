@@ -7,7 +7,6 @@
 #include "ui_optionsPerf.h"
 #include <iostream>
 #include <fstream>
-#include "Utility.h"
 #include "displayProv.h"
 
 class optionsPerf : public QDialog

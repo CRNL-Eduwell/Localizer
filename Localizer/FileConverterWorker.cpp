@@ -1,4 +1,5 @@
 #include "FileConverterWorker.h"
+#include "../../EEGFormat/EEGFormat/Wrapper.h"
 
 FileConverterWorker::FileConverterWorker(std::vector<std::string>& eegFiles, std::vector<std::string>& convertionType)
 {

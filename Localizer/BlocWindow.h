@@ -3,11 +3,7 @@
 
 #include "ui_BlocWindow.h"
 #include <QtWidgets/QDialog>
-
-//#include <iostream>
-//#include <vector>
 #include "Bloc.h"
-#include "SubBlocWindow.h"
 
 class BlocWindow : public QDialog
 {
