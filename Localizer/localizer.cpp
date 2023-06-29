@@ -18,6 +18,7 @@ Localizer::Localizer(QWidget *parent) : QMainWindow(parent)
                 m_subjectType = SubjectType::Subject;
                 QString rootFolderPath = QDir(fileName).absolutePath();
                 LoadTreeViewFolder(rootFolderPath);
+                SetupComboxBoxElements();
             }
         }
     }
@@ -76,6 +77,22 @@ void Localizer::DeactivateUIForSingleFiles()
     ui.CorrelationMapsCheckBox->setChecked(false);
     ui.StatFileExportCheckBox->setEnabled(false);
     ui.StatFileExportCheckBox->setChecked(false);
+}
+
+void Localizer::SetupComboxBoxElements()
+{
+    QStringList list;
+
+    ui.FileOutputComboBox->clear();
+    if(m_subjectType == SubjectType::BidsSubject)
+    {
+        list << "BrainVision";
+    }
+    else
+    {
+        list << "Elan" << "BrainVision";
+    }
+    ui.FileOutputComboBox->addItems(list);
 }
 
 void Localizer::ConnectSignals()
@@ -199,6 +216,7 @@ void Localizer::LoadPatientFolder()
         QString rootFolderPath = QDir(fileName).absolutePath();
         LoadTreeViewFolder(rootFolderPath);
         ClearPtsForCorrelation();
+        SetupComboxBoxElements();
     }
 }
 
@@ -213,6 +231,7 @@ void Localizer::LoadSpecificFolder()
         m_subjectType = SubjectType::SingleFile;
         QString rootFolderPath = QDir(fileName).absolutePath();
         LoadTreeViewFiles(rootFolderPath);
+        SetupComboxBoxElements();
     }
 }
 
@@ -227,6 +246,7 @@ void Localizer::LoadDatabaseFolder()
         QString rootFolderPath = QDir(fileName).absolutePath();
         LoadTreeViewDatabase(rootFolderPath);
         ClearPtsForCorrelation();
+        SetupComboxBoxElements();
     }
 }
 
@@ -240,6 +260,7 @@ void Localizer::LoadBidsSubject()
         m_subjectType = SubjectType::BidsSubject;
         QString rootFolderPath = QDir(fileName).absolutePath();
         LoadTreeViewBids(rootFolderPath);
+        SetupComboxBoxElements();
         bool seemsBids = SeemsToBeBidsSubject(rootFolderPath);
         if(seemsBids)
         {

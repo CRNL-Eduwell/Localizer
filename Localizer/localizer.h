@@ -73,6 +73,7 @@ private:
     void LoadFrequencyBandsUI(const std::vector<InsermLibrary::FrequencyBand>& FrequencyBands);
     void ResetUiCheckboxes();
 	void DeactivateUIForSingleFiles();
+    void SetupComboxBoxElements();
     void ConnectSignals();
     void ConnectMenuBar();
     void LoadPatientFolder();
