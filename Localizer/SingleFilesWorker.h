@@ -8,7 +8,6 @@
 #include "IWorker.h"
 #include "singleFile.h"
 #include "FrequencyBandAnalysisOpt.h"
-#include "optionsParameters.h" //pour stat et pic options, a separer
 
 class SingleFilesWorker : public IWorker
 {

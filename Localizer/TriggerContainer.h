@@ -4,7 +4,6 @@
 #include "ITrigger.h"
 #include "Trigger.h"
 #include "ProvFile.h"
-#include "Utility.h"
 
 #include <iostream>
 #include <algorithm>

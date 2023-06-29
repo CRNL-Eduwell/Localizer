@@ -1,4 +1,5 @@
 #include "CleanConnectFile.h"
+#include "../../EEGFormat/EEGFormat/Utility.h"
 
 CleanConnectFile::CleanConnectFile(const QString & filePath, const std::vector<std::string> & labels)
 {

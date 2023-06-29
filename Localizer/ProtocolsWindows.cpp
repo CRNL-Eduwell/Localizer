@@ -1,4 +1,5 @@
 #include "ProtocolsWindow.h"
+#include "ProtocolWindow.h"
 
 ProtocolsWindow::ProtocolsWindow(QWidget *parent) : QDialog(parent)
 {

@@ -7,7 +7,6 @@
 #include <QLocale>
 #include <QDebug>
 
-#include "Utility.h"
 #include "ui_optionsStats.h"
 #include <QMouseEvent>
 #include "optionsParameters.h"

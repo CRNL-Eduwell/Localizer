@@ -8,7 +8,6 @@
 #include <QString>
 #include <iostream>
 
-#include "ProtocolWindow.h"
 #include "ProvFile.h"
 
 class ProtocolsWindow : public QDialog

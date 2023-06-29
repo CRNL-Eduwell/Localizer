@@ -1,4 +1,6 @@
 #include "Stats.h"
+#include "./../../Framework/Framework/Wilcox.h"
+#include "./../../Framework/Framework/Kruskall.h"
 
 void InsermLibrary::Stats::pValuesWilcoxon(vec3<float> &pValue3D, vec3<int> &pSign3D, vec3<float> &bigdata, TriggerContainer* triggerContainer, int samplingFreq, ProvFile* myprovFile)
 {

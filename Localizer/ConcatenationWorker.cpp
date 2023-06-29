@@ -1,4 +1,5 @@
 #include "ConcatenationWorker.h"
+#include "../../EEGFormat/EEGFormat/MicromedFile.h"
 
 ConcatenationWorker::ConcatenationWorker(std::vector<std::string>& trcFiles, std::string& directoryPath, std::string& fileName)
 {

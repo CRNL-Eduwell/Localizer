@@ -6,7 +6,7 @@
 void InsermLibrary::BarplotProcessor::Process(TriggerContainer* triggerContainer, eegContainer* myeegContainer, ProvFile* myprovFile, std::string freqFolder, statOption* statOption, picOption* picOption)
 {
 	std::string mapsFolder = GetBarplotMapsFolder(freqFolder, myprovFile, statOption);
-	std::string mapPath = PrepareFolderAndPathsBar(mapsFolder, myeegContainer->DownsamplingFactor());
+    std::string mapPath = PrepareFolderAndPathsBar(mapsFolder, myeegContainer);
 	// Get biggest window possible, for now we use the assumption that every bloc has the same window
 	// TODO : deal with possible different windows
 	int StartInSam = (myprovFile->Blocs()[0].MainSubBloc().MainWindow().Start() * myeegContainer->DownsampledFrequency()) / 1000;
@@ -51,15 +51,25 @@ std::string InsermLibrary::BarplotProcessor::GetBarplotMapsFolder(std::string fr
 	return mapsFolder;
 }
 
-std::string InsermLibrary::BarplotProcessor::PrepareFolderAndPathsBar(std::string mapsFolder, int dsSampFreq)
+std::string InsermLibrary::BarplotProcessor::PrepareFolderAndPathsBar(std::string mapsFolder, eegContainer* myeegContainer)
 {
 	if (!std::filesystem::exists(mapsFolder))
 	{
 		std::filesystem::create_directory(mapsFolder);
 	}
 
-	vec1<std::string> dd = split<std::string>(mapsFolder, "/");
-	return std::string(mapsFolder + "/" + dd[dd.size() - 2] + "_ds" + std::to_string(dsSampFreq) + "_sm0_bar_");
+    std::string dsFactor = std::to_string(myeegContainer->DownsamplingFactor());
+    vec1<std::string> pathSplit = split<std::string>(mapsFolder, "/");
+    if(myeegContainer->IsBids())
+    {
+        vec1<std::string> frequencySuffixSplit =  split<std::string>(pathSplit[pathSplit.size() - 1], "_");
+        std::string labelName = myeegContainer->RootFileName(false, true) + "_acq-" + frequencySuffixSplit[0] + "ds" + dsFactor;
+        return std::string(mapsFolder + "/" + labelName + "sm0bar_");
+    }
+    else
+    {
+        return std::string(mapsFolder + "/" + pathSplit[pathSplit.size() - 2] + "_ds" + dsFactor + "_sm0_bar_");
+    }
 }
 
 InsermLibrary::vec1<InsermLibrary::PVALUECOORD> InsermLibrary::BarplotProcessor::ProcessKruskallStatistic(vec3<float>& bigData, TriggerContainer* triggerContainer, eegContainer* myeegContainer, ProvFile* myprovFile, std::string freqFolder, statOption* statOption)

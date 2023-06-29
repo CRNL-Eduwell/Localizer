@@ -1,4 +1,5 @@
 #include "ErpProcessor.h"
+#include "../../EEGFormat/EEGFormat/Utility.h"
 
 ErpProcessor::ErpProcessor(QList<QString> fileList, QWidget *parent) : QDialog(parent)
 {
