@@ -1,0 +1,461 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.6.7)  6 JUL 2023 16:01
+entering extended mode
+**./Localizer_Manual.tex
+(Localizer_Manual.tex
+LaTeX2e <2021-06-01>
+L3 programming layer <2021-06-01>
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/bas
+e/article.cls
+Document Class: article 2021/02/12 v1.4n Standard LaTeX document class
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/bas
+e/size10.clo
+File: size10.clo 2021/02/12 v1.4n Standard LaTeX file (size option)
+)
+\c@part=\count182
+\c@section=\count183
+\c@subsection=\count184
+\c@subsubsection=\count185
+\c@paragraph=\count186
+\c@subparagraph=\count187
+\c@figure=\count188
+\c@table=\count189
+\abovecaptionskip=\skip47
+\belowcaptionskip=\skip48
+\bibindent=\dimen138
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/bas
+e/inputenc.sty
+Package: inputenc 2021/02/14 v1.3d Input encoding file
+\inpenc@prehook=\toks16
+\inpenc@posthook=\toks17
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/bas
+e/fontenc.sty
+Package: fontenc 2021/04/29 v2.0v Standard LaTeX package
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/lm/
+lmodern.sty
+Package: lmodern 2015/05/01 v1.6.1 Latin Modern Fonts
+LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
+(Font)                  OT1/cmr/m/n --> OT1/lmr/m/n on input line 22.
+LaTeX Font Info:    Overwriting symbol font `letters' in version `normal'
+(Font)                  OML/cmm/m/it --> OML/lmm/m/it on input line 23.
+LaTeX Font Info:    Overwriting symbol font `symbols' in version `normal'
+(Font)                  OMS/cmsy/m/n --> OMS/lmsy/m/n on input line 24.
+LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `normal'
+(Font)                  OMX/cmex/m/n --> OMX/lmex/m/n on input line 25.
+LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
+(Font)                  OT1/cmr/bx/n --> OT1/lmr/bx/n on input line 26.
+LaTeX Font Info:    Overwriting symbol font `letters' in version `bold'
+(Font)                  OML/cmm/b/it --> OML/lmm/b/it on input line 27.
+LaTeX Font Info:    Overwriting symbol font `symbols' in version `bold'
+(Font)                  OMS/cmsy/b/n --> OMS/lmsy/b/n on input line 28.
+LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `bold'
+(Font)                  OMX/cmex/m/n --> OMX/lmex/m/n on input line 29.
+LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
+(Font)                  OT1/cmr/bx/n --> OT1/lmr/bx/n on input line 31.
+LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
+(Font)                  OT1/cmss/m/n --> OT1/lmss/m/n on input line 32.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
+(Font)                  OT1/cmr/m/it --> OT1/lmr/m/it on input line 33.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
+(Font)                  OT1/cmtt/m/n --> OT1/lmtt/m/n on input line 34.
+LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `bold'
+(Font)                  OT1/cmr/bx/n --> OT1/lmr/bx/n on input line 35.
+LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
+(Font)                  OT1/cmss/bx/n --> OT1/lmss/bx/n on input line 36.
+LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
+(Font)                  OT1/cmr/bx/it --> OT1/lmr/bx/it on input line 37.
+LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
+(Font)                  OT1/cmtt/m/n --> OT1/lmtt/m/n on input line 38.
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/lis
+tings/listings.sty
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/gra
+phics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks18
+)
+\lst@mode=\count190
+\lst@gtempboxa=\box50
+\lst@token=\toks19
+\lst@length=\count191
+\lst@currlwidth=\dimen139
+\lst@column=\count192
+\lst@pos=\count193
+\lst@lostspace=\dimen140
+\lst@width=\dimen141
+\lst@newlines=\count194
+\lst@lineno=\count195
+\lst@maxwidth=\dimen142
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/lis
+tings/lstmisc.sty
+File: lstmisc.sty 2020/03/24 1.8d (Carsten Heinz)
+\c@lstnumber=\count196
+\lst@skipnumbers=\count197
+\lst@framebox=\box51
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/lis
+tings/listings.cfg
+File: listings.cfg 2020/03/24 1.8d listings configuration
+))
+Package: listings 2020/03/24 1.8d (Carsten Heinz)
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/gra
+phics/graphicx.sty
+Package: graphicx 2020/12/05 v1.2c Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/gra
+phics/graphics.sty
+Package: graphics 2021/03/04 v1.4d Standard LaTeX Graphics (DPC,SPQR)
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/gra
+phics/trig.sty
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/gra
+phics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 107.
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/gra
+phics-def/pdftex.def
+File: pdftex.def 2020/10/05 v1.2a Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen143
+\Gin@req@width=\dimen144
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/dir
+tree/dirtree.sty
+Package: dirtree 2012/12/11 v0.32 package wrapper for dirtree
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/generic/d
+irtree/dirtree.tex `dirtree' v0.32, 2012/12/11 (jcc)
+\DT@offset=\dimen145
+\DT@width=\dimen146
+\DT@sep=\dimen147
+\DT@all=\dimen148
+\DT@rulewidth=\dimen149
+\DT@dotwidth=\dimen150
+\DTbaselineskip=\dimen151
+\DT@counti=\count198
+\DT@countii=\count199
+\DT@countiii=\count266
+\DT@countiv=\count267
+\DT@indent=\dimen152
+\DT@parskip=\dimen153
+\DT@baselineskip=\dimen154
+)
+File: dirtree.tex 2012/12/11 v0.32 `dirtree' (jcc)
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/cap
+tion/caption.sty
+Package: caption 2022/03/01 v3.6b Customizing captions (AR)
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/cap
+tion/caption3.sty
+Package: caption3 2022/03/17 v2.3b caption3 kernel (AR)
+\caption@tempdima=\dimen155
+\captionmargin=\dimen156
+\caption@leftmargin=\dimen157
+\caption@rightmargin=\dimen158
+\caption@width=\dimen159
+\caption@indent=\dimen160
+\caption@parindent=\dimen161
+\caption@hangindent=\dimen162
+Package caption Info: Standard document class detected.
+)
+\c@caption@flags=\count268
+\c@continuedfloat=\count269
+Package caption Info: listings package is loaded.
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/cap
+tion/subcaption.sty
+Package: subcaption 2022/01/07 v1.5 Sub-captions (AR)
+\c@subfigure=\count270
+\c@subtable=\count271
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/flo
+at/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count272
+\float@exts=\toks20
+\float@box=\box52
+\@float@everytoks=\toks21
+\@floatcapt=\box53
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/generic/b
+abel/babel.sty
+Package: babel 2021/06/02 3.60 The Babel package
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/generic/b
+abel/babel.def
+File: babel.def 2021/06/02 3.60 Babel common definitions
+\babel@savecnt=\count273
+\U@D=\dimen163
+\l@unhyphenated=\language1
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/generic/b
+abel/txtbabel.def)
+\bbl@readstream=\read2
+)
+\bbl@dirlevel=\count274
+
+*************************************
+* Local config file bblopts.cfg used
+*
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/ara
+bi/bblopts.cfg
+File: bblopts.cfg 2005/09/08 v0.1 add Arabic and Farsi to "declared" options of
+ babel
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/bab
+el-english/english.ldf
+Language: english 2017/06/06 v3.3r English support from the babel system
+))
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/geo
+metry/geometry.sty
+Package: geometry 2020/01/02 v5.9 Page Geometry
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/generic/i
+ftex/ifvtex.sty
+Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/generic/i
+ftex/iftex.sty
+Package: iftex 2020/03/06 v1.0d TeX engine tests
+))
+\Gm@cnth=\count275
+\Gm@cntv=\count276
+\c@Gm@tempcnt=\count277
+\Gm@bindingoffset=\dimen164
+\Gm@wd@mp=\dimen165
+\Gm@odd@mp=\dimen166
+\Gm@even@mp=\dimen167
+\Gm@layoutwidth=\dimen168
+\Gm@layoutheight=\dimen169
+\Gm@layouthoffset=\dimen170
+\Gm@layoutvoffset=\dimen171
+\Gm@dimlist=\toks22
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/geo
+metry/geometry.cfg))
+LaTeX Font Info:    Trying to load font information for T1+lmr on input line 20
+.
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/lm/
+t1lmr.fd
+File: t1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/l3b
+ackend/l3backend-pdftex.def
+File: l3backend-pdftex.def 2021-05-07 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count278
+\l__pdf_internal_box=\box54
+) (Localizer_Manual.aux)
+\openout1 = `Localizer_Manual.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 20.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 20.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 20.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 20.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 20.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 20.
+LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 20.
+LaTeX Font Info:    ... okay on input line 20.
+\c@lstlisting=\count279
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/context/b
+ase/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count280
+\scratchdimen=\dimen172
+\scratchbox=\box55
+\nofMPsegments=\count281
+\nofMParguments=\count282
+\everyMPshowfont=\toks23
+\MPscratchCnt=\count283
+\MPscratchDim=\dimen173
+\MPnumerator=\count284
+\makeMPintoPDFobject=\count285
+\everyMPtoPDFconversion=\toks24
+)
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/eps
+topdf-pkg/epstopdf-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/00m
+iktex/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
+))
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: float package is loaded.
+Package caption Info: End \AtBeginDocument code.
+
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(79.49744pt, 438.513pt, 79.49744pt)
+* v-part:(T,H,B)=(79.49744pt, 686.05197pt, 79.49744pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=438.513pt
+* \textheight=686.05197pt
+* \oddsidemargin=7.22745pt
+* \evensidemargin=7.22745pt
+* \topmargin=-29.77255pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=10.0pt
+* \footskip=30.0pt
+* \marginparwidth=57.0pt
+* \marginparsep=11.0pt
+* \columnsep=10.0pt
+* \skip\footins=9.0pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 2
+1.
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/lm/
+ot1lmr.fd
+File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for OML+lmm on input line 2
+1.
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/lm/
+omllmm.fd
+File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
+21.
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/lm/
+omslmsy.fd
+File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
+21.
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/lm/
+omxlmex.fd
+File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <12> on input line 21.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <8> on input line 21.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <6> on input line 21.
+ (Localizer_Manual.toc
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <10> on input line 4.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <7> on input line 4.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <5> on input line 4.
+)
+\tf@toc=\write3
+\openout3 = `Localizer_Manual.toc'.
+
+ [1
+
+{/Users/florian/Library/Application Support/MiKTeX/texmfs/data/pdftex/config/pd
+ftex.map}]
+LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 4
+5.
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/lm/
+t1lmtt.fd
+File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+) [2]
+Overfull \hbox (15.15286pt too wide) in paragraph at lines 137--138
+ [] \T1/lmr/m/n/10 This option menu will let you create .prov files. The .prov 
+extension stands for \T1/lmr/bx/n/10 protocol visualization\T1/lmr/m/n/10 .
+ []
+
+[3]
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 1
+47.
+
+(/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/lm/
+ts1lmr.fd
+File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+) [4]
+<HilbertProcessing.png, id=25, 1186.4325pt x 355.3275pt>
+File: HilbertProcessing.png Graphic file (type png)
+<use HilbertProcessing.png>
+Package pdftex.def Info: HilbertProcessing.png  used on input line 181.
+(pdftex.def)             Requested size: 474.56459pt x 142.12846pt.
+
+Overfull \hbox (36.05159pt too wide) in paragraph at lines 181--182
+ [] 
+ []
+
+<EnvelopePlots.png, id=27, 479.7925pt x 343.2825pt>
+File: EnvelopePlots.png Graphic file (type png)
+<use EnvelopePlots.png>
+Package pdftex.def Info: EnvelopePlots.png  used on input line 192.
+(pdftex.def)             Requested size: 383.8345pt x 274.62636pt.
+[5 <./HilbertProcessing.png>]
+<TimeTrialsMatrice.jpg, id=32, 578.16pt x 433.62pt>
+File: TimeTrialsMatrice.jpg Graphic file (type jpg)
+<use TimeTrialsMatrice.jpg>
+Package pdftex.def Info: TimeTrialsMatrice.jpg  used on input line 200.
+(pdftex.def)             Requested size: 404.70924pt x 303.53192pt.
+ [6 <./EnvelopePlots.png>] [7 <./TimeTrialsMatrice.jpg>] (Localizer_Manual.aux)
+ ) 
+Here is how much of TeX's memory you used:
+ 5959 strings out of 480799
+ 97223 string characters out of 2898087
+ 419248 words of memory out of 3000000
+ 23558 multiletter control sequences out of 15000+600000
+ 460733 words of font info for 60 fonts, out of 8000000 for 9000
+ 0 hyphenation exceptions out of 8191
+ 57i,8n,66p,757b,348s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/Users/florian/Library/Application Support/MiKTeX/texmfs/install/fonts/enc/d
+vips/lm/lm-ts1.enc}{/Users/florian/Library/Application Support/MiKTeX/texmfs/in
+stall/fonts/enc/dvips/lm/lm-ec.enc}</Users/florian/Library/Application Support/
+MiKTeX/texmfs/install/fonts/type1/public/lm/lmbx10.pfb></Users/florian/Library/
+Application Support/MiKTeX/texmfs/install/fonts/type1/public/lm/lmbx12.pfb></Us
+ers/florian/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/publi
+c/lm/lmbx9.pfb></Users/florian/Library/Application Support/MiKTeX/texmfs/instal
+l/fonts/type1/public/lm/lmcsc10.pfb></Users/florian/Library/Application Support
+/MiKTeX/texmfs/install/fonts/type1/public/lm/lmr10.pfb></Users/florian/Library/
+Application Support/MiKTeX/texmfs/install/fonts/type1/public/lm/lmr12.pfb></Use
+rs/florian/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public
+/lm/lmr17.pfb></Users/florian/Library/Application Support/MiKTeX/texmfs/install
+/fonts/type1/public/lm/lmr9.pfb></Users/florian/Library/Application Support/MiK
+TeX/texmfs/install/fonts/type1/public/lm/lmri10.pfb></Users/florian/Library/App
+lication Support/MiKTeX/texmfs/install/fonts/type1/public/lm/lmtt10.pfb>
+Output written on Localizer_Manual.pdf (7 pages, 2013333 bytes).
+PDF statistics:
+ 87 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 16 words of extra memory for PDF output out of 10000 (max. 10000000)
+
