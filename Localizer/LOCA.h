@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <iterator>
+#include <filesystem>
 #include "../../Framework/Framework/Measure.h"
 #include "Utility.h"
 #include "eegContainer.h"
@@ -33,6 +34,8 @@
 #include "CorrelationMapsProcessor.h"
 #include "StatisticalFilesProcessor.h"
 
+#include "./../../EEGFormat/EEGFormat/Wrapper.h"
+
 namespace InsermLibrary
 {
 	class LOCA : public QObject
@@ -43,17 +46,19 @@ namespace InsermLibrary
 		LOCA(std::vector<FrequencyBandAnalysisOpt>& analysisOpt, statOption* statOption, picOption* picOptionn, std::string ptsFilePath = "");
 		~LOCA();
         void Eeg2erp(eegContainer *myeegContainer, ProvFile* myprovFile);
-        void Localize(eegContainer *myeegContainer, int idCurrentLoca, ExperimentFolder *currentLoca);
+        void Localize(eegContainer* myeegContainer, int idCurrentLoca,  InsermLibrary::IEegFileInfo* currentLoca, std::string taskName);
         void LocalizeMapsOnly(eegContainer *myeegContainer, int idCurrentLoca);
 
 	private:
-        int LoadProcessedData(eegContainer* myeegContainer, FrequencyFolder folder, SmoothingWindow smoothingWindow, int index, InsermLibrary::FileType fileType);
+        int LoadData(eegContainer* myeegContainer, std::pair<std::string,std::string> kvp, std::string frequency, SmoothingWindow smoothingWindow, int index);
+        InsermLibrary::IEegFileInfo* GetEegFileInfo(eegContainer* myeegContainer, std::pair<std::string,std::string> kvp, SmoothingWindow smoothingWindow, int index, InsermLibrary::FileType fileType);
+        int LoadProcessedData(eegContainer* myeegContainer, InsermLibrary::IEegFileInfo* requestedFile, int index);
         void GenerateMapsAndFigures(eegContainer *myeegContainer, std::string freqFolder, FrequencyBandAnalysisOpt a);
 		//==
         void CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt, eegContainer *myeegContainer, TriggerContainer *triggerContainer, ProvFile *myprovFile);
 		void CreateFile(EEGFormat::FileType outputType, std::string filePath, std::vector<Trigger> & triggers, std::string extraFilePath = "");
 		void CreateConfFile(eegContainer *myeegContainer);
-		void RelinkAnalysisFileAnUglyWay(const std::string& rootPath, const std::string& fileNameBase, const std::string& frequencySuffix, const std::string& downsamplingFactor);
+        void RelinkAnalysisFileAnUglyWay(eegContainer *myeegContainer, const std::string& frequencySuffix, const std::string& downsamplingFactor);
 		//==
         std::string CreateFrequencyFolder(eegContainer *myeegContainer, FrequencyBand currentFreq);
         ProvFile* LoadProvForTask(std::string taskName, std::string analysisName = "");
@@ -63,7 +68,7 @@ namespace InsermLibrary
 		void incrementAdavnce(int divider);
 
 	private:
-        ExperimentFolder *m_currentLoca = nullptr; //Only contains a link to filesystem information about current localizer, do not delete in destructor
+        std::string m_currentLocaName = "";
 		int m_idCurrentLoca = -1;
 		TriggerContainer *m_triggerContainer = nullptr;
 		std::vector<FrequencyBandAnalysisOpt> m_analysisOpt;

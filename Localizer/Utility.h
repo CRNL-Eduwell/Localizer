@@ -9,14 +9,10 @@
 #if defined(_WIN32) || defined(_WIN64)
     #include <direct.h>
     #define GetCurrentDir _getcwd
-    #define CREATE_DIRECTORY std::experimental::filesystem::create_directory
 #elif defined(__APPLE__)
 	#include <unistd.h>
 	#define GetCurrentDir getcwd
-	#define CREATE_DIRECTORY boost::filesystem::create_directory
 #else
-    #include <experimental/filesystem>
-    #define CREATE_DIRECTORY std::experimental::filesystem::create_directory
     #include <unistd.h>
     #define GetCurrentDir getcwd
 #endif

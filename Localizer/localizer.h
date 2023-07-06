@@ -51,9 +51,14 @@
 #include "PatientFolderWorker.h"
 #include "SingleFilesWorker.h"
 #include "MultiSubjectWorker.h"
+#include "BidsSubjectWorker.h"
 #include "FileConverterWorker.h"
 #include "ErpWorker.h"
 #include "ConcatenationWorker.h"
+
+#include "BidsSubject.h"
+
+enum class SubjectType { UNKNOWN, Subject, MultiSubject, SingleFile, BidsSubject };
 
 class Localizer : public QMainWindow
 {
@@ -68,22 +73,28 @@ private:
     void LoadFrequencyBandsUI(const std::vector<InsermLibrary::FrequencyBand>& FrequencyBands);
     void ResetUiCheckboxes();
 	void DeactivateUIForSingleFiles();
+    void SetupComboxBoxElements();
     void ConnectSignals();
     void ConnectMenuBar();
     void LoadPatientFolder();
     void LoadSpecificFolder();
     void LoadDatabaseFolder();
+    void LoadBidsSubject();
+    bool SeemsToBeBidsSubject(QString rootFolder);
+    BidsSubject ParseBidsSubjectInfo(QString rootFolder);
     void LoadTreeViewFolder(QString rootFolder);
     void LoadTreeViewFiles(QString rootFolder);
     void LoadTreeViewDatabase(QString rootFolder);
+    void LoadTreeViewBids(QString rootFolder);
 	void LoadTreeViewUI(QString initialFolder);
     int PreparePatientFolder();
     int PrepareSingleFiles();
+    int PrepareBidsSubjectFolder();
     std::vector<SubjectFolder*> PrepareDBFolders();
 	void InitProgressBar();
     void InitMultiSubjectProgresBar(std::vector<SubjectFolder*> subjects);
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> GetUIAnalysisOption();
-	int GetSelectedFolderCount(QModelIndexList selectedIndexes);
+    int GetSelectedElementCount(QModelIndexList selectedIndexes);
 
 private slots:
 	void SetLabelCount(int count);
@@ -96,6 +107,7 @@ private slots:
     void ProcessFolderAnalysis();
     void ProcessSingleAnalysis();
     void ProcessMultiFolderAnalysis();
+    void ProcessBidsSubjectAnalysis();
     void ProcessERPAnalysis(QList<QString> examCorrespondance);
     void ProcessFileConvertion(QList<QString> newFileType);
 	void ProcessMicromedFileConcatenation(QList<QString> files, QString directoryPath, QString fileName);
@@ -123,6 +135,8 @@ private:
     SubjectFolder* currentPat = nullptr;
 	std::vector<singleFile> currentFiles;
     std::vector<SubjectFolder*> m_MultipleSubjects;
+    BidsSubject m_bidsSubject;
+    BidsSubject workingCopy;
 	//==Thread and Worker
 	QReadWriteLock m_lockLoop;  
 	QThread* thread = nullptr;
@@ -142,6 +156,7 @@ private:
 
     bool m_CCFToggle = false;
 	ErpProcessor* erpWindow = nullptr;
+    SubjectType m_subjectType = SubjectType::UNKNOWN;
 };
 
 #endif // LOCALIZER_H

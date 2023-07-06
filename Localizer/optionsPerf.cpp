@@ -1,4 +1,5 @@
 #include "optionsPerf.h"
+#include "Utility.h"
 
 optionsPerf::optionsPerf(QWidget *parent) : QDialog(parent)
 {

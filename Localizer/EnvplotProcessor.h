@@ -8,7 +8,6 @@
 #include "eegContainer.h"
 #include "ProvFile.h"
 #include "optionsParameters.h"
-#include "Stats.h"
 
 namespace InsermLibrary
 {
@@ -19,7 +18,7 @@ namespace InsermLibrary
 
     private :        
         std::string GetEnv2PlotMapsFolder(std::string freqFolder, ProvFile* myprovFile);
-        std::string PrepareFolderAndPathsPlot(std::string freqFolder, int dsSampFreq);
+        std::string PrepareFolderAndPathsPlot(std::string mapsFolder, eegContainer* myeegContainer);
     };
 }
 

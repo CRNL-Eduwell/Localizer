@@ -1,4 +1,5 @@
 #include "FrequencyFile.h"
+#include "../../EEGFormat/EEGFormat/Utility.h"
 
 InsermLibrary::FrequencyFile::FrequencyFile(const std::string& filePath) : ITxtFile(filePath)
 {

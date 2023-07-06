@@ -33,7 +33,7 @@ void MultiSubjectWorker::Process()
             emit sendLogInfo("");
             emit sendLogInfo(QString::fromStdString("Begin time : ") + GetCurrentTime().c_str());
             emit sendLogInfo("");
-            m_Loca->Localize(myContainer, i, &pat.ExperimentFolders()[i]);
+            m_Loca->Localize(myContainer, i, pat.GetEegFileInfo(i), pat.ExperimentFolders()[i].ExperimentLabel());
             emit sendLogInfo("");
             emit sendLogInfo(QString::fromStdString("End time : ") + GetCurrentTime().c_str());
             emit sendLogInfo("");

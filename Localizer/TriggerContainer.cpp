@@ -1,4 +1,5 @@
 #include "TriggerContainer.h"
+#include "Utility.h"
 
 InsermLibrary::TriggerContainer::TriggerContainer(std::vector<EEGFormat::ITrigger>& triggers, int samplingFrequnecy)
 {

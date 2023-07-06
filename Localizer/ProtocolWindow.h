@@ -7,7 +7,7 @@
 #include <iostream>
 #include <vector>
 #include "ProvFile.h"
-#include "BlocWindow.h"
+#include "Bloc.h"
 
 class ProtocolWindow : public QDialog
 {

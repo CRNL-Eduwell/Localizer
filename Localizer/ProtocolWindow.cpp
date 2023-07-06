@@ -1,4 +1,5 @@
 #include "ProtocolWindow.h"
+#include "BlocWindow.h"
 
 ProtocolWindow::ProtocolWindow(InsermLibrary::ProvFile& prov, QWidget *parent) : QDialog(parent)
 {
