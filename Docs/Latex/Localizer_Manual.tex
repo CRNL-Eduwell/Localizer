@@ -26,7 +26,7 @@ This document is the user manual of the Software Localizer. Localizer is being d
 \newpage
 \section{Data Curation} \label{curation}    
 \paragraph{} In order to get the most of Localizer you can organize your data in several ways which are going to be described.
-\subsection{Subject Folder organisation}
+\subsection{Subject Folder organisation} \label{subjectfolderorganisation}   
 \begin{figure}[H]
 \framebox[\textwidth]{%
 \begin{minipage}{0.9\textwidth}
@@ -45,7 +45,7 @@ This document is the user manual of the Software Localizer. Localizer is being d
 }
 \caption{\label{SubjectDirectory}Subject directory hierarchy}
 \end{figure}
-\subsection{Multiple Subjects Folder}
+\subsection{Multiple Subjects Folder} \label{multiplesubjectsfolderorganisation}   
 \begin{figure}[H]
 \framebox[\textwidth]{%
 \begin{minipage}{0.9\textwidth}
@@ -75,7 +75,7 @@ This document is the user manual of the Software Localizer. Localizer is being d
 }
 \caption{\label{MultipleSubjectsDirectory}Multiple Subjects directory hierarchy}
 \end{figure}
-\subsection{EEG Files Folder}
+\subsection{EEG Files Folder} \label{eegfilesfolderorganisation}   
 \begin{figure}[H]
 \framebox[\textwidth]{%
 \begin{minipage}{0.9\textwidth}
@@ -91,7 +91,7 @@ This document is the user manual of the Software Localizer. Localizer is being d
 }
 \caption{\label{MiscEEGDirectory}Folder with eeg files without structure}
 \end{figure}
-\subsection{BIDS Subject Folder}
+\subsection{BIDS Subject Folder} \label{bidssubjectfolderorganisation}   
 \begin{figure}[H]
 \framebox[\textwidth]{%
 \begin{minipage}{0.9\textwidth}
@@ -132,6 +132,8 @@ This document is the user manual of the Software Localizer. Localizer is being d
 }
 \caption{\label{BidsDirectory}Structure of folder containing BIDS formated data}
 \end{figure}
+
+\newpage
 \section{Options} \label{options}    
 \subsection{Localizer}
 \paragraph{} This option menu will let you create .prov files. The .prov extension stands for \textbf{protocol visualization}. Typically, a Localizer is a set of time series (one for each channel) with data for each sample from the beginning to the end of the recording session. In addition,  information about the events of the experimental paradigm is stored, each event being identified using a code (e.g. an event of code 10 occured at sample 134567).
@@ -172,6 +174,8 @@ For each wanted frequency band, simply add a new element and define :
 \item Frequency step : 10
 \item Frequency maximum : 150
 \end{itemize}
+
+\newpage
 \section{Data Analysis} \label{analysis}    
 \subsection{Hilbert Transform}
 \paragraph{} The signal for each contact was first bandpass‐filtered in multiple successive 10 Hz wide frequency bands (e.g. 10 bands from [50–60 Hz] to [140–150 Hz]) using a zero phase shift no causal finite impulse filter with 0.5 Hz roll‐off. The envelope of each bandpass‐filtered signal was then computed with a standard Hilbert transform then down‐sampled to 64 Hz and divided by its means across the entire recording session and multiplied by 100, to express each value as a percentage of that mean (normalization).  
@@ -180,7 +184,7 @@ For each wanted frequency band, simply add a new element and define :
 \begin{center}
 \includegraphics[scale=0.4]{HilbertProcessing.png}
 \end{center}
-\caption{\label{HilbertProcessingPicture}Hilbert Transform of raw IEEG Data}
+\caption{\label{HilbertProcessingPicture}Hilbert Transform of raw IEEG Data.}
 \end{figure}
 
 Finally, the normalized envelope signals for each of the ten frequency band were averaged together to provide a single HFA signal. By construction, the mean value of that HFA signal across the entire recording session is equal to 100. The whole procedure is also designed to reduce the 1/f drop‐off in amplitude of the raw iEEG signals. 
@@ -191,7 +195,7 @@ Finally, the normalized envelope signals for each of the ten frequency band were
 \begin{center}
 \includegraphics[scale=0.8]{EnvelopePlots.png}
 \end{center}
-\caption{\label{EnvelopePlotsPicture}Gamma Band activity for each contact and each conditions during the visual task}
+\caption{\label{EnvelopePlotsPicture}Gamma Band activity for each contact and each conditions during the visual task.}
 \end{figure}
 \subsection{Time Trials Matrices}
 \paragraph{} Still blabla
@@ -199,17 +203,202 @@ Finally, the normalized envelope signals for each of the ten frequency band were
 \begin{center}
 \includegraphics[scale=0.7]{TimeTrialsMatrice.jpg}
 \end{center}
-\caption{\label{TimeTrialsPicture}Gamma Band activity during the visual task}
+\caption{\label{TimeTrialsPicture}Gamma Band activity during the visual task.}
 \end{figure}
 \subsection{Correlation Maps}
 \paragraph{} Still blabla
 \subsection{Statistical Files}
 \paragraph{} Still blabla
+
+\newpage
 \section{Tutorials} \label{tutorials}    
 \subsection{Processing data from a subject folder}
-\paragraph{} The si
+
+\paragraph{} The first step is to click in the menu bar on \textbf{File} > \textbf{Load Subject Folder}
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.8]{SelectLoadSubjectFolder.png}
+\end{center}
+\caption{\label{LoadSubjectFolder}Loading a Subject Folder.}
+\end{figure}
+
+\paragraph{} Then you need to select the root folder of a subject as described in \ref{subjectfolderorganisation}. The column will display all data inside the selected folder. You should have several folders, each with the data of a specific cognitiv task that you want to analyse. Then you just need to select the tasks you want to process.
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.8]{SubjectFolderSelect.png}
+\end{center}
+\caption{\label{FolderSelectionUI}Selection of two experiments folder for analysis.}
+\end{figure}
+
+\paragraph{} Once you have selected the experiments you want to process you need to select the analysis you want to perform as well as the frequency bands in which to perform said analysis.
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{AnalysisOptions.png}
+\end{center}
+\caption{\label{AnalysisOptionsUI}Selection of the analysis wanted and the frequency bands.}
+\end{figure}
+
+\paragraph{} Then you can click on \textbf{Process analysis} to launch the process
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{ProcessCancel.png}
+\end{center}
+\caption{\label{RunAnalysisFolderUI}Launch or Cancel the analysis.}
+\end{figure}
+
+\paragraph{} At this point, the software will parse the subject folder you inputed, take the first experiment folder selected and try to open the raw data. Due to naming convention issues this part is not yet fully automated and the operator need to check that all the electrodes present are iEEG electrodes and that they have the same name from one contact to the other. 
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{ConnectCleaner.png}
+\end{center}
+\caption{\label{ConnectCleanerFolderUI}Check that only relevant iEEG electrodes are selected.}
+\end{figure}
+
+All the electrodes that are not relevant can be unchecked at this step before processing the data. 
+Before clicking on Validate, you can export the state of each checkbox by clicking on export so that if you need to reprocess your data, there is no need to uncheck the same boxes over and over again.
+
+\paragraph{} You can check the progress of the analysis with the steps that are being displayed in the Text box at the bottom of the software interface as well as the progress bar. Then when the analysis is finished you will have all the resulting files in dedicated folders in the directories of each experiment.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{EndOfAnalysis.png}
+\end{center}
+\caption{\label{EndOfAnalysis}Display of the analysis done at the end of a processing.}
+\end{figure}
+
 \subsection{Processing data from a multiple subjects folder}
+\paragraph{} The first step is to click in the menu bar on \textbf{File} > \textbf{Load Multiple Subjects Folder}
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{SelectLoadMultipleSubjectsFolder.png}
+\end{center}
+\caption{\label{LoadMultiSubjectFolder}Loading a Multiple Subjects Folder.}
+\end{figure}
+
+\paragraph{} Then you need to select the root folder of multiple subjects as described in \ref{subjectfolderorganisation}. The column will display all data inside the selected folder. You should have one or several folders,  each representing a subjectwith one or multiple cognitiv tasks. Then you just need to select the subjects you want to process.
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.8]{MultipleSubjectsFolderSelect.png}
+\end{center}
+\caption{\label{MultipleSubjectsFolderSelectionUI}Selection of two subjects folder for analysis.}
+\end{figure}
+
+\paragraph{} Once you have selected the subjects you want to process you will need to select the experiments you want to reprocess. In ordrer to prevent reprocessing data already done and to account for some possible techical issues during acquisition we let the possiblity to choose what experiments we want.
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{ExperimentsChoice.png}
+\end{center}
+\caption{\label{MultiSubExperimentsChoiceUI}Selection of the experiments we want to process.}
+\end{figure}
+
+\paragraph{} At this point, the software will parse each subject folder you inputed, take the first experiment folder corresponding to the list of experiments you selected and try to open the raw data. Due to naming convention issues this part is not yet fully automated and the operator need to check that all the electrodes present are iEEG electrodes and that they have the same name from one contact to the other. 
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{ConnectCleanerMultiSubject.png}
+\end{center}
+\caption{\label{ConnectCleanerMultiSubUI}Check that only relevant iEEG electrodes are selected.}
+\end{figure}
+
+The software will process all the requiered frequency bands and experiments for one subject,  then take the next subject and prompt this window again until all the subjects and all the experiments have been processed with the requiered parameters. When the progress bar is at it's maximum everything has been processed.
+
 \subsection{Processing data from an EEG files folder}
+\paragraph{} The first step is to click in the menu bar on \textbf{File} > \textbf{Load EEG Files Folder}
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{SelectLoadEEGFolder.png}
+\end{center}
+\caption{\label{LoadEEGFolder}Loading a Folder with several EEG Files.}
+\end{figure}
+
+\paragraph{} Then you need to select the root folder of multiple eeg files as described in \ref{eegfilesfolderorganisation}. The column will display all the files inside the selected folder.  Then you just need to select the files you want to process.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.8]{MiscEEGSelect.png}
+\end{center}
+\caption{\label{MiscFolderSelectionUI}Selection of two eeg files for Hilbert analysis.}
+\end{figure}
+
+The only analysis option available here is the Hilbert Analysis because we might not know how the data is organized inside.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{MiscAnalysisOptions.png}
+\end{center}
+\caption{\label{MiscAnalysisOptionsUI}Analysis options}
+\end{figure}
+
+\paragraph{} Then you can click on \textbf{Process analysis} to launch the process
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{ProcessCancel.png}
+\end{center}
+\caption{\label{RunAnalysisMiscUI}Launch or Cancel the analysis.}
+\end{figure}
+
+\paragraph{} At this point, the software will parse each files you inputed and try to open the raw data. Due to naming convention issues this part is not yet fully automated and the operator need to check that all the electrodes present are iEEG electrodes and that they have the same name from one contact to the other. 
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{ConnectCleaner.png}
+\end{center}
+\caption{\label{ConnectCleanerMiscUI}Check that only relevant iEEG electrodes are selected.}
+\end{figure}
+
+All the electrodes that are not relevant can be unchecked at this step before processing the data. 
+Before clicking on Validate, you can export the state of each checkbox by clicking on export so that if you need to reprocess your data, there is no need to uncheck the same boxes over and over again.
+
 \subsection{Processing data from a BIDS subject folder}
+\paragraph{} The first step is to click in the menu bar on \textbf{File} > \textbf{Load Bids Subject Folder}
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{SelectLoadBidsSubject.png}
+\end{center}
+\caption{\label{LoadBidsFolder}Loading a BIDS Subject Folder.}
+\end{figure}
+
+\paragraph{} Then you need to select the root folder of a bids subject as described in \ref{eegfilesfolderorganisation}. The column will display all the folders and files inside. Then you just need to select the files you want to process.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.8]{BidsSubjectFolderSelect.png}
+\end{center}
+\caption{\label{BidsSubjectFolderSelectionUI}Selection of two eeg files from a Bids Subject for analysis.}
+\end{figure}
+
+\paragraph{} Once you have selected the experiments you want to process you need to select the analysis you want to perform as well as the frequency bands in which to perform said analysis.
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{AnalysisOptions.png}
+\end{center}
+\caption{\label{BidsSubjectAnalysisOptionsUI}Selection of the analysis wanted and the frequency bands.}
+\end{figure}
+
+\paragraph{} Then you can click on \textbf{Process analysis} to launch the process
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{ProcessCancel.png}
+\end{center}
+\caption{\label{RunAnalysisBidsSubjectUI}Launch or Cancel the analysis.}
+\end{figure}
+
+\paragraph{} At this point, the software will parse each of the selected eeg files and try to open the raw data. Due to naming convention issues this part is not yet fully automated and the operator need to check that all the electrodes present are iEEG electrodes and that they have the same name from one contact to the other. 
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{ConnectCleaner.png}
+\end{center}
+\caption{\label{ConnectCleanerBidsSubjectUI}Check that only relevant iEEG electrodes are selected.}
+\end{figure}
+
+\paragraph{} You can check the progress of the analysis with the steps that are being displayed in the Text box at the bottom of the software interface as well as the progress bar. Then when the analysis is finished you will have all the resulting files in the derivatives folder of your bids dataset with dedicated folders and files named accordingly.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{BidsDerivativesAfterAnalysis.png}
+\end{center}
+\caption{\label{ConnectCleanerBidsSubjectUI}Results of analysis in BIDS organized folders.}
+\end{figure}
 
 \end{document}

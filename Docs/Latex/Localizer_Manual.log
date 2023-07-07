@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.6.7)  6 JUL 2023 16:01
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.6.7)  7 JUL 2023 15:04
 entering extended mode
 **./Localizer_Manual.tex
 (Localizer_Manual.tex
@@ -256,7 +256,11 @@ ackend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2021-05-07 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count278
 \l__pdf_internal_box=\box54
-) (Localizer_Manual.aux)
+) (Localizer_Manual.aux
+
+LaTeX Warning: Label `ConnectCleanerBidsSubjectUI' multiply defined.
+
+)
 \openout1 = `Localizer_Manual.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 20.
@@ -393,48 +397,180 @@ LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 4
 (/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/lm/
 t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [2]
-Overfull \hbox (15.15286pt too wide) in paragraph at lines 137--138
+) [2] [3]
+Overfull \hbox (15.15286pt too wide) in paragraph at lines 139--140
  [] \T1/lmr/m/n/10 This option menu will let you create .prov files. The .prov 
 extension stands for \T1/lmr/bx/n/10 protocol visualization\T1/lmr/m/n/10 .
  []
 
-[3]
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 1
-47.
+49.
 
 (/Users/florian/Library/Application Support/MiKTeX/texmfs/install/tex/latex/lm/
 ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [4]
-<HilbertProcessing.png, id=25, 1186.4325pt x 355.3275pt>
+) [4] [5]
+<HilbertProcessing.png, id=28, 1186.4325pt x 355.3275pt>
 File: HilbertProcessing.png Graphic file (type png)
 <use HilbertProcessing.png>
-Package pdftex.def Info: HilbertProcessing.png  used on input line 181.
+Package pdftex.def Info: HilbertProcessing.png  used on input line 185.
 (pdftex.def)             Requested size: 474.56459pt x 142.12846pt.
 
-Overfull \hbox (36.05159pt too wide) in paragraph at lines 181--182
+Overfull \hbox (36.05159pt too wide) in paragraph at lines 185--186
  [] 
  []
 
-<EnvelopePlots.png, id=27, 479.7925pt x 343.2825pt>
+<EnvelopePlots.png, id=30, 479.7925pt x 343.2825pt>
 File: EnvelopePlots.png Graphic file (type png)
 <use EnvelopePlots.png>
-Package pdftex.def Info: EnvelopePlots.png  used on input line 192.
+Package pdftex.def Info: EnvelopePlots.png  used on input line 196.
 (pdftex.def)             Requested size: 383.8345pt x 274.62636pt.
-[5 <./HilbertProcessing.png>]
-<TimeTrialsMatrice.jpg, id=32, 578.16pt x 433.62pt>
+[6 <./HilbertProcessing.png>]
+<TimeTrialsMatrice.jpg, id=35, 578.16pt x 433.62pt>
 File: TimeTrialsMatrice.jpg Graphic file (type jpg)
 <use TimeTrialsMatrice.jpg>
-Package pdftex.def Info: TimeTrialsMatrice.jpg  used on input line 200.
+Package pdftex.def Info: TimeTrialsMatrice.jpg  used on input line 204.
 (pdftex.def)             Requested size: 404.70924pt x 303.53192pt.
- [6 <./EnvelopePlots.png>] [7 <./TimeTrialsMatrice.jpg>] (Localizer_Manual.aux)
+ [7 <./EnvelopePlots.png>] [8 <./TimeTrialsMatrice.jpg>]
+<SelectLoadSubjectFolder.png, id=44, 344.28625pt x 136.51pt>
+File: SelectLoadSubjectFolder.png Graphic file (type png)
+<use SelectLoadSubjectFolder.png>
+Package pdftex.def Info: SelectLoadSubjectFolder.png  used on input line 220.
+(pdftex.def)             Requested size: 275.42937pt x 109.20813pt.
+<SubjectFolderSelect.png, id=45, 397.485pt x 151.56625pt>
+File: SubjectFolderSelect.png Graphic file (type png)
+<use SubjectFolderSelect.png>
+Package pdftex.def Info: SubjectFolderSelect.png  used on input line 228.
+(pdftex.def)             Requested size: 317.98842pt x 121.25316pt.
+<AnalysisOptions.png, id=46, 760.8425pt x 327.2225pt>
+File: AnalysisOptions.png Graphic file (type png)
+<use AnalysisOptions.png>
+Package pdftex.def Info: AnalysisOptions.png  used on input line 236.
+(pdftex.def)             Requested size: 456.50902pt x 196.335pt.
+
+Overfull \hbox (17.99602pt too wide) in paragraph at lines 236--237
+ [] 
+ []
+
+[9 <./SelectLoadSubjectFolder.png> <./SubjectFolderSelect.png>]
+<ProcessCancel.png, id=52, 272.01625pt x 42.1575pt>
+File: ProcessCancel.png Graphic file (type png)
+<use ProcessCancel.png>
+Package pdftex.def Info: ProcessCancel.png  used on input line 244.
+(pdftex.def)             Requested size: 163.211pt x 25.29468pt.
+<ConnectCleaner.png, id=53, 361.35pt x 642.4pt>
+File: ConnectCleaner.png Graphic file (type png)
+<use ConnectCleaner.png>
+Package pdftex.def Info: ConnectCleaner.png  used on input line 253.
+(pdftex.def)             Requested size: 216.81168pt x 385.44298pt.
+ [10 <./AnalysisOptions.png> <./ProcessCancel.png>]
+<EndOfAnalysis.png, id=59, 296.10625pt x 168.63pt>
+File: EndOfAnalysis.png Graphic file (type png)
+<use EndOfAnalysis.png>
+Package pdftex.def Info: EndOfAnalysis.png  used on input line 265.
+(pdftex.def)             Requested size: 177.66512pt x 101.17877pt.
+<SelectLoadMultipleSubjectsFolder.png, id=60, 292.09125pt x 129.48375pt>
+File: SelectLoadMultipleSubjectsFolder.png Graphic file (type png)
+<use SelectLoadMultipleSubjectsFolder.png>
+Package pdftex.def Info: SelectLoadMultipleSubjectsFolder.png  used on input li
+ne 274.
+(pdftex.def)             Requested size: 175.25609pt x 77.69083pt.
+ [11 <./ConnectCleaner.png> <./EndOfAnalysis.png>]
+<MultipleSubjectsFolderSelect.png, id=66, 249.93375pt x 86.3225pt>
+File: MultipleSubjectsFolderSelect.png Graphic file (type png)
+<use MultipleSubjectsFolderSelect.png>
+Package pdftex.def Info: MultipleSubjectsFolderSelect.png  used on input line 2
+82.
+(pdftex.def)             Requested size: 199.94727pt x 69.05807pt.
+<ExperimentsChoice.png, id=67, 223.83624pt x 577.15625pt>
+File: ExperimentsChoice.png Graphic file (type png)
+<use ExperimentsChoice.png>
+Package pdftex.def Info: ExperimentsChoice.png  used on input line 290.
+(pdftex.def)             Requested size: 134.30278pt x 346.29642pt.
+ [12 <./SelectLoadMultipleSubjectsFolder.png> <./MultipleSubjectsFolderSelect.p
+ng>]
+<ConnectCleanerMultiSubject.png, id=73, 360.34625pt x 641.39626pt>
+File: ConnectCleanerMultiSubject.png Graphic file (type png)
+<use ConnectCleanerMultiSubject.png>
+Package pdftex.def Info: ConnectCleanerMultiSubject.png  used on input line 298
+.
+(pdftex.def)             Requested size: 216.20941pt x 384.84071pt.
+ [13 <./ExperimentsChoice.png>]
+<SelectLoadEEGFolder.png, id=79, 296.10625pt x 130.4875pt>
+File: SelectLoadEEGFolder.png Graphic file (type png)
+<use SelectLoadEEGFolder.png>
+Package pdftex.def Info: SelectLoadEEGFolder.png  used on input line 309.
+(pdftex.def)             Requested size: 177.66512pt x 78.29309pt.
+<MiscEEGSelect.png, id=80, 275.0275pt x 83.31125pt>
+File: MiscEEGSelect.png Graphic file (type png)
+<use MiscEEGSelect.png>
+Package pdftex.def Info: MiscEEGSelect.png  used on input line 318.
+(pdftex.def)             Requested size: 220.0223pt x 66.64908pt.
+ [14 <./ConnectCleanerMultiSubject.png> <./SelectLoadEEGFolder.png>]
+<MiscAnalysisOptions.png, id=86, 766.865pt x 314.17375pt>
+File: MiscAnalysisOptions.png Graphic file (type png)
+<use MiscAnalysisOptions.png>
+Package pdftex.def Info: MiscAnalysisOptions.png  used on input line 327.
+(pdftex.def)             Requested size: 460.12256pt x 188.50569pt.
+
+Overfull \hbox (21.60956pt too wide) in paragraph at lines 327--328
+ [] 
+ []
+
+File: ProcessCancel.png Graphic file (type png)
+<use ProcessCancel.png>
+Package pdftex.def Info: ProcessCancel.png  used on input line 335.
+(pdftex.def)             Requested size: 163.211pt x 25.29468pt.
+File: ConnectCleaner.png Graphic file (type png)
+<use ConnectCleaner.png>
+Package pdftex.def Info: ConnectCleaner.png  used on input line 344.
+(pdftex.def)             Requested size: 216.81168pt x 385.44298pt.
+[15 <./MiscEEGSelect.png> <./MiscAnalysisOptions.png>]
+<SelectLoadBidsSubject.png, id=92, 288.07625pt x 127.47626pt>
+File: SelectLoadBidsSubject.png Graphic file (type png)
+<use SelectLoadBidsSubject.png>
+Package pdftex.def Info: SelectLoadBidsSubject.png  used on input line 356.
+(pdftex.def)             Requested size: 172.84708pt x 76.48633pt.
+<BidsSubjectFolderSelect.png, id=93, 483.8075pt x 348.30125pt>
+File: BidsSubjectFolderSelect.png Graphic file (type png)
+<use BidsSubjectFolderSelect.png>
+Package pdftex.def Info: BidsSubjectFolderSelect.png  used on input line 365.
+(pdftex.def)             Requested size: 387.04652pt x 278.64137pt.
+ [16 <./SelectLoadBidsSubject.png>]
+File: AnalysisOptions.png Graphic file (type png)
+<use AnalysisOptions.png>
+Package pdftex.def Info: AnalysisOptions.png  used on input line 373.
+(pdftex.def)             Requested size: 456.50902pt x 196.335pt.
+
+Overfull \hbox (17.99602pt too wide) in paragraph at lines 373--374
+ [] 
+ []
+
+File: ProcessCancel.png Graphic file (type png)
+<use ProcessCancel.png>
+Package pdftex.def Info: ProcessCancel.png  used on input line 381.
+(pdftex.def)             Requested size: 163.211pt x 25.29468pt.
+[17 <./BidsSubjectFolderSelect.png>]
+File: ConnectCleaner.png Graphic file (type png)
+<use ConnectCleaner.png>
+Package pdftex.def Info: ConnectCleaner.png  used on input line 390.
+(pdftex.def)             Requested size: 216.81168pt x 385.44298pt.
+<BidsDerivativesAfterAnalysis.png, id=102, 513.92pt x 822.07124pt>
+File: BidsDerivativesAfterAnalysis.png Graphic file (type png)
+<use BidsDerivativesAfterAnalysis.png>
+Package pdftex.def Info: BidsDerivativesAfterAnalysis.png  used on input line 3
+99.
+(pdftex.def)             Requested size: 308.35437pt x 493.24655pt.
+ [18] [19 <./BidsDerivativesAfterAnalysis.png>] (Localizer_Manual.aux)
+
+LaTeX Warning: There were multiply-defined labels.
+
  ) 
 Here is how much of TeX's memory you used:
- 5959 strings out of 480799
- 97223 string characters out of 2898087
- 419248 words of memory out of 3000000
- 23558 multiletter control sequences out of 15000+600000
+ 6095 strings out of 480799
+ 101014 string characters out of 2898087
+ 419521 words of memory out of 3000000
+ 23678 multiletter control sequences out of 15000+600000
  460733 words of font info for 60 fonts, out of 8000000 for 9000
  0 hyphenation exceptions out of 8191
  57i,8n,66p,757b,348s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -453,9 +589,9 @@ rs/florian/Library/Application Support/MiKTeX/texmfs/install/fonts/type1/public
 /fonts/type1/public/lm/lmr9.pfb></Users/florian/Library/Application Support/MiK
 TeX/texmfs/install/fonts/type1/public/lm/lmri10.pfb></Users/florian/Library/App
 lication Support/MiKTeX/texmfs/install/fonts/type1/public/lm/lmtt10.pfb>
-Output written on Localizer_Manual.pdf (7 pages, 2013333 bytes).
+Output written on Localizer_Manual.pdf (19 pages, 3039904 bytes).
 PDF statistics:
- 87 PDF objects out of 1000 (max. 8388607)
+ 157 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 16 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 96 words of extra memory for PDF output out of 10000 (max. 10000000)
 
