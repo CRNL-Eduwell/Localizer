@@ -1,58 +1,81 @@
 \babel@toc {english}{}
-\contentsline {section}{\numberline {1}Data Curation}{2}{}%
+\contentsline {section}{\numberline {1}Cognitive Tasks}{2}{}%
+\contentsline {subsection}{\numberline {1.1}Auditiv Task}{2}{}%
 \contentsline {paragraph}{}{2}{}%
-\contentsline {subsection}{\numberline {1.1}Subject Folder organisation}{2}{}%
-\contentsline {subsection}{\numberline {1.2}Multiple Subjects Folder}{2}{}%
-\contentsline {subsection}{\numberline {1.3}EEG Files Folder}{2}{}%
-\contentsline {subsection}{\numberline {1.4}BIDS Subject Folder}{3}{}%
-\contentsline {section}{\numberline {2}Options}{4}{}%
-\contentsline {subsection}{\numberline {2.1}Localizer}{4}{}%
+\contentsline {paragraph}{}{2}{}%
+\contentsline {subsection}{\numberline {1.2}Lecture 1 Task}{2}{}%
+\contentsline {paragraph}{}{2}{}%
+\contentsline {paragraph}{}{2}{}%
+\contentsline {paragraph}{}{2}{}%
+\contentsline {paragraph}{}{2}{}%
+\contentsline {paragraph}{}{2}{}%
+\contentsline {paragraph}{}{3}{}%
+\contentsline {subsection}{\numberline {1.3}Lecture 2 Task}{3}{}%
+\contentsline {paragraph}{}{3}{}%
+\contentsline {paragraph}{}{3}{}%
+\contentsline {subsection}{\numberline {1.4}Verbal Working Memory Task}{3}{}%
+\contentsline {paragraph}{}{3}{}%
+\contentsline {paragraph}{}{4}{}%
+\contentsline {subsection}{\numberline {1.5}Visual Spatial Working Memory Task}{4}{}%
 \contentsline {paragraph}{}{4}{}%
 \contentsline {paragraph}{}{4}{}%
+\contentsline {subsection}{\numberline {1.6}Visual Task}{4}{}%
 \contentsline {paragraph}{}{4}{}%
-\contentsline {paragraph}{}{4}{}%
-\contentsline {subsection}{\numberline {2.2}File Priority}{4}{}%
-\contentsline {paragraph}{}{4}{}%
-\contentsline {subsection}{\numberline {2.3}Statistic}{4}{}%
-\contentsline {paragraph}{}{4}{}%
-\contentsline {subsection}{\numberline {2.4}Pictures}{4}{}%
-\contentsline {paragraph}{}{4}{}%
-\contentsline {subsection}{\numberline {2.5}Frequency Bands}{5}{}%
 \contentsline {paragraph}{}{5}{}%
-\contentsline {paragraph}{}{5}{}%
-\contentsline {section}{\numberline {3}Data Analysis}{6}{}%
-\contentsline {subsection}{\numberline {3.1}Hilbert Transform}{6}{}%
+\contentsline {section}{\numberline {2}Data Curation}{6}{}%
 \contentsline {paragraph}{}{6}{}%
-\contentsline {subsection}{\numberline {3.2}Envelope Plot}{6}{}%
-\contentsline {paragraph}{}{6}{}%
-\contentsline {subsection}{\numberline {3.3}Time Trials Matrices}{7}{}%
-\contentsline {paragraph}{}{7}{}%
-\contentsline {subsection}{\numberline {3.4}Correlation Maps}{8}{}%
+\contentsline {subsection}{\numberline {2.1}Subject Folder organisation}{6}{}%
+\contentsline {subsection}{\numberline {2.2}Multiple Subjects Folder}{6}{}%
+\contentsline {subsection}{\numberline {2.3}EEG Files Folder}{6}{}%
+\contentsline {subsection}{\numberline {2.4}BIDS Subject Folder}{7}{}%
+\contentsline {section}{\numberline {3}Options}{8}{}%
+\contentsline {subsection}{\numberline {3.1}Localizer}{8}{}%
 \contentsline {paragraph}{}{8}{}%
-\contentsline {subsection}{\numberline {3.5}Statistical Files}{8}{}%
 \contentsline {paragraph}{}{8}{}%
-\contentsline {section}{\numberline {4}Tutorials}{9}{}%
-\contentsline {subsection}{\numberline {4.1}Processing data from a subject folder}{9}{}%
+\contentsline {paragraph}{}{8}{}%
+\contentsline {paragraph}{}{8}{}%
+\contentsline {subsection}{\numberline {3.2}File Priority}{8}{}%
+\contentsline {paragraph}{}{8}{}%
+\contentsline {subsection}{\numberline {3.3}Statistic}{8}{}%
+\contentsline {paragraph}{}{8}{}%
+\contentsline {subsection}{\numberline {3.4}Pictures}{8}{}%
+\contentsline {paragraph}{}{8}{}%
+\contentsline {subsection}{\numberline {3.5}Frequency Bands}{9}{}%
 \contentsline {paragraph}{}{9}{}%
 \contentsline {paragraph}{}{9}{}%
-\contentsline {paragraph}{}{9}{}%
+\contentsline {section}{\numberline {4}Data Analysis}{10}{}%
+\contentsline {subsection}{\numberline {4.1}Hilbert Transform}{10}{}%
 \contentsline {paragraph}{}{10}{}%
+\contentsline {subsection}{\numberline {4.2}Envelope Plot}{10}{}%
 \contentsline {paragraph}{}{10}{}%
+\contentsline {subsection}{\numberline {4.3}Time Trials Matrices}{11}{}%
 \contentsline {paragraph}{}{11}{}%
-\contentsline {subsection}{\numberline {4.2}Processing data from a multiple subjects folder}{12}{}%
+\contentsline {subsection}{\numberline {4.4}Correlation Maps}{12}{}%
 \contentsline {paragraph}{}{12}{}%
+\contentsline {subsection}{\numberline {4.5}Statistical Files}{12}{}%
 \contentsline {paragraph}{}{12}{}%
-\contentsline {paragraph}{}{12}{}%
+\contentsline {section}{\numberline {5}Tutorials}{13}{}%
+\contentsline {subsection}{\numberline {5.1}Processing data from a subject folder}{13}{}%
 \contentsline {paragraph}{}{13}{}%
-\contentsline {subsection}{\numberline {4.3}Processing data from an EEG files folder}{14}{}%
+\contentsline {paragraph}{}{13}{}%
+\contentsline {paragraph}{}{13}{}%
 \contentsline {paragraph}{}{14}{}%
 \contentsline {paragraph}{}{14}{}%
 \contentsline {paragraph}{}{15}{}%
-\contentsline {paragraph}{}{15}{}%
-\contentsline {subsection}{\numberline {4.4}Processing data from a BIDS subject folder}{16}{}%
+\contentsline {subsection}{\numberline {5.2}Processing data from a multiple subjects folder}{16}{}%
+\contentsline {paragraph}{}{16}{}%
 \contentsline {paragraph}{}{16}{}%
 \contentsline {paragraph}{}{16}{}%
 \contentsline {paragraph}{}{17}{}%
-\contentsline {paragraph}{}{17}{}%
+\contentsline {subsection}{\numberline {5.3}Processing data from an EEG files folder}{18}{}%
 \contentsline {paragraph}{}{18}{}%
 \contentsline {paragraph}{}{18}{}%
+\contentsline {paragraph}{}{19}{}%
+\contentsline {paragraph}{}{19}{}%
+\contentsline {subsection}{\numberline {5.4}Processing data from a BIDS subject folder}{20}{}%
+\contentsline {paragraph}{}{20}{}%
+\contentsline {paragraph}{}{20}{}%
+\contentsline {paragraph}{}{21}{}%
+\contentsline {paragraph}{}{21}{}%
+\contentsline {paragraph}{}{22}{}%
+\contentsline {paragraph}{}{22}{}%
