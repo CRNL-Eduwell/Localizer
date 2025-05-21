@@ -17,6 +17,7 @@
 #include <QFileSystemModel>
 #include <QReadWriteLock>
 #include <QInputDialog>
+#include <QDirIterator>
 
 //==Ui headers
 #include "ui_localizer.h"

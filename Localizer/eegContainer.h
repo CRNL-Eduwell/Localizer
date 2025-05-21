@@ -157,8 +157,8 @@ namespace InsermLibrary
 			}
 			return "";
 		}
-		inline std::vector<std::vector<float>>& Data() { return m_file->Data(EEGFormat::DataConverterType::Digital); }
-		inline const std::vector<std::vector<float>>& Data() const { return m_file->Data(EEGFormat::DataConverterType::Digital); }
+        inline std::vector<std::vector<float>>& Data() { return m_file->Data(EEGFormat::DataConverterType::Analog); }
+        inline const std::vector<std::vector<float>>& Data() const { return m_file->Data(EEGFormat::DataConverterType::Analog); }
 
 		//===[ Data Modification ]===
         void DeleteElectrodes(std::vector<int> elecToDelete);
