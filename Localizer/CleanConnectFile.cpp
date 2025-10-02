@@ -96,6 +96,17 @@ QString CleanConnectFile::CorrectElectrodeNaming(std::string label, bool shouldC
     std::string fixedLabel = std::string(label);
     if(shouldCorrect)
     {
+        if(!fixedLabel.empty() && fixedLabel[0] == '_')
+        {
+            fixedLabel = fixedLabel.substr(1);
+        }
+        
+        size_t dotPos = fixedLabel.find('.');
+        if(dotPos != std::string::npos)
+        {
+            fixedLabel.erase(dotPos, 1);
+        }
+        
         EEGFormat::Utility::FixElectrodeName(fixedLabel);
         QString correctedLabel = QString::fromStdString(fixedLabel);
         if (correctedLabel.contains(QRegularExpression("^[A-Z]+\'*[0-9]{1,2}$")))
