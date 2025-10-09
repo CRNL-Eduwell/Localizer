@@ -1,10 +1,10 @@
 #include "BidsSubjectWorker.h"
 
-BidsSubjectWorker::BidsSubjectWorker(BidsSubject subject, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& analysisOpt, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::string ptsFilePath)
+BidsSubjectWorker::BidsSubjectWorker(BidsSubject subject, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& analysisOpt, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::vector<InsermLibrary::FileType> filePriority, std::string ptsFilePath)
 {
     m_Patient = new BidsSubject(subject);
     m_FrequencyBands = std::vector<InsermLibrary::FrequencyBandAnalysisOpt>(analysisOpt);
-    m_filePriority = std::vector<InsermLibrary::FileType>{ InsermLibrary::FileType::Brainvision };
+    m_filePriority = std::vector<InsermLibrary::FileType>(filePriority);
     m_Loca = new InsermLibrary::LOCA(m_FrequencyBands, new InsermLibrary::statOption(statOption), new InsermLibrary::picOption(picOption), ptsFilePath);
 }
 

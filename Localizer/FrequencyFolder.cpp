@@ -33,6 +33,10 @@ InsermLibrary::IEegFileInfo* FrequencyFolder::GetEegFileInfo(SmoothingWindow smo
             {
                 return &m_BvSmoothingXFiles[0].second;
             }
+            else if (fileType == InsermLibrary::FileType::EuropeanDataFormat)
+            {
+                return &m_EdfSmoothingXFiles[0].second;
+            }
             else
             {
                 return nullptr;
@@ -47,6 +51,10 @@ InsermLibrary::IEegFileInfo* FrequencyFolder::GetEegFileInfo(SmoothingWindow smo
             else if(fileType == InsermLibrary::FileType::Brainvision)
             {
                 return &m_BvSmoothingXFiles[1].second;
+            }
+            else if (fileType == InsermLibrary::FileType::EuropeanDataFormat)
+            {
+                return &m_EdfSmoothingXFiles[1].second;
             }
             else
             {
@@ -63,6 +71,10 @@ InsermLibrary::IEegFileInfo* FrequencyFolder::GetEegFileInfo(SmoothingWindow smo
             {
                 return &m_BvSmoothingXFiles[2].second;
             }
+            else if (fileType == InsermLibrary::FileType::EuropeanDataFormat)
+            {
+                return &m_EdfSmoothingXFiles[2].second;
+            }
             else
             {
                 return nullptr;
@@ -77,6 +89,10 @@ InsermLibrary::IEegFileInfo* FrequencyFolder::GetEegFileInfo(SmoothingWindow smo
             else if(fileType == InsermLibrary::FileType::Brainvision)
             {
                 return &m_BvSmoothingXFiles[3].second;
+            }
+            else if (fileType == InsermLibrary::FileType::EuropeanDataFormat)
+            {
+                return &m_EdfSmoothingXFiles[3].second;
             }
             else
             {
@@ -93,6 +109,10 @@ InsermLibrary::IEegFileInfo* FrequencyFolder::GetEegFileInfo(SmoothingWindow smo
             {
                 return &m_BvSmoothingXFiles[4].second;
             }
+            else if (fileType == InsermLibrary::FileType::EuropeanDataFormat)
+            {
+                return &m_EdfSmoothingXFiles[4].second;
+            }
             else
             {
                 return nullptr;
@@ -107,6 +127,10 @@ InsermLibrary::IEegFileInfo* FrequencyFolder::GetEegFileInfo(SmoothingWindow smo
             else if(fileType == InsermLibrary::FileType::Brainvision)
             {
                 return &m_BvSmoothingXFiles[5].second;
+            }
+            else if (fileType == InsermLibrary::FileType::EuropeanDataFormat)
+            {
+                return &m_EdfSmoothingXFiles[5].second;
             }
             else
             {
@@ -129,7 +153,7 @@ void FrequencyFolder::GetFrequencyEegFiles(std::string path)
 {
     std::vector<QRegularExpression> rxEegSmX;
     QString rxBaseName = QString::fromStdString(m_FolderName + "_ds" + "(\\d+)");
-    QString rxExtensions = "(.eeg|.vhdr)"; //|.eeg.ent
+    QString rxExtensions = "(.eeg|.vhdr|.edf)"; //|.eeg.ent
     rxEegSmX.push_back(QRegularExpression(rxBaseName + "_sm0" + rxExtensions));
     rxEegSmX.push_back(QRegularExpression(rxBaseName + "_sm250" + rxExtensions));
     rxEegSmX.push_back(QRegularExpression(rxBaseName + "_sm500" + rxExtensions));
@@ -138,11 +162,12 @@ void FrequencyFolder::GetFrequencyEegFiles(std::string path)
     rxEegSmX.push_back(QRegularExpression(rxBaseName + "_sm5000" + rxExtensions));
 
     QDir currentDir(path.c_str());
-    currentDir.setNameFilters(QStringList() << "*.eeg" /*<< "*.eeg.ent"*/ << "*.vhdr");
+    currentDir.setNameFilters(QStringList() << "*.eeg" /*<< "*.eeg.ent"*/ << "*.vhdr" << "*.edf");
     QStringList fileFound = currentDir.entryList();
 
     m_ElanSmoothingXFiles.resize(6);
     m_BvSmoothingXFiles.resize(6);
+    m_EdfSmoothingXFiles.resize(6);
     for (int i = 0; i < fileFound.size(); i++)
     {
         for (int j = 0; j < 6; j++)
@@ -155,6 +180,10 @@ void FrequencyFolder::GetFrequencyEegFiles(std::string path)
                 if(f.suffix() == "vhdr")
                 {
                     m_BvSmoothingXFiles[j] = std::make_pair(j, InsermLibrary::BrainVisionFileInfo(filePath.toStdString()));
+                }
+                else if (f.suffix() == "edf")
+                {
+                    m_EdfSmoothingXFiles[j] = std::make_pair(j, InsermLibrary::EdfFileInfo(filePath.toStdString()));
                 }
                 else
                 {

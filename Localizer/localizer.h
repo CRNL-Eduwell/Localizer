@@ -58,6 +58,7 @@
 #include "ConcatenationWorker.h"
 
 #include "BidsSubject.h"
+#include "EdfFileInfo.h"
 
 enum class SubjectType { UNKNOWN, Subject, MultiSubject, SingleFile, BidsSubject };
 

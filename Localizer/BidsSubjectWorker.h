@@ -14,7 +14,7 @@ class BidsSubjectWorker : public IWorker
     Q_OBJECT
 
 public:
-    BidsSubjectWorker(BidsSubject subject, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& FrequencyBands, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::string ptsFilePath);
+    BidsSubjectWorker(BidsSubject subject, std::vector<InsermLibrary::FrequencyBandAnalysisOpt>& FrequencyBands, InsermLibrary::statOption statOption, InsermLibrary::picOption picOption, std::vector<InsermLibrary::FileType> filePriority, std::string ptsFilePath);
     ~BidsSubjectWorker();
     void Process();
     void ExtractElectrodeList();

@@ -125,8 +125,10 @@ void InsermLibrary::eegContainer::SaveFrequencyData(EEGFormat::FileType FileType
 				break;
 			}
 			case EEGFormat::FileType::EuropeanDataFormat:
-			{
-				throw std::runtime_error("European Data Format file type is not allowed as an output file");
+            {
+                EEGFormat::EdfFile* edfFile = new EEGFormat::EdfFile(*elanFrequencyBand[i]);
+                edfFile->SaveAs(rootFrequencyFolder, baseFileName);
+                EEGFormat::Utility::DeleteAndNullify(edfFile);
 				break;
 			}
 			default:

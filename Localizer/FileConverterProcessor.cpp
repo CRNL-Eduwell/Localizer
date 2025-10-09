@@ -39,6 +39,10 @@ void FileConverterProcessor::ValidateFiles()
 		{
 			newFileTypes.push_back("vhdr");
 		}
+        else if (currentbox->currentText().compare("EuropeanDataFormat") == 0)
+        {
+            newFileTypes.push_back("edf");
+        }
 		else
 		{
 			newFileTypes.push_back("");

@@ -49,8 +49,10 @@ void FileConverterWorker::Process()
 			EEGFormat::Utility::DeleteAndNullify(newFile);
 		}
 		else if (newType.compare("edf") == 0)
-		{
-			emit sendLogInfo("It is not possible to create edf file yet.");
+        {
+            EEGFormat::EdfFile* edfFile = new EEGFormat::EdfFile(*current);
+            edfFile->SaveAs(outputDirectory, fileName);
+            EEGFormat::Utility::DeleteAndNullify(edfFile);
 		}
 		else
 		{

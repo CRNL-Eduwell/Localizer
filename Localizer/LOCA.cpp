@@ -473,7 +473,8 @@ void InsermLibrary::LOCA::CreateEventsFile(FrequencyBandAnalysisOpt analysisOpt,
 	}
 	case EEGFormat::FileType::EuropeanDataFormat:
 	{
-		throw std::runtime_error("European Data Format file type is not allowed as an output file");
+        //throw std::runtime_error("European Data Format file type is not allowed as an output file");
+        // EDF does not have an event file
 		break;
 	}
 	default:
@@ -510,8 +511,8 @@ void InsermLibrary::LOCA::CreateFile(EEGFormat::FileType outputType, std::string
 		break;
 	}
 	case EEGFormat::FileType::EuropeanDataFormat:
-	{
-		throw std::runtime_error("European Data Format file type is not allowed as an output file");
+    {
+        // Triggers are already inside the data file in EDF
 		break;
 	}
 	default:

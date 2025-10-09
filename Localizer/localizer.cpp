@@ -86,11 +86,11 @@ void Localizer::SetupComboxBoxElements()
     ui.FileOutputComboBox->clear();
     if(m_subjectType == SubjectType::BidsSubject)
     {
-        list << "BrainVision";
+        list << "BrainVision" << "EuropeanDataFormat";
     }
     else
     {
-        list << "Elan" << "BrainVision";
+        list << "Elan" << "BrainVision" << "EuropeanDataFormat";
     }
     ui.FileOutputComboBox->addItems(list);
 }
@@ -322,21 +322,31 @@ bool Localizer::SeemsToBeBidsSubject(QString rootFolder)
 BidsSubject Localizer::ParseBidsSubjectInfo(QString rootFolder)
 {
     std::vector<std::string> tasks;
-    std::vector<InsermLibrary::BrainVisionFileInfo> fileInfos;
-    QDirIterator it(rootFolder, QStringList() << "*.vhdr", QDir::Files, QDirIterator::Subdirectories);
+    std::vector<std::unique_ptr<InsermLibrary::IEegFileInfo>> fileInfos;
+    QDirIterator it(rootFolder, QStringList() << "*.vhdr" << "*.edf", QDir::Files, QDirIterator::Subdirectories);
     while(it.hasNext())
     {
-        QString vhdr = it.next();
-        QStringList split = vhdr.split("_task-");
+        QString filePath = it.next();
+        QStringList split = filePath.split("_task-");
         QString task = split[1].split("_").first();
 
         tasks.push_back(task.toStdString());
-        fileInfos.push_back(InsermLibrary::BrainVisionFileInfo(vhdr.toStdString()));
+        
+        // Determine file type based on extension
+        QFileInfo fileInfo(filePath);
+        QString extension = fileInfo.suffix().toLower();
+        
+        if (extension == "vhdr") {
+            fileInfos.push_back(std::make_unique<InsermLibrary::BrainVisionFileInfo>(filePath.toStdString()));
+        }
+        else if (extension == "edf") {
+            fileInfos.push_back(std::make_unique<InsermLibrary::EdfFileInfo>(filePath.toStdString()));
+        }
     }
 
     if(tasks.size() == fileInfos.size())
     {
-        return BidsSubject(rootFolder.toStdString(), tasks, fileInfos);
+        return BidsSubject(rootFolder.toStdString(), tasks, std::move(fileInfos));
     }
     else
     {
@@ -590,7 +600,7 @@ std::vector<SubjectFolder*> Localizer::PrepareDBFolders()
 int Localizer::PrepareBidsSubjectFolder()
 {
     QStringList extention;
-    extention << "vhdr";
+    extention << "vhdr" << "edf";
 
     std::vector<std::string> tasksToKeep;
     QModelIndexList selectedRows = ui.FileTreeView->selectionModel()->selectedRows();
@@ -762,8 +772,7 @@ int Localizer::GetSelectedElementCount(QModelIndexList selectedIndexes)
             }
             case SubjectType::BidsSubject:
             {
-                //TODO : add edf later when validated
-                bool isCorrectFile = info.suffix() == "vhdr";
+                bool isCorrectFile = info.suffix() == "vhdr" || info.suffix() == "edf";
                 isRoot = selectedIndexes[i].parent().parent().parent() == ui.FileTreeView->rootIndex();
                 gothrough = info.isFile() && isRoot && isCorrectFile ;
                 break;
@@ -1153,6 +1162,7 @@ void Localizer::ProcessBidsSubjectAnalysis()
     //Get info from ui and check that at least one task can be analyzed
     InsermLibrary::picOption optpic = picOpt->getPicOption();
     InsermLibrary::statOption optstat = optStat->getStatOption();
+    std::vector<InsermLibrary::FileType> filePriority = std::vector<InsermLibrary::FileType>(m_GeneralOptionsFile->FileExtensionsFavorite());
     InitProgressBar();
     std::vector<InsermLibrary::FrequencyBandAnalysisOpt> analysisOptions = GetUIAnalysisOption();
     //for now no file priority, if we add edf and/or other we will put the system back in place
@@ -1165,7 +1175,7 @@ void Localizer::ProcessBidsSubjectAnalysis()
     }
 
     thread = new QThread;
-    worker = new BidsSubjectWorker(workingCopy, analysisOptions, optstat, optpic, PtsFilePath);
+    worker = new BidsSubjectWorker(workingCopy, analysisOptions, optstat, optpic, filePriority, PtsFilePath);
 
     //=== Event update displayer
     connect(worker, &IWorker::sendLogInfo, this, &Localizer::DisplayLog);
